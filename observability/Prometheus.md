@@ -1,0 +1,283 @@
+# Prometheus — A 2-Day Crash Course
+
+> **In one sentence:** Prometheus scrapes numeric metrics from your services every few seconds,
+> stores them as time series, and lets you query and alert on them with a language called
+> PromQL — it's the de-facto standard for "is my system healthy?"
+
+---
+
+## Part 0 — Why Prometheus exists, and the one weird idea (pull, not push)
+
+You can't operate what you can't measure. Prometheus answers "how many requests per second?
+what's the error rate? is memory climbing?" — continuously, for everything. It became the
+standard because it's simple, reliable, and built for dynamic (cloud/Kubernetes) environments.
+
+**The defining design choice: Prometheus PULLS.** Instead of your apps *sending* metrics to a
+server, each app exposes a plain HTTP endpoint (usually `/metrics`) showing its current numbers,
+and Prometheus periodically *scrapes* (HTTP GETs) that endpoint. This feels backwards at first
+but it's powerful: Prometheus controls the timing, can tell instantly if a target is down (the
+scrape fails), and there's no complex push infrastructure. In Kubernetes it auto-discovers new
+pods to scrape as they appear.
+
+**What a `/metrics` endpoint looks like** (just text):
+```
+# HELP http_requests_total Total HTTP requests
+# TYPE http_requests_total counter
+http_requests_total{method="GET",code="200"} 10247
+http_requests_total{method="GET",code="500"} 13
+```
+Each line is a metric name, a set of **labels** (the `{...}` key/values), and a current value.
+
+**Mental model:** every service hangs a "current readings" board on its wall (`/metrics`).
+Prometheus walks around every 15s photographing each board, files the readings by timestamp,
+and you ask questions of that archive with PromQL.
+
+---
+
+## Part 1 — The vocabulary
+
+| Term | Meaning |
+|------|---------|
+| **Metric** | A named measurement (`http_requests_total`) |
+| **Label** | A key/value dimension on a metric (`code="500"`) — defines a unique series |
+| **Series** | metric name + a unique label set = one time-series of values over time |
+| **Scrape** | Prometheus fetching `/metrics` from a target |
+| **Exporter** | A sidecar that exposes metrics for things that can't (Node Exporter for hosts) |
+| **PromQL** | The query language |
+| **Instant vector / Range vector** | values at one moment / values over a time window `[5m]` |
+
+**The four metric types** (you must distinguish counters from gauges):
+- **Counter** — only goes up (total requests, total errors). You almost always wrap it in
+  `rate()`.
+- **Gauge** — goes up and down (memory in use, temperature, queue length).
+- **Histogram** — buckets of observations (request durations) → enables percentiles.
+- **Summary** — like a histogram but client-computed quantiles.
+
+---
+
+## DAY 1 — Get it working
+
+### 1. The architecture in one picture
+```
+your apps (/metrics) ──scrape──> Prometheus ──> stores time series (TSDB)
+hosts (node_exporter) ──scrape──┘      │
+                                       ├──> PromQL queries (UI / Grafana)
+                                       └──> rules engine ──> Alertmanager ──> Slack/PagerDuty
+```
+Prometheus does scraping + storage + querying + alert *evaluation*. Sending the actual alert
+notifications is a separate component, **Alertmanager** (see `Alertmanager.md`). Dashboards are
+usually **Grafana** (see `Grafana.md`).
+
+### 2. Run it and scrape something
+`prometheus.yml`:
+```yaml
+global:
+  scrape_interval: 15s          # how often to scrape
+scrape_configs:
+  - job_name: 'prometheus'      # Prometheus scrapes itself
+    static_configs:
+      - targets: ['localhost:9090']
+  - job_name: 'node'            # a host's CPU/mem/disk via Node Exporter
+    static_configs:
+      - targets: ['10.0.0.1:9100']
+```
+Start Prometheus, open http://localhost:9090, and go to **Status → Targets** to confirm targets
+are `UP`. The expression browser (the **Graph** tab) is where you'll learn PromQL.
+
+### 3. Your first queries (PromQL basics)
+```promql
+up                                    # 1 if a target is up, 0 if down — try this first
+node_memory_MemAvailable_bytes        # all series for this metric
+http_requests_total{job="api"}        # filter by a label (=)
+http_requests_total{code=~"5.."}      # regex match (=~) — all 5xx
+http_requests_total{code!="200"}      # not equal
+```
+Labels are how you slice: `{job="api", code="500", method="POST"}` narrows to one dimension.
+
+### 4. The single most important pattern: `rate()` on counters
+A counter like `http_requests_total` just climbs forever; the raw number is meaningless. What
+you want is the *per-second rate*:
+```promql
+rate(http_requests_total[5m])         # avg requests/sec over the last 5 minutes
+```
+**Rule:** always `rate()` (or `increase()`) a counter before doing anything else. `[5m]` is a
+**range** — "the last 5 minutes of samples." `rate()` even handles counter resets (restarts)
+automatically.
+```promql
+increase(http_requests_total[1h])     # total requests in the last hour
+```
+
+### 5. Aggregation — collapse the labels you don't care about
+```promql
+sum(rate(http_requests_total[5m]))                 # total RPS across everything
+sum by (code) (rate(http_requests_total[5m]))      # RPS broken down by status code
+sum by (instance) (rate(node_cpu_seconds_total[5m]))
+topk(5, sum by (path) (rate(http_requests_total[5m])))   # busiest 5 paths
+```
+`sum/avg/max/min by (label)` is the workhorse: rate first, then aggregate.
+
+**By end of Day 1 you can:** stand up Prometheus, confirm targets, write label-filtered
+queries, `rate()` your counters, and aggregate. That's most of practical PromQL.
+
+---
+
+## DAY 2 — Make it real
+
+### 1. The Golden Signals as queries (what you actually monitor)
+```promql
+# ERROR RATE (ratio of 5xx to all requests)
+sum(rate(http_requests_total{code=~"5.."}[5m]))
+  / sum(rate(http_requests_total[5m]))
+
+# LATENCY p95 from a histogram (the bucket metric ends in _bucket, with a 'le' label)
+histogram_quantile(0.95,
+  sum by (le) (rate(http_request_duration_seconds_bucket[5m])))
+
+# TRAFFIC
+sum(rate(http_requests_total[5m]))
+
+# SATURATION — CPU usage %
+100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)
+
+# memory available %
+node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes * 100
+```
+(These map directly to SRE practice — see `SRE-Process.md`.)
+
+### 2. Exporters — getting metrics from things that don't speak Prometheus
+Most software needs a helper that translates its stats into the Prometheus format:
+- **node_exporter** — host CPU/mem/disk/network.
+- **blackbox_exporter** — probe endpoints from outside (HTTP/TCP/ICMP uptime).
+- **postgres_exporter / redis_exporter / etc.** — database internals.
+- Your own apps: use a client library (Go/Python/Java/etc.) to expose `/metrics`.
+You point a `scrape_config` at the exporter's port and Prometheus collects it.
+
+### 3. Service discovery (essential in Kubernetes)
+Static target lists don't work when pods come and go. Prometheus auto-discovers targets:
+```yaml
+scrape_configs:
+  - job_name: 'k8s-pods'
+    kubernetes_sd_configs: [{ role: pod }]
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+        action: keep
+        regex: "true"          # only scrape pods annotated prometheus.io/scrape: "true"
+```
+In practice you'll usually run the **kube-prometheus-stack** Helm chart, which wires up
+discovery, exporters, Grafana, and Alertmanager for you.
+
+### 4. Recording rules — precompute expensive queries
+If a dashboard or alert runs a heavy query constantly, precompute it on a schedule:
+```yaml
+groups:
+  - name: api.rules
+    rules:
+      - record: job:http_requests:rate5m
+        expr: sum by (job) (rate(http_requests_total[5m]))
+```
+Now dashboards query the cheap `job:http_requests:rate5m` instead of recomputing the rate.
+
+### 5. Alerting rules — fire when something's wrong
+Prometheus *evaluates* alert conditions; Alertmanager *routes* the notifications.
+```yaml
+groups:
+  - name: api.alerts
+    rules:
+      - alert: HighErrorRate
+        expr: |
+          sum(rate(http_requests_total{code=~"5.."}[5m]))
+            / sum(rate(http_requests_total[5m])) > 0.05
+        for: 10m                            # must be true for 10m before firing (anti-flap)
+        labels: { severity: page }
+        annotations:
+          summary: "5xx error rate above 5% on {{ $labels.job }}"
+```
+The `for:` clause prevents flapping on momentary blips. **Alert on symptoms** (users seeing
+errors), not causes (CPU high) — see `SRE-Process.md`.
+
+### 6. PromQL functions worth knowing
+```promql
+absent(up{job="api"})              # 1 if the series is missing — alert on a scrape gap
+predict_linear(node_filesystem_avail_bytes[1h], 4*3600) < 0   # disk full within 4h?
+changes(gauge[1h])                 # how many times a value changed
+delta(gauge[5m])                   # change over a window (gauges)
+clamp_max(x, 100)                  # cap values
+```
+
+---
+
+## Worked example — instrument and alert on a service
+```text
+1. App exposes /metrics with http_requests_total (counter, labels code/method) and
+   http_request_duration_seconds (histogram).
+2. scrape_config targets the app + node_exporter for the host.
+3. In the Graph tab, build:
+     RPS:        sum(rate(http_requests_total[5m]))
+     error %:    sum(rate(http_requests_total{code=~"5.."}[5m])) / sum(rate(http_requests_total[5m]))
+     p95 latency: histogram_quantile(0.95, sum by(le)(rate(http_request_duration_seconds_bucket[5m])))
+4. Recording rule precomputes the error ratio for the dashboard + alert.
+5. Alert HighErrorRate (>5% for 10m, severity page) -> Alertmanager -> Slack.
+6. Grafana dashboard graphs all three (see Grafana.md).
+```
+
+---
+
+## Common pitfalls
+- **Not using `rate()` on counters.** The raw counter is a meaningless ever-growing number.
+  Rate it first, every time.
+- **High-cardinality labels.** Putting user IDs, request IDs, emails, or timestamps in labels
+  explodes the number of series and can crash Prometheus. Labels must be *low-cardinality*
+  (status code, method, region — not unbounded values).
+- **Aggregating before rating.** `rate(sum(...))` is wrong; do `sum(rate(...))`.
+- **Histogram quantiles without `by (le)`.** `histogram_quantile` needs the `le` (bucket) label
+  preserved in the aggregation.
+- **Cause-based alerts → alert fatigue.** Page on user-visible symptoms (SLO burn), not on every
+  CPU spike.
+- **Treating Prometheus as long-term storage.** It's optimized for recent data; use Thanos,
+  Mimir, or Cortex for long retention / global view (relevant to your Mimir vs Grafana Cloud
+  work).
+- **No `for:` on alerts.** Causes flapping pages on momentary blips.
+
+---
+
+## Quick reference
+```promql
+# Selectors
+metric{label="v"}   {label=~"re.*"}   {label!="v"}   metric offset 5m   metric[5m]
+
+# Counters
+rate(c[5m])   irate(c[5m])   increase(c[1h])
+
+# Aggregation
+sum|avg|min|max|count by (l) (...)     without (l) (...)
+topk(N, ...)   bottomk(N, ...)   count(up == 1)
+
+# Histograms
+histogram_quantile(0.95, sum by (le) (rate(x_bucket[5m])))
+
+# Math / logic
+a / b   a > b   a and b   a or b   a unless b
+a / on(instance) group_left b
+
+# Functions
+absent(x)  changes(x[1h])  delta(g[5m])  deriv(g[5m])  predict_linear(g[1h], 3600)
+clamp_max/min  label_replace(...)  time()  vector(1)
+```
+```bash
+# Ops
+promtool check config prometheus.yml      promtool check rules rules.yml
+curl localhost:9090/-/healthy             curl -X POST localhost:9090/-/reload
+curl 'localhost:9090/api/v1/query?query=up'
+```
+
+---
+
+## Next steps after Day 2
+- **Grafana** for dashboards (see `Grafana.md`) and **Alertmanager** for routing (see
+  `Alertmanager.md`).
+- **kube-prometheus-stack** Helm chart for a batteries-included K8s setup.
+- Long-term/HA storage: **Thanos** or **Mimir** (ties to your migration ADR work).
+- Multi-window **burn-rate alerting** for SLOs, and the **PromQL** functions you didn't cover.
+
+**The mantra:** services expose `/metrics`, Prometheus scrapes them, you `rate()` counters and
+`sum by (label)` to answer questions, keep label cardinality low, and alert on symptoms.
