@@ -1,6 +1,6 @@
 <p align="center">
-  <img src="https://img.shields.io/badge/Crash_Courses-98-blue?style=for-the-badge" alt="Courses"/>
-  <img src="https://img.shields.io/badge/Categories-14-green?style=for-the-badge" alt="Categories"/>
+  <img src="https://img.shields.io/badge/Crash_Courses-121-blue?style=for-the-badge" alt="Courses"/>
+  <img src="https://img.shields.io/badge/Categories-17-green?style=for-the-badge" alt="Categories"/>
   <img src="https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge" alt="License"/>
   <img src="https://img.shields.io/github/stars/supersaiyane/crashcourse?style=for-the-badge" alt="Stars"/>
   <img src="https://img.shields.io/github/forks/supersaiyane/crashcourse?style=for-the-badge" alt="Forks"/>
@@ -98,6 +98,9 @@ Read it top-to-bottom to **learn**. Bookmark it and `Ctrl+F` to **reference**. F
 | Terragrunt | [Terragrunt.md](iac/Terragrunt.md) | DRY Terraform, multi-env, dependency orchestration |
 | Crossplane | [Crossplane.md](iac/Crossplane.md) | K8s-native cloud provisioning, Compositions, platform APIs |
 | OPA | [OPA.md](iac/OPA.md) | Policy as code, Rego, Gatekeeper, Conftest, admission control |
+| SaltStack | [SaltStack.md](iac/SaltStack.md) | Master/minion, states, pillars, grains, reactors, Salt-SSH |
+| Chef | [Chef.md](iac/Chef.md) | Recipes, cookbooks, knife, Test Kitchen, InSpec |
+| Consul | [Consul.md](iac/Consul.md) | Service discovery, health checks, KV store, Connect mesh |
 
 ### Cloud Providers
 | Topic | File | What you'll learn |
@@ -107,6 +110,9 @@ Read it top-to-bottom to **learn**. Bookmark it and `Ctrl+F` to **reference**. F
 | Azure | [Azure.md](cloud/Azure.md) | az CLI, ARM, AKS, App Service, networking |
 | Cloudflare | [Cloudflare.md](cloud/Cloudflare.md) | Edge network, CDN, WAF, Workers, Pages, R2, Zero Trust |
 | FinOps | [FinOps.md](cloud/FinOps.md) | Cloud cost optimization, right-sizing, reservations, Kubecost |
+| Cloud Networking | [Cloud-Networking.md](cloud/Cloud-Networking.md) | VPC, subnets, CIDR, peering, Transit Gateway, PrivateLink |
+| Cloud Security | [Cloud-Security.md](cloud/Cloud-Security.md) | IAM deep-dive, encryption, GuardDuty, zero trust, compliance |
+| Cloud Architecture | [Cloud-Architecture.md](cloud/Cloud-Architecture.md) | Well-Architected, multi-account, landing zones, DR patterns |
 
 ### Observability
 | Topic | File | What you'll learn |
@@ -223,6 +229,35 @@ Read it top-to-bottom to **learn**. Bookmark it and `Ctrl+F` to **reference**. F
 | Agentic Patterns | [Agentic-Patterns.md](ai/Agentic-Patterns.md) | ReAct, tool use, planning, multi-agent, orchestration |
 | Claude Code | [Claude-Code.md](ai/Claude-Code.md) | Agentic coding CLI, CLAUDE.md, hooks, MCP, sub-agents |
 
+### Software Engineering & Design
+| Topic | File | What you'll learn |
+|-------|------|-------------------|
+| System Design | [System-Design.md](design/System-Design.md) | Scalability, availability, CAP, caching, sharding, estimation |
+| High-Level Design | [HLD.md](design/HLD.md) | Component diagrams, data flow, API contracts, technology selection |
+| Low-Level Design | [LLD.md](design/LLD.md) | Class diagrams, data models, sequence diagrams, state machines |
+| Design Patterns | [Design-Patterns.md](design/Design-Patterns.md) | GoF patterns — Factory, Strategy, Observer, Decorator, Proxy |
+| Design Principles | [Design-Principles.md](design/Design-Principles.md) | SOLID, DRY, KISS, YAGNI, Composition over Inheritance |
+| Clean Architecture | [Clean-Architecture.md](design/Clean-Architecture.md) | Hexagonal/onion, ports & adapters, dependency rule |
+| Microservices Patterns | [Microservices-Patterns.md](design/Microservices-Patterns.md) | Saga, CQRS, event sourcing, outbox, strangler fig |
+| Domain-Driven Design | [DDD.md](design/DDD.md) | Bounded contexts, aggregates, ubiquitous language |
+| API Design Patterns | [API-Design-Patterns.md](design/API-Design-Patterns.md) | REST, gRPC, GraphQL, versioning, pagination, idempotency |
+
+### Data Engineering & MLOps
+| Topic | File | What you'll learn |
+|-------|------|-------------------|
+| MLOps | [MLOps.md](dataops/MLOps.md) | Experiment tracking, model registry, training pipelines, drift |
+| DataOps | [DataOps.md](dataops/DataOps.md) | Pipeline CI/CD, data contracts, quality monitoring |
+| Apache Airflow | [Airflow.md](dataops/Airflow.md) | DAGs, operators, sensors, KubernetesExecutor, scheduling |
+| dbt | [dbt.md](dataops/dbt.md) | Models, sources, tests, incremental, snapshots, macros |
+| Apache Spark | [Spark.md](dataops/Spark.md) | DataFrames, PySpark, partitioning, Spark SQL, streaming |
+| Data Quality | [Data-Quality.md](dataops/Data-Quality.md) | Great Expectations, data contracts, freshness SLAs |
+
+### Cloud-Native Patterns
+| Topic | File | What you'll learn |
+|-------|------|-------------------|
+| 12-Factor App | [Twelve-Factor-App.md](patterns/Twelve-Factor-App.md) | The methodology for cloud-native applications |
+| Cloud-Native Patterns | [Cloud-Native-Patterns.md](patterns/Cloud-Native-Patterns.md) | Sidecar, ambassador, adapter, init container, leader election |
+
 ---
 
 ## Learning Paths
@@ -261,36 +296,6 @@ Pick your track and follow the arrows:
 
 ---
 
-## Going Forward v1
-
-Features and content coming next to make crashcourse more interactive and useful:
-
-### Interactive Features
-
-| Feature | What it adds |
-|---------|-------------|
-| **Quiz & Flashcards** | "Test yourself" section at the end of each course — 5-10 MCQs with hidden answers. Built for retention and interview prep. |
-| **Interactive CLI Playground** | Browser-based terminal (xterm.js) where you can try commands without installing anything. Pre-loaded scenarios per course. |
-| **Progress Tracker & Bookmarks** | Track which courses you've read, see completion percentage on the landing page, bookmark/favorite courses. All localStorage — no account needed. |
-| **Interview Questions Bank** | Top 10 interview questions per course — the questions hiring managers actually ask, with concise answers. |
-
-### Content Additions
-
-| Content | What it adds |
-|---------|-------------|
-| **Architecture Diagrams** | Mermaid/ASCII diagrams in each course showing how the tool fits in a real production stack. |
-| **Real-World Project Walkthroughs** | 3-5 end-to-end guides that chain multiple courses (e.g., "Deploy a production K8s cluster from scratch", "Build a full observability stack"). |
-| **Comparison Matrices** | Head-to-head comparison pages: Terraform vs Pulumi vs Crossplane, ArgoCD vs Flux, Prometheus vs Datadog, ELK vs Loki. |
-| **Video/GIF Demos** | Short terminal recordings (asciinema) for key commands. Seeing it run builds confidence faster than reading. |
-
-### Rollout Plan
-
-**Wave 1** (shipping first): Progress tracker + bookmarks, interview questions, architecture diagrams
-
-**Wave 2**: Quiz/flashcards, comparison matrices, terminal GIF demos
-
-**Wave 3**: Interactive CLI playground, multi-course project walkthroughs
-
 > Want to help build any of these? PRs are open. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ---
@@ -316,5 +321,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 <p align="center">
   <strong>If this helped you, give it a star! It helps others find it too.</strong><br/>
-  <sub>98 crash courses. 14 categories. Built for engineers who'd rather read docs than watch a 4-hour tutorial.</sub>
+  <sub>121 crash courses. 17 categories. Built for engineers who'd rather read docs than watch a 4-hour tutorial.</sub>
 </p>
