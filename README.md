@@ -1,6 +1,6 @@
 <p align="center">
-  <img src="https://img.shields.io/badge/Crash_Courses-29-blue?style=for-the-badge" alt="Courses"/>
-  <img src="https://img.shields.io/badge/Categories-9-green?style=for-the-badge" alt="Categories"/>
+  <img src="https://img.shields.io/badge/Crash_Courses-55-blue?style=for-the-badge" alt="Courses"/>
+  <img src="https://img.shields.io/badge/Categories-13-green?style=for-the-badge" alt="Categories"/>
   <img src="https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge" alt="License"/>
   <img src="https://img.shields.io/github/stars/supersaiyane/DevOps-Crash-Course?style=for-the-badge" alt="Stars"/>
   <img src="https://img.shields.io/github/forks/supersaiyane/DevOps-Crash-Course?style=for-the-badge" alt="Forks"/>
@@ -26,9 +26,19 @@
   <img src="https://img.shields.io/badge/Packer-02A8EF?style=flat-square&logo=packer&logoColor=white" alt="Packer"/>
   <img src="https://img.shields.io/badge/Pulumi-8A3391?style=flat-square&logo=pulumi&logoColor=white" alt="Pulumi"/>
   <img src="https://img.shields.io/badge/tmux-1BB91F?style=flat-square&logo=tmux&logoColor=white" alt="tmux"/>
+  <img src="https://img.shields.io/badge/Ansible-EE0000?style=flat-square&logo=ansible&logoColor=white" alt="Ansible"/>
+  <img src="https://img.shields.io/badge/Argo_CD-EF7B4D?style=flat-square&logo=argo&logoColor=white" alt="Argo CD"/>
+  <img src="https://img.shields.io/badge/Istio-466BB0?style=flat-square&logo=istio&logoColor=white" alt="Istio"/>
+  <img src="https://img.shields.io/badge/Redis-DC382D?style=flat-square&logo=redis&logoColor=white" alt="Redis"/>
+  <img src="https://img.shields.io/badge/PostgreSQL-4169E1?style=flat-square&logo=postgresql&logoColor=white" alt="PostgreSQL"/>
+  <img src="https://img.shields.io/badge/Apache_Kafka-231F20?style=flat-square&logo=apachekafka&logoColor=white" alt="Kafka"/>
+  <img src="https://img.shields.io/badge/Vault-FFEC6E?style=flat-square&logo=vault&logoColor=black" alt="Vault"/>
+  <img src="https://img.shields.io/badge/Nginx-009639?style=flat-square&logo=nginx&logoColor=white" alt="Nginx"/>
+  <img src="https://img.shields.io/badge/Podman-892CA0?style=flat-square&logo=podman&logoColor=white" alt="Podman"/>
+  <img src="https://img.shields.io/badge/Vim-019733?style=flat-square&logo=vim&logoColor=white" alt="Vim"/>
 </p>
 
-<h1 align="center">DevOps / SRE / Cloud Crash Course</h1>
+<h1 align="center">DevOps / SRE / Cloud / AI Crash Course</h1>
 
 <p align="center">
   <strong>Zero to productive in 2 days per tool.</strong><br/>
@@ -68,13 +78,19 @@ Read it top-to-bottom to **learn**. Bookmark it and `Ctrl+F` to **reference**. F
 | Docker | [Docker.md](containers/Docker.md) | Images, containers, volumes, networking, Compose, multi-stage builds |
 | Kubernetes | [Kubernetes.md](containers/Kubernetes.md) | Pods, Services, Deployments, ConfigMaps, RBAC, debugging |
 | Helm | [Helm.md](containers/Helm.md) | Charts, values, templates, repositories, hooks |
+| Kustomize | [Kustomize.md](containers/Kustomize.md) | Bases, overlays, patches, generators, template-free K8s config |
+| Istio | [Istio.md](containers/Istio.md) | Service mesh, mTLS, traffic splitting, canary deploys, VirtualService |
+| Podman | [Podman.md](containers/Podman.md) | Daemonless containers, rootless, Buildah, Skopeo, Quadlet |
 
 ### Infrastructure as Code
 | Topic | File | What you'll learn |
 |-------|------|-------------------|
 | Terraform | [Terraform.md](iac/Terraform.md) | HCL, state, modules, workspaces, import, drift detection |
+| Ansible | [Ansible.md](iac/Ansible.md) | Agentless config management, playbooks, roles, vault, inventory |
 | Packer | [Packer.md](iac/Packer.md) | Templates, builders, provisioners, golden images |
 | Pulumi | [Pulumi.md](iac/Pulumi.md) | IaC in real languages, stacks, state, vs Terraform |
+| Vault | [Vault.md](iac/Vault.md) | Secrets management, dynamic secrets, PKI, transit encryption |
+| Terragrunt | [Terragrunt.md](iac/Terragrunt.md) | DRY Terraform, multi-env, dependency orchestration |
 
 ### Cloud Providers
 | Topic | File | What you'll learn |
@@ -92,19 +108,25 @@ Read it top-to-bottom to **learn**. Bookmark it and `Ctrl+F` to **reference**. F
 | OpenTelemetry | [OpenTelemetry.md](observability/OpenTelemetry.md) | Traces, metrics, logs, SDK, collector, instrumentation |
 | Alertmanager | [Alertmanager.md](observability/Alertmanager.md) | Routing, grouping, silences, inhibition, receivers |
 
-### CI/CD
+### CI/CD & GitOps
 | Topic | File | What you'll learn |
 |-------|------|-------------------|
 | GitHub Actions | [GitHub-Actions.md](cicd/GitHub-Actions.md) | Workflows, jobs, actions, secrets, matrix builds |
 | GitLab CI/CD | [GitLab-CI.md](cicd/GitLab-CI.md) | Pipelines, stages, runners, artifacts, environments |
 | Jenkins | [Jenkins.md](cicd/Jenkins.md) | Pipelines, Jenkinsfile, agents, shared libraries |
+| Argo CD | [ArgoCD.md](cicd/ArgoCD.md) | GitOps, Applications, sync waves, multi-env promotion |
+| Flux | [Flux.md](cicd/Flux.md) | GitOps operator, Kustomizations, HelmRelease, image automation |
 
 ### Linux & Terminal
 | Topic | File | What you'll learn |
 |-------|------|-------------------|
 | Linux | [Linux.md](linux/Linux.md) | Filesystem, processes, permissions, systemd, troubleshooting |
 | Bash | [Bash.md](linux/Bash.md) | Scripting, variables, loops, functions, error handling |
+| Vim | [Vim.md](linux/Vim.md) | Modal editing, motions, operators, macros, splits |
 | tmux | [tmux.md](linux/tmux.md) | Sessions, windows, panes, key bindings, scripting |
+| systemd | [systemd.md](linux/systemd.md) | Units, services, timers, journalctl, security hardening |
+| awk | [awk.md](linux/awk.md) | Pattern scanning, field processing, one-liners for logs |
+| sed | [sed.md](linux/sed.md) | Stream editing, substitution, in-place transforms |
 
 ### Version Control
 | Topic | File | What you'll learn |
@@ -115,16 +137,44 @@ Read it top-to-bottom to **learn**. Bookmark it and `Ctrl+F` to **reference**. F
 | Topic | File | What you'll learn |
 |-------|------|-------------------|
 | DNS / curl / dig | [DNS-curl-dig.md](networking/DNS-curl-dig.md) | DNS resolution, HTTP debugging, API testing |
+| Nginx | [Nginx.md](networking/Nginx.md) | Reverse proxy, load balancing, TLS, rate limiting |
 | jq | [jq.md](networking/jq.md) | JSON parsing, filtering, transforming on the CLI |
 | yq | [yq.md](networking/yq.md) | YAML parsing, editing, converting on the CLI |
+
+### Data & Messaging
+| Topic | File | What you'll learn |
+|-------|------|-------------------|
+| PostgreSQL | [PostgreSQL.md](data/PostgreSQL.md) | Operations, replication, VACUUM, EXPLAIN, backups, PgBouncer |
+| Redis | [Redis.md](data/Redis.md) | Data structures, persistence, Sentinel, Cluster, rate limiting |
+| Kafka | [Kafka.md](data/Kafka.md) | Topics, partitions, consumer groups, exactly-once, Schema Registry |
+
+### Security
+| Topic | File | What you'll learn |
+|-------|------|-------------------|
+| Trivy | [Trivy.md](security/Trivy.md) | Image/IaC/secret scanning, SBOM, CI integration |
+| Falco | [Falco.md](security/Falco.md) | Runtime security, syscall monitoring, custom rules, Falcosidekick |
 
 ### SRE Processes & Practices
 | Topic | File | What you'll learn |
 |-------|------|-------------------|
+| SRE Process | [SRE-Process.md](processes/SRE-Process.md) | SLI/SLO/SLA, error budgets, golden signals, toil reduction |
 | Incident Response | [Incident-Response.md](processes/Incident-Response.md) | Roles, severity levels, communication, running a live incident |
 | Postmortems & RCA | [Postmortems-RCA.md](processes/Postmortems-RCA.md) | Blameless culture, 5 Whys, action items, templates |
 | Capacity Planning | [Capacity-Planning.md](processes/Capacity-Planning.md) | Utilization, headroom, forecasting, load testing |
+| Chaos Engineering | [Chaos-Engineering.md](processes/Chaos-Engineering.md) | Game days, hypothesis-driven failure injection, Chaos Mesh |
 | Runbooks | [Runbook-template.md](processes/Runbook-template.md) | Writing runbooks for 3 AM, reusable template |
+
+### AI & LLM Engineering
+| Topic | File | What you'll learn |
+|-------|------|-------------------|
+| LLM Fundamentals | [LLM-Fundamentals.md](ai/LLM-Fundamentals.md) | Tokens, context windows, temperature, embeddings, transformers |
+| Prompt Engineering | [Prompt-Engineering.md](ai/Prompt-Engineering.md) | Few-shot, chain-of-thought, structured outputs, prompt templates |
+| RAG | [RAG.md](ai/RAG.md) | Retrieval-augmented generation, chunking, embeddings, vector stores |
+| MCP | [MCP.md](ai/MCP.md) | Model Context Protocol, tools, resources, building servers |
+| Ollama | [Ollama.md](ai/Ollama.md) | Local LLM inference, Modelfiles, quantization, API |
+| LLMOps | [LLMOps.md](ai/LLMOps.md) | Prompt versioning, evaluation, tracing, cost management |
+| LLM Security | [LLM-Security.md](ai/LLM-Security.md) | Prompt injection, OWASP LLM Top 10, guardrails, PII redaction |
+| AIOps | [AIOps.md](ai/AIOps.md) | Anomaly detection, alert correlation, LLM-powered RCA |
 
 ---
 
@@ -133,16 +183,25 @@ Read it top-to-bottom to **learn**. Bookmark it and `Ctrl+F` to **reference**. F
 Pick your track and follow the arrows:
 
 **Starting from zero:**
-> Linux --> Bash --> Git --> Docker --> Kubernetes --> Prometheus --> Incident Response
+> Linux --> Bash --> Git --> Docker --> Kubernetes --> Prometheus --> SRE Process --> Incident Response
 
 **Cloud & Infrastructure:**
-> AWS _(or GCP/Azure)_ --> Terraform --> Packer --> GitHub Actions --> Helm
+> AWS _(or GCP/Azure)_ --> Terraform --> Terragrunt --> Packer --> Vault --> GitHub Actions --> Helm --> ArgoCD
 
 **Observability deep-dive:**
-> Prometheus --> Grafana --> Loki --> OpenTelemetry --> Alertmanager --> Postmortems & RCA
+> Prometheus --> Grafana --> Loki --> OpenTelemetry --> Alertmanager --> SRE Process --> Postmortems & RCA
+
+**Security track:**
+> Trivy --> Falco --> Vault --> LLM Security
+
+**AI/ML for SRE:**
+> LLM Fundamentals --> Prompt Engineering --> RAG --> MCP --> Ollama --> LLMOps --> AIOps --> LLM Security
+
+**Data & messaging:**
+> PostgreSQL --> Redis --> Kafka
 
 **Day-to-day productivity:**
-> tmux + jq + yq + DNS/curl/dig _(these pay for themselves on day one)_
+> Vim + tmux + awk + sed + jq + yq + DNS/curl/dig _(these pay for themselves on day one)_
 
 ---
 
@@ -158,16 +217,20 @@ Contributions are welcome! The format is designed to extend cleanly:
 Please read [CONTRIBUTING.md](CONTRIBUTING.md) before submitting.
 
 ### Wanted topics (PRs welcome!)
-- [ ] Ansible
 - [ ] Puppet
-- [ ] ArgoCD
-- [ ] Vim
-- [ ] SRE Process (SLI/SLO/SLA, error budgets)
-- [ ] Nginx / HAProxy
-- [ ] Redis
-- [ ] PostgreSQL ops
-- [ ] Vault (secrets management)
-- [ ] Istio / service mesh
+- [ ] Crossplane
+- [ ] Tekton
+- [ ] Cloudflare
+- [ ] FinOps
+- [ ] HTTP deep-dive
+- [ ] Tempo (distributed tracing)
+- [ ] Mimir (long-term Prometheus)
+- [ ] ELK / OpenSearch
+- [ ] Disaster Recovery
+- [ ] LangGraph (multi-agent AI)
+- [ ] Cilium / eBPF
+- [ ] etcd
+- [ ] Backstage (developer portals)
 
 ---
 
