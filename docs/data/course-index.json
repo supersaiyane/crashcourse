@@ -1,0 +1,211 @@
+{
+  "meta": {
+    "total": 98,
+    "categories": 14,
+    "updated": "2025-05-31"
+  },
+  "categories": [
+    {
+      "id": "containers",
+      "label": "Containers & Orchestration",
+      "icon": "container",
+      "color": "#3b82f6",
+      "courses": [
+        { "title": "Docker", "file": "Docker.md", "tags": ["containers", "images", "compose"] },
+        { "title": "Kubernetes", "file": "Kubernetes.md", "tags": ["k8s", "pods", "orchestration"] },
+        { "title": "Helm", "file": "Helm.md", "tags": ["charts", "templates", "k8s"] },
+        { "title": "Kustomize", "file": "Kustomize.md", "tags": ["k8s", "gitops", "overlays"] },
+        { "title": "Istio", "file": "Istio.md", "tags": ["service-mesh", "mtls", "traffic"] },
+        { "title": "Cilium", "file": "Cilium.md", "tags": ["ebpf", "networking", "security"] },
+        { "title": "Podman", "file": "Podman.md", "tags": ["containers", "rootless", "daemonless"] },
+        { "title": "Velero", "file": "Velero.md", "tags": ["backup", "restore", "k8s"] },
+        { "title": "Harbor", "file": "Harbor.md", "tags": ["registry", "scanning", "images"] }
+      ]
+    },
+    {
+      "id": "iac",
+      "label": "Infrastructure as Code",
+      "icon": "layers",
+      "color": "#8b5cf6",
+      "courses": [
+        { "title": "Terraform", "file": "Terraform.md", "tags": ["iac", "hcl", "state"] },
+        { "title": "Ansible", "file": "Ansible.md", "tags": ["config-mgmt", "playbooks", "agentless"] },
+        { "title": "Puppet", "file": "Puppet.md", "tags": ["config-mgmt", "manifests", "declarative"] },
+        { "title": "Packer", "file": "Packer.md", "tags": ["images", "golden", "builders"] },
+        { "title": "Pulumi", "file": "Pulumi.md", "tags": ["iac", "sdk", "multi-language"] },
+        { "title": "Vault", "file": "Vault.md", "tags": ["secrets", "pki", "dynamic"] },
+        { "title": "Terragrunt", "file": "Terragrunt.md", "tags": ["terraform", "dry", "multi-env"] },
+        { "title": "Crossplane", "file": "Crossplane.md", "tags": ["k8s", "cloud", "compositions"] },
+        { "title": "OPA", "file": "OPA.md", "tags": ["policy", "rego", "admission"] }
+      ]
+    },
+    {
+      "id": "cloud",
+      "label": "Cloud Providers",
+      "icon": "cloud",
+      "color": "#06b6d4",
+      "courses": [
+        { "title": "AWS", "file": "AWS.md", "tags": ["ec2", "s3", "iam", "lambda"] },
+        { "title": "Google Cloud", "file": "GCP.md", "tags": ["gke", "gcloud", "iam"] },
+        { "title": "Azure", "file": "Azure.md", "tags": ["aks", "arm", "az-cli"] },
+        { "title": "Cloudflare", "file": "Cloudflare.md", "tags": ["cdn", "waf", "workers"] },
+        { "title": "FinOps", "file": "FinOps.md", "tags": ["cost", "optimization", "kubecost"] }
+      ]
+    },
+    {
+      "id": "observability",
+      "label": "Observability",
+      "icon": "eye",
+      "color": "#f59e0b",
+      "courses": [
+        { "title": "Prometheus", "file": "Prometheus.md", "tags": ["metrics", "promql", "alerting"] },
+        { "title": "Grafana", "file": "Grafana.md", "tags": ["dashboards", "panels", "visualization"] },
+        { "title": "Loki", "file": "Loki.md", "tags": ["logs", "logql", "aggregation"] },
+        { "title": "OpenTelemetry", "file": "OpenTelemetry.md", "tags": ["tracing", "metrics", "otel"] },
+        { "title": "Alertmanager", "file": "Alertmanager.md", "tags": ["alerts", "routing", "silence"] },
+        { "title": "Tempo", "file": "Tempo.md", "tags": ["tracing", "traceql", "backend"] },
+        { "title": "Mimir", "file": "Mimir.md", "tags": ["prometheus", "long-term", "scale"] },
+        { "title": "Jaeger", "file": "Jaeger.md", "tags": ["tracing", "sampling", "distributed"] },
+        { "title": "ELK Stack", "file": "ELK-Stack.md", "tags": ["elasticsearch", "kibana", "logstash"] },
+        { "title": "Fluentd & Fluent Bit", "file": "Fluentd-FluentBit.md", "tags": ["logs", "collection", "routing"] }
+      ]
+    },
+    {
+      "id": "cicd",
+      "label": "CI/CD & GitOps",
+      "icon": "rocket",
+      "color": "#10b981",
+      "courses": [
+        { "title": "GitHub Actions", "file": "GitHub-Actions.md", "tags": ["ci", "workflows", "actions"] },
+        { "title": "GitLab CI/CD", "file": "GitLab-CI.md", "tags": ["ci", "pipelines", "runners"] },
+        { "title": "Jenkins", "file": "Jenkins.md", "tags": ["ci", "pipeline", "groovy"] },
+        { "title": "Argo CD", "file": "ArgoCD.md", "tags": ["gitops", "sync", "applications"] },
+        { "title": "Flux", "file": "Flux.md", "tags": ["gitops", "helm", "image-automation"] },
+        { "title": "Tekton", "file": "Tekton.md", "tags": ["k8s-native", "tasks", "pipelines"] },
+        { "title": "Argo Rollouts", "file": "Argo-Rollouts.md", "tags": ["canary", "blue-green", "progressive"] }
+      ]
+    },
+    {
+      "id": "linux",
+      "label": "Linux & Terminal",
+      "icon": "terminal",
+      "color": "#84cc16",
+      "courses": [
+        { "title": "Linux", "file": "Linux.md", "tags": ["filesystem", "processes", "systemd"] },
+        { "title": "Bash", "file": "Bash.md", "tags": ["scripting", "shell", "automation"] },
+        { "title": "Vim", "file": "Vim.md", "tags": ["editor", "motions", "modal"] },
+        { "title": "tmux", "file": "tmux.md", "tags": ["terminal", "sessions", "multiplexer"] },
+        { "title": "systemd", "file": "systemd.md", "tags": ["services", "units", "journal"] },
+        { "title": "awk", "file": "awk.md", "tags": ["text-processing", "patterns", "one-liners"] },
+        { "title": "sed", "file": "sed.md", "tags": ["stream-editor", "substitution", "transforms"] },
+        { "title": "Regex", "file": "Regex.md", "tags": ["patterns", "matching", "groups"] },
+        { "title": "Makefile", "file": "Makefile.md", "tags": ["build", "automation", "tasks"] },
+        { "title": "Python for SRE", "file": "Python-for-SRE.md", "tags": ["python", "automation", "api"] },
+        { "title": "Go for Ops", "file": "Go-for-Ops.md", "tags": ["golang", "cli", "k8s"] }
+      ]
+    },
+    {
+      "id": "vcs",
+      "label": "Version Control",
+      "icon": "git",
+      "color": "#f97316",
+      "courses": [
+        { "title": "Git", "file": "Git.md", "tags": ["branching", "merging", "workflows"] },
+        { "title": "pre-commit", "file": "pre-commit.md", "tags": ["hooks", "linters", "security"] }
+      ]
+    },
+    {
+      "id": "networking",
+      "label": "Networking & CLI Tools",
+      "icon": "globe",
+      "color": "#22d3ee",
+      "courses": [
+        { "title": "HTTP", "file": "HTTP.md", "tags": ["methods", "headers", "tls"] },
+        { "title": "DNS / curl / dig", "file": "DNS-curl-dig.md", "tags": ["dns", "curl", "debugging"] },
+        { "title": "Nginx", "file": "Nginx.md", "tags": ["proxy", "load-balancer", "tls"] },
+        { "title": "Envoy", "file": "Envoy.md", "tags": ["proxy", "xds", "service-mesh"] },
+        { "title": "WireGuard", "file": "WireGuard.md", "tags": ["vpn", "tunnels", "tailscale"] },
+        { "title": "k6", "file": "k6.md", "tags": ["load-testing", "vus", "thresholds"] },
+        { "title": "jq", "file": "jq.md", "tags": ["json", "parsing", "cli"] },
+        { "title": "yq", "file": "yq.md", "tags": ["yaml", "parsing", "cli"] }
+      ]
+    },
+    {
+      "id": "data",
+      "label": "Data & Messaging",
+      "icon": "database",
+      "color": "#a855f7",
+      "courses": [
+        { "title": "PostgreSQL", "file": "PostgreSQL.md", "tags": ["sql", "replication", "vacuum"] },
+        { "title": "Redis", "file": "Redis.md", "tags": ["cache", "data-structures", "cluster"] },
+        { "title": "Kafka", "file": "Kafka.md", "tags": ["streaming", "topics", "consumer-groups"] },
+        { "title": "RabbitMQ", "file": "RabbitMQ.md", "tags": ["messaging", "exchanges", "queues"] },
+        { "title": "etcd", "file": "etcd.md", "tags": ["kv-store", "raft", "k8s"] }
+      ]
+    },
+    {
+      "id": "security",
+      "label": "Security",
+      "icon": "shield",
+      "color": "#ef4444",
+      "courses": [
+        { "title": "Trivy", "file": "Trivy.md", "tags": ["scanning", "sbom", "vulnerabilities"] },
+        { "title": "Falco", "file": "Falco.md", "tags": ["runtime", "syscall", "rules"] },
+        { "title": "Checkov", "file": "Checkov.md", "tags": ["iac", "static-analysis", "policies"] },
+        { "title": "Cosign & Sigstore", "file": "Cosign-Sigstore.md", "tags": ["signing", "supply-chain", "sbom"] },
+        { "title": "Sealed Secrets & ESO", "file": "Sealed-Secrets.md", "tags": ["secrets", "gitops", "k8s"] },
+        { "title": "cert-manager", "file": "cert-manager.md", "tags": ["tls", "certificates", "lets-encrypt"] },
+        { "title": "SSH", "file": "SSH.md", "tags": ["keys", "tunneling", "hardening"] }
+      ]
+    },
+    {
+      "id": "processes",
+      "label": "SRE Processes",
+      "icon": "clipboard",
+      "color": "#ec4899",
+      "courses": [
+        { "title": "SRE Process", "file": "SRE-Process.md", "tags": ["slo", "error-budget", "toil"] },
+        { "title": "Incident Response", "file": "Incident-Response.md", "tags": ["oncall", "severity", "communication"] },
+        { "title": "Postmortems & RCA", "file": "Postmortems-RCA.md", "tags": ["blameless", "5-whys", "action-items"] },
+        { "title": "Capacity Planning", "file": "Capacity-Planning.md", "tags": ["utilization", "forecasting", "headroom"] },
+        { "title": "Chaos Engineering", "file": "Chaos-Engineering.md", "tags": ["game-days", "failure", "chaos-mesh"] },
+        { "title": "Disaster Recovery", "file": "Disaster-Recovery.md", "tags": ["rto", "rpo", "failover"] },
+        { "title": "Reliability Patterns", "file": "Reliability-Patterns.md", "tags": ["circuit-breaker", "retry", "bulkhead"] },
+        { "title": "Runbooks", "file": "Runbook-template.md", "tags": ["runbook", "template", "oncall"] }
+      ]
+    },
+    {
+      "id": "platform",
+      "label": "Platform Engineering",
+      "icon": "rocket",
+      "color": "#0ea5e9",
+      "courses": [
+        { "title": "Backstage", "file": "Backstage.md", "tags": ["developer-portal", "catalog", "golden-paths"] },
+        { "title": "Feature Flags", "file": "Feature-Flags.md", "tags": ["rollout", "a/b-testing", "openfeature"] }
+      ]
+    },
+    {
+      "id": "ai",
+      "label": "AI & LLM Engineering",
+      "icon": "brain",
+      "color": "#6366f1",
+      "courses": [
+        { "title": "LLM Fundamentals", "file": "LLM-Fundamentals.md", "tags": ["tokens", "embeddings", "transformers"] },
+        { "title": "Prompt Engineering", "file": "Prompt-Engineering.md", "tags": ["few-shot", "cot", "templates"] },
+        { "title": "RAG", "file": "RAG.md", "tags": ["retrieval", "embeddings", "vector-stores"] },
+        { "title": "LangChain", "file": "LangChain.md", "tags": ["chains", "agents", "lcel"] },
+        { "title": "LangGraph", "file": "LangGraph.md", "tags": ["multi-agent", "stateful", "workflows"] },
+        { "title": "MCP", "file": "MCP.md", "tags": ["protocol", "tools", "resources"] },
+        { "title": "Ollama", "file": "Ollama.md", "tags": ["local-llm", "inference", "modelfiles"] },
+        { "title": "vLLM", "file": "vLLM.md", "tags": ["serving", "paged-attention", "throughput"] },
+        { "title": "LLMOps", "file": "LLMOps.md", "tags": ["evaluation", "tracing", "cost"] },
+        { "title": "LLM Observability", "file": "LLM-Observability.md", "tags": ["langsmith", "langfuse", "otel"] },
+        { "title": "LLM Security", "file": "LLM-Security.md", "tags": ["prompt-injection", "owasp", "guardrails"] },
+        { "title": "AI Guardrails", "file": "AI-Guardrails.md", "tags": ["nemo", "llama-guard", "validation"] },
+        { "title": "AIOps", "file": "AIOps.md", "tags": ["anomaly", "correlation", "rca"] },
+        { "title": "Agentic Patterns", "file": "Agentic-Patterns.md", "tags": ["react", "tool-use", "orchestration"] },
+        { "title": "Claude Code", "file": "Claude-Code.md", "tags": ["agentic", "cli", "sub-agents"] }
+      ]
+    }
+  ]
+}

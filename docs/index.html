@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>crashcourse — DevOps, SRE, Cloud & AI Crash Courses</title>
+  <meta name="description" content="98 crash courses for DevOps, SRE, Cloud, and AI engineers. Concepts first, commands second. Zero to productive in 2 days." />
+  <meta name="theme-color" content="#0a0a0f" />
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="crashcourse — DevOps, SRE, Cloud & AI Crash Courses" />
+  <meta property="og:description" content="98 crash courses for DevOps, SRE, Cloud, and AI engineers. Zero to productive in 2 days." />
+  <meta property="og:type" content="website" />
+
+  <!-- Favicon & Manifest -->
+  <link rel="icon" href="assets/icons/favicon.svg" type="image/svg+xml" />
+  <link rel="manifest" href="manifest.json" />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+
+  <!-- highlight.js theme -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
+
+  <!-- App CSS -->
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<!-- ══════════════════ HEADER ══════════════════ -->
+<header id="header">
+  <div id="logo" role="button" tabindex="0" aria-label="Go home">
+    <svg width="17" height="17" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+      <rect x="1.5" y="1.5" width="6.5" height="6.5" rx="1.5" fill="currentColor" opacity="0.9"/>
+      <rect x="10" y="1.5" width="6.5" height="6.5" rx="1.5" fill="currentColor" opacity="0.55"/>
+      <rect x="1.5" y="10" width="6.5" height="6.5" rx="1.5" fill="currentColor" opacity="0.55"/>
+      <rect x="10" y="10" width="6.5" height="6.5" rx="1.5" fill="currentColor" opacity="0.25"/>
+    </svg>
+    crashcourse<span class="slash">/</span>
+  </div>
+
+  <div class="h-spacer"></div>
+
+  <button id="search-trigger" aria-label="Open search (Cmd+K)">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+    </svg>
+    <span class="search-text">Search</span>
+    <span class="search-kbd"><kbd>⌘K</kbd></span>
+  </button>
+
+  <button id="theme-toggle" aria-label="Toggle theme">
+    <svg id="ic-sun" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="4"/>
+      <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>
+    </svg>
+    <svg id="ic-moon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="hidden">
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+    </svg>
+  </button>
+
+  <a id="gh-link" href="https://github.com/supersaiyane/crashcourse" target="_blank" rel="noopener noreferrer" aria-label="GitHub repository">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.02 10.02 0 0 0 22 12.017C22 6.484 17.522 2 12 2z"/>
+    </svg>
+    <span class="gh-label">Star</span>
+  </a>
+</header>
+
+<!-- ══════════════════ APP ══════════════════ -->
+<main id="app">
+
+  <!-- ── HERO VIEW ── -->
+  <div id="hero-view" class="view">
+
+    <section id="hero">
+      <div class="hero-blob hero-blob-1"></div>
+      <div class="hero-blob hero-blob-2"></div>
+      <div class="hero-blob hero-blob-3"></div>
+      <div class="hero-grid"></div>
+
+      <div class="hero-inner">
+        <div class="hero-badge">
+          <span class="badge-dot"></span>
+          Open Source &bull; MIT License
+        </div>
+
+        <h1 class="hero-title">Zero to productive<br/>in 2 days.</h1>
+
+        <p class="hero-sub">
+          98 crash courses for DevOps, SRE, Cloud, and AI engineers.
+          Concepts first, commands second. No fluff. No slides. Just what you need.
+        </p>
+
+        <div class="hero-stats" role="group" aria-label="Stats">
+          <div class="stat-block">
+            <span class="stat-num" data-target="98" data-suffix="">0</span>
+            <span class="stat-label">Courses</span>
+          </div>
+          <div class="stat-block">
+            <span class="stat-num" data-target="14" data-suffix="">0</span>
+            <span class="stat-label">Categories</span>
+          </div>
+          <div class="stat-block">
+            <span class="stat-num" data-target="2" data-suffix=" days">0 days</span>
+            <span class="stat-label">To productive</span>
+          </div>
+        </div>
+
+        <button class="hero-cta" id="browse-btn" aria-label="Browse all courses">
+          Browse Courses
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        </button>
+      </div>
+    </section>
+
+    <section id="categories-section">
+      <div class="section-eyebrow">Browse by category</div>
+      <h2 class="section-heading">All topics</h2>
+      <div class="cat-grid" id="cat-grid"></div>
+    </section>
+
+    <footer id="site-footer">
+      <div class="footer-inner">
+        <p class="footer-quote">"Built for engineers who'd rather read docs than watch a 4-hour tutorial."</p>
+        <div class="footer-row">
+          <a class="f-link" href="https://github.com/supersaiyane/crashcourse" target="_blank" rel="noopener noreferrer">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.02 10.02 0 0 0 22 12.017C22 6.484 17.522 2 12 2z"/></svg>
+            GitHub
+          </a>
+          <div class="f-dot"></div>
+          <span class="f-star">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            Star on GitHub
+          </span>
+          <div class="f-dot"></div>
+          <span class="f-link" style="font-family:var(--font-mono);font-size:11px;">MIT License</span>
+        </div>
+      </div>
+    </footer>
+
+  </div><!-- /hero-view -->
+
+  <!-- ── COURSE LIST VIEW ── -->
+  <div id="list-view" class="view hidden">
+    <button class="back-btn" id="back-from-list">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M19 12H5M12 19l-7-7 7-7"/>
+      </svg>
+      All categories
+    </button>
+    <div class="list-head">
+      <div class="list-icon" id="list-icon"></div>
+      <div>
+        <h1 class="list-name" id="list-name"></h1>
+        <p class="list-meta" id="list-meta"></p>
+      </div>
+    </div>
+    <div class="course-pills-wrap" id="course-pills"></div>
+  </div>
+
+  <!-- ── READER VIEW ── -->
+  <div id="reader-view" class="view hidden">
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <button class="bc-btn" id="bc-home">Home</button>
+      <span class="bc-sep" aria-hidden="true">/</span>
+      <button class="bc-btn" id="bc-cat"></button>
+      <span class="bc-sep" aria-hidden="true">/</span>
+      <span class="bc-current" id="bc-title"></span>
+    </nav>
+    <div id="reader-body">
+      <div class="loader" id="r-loader">
+        <div class="spin"></div>
+        Loading course...
+      </div>
+      <div id="md-out" class="hidden"></div>
+    </div>
+  </div>
+
+</main>
+
+<!-- ══════════════════ COMMAND PALETTE ══════════════════ -->
+<div id="pal-overlay" role="dialog" aria-modal="true" aria-label="Search courses">
+  <div id="pal-box">
+    <div id="pal-input-row">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+      </svg>
+      <input id="pal-input" type="text" placeholder="Search courses, categories, tags..."
+             autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+             aria-autocomplete="list" aria-controls="pal-list" />
+      <span id="pal-esc">esc</span>
+    </div>
+    <div id="pal-list" role="listbox"></div>
+    <div id="pal-foot">
+      <span><kbd>&#8593;&#8595;</kbd> navigate</span>
+      <span><kbd>&#8629;</kbd> open</span>
+      <span><kbd>esc</kbd> close</span>
+      <span id="pal-indexing" class="hidden">indexing...</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ SCRIPTS ══════════════════ -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="js/app.js"></script>
+
+</body>
+</html>
