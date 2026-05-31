@@ -241,6 +241,9 @@ code, pre { font-family: var(--font-mono); }
   z-index: 1;
   max-width: 780px;
   margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .hero-badge {
