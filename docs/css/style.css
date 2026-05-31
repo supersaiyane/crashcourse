@@ -881,6 +881,17 @@ code, pre { font-family: var(--font-mono); }
   text-align: center;
 }
 .footer-inner { max-width: 540px; margin: 0 auto; }
+.footer-author {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+}
+.footer-author a {
+  color: var(--accent-1);
+  font-weight: 600;
+  text-decoration: none;
+}
+.footer-author a:hover { text-decoration: underline; }
 .footer-quote {
   font-size: 14px;
   color: var(--text-muted);
