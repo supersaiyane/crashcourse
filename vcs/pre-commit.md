@@ -229,14 +229,7 @@ Run pre-commit in CI against all files so nothing slips through if a developer s
     pre-commit run --all-files
 ```
 
-Set `PRE_COMMIT_HOME` to a cache directory to avoid re-downloading hook repos on every CI run:
-
-```yaml
-- uses: actions/cache@v4
-  with:
-    path: ~/.cache/pre-commit
-    key: pre-commit-${{ hashFiles('.pre-commit-config.yaml') }}
-```
+Set `PRE_COMMIT_HOME` to a cached path (key off `.pre-commit-config.yaml`) to avoid re-downloading hook repos on every CI run.
 
 ### pre-push hooks
 
@@ -283,34 +276,7 @@ Now a commit message like "fixed stuff" is rejected. You must write something li
 
 ### Writing your own hook repo
 
-If you have a check you want to share across multiple repos, publish it as a standalone hook repo. The structure is minimal:
-
-```
-my-hooks/
-├── .pre-commit-hooks.yaml   # declares available hooks
-└── hooks/
-    └── check-something.sh
-```
-
-`.pre-commit-hooks.yaml`:
-
-```yaml
-- id: check-something
-  name: Check something
-  description: Validates X
-  entry: hooks/check-something.sh
-  language: script
-  types: [python]
-```
-
-Then reference it like any other hook repo:
-
-```yaml
-- repo: https://github.com/yourorg/my-hooks
-  rev: v1.0.0
-  hooks:
-    - id: check-something
-```
+If you have a check you want to share across multiple repos, publish it as a standalone git repo with a `.pre-commit-hooks.yaml` at the root declaring hook IDs, entry points, language, and file types. Pre-commit clones and caches it the same way it handles any other hook source. Reference it in consuming repos with `repo: https://github.com/yourorg/my-hooks` and pin a `rev`. The hook's `entry` field points to any executable — a Python script, a shell script, a compiled binary.
 
 ### Performance — skipping unchanged files
 
@@ -364,8 +330,6 @@ repos:
       - id: check-merge-conflict
       - id: check-added-large-files
         args: [--maxkb=500]
-      - id: mixed-line-ending
-        args: [--fix=lf]
 
   # Secret scanning
   - repo: https://github.com/Yelp/detect-secrets
@@ -381,13 +345,6 @@ repos:
     hooks:
       - id: black
         language_version: python3.12
-
-  # Python import sorting
-  - repo: https://github.com/pycqa/isort
-    rev: 5.13.2
-    hooks:
-      - id: isort
-        args: [--profile, black]
 
   # Python linting
   - repo: https://github.com/astral-sh/ruff-pre-commit

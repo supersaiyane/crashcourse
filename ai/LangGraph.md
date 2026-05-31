@@ -8,7 +8,6 @@
 
 A chain is a straight line. Real work is a loop with branches and memory.
 
-
 LangGraph models your agent as a **flowchart that executes**:
 
 ```
@@ -390,7 +389,7 @@ The agent queries metrics, fetches logs, checks deploys, correlates the evidence
 
 **State schema drift.** Adding a field to your state class after checkpoints exist will cause deserialization failures on resume. Version your state schema and migrate checkpoints explicitly.
 
-**Reducer mismatch.** If you forget `add_messages` and use a plain list, each node overwrites the previous messages. Your agent loses history silently — one of the hardest bugs to spot.
+**Reducer mismatch.** If you forget `add_messages` and use a plain list, each node overwrites the previous messages — your agent loses history silently.
 
 **Interrupt semantics.** `interrupt_before=["tools"]` halts before *every* call to the `tools` node, including harmless read operations. Consider a custom node that separates read-only tools from write tools, and only interrupt before the write node.
 
@@ -448,9 +447,7 @@ async def stream_tokens(graph, input, config):
 
 ## The Mantra
 
-> State flows in. Nodes transform it. Edges decide what's next. Checkpoints make it recoverable.
-
-Everything in LangGraph is one of those four things. When you are confused, ask which one you are dealing with.
+> State flows in. Nodes transform it. Edges decide what's next. Checkpoints make it recoverable. Everything in LangGraph is one of those four things — when you are confused, ask which one you are dealing with.
 
 ---
 

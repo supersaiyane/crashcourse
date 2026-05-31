@@ -300,22 +300,7 @@ Upload to S3, GCS, or an HTTP server. In your OPA config, declare a `services` e
 
 ### OPA as API authorization engine
 
-OPA runs as a sidecar or standalone service. Your API calls it before processing a request:
-
-```bash
-# Query OPA's REST API
-curl -X POST http://localhost:8181/v1/data/authz/allow \
-  -H "Content-Type: application/json" \
-  -d '{
-    "input": {
-      "user": "alice",
-      "action": "read",
-      "resource": "reports/q1"
-    }
-  }'
-```
-
-The policy in `authz.rego`:
+OPA runs as a sidecar or standalone service. Your API POSTs an `input` document to `http://localhost:8181/v1/data/authz/allow` and acts on the boolean result. The policy in `authz.rego`:
 
 ```rego
 package authz

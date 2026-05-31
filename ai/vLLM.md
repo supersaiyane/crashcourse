@@ -115,14 +115,11 @@ print(response.choices[0].message.content)
 
 ### Benchmark
 
-vLLM ships a benchmarking script. Run it to establish a baseline before tuning.
-
 ```bash
 python -m vllm.entrypoints.openai.run_benchmark \
   --backend vllm \
   --model meta-llama/Meta-Llama-3-8B-Instruct \
-  --num-prompts 200 \
-  --request-rate 10
+  --num-prompts 200 --request-rate 10
 ```
 
 The output reports median TTFT, P99 TTFT, median TPOT, and overall throughput. Run this before and after any tuning change.
@@ -159,7 +156,7 @@ The official image (`vllm/vllm-openai`) is the fastest path to a clean deploymen
 
 ### Quantization: AWQ vs GPTQ
 
-Quantization is the highest-leverage knob for fitting larger models on available hardware.
+Quantization is the highest-leverage knob for fitting larger models onto available hardware.
 
 | | AWQ | GPTQ |
 |---|---|---|
@@ -249,9 +246,7 @@ vllm serve meta-llama/Meta-Llama-3-8B-Instruct \
   --enable-prefix-caching
 ```
 
-When many requests share a long system prompt, the KV blocks for that prefix are computed once and reused. Cache hit rate appears in the Prometheus metrics as `vllm:prefix_cache_hit_rate`.
-
-A 2000-token system prompt shared by 100 requests means you pay the compute cost once instead of 100 times — substantial savings at scale.
+When many requests share a long system prompt, the KV blocks for that prefix are computed once and reused. Cache hit rate appears in Prometheus as `vllm:prefix_cache_hit_rate`. A 2000-token system prompt shared by 100 requests means you pay the compute cost once — substantial savings at scale.
 
 ### Kubernetes Deployment
 
@@ -273,13 +268,8 @@ spec:
       containers:
       - name: vllm
         image: vllm/vllm-openai:latest
-        args:
-        - "--model"
-        - "meta-llama/Meta-Llama-3-8B-Instruct"
-        - "--max-model-len"
-        - "8192"
-        - "--gpu-memory-utilization"
-        - "0.90"
+        args: ["--model", "meta-llama/Meta-Llama-3-8B-Instruct",
+               "--max-model-len", "8192", "--gpu-memory-utilization", "0.90"]
         resources:
           limits:
             nvidia.com/gpu: "1"
@@ -291,21 +281,9 @@ spec:
             secretKeyRef:
               name: hf-token
               key: token
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: vllm-service
-spec:
-  selector:
-    app: vllm
-  ports:
-  - port: 80
-    targetPort: 8000
-  type: ClusterIP
 ```
 
-For autoscaling based on GPU utilization or request queue depth, use KEDA with a custom metric from the Prometheus exporter.
+Expose via a ClusterIP Service on port 80 targeting 8000. For autoscaling on queue depth, use KEDA with a Prometheus trigger — see the Worked Example below.
 
 ### Monitoring with Prometheus
 
@@ -358,20 +336,19 @@ vllm serve meta-llama/Meta-Llama-3-70B-Instruct \
   --port 8000
 ```
 
-With two A100 80GBs and TP=2, Llama 3 70B in FP16 (~140GB) fits with room for KV cache. Watch the startup log — it should report roughly 800-1200 GPU blocks depending on `max-model-len`.
+With two A100 80GBs and TP=2, Llama 3 70B in FP16 (~140GB) fits with room for KV cache. Startup logs should report 800-1200 GPU blocks.
 
 **Step 2: Baseline benchmark**
 
 ```bash
 python -m vllm.entrypoints.openai.run_benchmark \
   --model meta-llama/Meta-Llama-3-70B-Instruct \
-  --num-prompts 500 \
-  --request-rate 5
+  --num-prompts 500 --request-rate 5
 ```
 
-On two A100s, expect 300-500 tokens/second aggregate throughput at moderate concurrency.
+Expect 300-500 tokens/second on two A100s at moderate concurrency.
 
-**Step 3: K8s deployment with KEDA autoscaling**
+**Step 3: KEDA autoscaling on queue depth**
 
 ```yaml
 apiVersion: keda.sh/v1alpha1
@@ -392,20 +369,7 @@ spec:
       query: avg(vllm:num_requests_waiting{job="vllm"})
 ```
 
-When the average waiting queue exceeds 5 requests, KEDA adds a replica (another 2-GPU pod). Scales back down when the queue clears.
-
-**Step 5: Smoke test**
-
-```python
-import openai
-client = openai.OpenAI(base_url="http://<service-ip>/v1", api_key="x")
-r = client.chat.completions.create(
-    model="meta-llama/Meta-Llama-3-70B-Instruct",
-    messages=[{"role": "user", "content": "Hello"}],
-    max_tokens=50,
-)
-print(r.choices[0].message.content)
-```
+When the waiting queue exceeds 5 requests, KEDA adds a replica. Scales back down when the queue clears.
 
 ---
 

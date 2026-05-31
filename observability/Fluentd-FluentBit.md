@@ -430,10 +430,7 @@ fluent-bit -c /etc/fluent-bit/fluent-bit.conf --dry-run
 # Common Fluent Bit labels pattern for Loki
 Labels job=fluentbit, namespace=$kubernetes['namespace_name'], app=$kubernetes['labels']['app']
 
-# Add a stdout output temporarily to debug tag flow:
-# [OUTPUT]
-#     Name  stdout
-#     Match *
+# Add [OUTPUT] Name stdout / Match * temporarily to debug tag flow
 ```
 
 **Key config files:**
@@ -443,11 +440,7 @@ Labels job=fluentbit, namespace=$kubernetes['namespace_name'], app=$kubernetes['
 - `/var/log/fluent-bit/tail.db` — read position database
 - `/var/log/fluent-bit/storage/` — filesystem buffer
 
-**Helm chart locations:**
-
-- Fluent Bit: `https://fluent.github.io/helm-charts`
-- Chart name: `fluent/fluent-bit`
-- Values reference: `helm show values fluent/fluent-bit`
+**Helm:** repo `https://fluent.github.io/helm-charts`, chart `fluent/fluent-bit`. Inspect defaults with `helm show values fluent/fluent-bit`.
 
 ---
 

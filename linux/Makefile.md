@@ -112,19 +112,15 @@ Put this near the top of your Makefile. Add to it whenever you add a non-file ta
 These are the targets your teammates expect to find. Stick to these names and anyone can onboard in minutes.
 
 ```makefile
-.PHONY: build test lint clean docker-build deploy help
+.PHONY: build test lint fmt clean docker-build docker-push deploy help
 
 ## build: compile the application
 build:
 	go build $(GO_FLAGS) -o $(BUILD_DIR)/$(APP_NAME) ./cmd/$(APP_NAME)
 
-## test: run unit tests
+## test: run unit tests with race detector
 test:
 	go test -race -cover ./...
-
-## test-integration: run integration tests (requires running dependencies)
-test-integration:
-	go test -tags=integration ./...
 
 ## lint: run linter
 lint:
@@ -132,8 +128,7 @@ lint:
 
 ## fmt: format source code
 fmt:
-	gofmt -w .
-	goimports -w .
+	gofmt -w . && goimports -w .
 
 ## clean: remove build artifacts
 clean:
@@ -143,7 +138,7 @@ clean:
 docker-build:
 	docker build -t $(IMAGE_NAME):$(IMAGE_TAG) .
 
-## docker-push: push Docker image to registry
+## docker-push: push image to registry
 docker-push: docker-build
 	docker push $(IMAGE_NAME):$(IMAGE_TAG)
 
@@ -218,19 +213,9 @@ make docker-build IMAGE_TAG=v1.2.3
 
 ### Includes for Multi-Directory Projects
 
-When a repo contains multiple services, extract shared variables and rules into a common file.
+When a monorepo contains multiple services, put shared variables in `common.mk` at the root and `include` it from each service's Makefile.
 
-```
-repo/
-  common.mk
-  services/
-    api/
-      Makefile
-    worker/
-      Makefile
-```
-
-`common.mk`:
+`common.mk` at repo root:
 ```makefile
 REGISTRY   := gcr.io/myproject
 GIT_SHA    := $(shell git rev-parse --short HEAD)
@@ -250,13 +235,10 @@ build:
 	go build -o bin/$(APP_NAME) ./cmd/$(APP_NAME)
 
 docker-build:
-	docker build \
-	  --build-arg GIT_SHA=$(GIT_SHA) \
-	  --build-arg BUILD_DATE=$(BUILD_DATE) \
-	  -t $(IMAGE_NAME):$(GIT_SHA) .
+	docker build --build-arg GIT_SHA=$(GIT_SHA) -t $(IMAGE_NAME):$(GIT_SHA) .
 ```
 
-Each service stays small and focused. Shared logic lives once.
+Each service is self-contained. Shared variables live once.
 
 ### Self-Documenting Help — The Full Pattern
 
@@ -273,52 +255,32 @@ This version uses `awk`, colors the target names cyan, and handles included Make
 
 ### Docker and Kubernetes Patterns
 
-Real-world Docker/K8s Makefiles follow a few patterns worth internalizing.
+Two rules govern every real Docker/K8s Makefile.
 
-**Image tagging strategy:**
+**Tag with the git SHA, not `latest`.** `latest` makes rollbacks guesswork.
+
 ```makefile
-GIT_SHA    := $(shell git rev-parse --short HEAD)
-GIT_BRANCH := $(shell git rev-parse --abbrev-ref HEAD)
-IMAGE_TAG  ?= $(GIT_SHA)
+GIT_SHA   := $(shell git rev-parse --short HEAD)
+IMAGE_TAG ?= $(GIT_SHA)
 ```
 
-Always tag images with the git SHA. Never rely solely on `latest` — it makes rollbacks guesswork.
+**Make `k8s-rollout` depend on `k8s-apply`.** Prerequisites enforce order without scripts.
 
-**Multi-stage push:**
-```makefile
-.PHONY: docker-build docker-push docker-tag-latest docker-push-latest
-
-docker-build:
-	docker build -t $(IMAGE_NAME):$(IMAGE_TAG) .
-
-docker-tag-latest: docker-build
-	docker tag $(IMAGE_NAME):$(IMAGE_TAG) $(IMAGE_NAME):latest
-
-docker-push: docker-build
-	docker push $(IMAGE_NAME):$(IMAGE_TAG)
-
-docker-push-latest: docker-tag-latest docker-push
-	docker push $(IMAGE_NAME):latest
-```
-
-**Kubernetes workflow:**
 ```makefile
 KUBE_CONTEXT ?= staging
 NAMESPACE    ?= default
 
-.PHONY: k8s-apply k8s-rollout k8s-status
+.PHONY: k8s-apply k8s-rollout
 
 k8s-apply:
-	kubectl --context=$(KUBE_CONTEXT) apply -f k8s/
+	kubectl --context=$(KUBE_CONTEXT) apply -f k8s/ -n $(NAMESPACE)
 
-k8s-rollout:
+k8s-rollout: k8s-apply
 	kubectl --context=$(KUBE_CONTEXT) rollout status \
 	  deployment/$(APP_NAME) -n $(NAMESPACE)
-
-k8s-status:
-	kubectl --context=$(KUBE_CONTEXT) get pods \
-	  -n $(NAMESPACE) -l app=$(APP_NAME)
 ```
+
+The worked example at the end of this file shows the full combined pattern.
 
 ### CI/CD Integration
 
@@ -375,8 +337,7 @@ KUBE_CTX   ?= staging
 LDFLAGS    := -ldflags "-X main.version=$(GIT_SHA) -X main.buildDate=$(BUILD_DATE) -s -w"
 
 .DEFAULT_GOAL := help
-.PHONY: build run test lint fmt tidy clean docker-build docker-push \
-        k8s-apply k8s-rollout k8s-status help
+.PHONY: build run test lint fmt tidy clean docker-build docker-push k8s-apply k8s-rollout k8s-status help
 
 ## build: compile binary to bin/
 build:
@@ -440,8 +401,6 @@ help:
 ```
 
 Run `make help` and get a formatted table of every target. Run `make build IMAGE_TAG=v2.0.0` to override the tag. The CI pipeline calls `make test lint docker-push` — identical to what you run locally.
-
----
 
 ## Pitfalls
 
