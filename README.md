@@ -2,8 +2,8 @@
   <img src="https://img.shields.io/badge/Crash_Courses-98-blue?style=for-the-badge" alt="Courses"/>
   <img src="https://img.shields.io/badge/Categories-14-green?style=for-the-badge" alt="Categories"/>
   <img src="https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge" alt="License"/>
-  <img src="https://img.shields.io/github/stars/supersaiyane/DevOps-Crash-Course?style=for-the-badge" alt="Stars"/>
-  <img src="https://img.shields.io/github/forks/supersaiyane/DevOps-Crash-Course?style=for-the-badge" alt="Forks"/>
+  <img src="https://img.shields.io/github/stars/supersaiyane/crashcourse?style=for-the-badge" alt="Stars"/>
+  <img src="https://img.shields.io/github/forks/supersaiyane/crashcourse?style=for-the-badge" alt="Forks"/>
 </p>
 
 <p align="center">
