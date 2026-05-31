@@ -17,10 +17,15 @@
 | 2026-05-31 14:30 | PWA course-index.json + hero stats updated | Done | Added design/9, dataops/6, patterns/2, +3 iac, +3 cloud to JSON; hero 121/17 | docs/data/course-index.json:1, docs/index.html:99 |
 | 2026-05-31 14:45 | Repo About section updated | Done | Description: 121 courses, homepage URL set | gh api repos/supersaiyane/crashcourse |
 | 2026-05-31 15:00 | Scanned EngineeringBlueprints, scheduled TODO | Done | 15 new courses planned: interview/, career/, practices | TODO.txt (local, gitignored) |
+| 2026-05-31 15:30 | Footer links added | Done | Portfolio, LinkedIn, Medium, Book in footer | docs/index.html:128-155 |
+| 2026-05-31 21:30 | 15 new courses (interview, career, practices) | Done | interview/6, career/5, + 4 in existing categories | interview/System-Design-Interview.md:1, career/Engineering-Career-Path.md:1 |
 
 ## Next Session Resume Vector
 
-- TODO.txt has 15 planned courses under "Picked from EngineeringBlueprints"
-- PWA learning paths need: System Design track, Data Engineering track, Cloud Foundations track
-- Repo is clean, 121 courses live at https://github.com/supersaiyane/crashcourse
+- 136 courses across 19 categories, all pushed and counts updated
+- README.md: badges, index, hero stats all reflect 136/19
+- course-index.json: all 136 entries present
+- Repo About description: updated to 136
 - Site live at https://supersaiyane.github.io/crashcourse/
+- TODO.txt has Interactive Features section planned (quiz, flashcards, progress tracking)
+- 2 unstaged modified files: career/Continuous-Learning.md, docs/checkpoint.md
