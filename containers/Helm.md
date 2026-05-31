@@ -27,6 +27,19 @@ When you install it, Helm renders the templates with your values into plain Kube
 applies it, and records the result as a versioned **release**. Chart = blueprint; values =
 the knobs; release = a specific installed instance you can upgrade and roll back.
 
+```mermaid
+graph LR
+    CY[Chart.yaml<br>metadata + deps] --> H[Helm Engine]
+    VY[values.yaml<br>defaults] --> H
+    OV[Override values<br>--set / -f env.yaml] --> H
+    TPL[templates/<br>deployment.yaml<br>service.yaml<br>_helpers.tpl] --> H
+    H -->|render| MAN[Rendered K8s<br>Manifests]
+    MAN -->|kubectl apply| K8S[Kubernetes API]
+    K8S --> REL[(Release<br>name + revision<br>stored as Secret)]
+    REL -->|helm rollback| K8S
+    REL -->|helm history| HIST[Revision History]
+```
+
 ---
 
 ## Part 1 — The vocabulary
@@ -241,6 +254,80 @@ helm push <chart>.tgz oci://<registry>/charts
 `{{ .Values.x }}` · `{{ .Release.Name }}` · `{{ .Chart.Name }}` · `{{ .Files.Get "f" }}` ·
 `{{- if }}/{{ else }}/{{ end }}` · `{{- range .Values.list }}` · `{{- define }}/include` ·
 `| nindent N` · `| toYaml` · `| quote` · `| default "x"` · `{{-` and `-}}` (whitespace trim).
+
+---
+
+## Top 10 Interview Questions
+
+<details>
+<summary><strong>Q: What is the difference between a Helm chart, a release, and a revision?</strong></summary>
+
+A chart is the package — a collection of templates, default values, and metadata that describes a Kubernetes application. A release is a specific installed instance of a chart in a cluster, identified by a name you choose (e.g. `my-nginx`). Each time you upgrade a release, the revision number increments. Revisions enable rollback — you can revert to any previous revision if an upgrade goes wrong.
+
+</details>
+
+<details>
+<summary><strong>Q: How does `helm upgrade --install` differ from running `helm install` and `helm upgrade` separately, and why is it preferred in CI/CD?</strong></summary>
+
+`helm upgrade --install` (shorthand `upgrade -i`) is idempotent: it installs the release if it does not exist, or upgrades it if it does. Running `helm install` on an existing release fails with "release already exists," and `helm upgrade` on a non-existent release also fails. In CI/CD pipelines you want a single command that works regardless of whether this is the first deployment or the hundredth, making `upgrade -i` the standard approach.
+
+</details>
+
+<details>
+<summary><strong>Q: Explain the Helm chart directory structure and the role of each key file.</strong></summary>
+
+`Chart.yaml` holds metadata — name, version, description, and dependency declarations. `values.yaml` contains the default configuration values that users override per environment. The `templates/` directory holds Kubernetes manifests with Go template placeholders (`{{ .Values.x }}`). `_helpers.tpl` defines reusable named templates (labels, names). `NOTES.txt` is displayed post-install. The `charts/` directory holds downloaded subchart dependencies.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you manage different configurations across dev, staging, and production environments with Helm?</strong></summary>
+
+Use a base `values.yaml` with sane defaults, then create thin per-environment override files (`values-dev.yaml`, `values-staging.yaml`, `values-prod.yaml`) containing only the values that differ — replica counts, image tags, resource limits, hostnames. Apply them with `helm upgrade -i myapp ./myapp -f values.yaml -f values-prod.yaml` — the later file wins on conflicts. This keeps environment differences explicit, small, and reviewable in Git.
+
+</details>
+
+<details>
+<summary><strong>Q: What are Helm hooks, and when would you use them?</strong></summary>
+
+Hooks are special templates annotated with `helm.sh/hook` that run at specific lifecycle points — `pre-install`, `post-install`, `pre-upgrade`, `post-upgrade`, `pre-delete`, etc. Common use cases include running database migrations before an upgrade (`pre-upgrade`), loading seed data after install (`post-install`), or running cleanup jobs before deletion. Hooks run as Kubernetes Jobs and can have weight (ordering) and deletion policies.
+
+</details>
+
+<details>
+<summary><strong>Q: How does Helm store release information, and what happens if you modify resources directly with kubectl?</strong></summary>
+
+Helm stores release metadata (the rendered manifests, values used, revision history) as Kubernetes Secrets in the release's namespace. When you run `helm upgrade`, Helm computes a three-way diff between the previous release manifest, the new rendered manifest, and the live state. If you modify resources directly with `kubectl edit` or `kubectl apply`, the next `helm upgrade` will overwrite your manual changes because Helm treats its stored manifest as the source of truth.
+
+</details>
+
+<details>
+<summary><strong>Q: What is the purpose of `_helpers.tpl` and the `include` function in Helm templates?</strong></summary>
+
+`_helpers.tpl` is a convention for defining reusable named templates — typically for standard labels, resource names, and selector blocks that need to be consistent across all manifests. `{{ include "myapp.labels" . | nindent 4 }}` renders the named template and indents it correctly. This DRYs up templates and ensures consistency — changing a label pattern in `_helpers.tpl` updates it everywhere rather than requiring edits to every template file.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you debug a Helm chart that produces invalid Kubernetes YAML?</strong></summary>
+
+Use `helm template myrelease ./mychart -f values.yaml` to render the templates locally without applying to the cluster — inspect the output for YAML errors. `helm install --dry-run --debug` does the same but also validates against the Kubernetes API. `helm lint ./mychart` catches common chart issues. The most frequent cause of invalid YAML is Go template whitespace — use `{{-` and `-}}` to trim whitespace and `| nindent N` for correct indentation of block values.
+
+</details>
+
+<details>
+<summary><strong>Q: What are Helm chart dependencies (subcharts), and how do you manage them?</strong></summary>
+
+Dependencies let you compose charts — your application chart can declare that it needs Redis, PostgreSQL, or any other chart as a dependency in `Chart.yaml` under the `dependencies:` section, specifying the chart name, version, and repository. Running `helm dependency update` downloads them into the `charts/` directory. You can pass values to subcharts via the parent's `values.yaml` using the subchart name as a key. Pin dependency versions for reproducible deployments.
+
+</details>
+
+<details>
+<summary><strong>Q: How does Helm rollback work, and what are its limitations?</strong></summary>
+
+`helm rollback <release> <revision>` re-applies the manifests from a previous revision, effectively creating a new revision with the old configuration. It handles Deployments, Services, and other Kubernetes resources that Helm manages. Limitations: it does not rollback external state changes — database migrations, persistent volume data, or changes made outside Helm. If a `pre-upgrade` hook ran a migration, rollback will not reverse it. For stateful changes, you need an application-level rollback strategy alongside Helm.
+
+</details>
 
 ---
 

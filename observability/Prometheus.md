@@ -32,6 +32,23 @@ Each line is a metric name, a set of **labels** (the `{...}` key/values), and a 
 Prometheus walks around every 15s photographing each board, files the readings by timestamp,
 and you ask questions of that archive with PromQL.
 
+```mermaid
+graph LR
+    A[Your Apps<br>/metrics] -->|scrape| P[Prometheus Server]
+    B[Node Exporter<br>:9100] -->|scrape| P
+    C[Blackbox Exporter] -->|scrape| P
+    P --> T[(TSDB<br>Time Series Store)]
+    T --> Q[PromQL Engine]
+    Q --> G[Grafana<br>Dashboards]
+    Q --> R[Recording Rules]
+    R --> T
+    P --> AR[Alerting Rules]
+    AR -->|firing| AM[Alertmanager]
+    AM --> S[Slack / PagerDuty]
+    AM --> E[Email / Webhook]
+    SD[Service Discovery<br>K8s / Consul / DNS] -->|targets| P
+```
+
 ---
 
 ## Part 1 — The vocabulary
@@ -269,6 +286,87 @@ promtool check config prometheus.yml      promtool check rules rules.yml
 curl localhost:9090/-/healthy             curl -X POST localhost:9090/-/reload
 curl 'localhost:9090/api/v1/query?query=up'
 ```
+
+---
+
+## Top 10 Interview Questions
+
+<details>
+<summary><strong>Q: Why does Prometheus use a pull (scrape) model instead of push, and when is push preferred?</strong></summary>
+
+Pull gives Prometheus control over scrape timing, makes it trivial to detect a dead target (scrape fails), and removes the need for apps to know where to send metrics. Push is preferred when targets are short-lived (batch jobs, lambdas) — that is what the Pushgateway exists for — or when network topology prevents the monitoring server from reaching targets.
+
+</details>
+
+<details>
+<summary><strong>Q: What is the difference between a counter and a gauge, and why does it matter for querying?</strong></summary>
+
+A counter only goes up (total requests, total errors) and resets to zero on restart; you must wrap it in `rate()` or `increase()` to get useful per-second or per-window values. A gauge goes up and down (memory usage, temperature) and can be used directly. Applying `rate()` to a gauge or reading a raw counter value are common beginner mistakes that produce meaningless results.
+
+</details>
+
+<details>
+<summary><strong>Q: Explain what high cardinality means and why it is dangerous in Prometheus.</strong></summary>
+
+Cardinality is the number of unique time series. Every unique combination of metric name + label values creates a separate series. Putting unbounded values like user IDs, request IDs, or email addresses into labels can explode series count into the millions, causing massive memory consumption and potentially crashing Prometheus. Labels must be low-cardinality — status codes, HTTP methods, regions — not unbounded identifiers.
+
+</details>
+
+<details>
+<summary><strong>Q: How would you calculate the 95th percentile latency from a histogram in PromQL?</strong></summary>
+
+Use `histogram_quantile(0.95, sum by (le) (rate(http_request_duration_seconds_bucket[5m])))`. The key is preserving the `le` (less-than-or-equal) bucket label in the aggregation — without `by (le)`, the bucket boundaries collapse and the result is garbage. The histogram must have been instrumented with appropriate bucket boundaries that bracket your expected latency range.
+
+</details>
+
+<details>
+<summary><strong>Q: What is the difference between `rate()` and `irate()`, and when would you choose each?</strong></summary>
+
+`rate()` computes the per-second average over the entire range window (e.g. `[5m]`), smoothing out spikes — ideal for alerting and dashboards. `irate()` uses only the last two data points in the window, producing an instantaneous rate that is more responsive but noisier. Use `rate()` for alerts and recording rules (stability matters), and `irate()` for interactive, high-resolution dashboards where you want to see short spikes.
+
+</details>
+
+<details>
+<summary><strong>Q: How does Prometheus service discovery work in Kubernetes, and what role do relabel_configs play?</strong></summary>
+
+Prometheus uses `kubernetes_sd_configs` to query the Kubernetes API for pods, services, endpoints, or nodes. It discovers all targets matching the specified role, then `relabel_configs` filter and transform the discovered metadata — for example, keeping only pods annotated with `prometheus.io/scrape: "true"` and extracting the scrape port from another annotation. Without relabelling, Prometheus would attempt to scrape every pod in the cluster.
+
+</details>
+
+<details>
+<summary><strong>Q: What are recording rules, and why would you use them instead of querying directly?</strong></summary>
+
+Recording rules precompute expensive PromQL expressions on a schedule and store the result as a new time series. This avoids recomputing heavy aggregations every time a dashboard loads or an alert evaluates, reducing query latency and Prometheus CPU usage. They are essential when the same costly query (e.g. multi-dimensional rates aggregated across hundreds of targets) is used by multiple dashboards and alerts.
+
+</details>
+
+<details>
+<summary><strong>Q: How does the `for` clause in alerting rules prevent flapping, and what happens without it?</strong></summary>
+
+The `for` duration requires the alert expression to be continuously true for that period before the alert transitions from `pending` to `firing`. Without it, a momentary spike (a single evaluation cycle) would immediately fire a page, then resolve, then fire again — creating alert fatigue. A typical value like `for: 10m` absorbs transient blips and ensures the condition is a genuine, sustained problem before notifying anyone.
+
+</details>
+
+<details>
+<summary><strong>Q: How would you set up Prometheus for high availability and long-term storage?</strong></summary>
+
+For HA, run two identical Prometheus instances scraping the same targets — they operate independently and Alertmanager deduplicates their alerts. For long-term storage, Prometheus itself is designed for short retention (days to weeks). Use a remote-write-compatible backend like Thanos, Mimir, or Cortex to ship data to durable, horizontally scalable object storage. Thanos adds a sidecar to each Prometheus for global querying; Mimir accepts remote-write and provides a single query endpoint across all data.
+
+</details>
+
+<details>
+<summary><strong>Q: What is federation, and when would you use it versus remote write?</strong></summary>
+
+Federation lets one Prometheus scrape selected series from another Prometheus's `/federate` endpoint — useful for aggregating summary metrics from cluster-level Prometheus instances into a global one. Remote write continuously pushes all (or filtered) series to a remote backend in near-real-time. Federation is simpler but lossy (you choose which series to pull); remote write is the modern approach for full-fidelity, long-term, centralized storage.
+
+</details>
+
+<details>
+<summary><strong>Q: A dashboard suddenly shows no data for a service that was previously reporting. How do you troubleshoot?</strong></summary>
+
+Start at the source: check **Status > Targets** in Prometheus UI — is the target `UP` or `DOWN`? If down, check network connectivity, whether the pod/process is running, and whether the `/metrics` endpoint responds to a manual `curl`. If the target is up, verify the metric name and labels in the expression browser — a label change (e.g. after a deploy) can make existing queries return empty. Use `absent(up{job="x"})` as an alert to catch scrape gaps proactively.
+
+</details>
 
 ---
 

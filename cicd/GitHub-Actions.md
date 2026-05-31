@@ -22,6 +22,23 @@ events you choose. Its other superpower is the **Marketplace**: thousands of pre
 (which run on separate fresh machines, in parallel by default), and each job is a list of
 **steps** (shell commands or reusable actions) run in order. Event → workflow → jobs → steps.
 
+```mermaid
+graph LR
+    EV[Event<br>push / PR / schedule /<br>workflow_dispatch] -->|triggers| WF[Workflow<br>.github/workflows/ci.yml]
+    WF --> J1[Job: test<br>runs-on: ubuntu-latest]
+    WF --> J2[Job: build<br>needs: test]
+    J1 --> S1[Step: checkout<br>actions/checkout]
+    J1 --> S2[Step: setup<br>actions/setup-node]
+    J1 --> S3[Step: run tests<br>npm test]
+    J2 --> S4[Step: docker build<br>+ push to GHCR]
+    J2 --> ART[Artifacts / Cache]
+    J2 -->|needs: build| J3[Job: deploy<br>environment: production]
+    J3 -->|OIDC| CLOUD[AWS / GCP / Azure]
+    SEC[Secrets Store<br>repo / org settings] -.->|injected| J1
+    SEC -.->|injected| J2
+    SEC -.->|injected| J3
+```
+
 ---
 
 ## Part 1 — The vocabulary
@@ -275,6 +292,80 @@ Contexts:  github.* · secrets.* · vars.* · env.* · matrix.* · needs.<job>.o
 Step types:  uses: owner/action@vX   |   run: shell command
 Useful:  continue-on-error · timeout-minutes · concurrency · defaults.run.shell
 ```
+
+---
+
+## Top 10 Interview Questions
+
+<details>
+<summary><strong>Q: What is the relationship between workflows, jobs, steps, and actions in GitHub Actions?</strong></summary>
+
+A workflow is a YAML file in `.github/workflows/` triggered by events. It contains one or more jobs, each running on a separate fresh runner (virtual machine). Each job has a sequence of steps executed top-to-bottom on that runner. A step is either a shell command (`run:`) or a reusable action (`uses:`). Jobs run in parallel by default unless chained with `needs:`. This hierarchy — event triggers workflow, workflow contains jobs, jobs contain steps — is the core mental model.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you securely handle credentials in GitHub Actions workflows?</strong></summary>
+
+Store secrets in the repository or organization settings under Settings > Secrets and Variables > Actions. Reference them as `${{ secrets.NAME }}` — they are automatically masked in logs. For cloud providers, prefer OIDC (OpenID Connect) over stored long-lived keys: configure the cloud to trust GitHub's identity provider, and the job receives a short-lived token with no stored credentials at all. Never hardcode secrets in YAML — they persist in Git history forever.
+
+</details>
+
+<details>
+<summary><strong>Q: What is a matrix strategy, and when would you use it?</strong></summary>
+
+A matrix strategy runs the same job multiple times with different parameter combinations. For example, `matrix: { node: [18, 20, 22], os: [ubuntu-latest, windows-latest] }` creates 6 parallel jobs covering every combination. This is essential for testing across multiple language versions, operating systems, or dependency versions to catch environment-specific bugs. `fail-fast: false` ensures all combinations run even if one fails, giving you complete coverage information.
+
+</details>
+
+<details>
+<summary><strong>Q: Why do you need `actions/checkout` as the first step, and what happens without it?</strong></summary>
+
+Each job runs on a fresh, empty runner — your repository code is not present by default. `actions/checkout` clones your repository onto the runner so subsequent steps can access your code, tests, and configuration. Without it, any step that references your files will fail with "file not found." This catches many beginners off guard because they assume the runner starts with their code, but it is by design — the runner is ephemeral and clean.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you pass data between jobs, given that each job runs on a separate machine?</strong></summary>
+
+Two mechanisms: **artifacts** and **outputs**. Use `actions/upload-artifact` to save files (build output, test reports) from one job, then `actions/download-artifact` to retrieve them in a dependent job. For small values (a version string, a computed tag), use job outputs — set a value in a step with `echo "key=value" >> $GITHUB_OUTPUT`, declare it in the job's `outputs:` block, and access it in dependent jobs via `${{ needs.jobid.outputs.key }}`.
+
+</details>
+
+<details>
+<summary><strong>Q: What are reusable workflows and composite actions, and how do they differ?</strong></summary>
+
+Reusable workflows (triggered by `workflow_call`) are entire workflow files that other workflows can call — they run as a separate workflow with their own jobs and runners. Composite actions are custom actions defined in `action.yml` that bundle multiple steps into a single reusable step. Use reusable workflows to standardize entire CI/CD pipelines across an organization. Use composite actions to package a sequence of steps (e.g. "build and push a container") into a single step that any workflow can reference.
+
+</details>
+
+<details>
+<summary><strong>Q: What are environments in GitHub Actions, and how do they enable safe continuous deployment?</strong></summary>
+
+Environments (configured in Settings > Environments) attach protection rules to deployment jobs — required reviewers, wait timers, and branch restrictions. When a job references `environment: production`, it pauses for manual approval before running. This lets you build a full CD pipeline where test and build jobs run automatically, but the production deploy waits for a human gate. Combined with branch protection rules, this ensures only reviewed, tested code reaches production.
+
+</details>
+
+<details>
+<summary><strong>Q: How does caching work in GitHub Actions, and why is it important?</strong></summary>
+
+`actions/cache` stores and restores directories (like `~/.npm`, `~/.m2`, `node_modules`) between workflow runs, keyed by a hash of lock files. On a cache hit, dependency installation is skipped or drastically faster. Without caching, every run downloads and installs all dependencies from scratch, wasting minutes and compute costs. The cache is scoped to the branch (with fallback to the default branch) and has a 10 GB per-repo limit with LRU eviction.
+
+</details>
+
+<details>
+<summary><strong>Q: What are self-hosted runners, and when would you choose them over GitHub-hosted runners?</strong></summary>
+
+Self-hosted runners are machines you manage (physical, VM, or container) that register with GitHub and pick up jobs. Choose them when you need access to private networks (on-prem databases, internal APIs), specific hardware (GPUs, ARM), compliance requirements (data must not leave your infrastructure), or when GitHub-hosted runner costs are prohibitive for heavy workloads. The trade-off is you manage patching, scaling, and security — and you must be careful that workflows from forks cannot run on them (security risk).
+
+</details>
+
+<details>
+<summary><strong>Q: How do you prevent a workflow from deploying on every branch and only deploy from main?</strong></summary>
+
+Use `if:` conditions on the deploy job: `if: github.ref == 'refs/heads/main'` ensures the job only runs when the push is to main. Combine this with event filters — `on: push: branches: [main]` limits the entire workflow, or use `on: [push, pull_request]` with the `if:` condition only on the deploy job so tests still run on PRs. Additionally, environment protection rules can restrict which branches are allowed to deploy to production, providing a second layer of safety.
+
+</details>
 
 ---
 

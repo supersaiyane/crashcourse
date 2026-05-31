@@ -28,6 +28,22 @@ read it and type the next. Most "ops work" is: navigate to the right place, look
 something (files, processes, logs, resources), and make a change. The filesystem is a tree you
 walk; pipes are how you transform what you find.
 
+```mermaid
+graph TD
+    HW[Hardware<br>CPU / Memory / Disk / NIC] --> K[Linux Kernel<br>process scheduling, memory mgmt,<br>device drivers, networking]
+    K --> SD[systemd<br>PID 1 — init system]
+    SD --> SVC1[sshd]
+    SD --> SVC2[nginx]
+    SD --> SVC3[docker]
+    SD --> SVC4[cron / timers]
+    K --> FS[Virtual Filesystems<br>/proc /sys /dev]
+    K --> NS[Namespaces / cgroups<br>containers use these]
+    SD --> SHELL[Login Shell<br>bash / zsh]
+    SHELL --> USER[User Processes<br>commands, scripts, apps]
+    USER -->|read / write| FS
+    USER -->|logs| LOG[/var/log + journald]
+```
+
 ---
 
 ## Part 1 — The filesystem layout (where things live)
@@ -274,6 +290,87 @@ ip a   ss -tulpn   ping   curl -v   dig   ssh user@host   scp f user@host:/p
 # Misc
 history | grep x   man cmd   cmd --help   echo $?   watch -n2 'cmd'
 ```
+
+---
+
+## Top 10 Interview Questions
+
+<details>
+<summary><strong>Q: Explain the Linux boot process from power-on to a running shell.</strong></summary>
+
+BIOS/UEFI performs hardware checks and loads the bootloader (GRUB). GRUB loads the kernel and initial ramdisk (initrd/initramfs) into memory. The kernel initializes hardware, mounts the root filesystem, and starts PID 1 — on modern systems that is systemd. Systemd reads its unit files and starts services in dependency order (networking, logging, sshd, etc.), eventually reaching the login target where you get a shell or display manager.
+
+</details>
+
+<details>
+<summary><strong>Q: What are file permissions in Linux, and how do you interpret `rwxr-xr--`?</strong></summary>
+
+Every file has three permission triads: owner, group, and others. Each triad can have read (r=4), write (w=2), and execute (x=1). `rwxr-xr--` means the owner can read/write/execute, the group can read/execute, and others can only read. Numerically that is 754. Directories need the execute bit for traversal (you can `cd` into them). `chmod` changes permissions, `chown` changes ownership, and `sudo` runs commands as root when needed.
+
+</details>
+
+<details>
+<summary><strong>Q: What is the difference between a process and a thread? How do you inspect running processes?</strong></summary>
+
+A process is an independent running instance of a program with its own memory space, PID, and resources. A thread is a lightweight unit of execution within a process, sharing the same memory space. Use `ps aux` for a snapshot of all processes, `top` or `htop` for live resource monitoring, and `ps -eLf` to see individual threads. `kill PID` sends SIGTERM (graceful shutdown); `kill -9 PID` sends SIGKILL (force, last resort — no cleanup).
+
+</details>
+
+<details>
+<summary><strong>Q: A server is responding slowly. Walk through your troubleshooting steps.</strong></summary>
+
+Start with `uptime` to check load averages. Run `top` or `htop` to identify which process is consuming CPU or memory. Check `free -h` for memory pressure and swap usage. Run `df -h` to see if any filesystem is full. Check `iostat` or `vmstat 1` for disk I/O saturation. Look at application logs with `journalctl -u service` and system logs in `/var/log`. Use `ss -tulpn` to verify the service is listening. This sequence resolves the majority of real incidents.
+
+</details>
+
+<details>
+<summary><strong>Q: What is systemd, and how do you manage services with it?</strong></summary>
+
+Systemd is the init system and service manager on modern Linux distributions — it is PID 1, the first process started by the kernel. It manages service lifecycle, dependencies, logging, and timers. Key commands: `systemctl status/start/stop/restart/enable/disable <service>` for lifecycle, `journalctl -u <service>` for logs. Unit files in `/etc/systemd/system/` define how services run, their dependencies, restart policies, and resource limits.
+
+</details>
+
+<details>
+<summary><strong>Q: Explain the difference between hard links and soft (symbolic) links.</strong></summary>
+
+A hard link is a directory entry pointing directly to the same inode (data on disk) as the original file — both names are equally "real" and the data persists until all hard links are removed. A soft link (symlink) is a separate file that contains the path to the target; it breaks if the target is moved or deleted. Hard links cannot cross filesystem boundaries or link to directories. Symlinks are more common in practice for configuration management and pointing to versioned directories.
+
+</details>
+
+<details>
+<summary><strong>Q: What are signals in Linux? Name the most important ones.</strong></summary>
+
+Signals are asynchronous notifications sent to processes. SIGTERM (15) is the polite "please shut down" — processes can catch it and clean up. SIGKILL (9) is the uncatchable force-kill — the kernel terminates the process immediately with no cleanup. SIGHUP (1) traditionally means "terminal disconnected" and many daemons interpret it as "reload configuration." SIGINT (2) is what Ctrl+C sends. SIGSTOP/SIGCONT pause and resume processes. Always try SIGTERM before SIGKILL.
+
+</details>
+
+<details>
+<summary><strong>Q: What is the purpose of `/proc` and `/sys` filesystems?</strong></summary>
+
+Both are virtual filesystems that exist only in memory. `/proc` exposes kernel and per-process information — each running process has a directory (`/proc/PID/`) with its status, memory maps, file descriptors, and command line. `/proc/cpuinfo`, `/proc/meminfo` expose hardware info. `/sys` provides a structured view of kernel subsystems, devices, and drivers. Tools like `top`, `free`, and `ps` actually read from `/proc` under the hood. You can tune kernel parameters at runtime by writing to `/proc/sys/` entries.
+
+</details>
+
+<details>
+<summary><strong>Q: How do pipes and redirection work, and what is the difference between `>` and `>>`?</strong></summary>
+
+A pipe (`|`) connects the stdout of one command to the stdin of the next, enabling composition of small tools. `>` redirects stdout to a file, overwriting it. `>>` appends to the file instead. `2>` redirects stderr. `2>&1` merges stderr into stdout. `< file` feeds a file as stdin. This is the Unix philosophy in action — small tools that do one thing well, composed via pipes and redirection to solve complex problems without writing scripts.
+
+</details>
+
+<details>
+<summary><strong>Q: What are inodes, and how can you run out of inodes while still having disk space?</strong></summary>
+
+An inode is a data structure that stores metadata about a file — permissions, ownership, timestamps, and pointers to the actual data blocks — but not the file name (that is in the directory entry). Each filesystem has a fixed number of inodes set at creation time. If you create millions of tiny files (e.g. a mail spool or cache directory), you can exhaust all inodes while having plenty of disk space remaining. `df -i` shows inode usage; the fix is to delete unnecessary small files or recreate the filesystem with more inodes.
+
+</details>
+
+<details>
+<summary><strong>Q: Explain what happens when you type a command and press Enter in a Linux shell.</strong></summary>
+
+The shell reads the input, parses it, and performs expansions (variables, globs, aliases). It then searches for the command — first as a built-in, then along each directory in `$PATH`. If found, the shell calls `fork()` to create a child process, then `execve()` to replace the child with the command's binary. The kernel loads the program, sets up memory, and begins execution. The parent shell waits (unless `&` was used) for the child to exit, collects its exit status (`$?`), and presents the next prompt.
+
+</details>
 
 ---
 

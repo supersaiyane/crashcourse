@@ -35,6 +35,18 @@ areas a file is in. `git status` tells you, always.
 instant), then `push`/`pull` to sync with a shared remote (GitHub/GitLab). Local and remote are
 separate; you control when they sync.
 
+```mermaid
+graph LR
+    WD[Working Directory<br>your files] -->|git add| SA[Staging Area<br>index]
+    SA -->|git commit| LR[Local Repository<br>.git]
+    LR -->|git push| RR[Remote Repository<br>GitHub / GitLab]
+    RR -->|git fetch| LR
+    RR -->|git pull<br>fetch + merge| WD
+    LR -->|git checkout / switch| WD
+    SA -->|git restore --staged| WD
+    LR -->|git branch / tag| LR
+```
+
 ---
 
 ## Part 1 — The vocabulary
@@ -283,6 +295,80 @@ git restore [--source=COMMIT] file
 git blame file             git bisect start|good|bad     git log --grep="text"
 git log -- file            git diff BR1..BR2             git clean -fd  (remove untracked)
 ```
+
+---
+
+## Top 10 Interview Questions
+
+<details>
+<summary><strong>Q: What is the difference between merge and rebase, and when would you use each?</strong></summary>
+
+Merge creates a merge commit that combines two branches, preserving the true branching history. Rebase replays your commits on top of the target branch, producing a clean linear history. Use merge for shared/public branches where preserving the real timeline matters. Use rebase on your own local feature branch before merging to keep the history tidy. The golden rule: never rebase commits that others have already pulled.
+
+</details>
+
+<details>
+<summary><strong>Q: Explain the three areas in Git (working directory, staging area, repository) and how data moves between them.</strong></summary>
+
+The working directory holds your actual files on disk. The staging area (index) is a "loading dock" where you place changes you intend to include in the next commit via `git add`. The repository (`.git`) stores the permanent history of committed snapshots. The flow is: edit files (working dir) -> `git add` (staging) -> `git commit` (repository). `git status` always tells you which area each change is in.
+
+</details>
+
+<details>
+<summary><strong>Q: What is `git reflog` and how can it save you from a bad `reset --hard`?</strong></summary>
+
+The reflog is a local log of every position HEAD has been in — every commit, reset, rebase, checkout, and amend. Even after a `reset --hard` that apparently "deleted" commits, those commits still exist in the object store for about 90 days. You can run `git reflog`, find the SHA of the state before the reset, and `git reset --hard HEAD@{n}` to recover. It is Git's safety net for almost any destructive local operation.
+
+</details>
+
+<details>
+<summary><strong>Q: How does `git bisect` work, and when would you use it?</strong></summary>
+
+`git bisect` performs a binary search through your commit history to find the exact commit that introduced a bug. You start with `git bisect start`, mark a known bad commit and a known good commit, and Git checks out the midpoint for you to test. After each test you mark it `good` or `bad`, halving the search space until the offending commit is identified. It turns a linear search of hundreds of commits into about seven checks.
+
+</details>
+
+<details>
+<summary><strong>Q: What is the difference between `git fetch` and `git pull`?</strong></summary>
+
+`git fetch` downloads new commits and refs from the remote but does not modify your working branch — it updates your remote-tracking branches (e.g. `origin/main`) only. `git pull` is `fetch` plus an automatic merge (or rebase, depending on config) into your current branch. Fetch is the safer option when you want to inspect incoming changes before integrating them; pull is the convenience shortcut when you trust the merge will be clean.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you resolve a merge conflict?</strong></summary>
+
+When Git cannot auto-merge because both branches modified the same lines, it marks the conflicted sections with `<<<<<<<`, `=======`, and `>>>>>>>` markers. You open each conflicted file, decide what the final code should be (keeping one side, the other, or a combination), remove the conflict markers, then `git add` the resolved file and complete the merge or rebase. Using a merge tool or IDE makes this visual. `git merge --abort` lets you bail out and start over if needed.
+
+</details>
+
+<details>
+<summary><strong>Q: What is `git cherry-pick` and what are its risks?</strong></summary>
+
+`cherry-pick` applies the changes from a specific commit onto your current branch as a new commit. It is useful for backporting a bug fix from a development branch to a release branch without merging everything else. The risk is that it creates a duplicate commit with a different SHA, so if the original branch is later merged, you may see the same change appear twice or cause conflicts. Use it sparingly and for targeted fixes.
+
+</details>
+
+<details>
+<summary><strong>Q: What is the difference between `git reset` and `git revert`, and when is each appropriate?</strong></summary>
+
+`reset` moves the branch pointer backward, effectively rewriting history — the "undone" commits disappear from the branch. `revert` creates a new commit that undoes the changes of a previous commit, preserving the full history. Use `revert` on shared/public branches (main, release) because it is safe for collaborators. Use `reset` only on local, un-pushed work where rewriting history won't affect anyone else.
+
+</details>
+
+<details>
+<summary><strong>Q: You accidentally committed a secret (API key) to the repository. What do you do?</strong></summary>
+
+First, rotate the secret immediately — it is compromised the moment it enters Git history, even if you delete the file in a subsequent commit. Then purge it from history using `git filter-repo` (preferred) or BFG Repo-Cleaner, force-push the cleaned history, and have all collaborators re-clone. Going forward, add sensitive paths to `.gitignore` before the first commit and use environment variables or a secrets manager instead of checked-in credentials.
+
+</details>
+
+<details>
+<summary><strong>Q: Explain `--force-with-lease` and why it is preferred over `--force` when force-pushing.</strong></summary>
+
+`--force` overwrites the remote branch unconditionally — if a teammate pushed commits since your last fetch, those commits are silently lost. `--force-with-lease` checks that the remote branch is at the ref you expect (your last known state); if someone else has pushed in the meantime, the push is rejected, protecting their work. It is the safe alternative whenever you must force-push after a rebase, and should be the only force-push you ever use on shared branches.
+
+</details>
 
 ---
 
