@@ -14,6 +14,27 @@ This crash course serves two purposes. First, it gives you the mental model to d
 
 Both require the same foundation.
 
+```mermaid
+graph TB
+    Client["Client (browser / mobile)"] --> CDN["CDN (static assets)"]
+    Client --> DNS["DNS (Route 53)"]
+    DNS --> LB["Load Balancer (L7)"]
+
+    LB --> App1["App Server 1"]
+    LB --> App2["App Server N"]
+
+    App1 --> Cache["Cache (Redis)"]
+    App2 --> Cache
+    Cache --> DB_Primary["DB Primary (writes)"]
+    DB_Primary --> DB_Replica["DB Replica (reads)"]
+
+    App1 --> Queue["Message Queue (Kafka / SQS)"]
+    Queue --> Worker["Worker (async processing)"]
+    Worker --> DB_Primary
+
+    App1 --> ObjStore["Object Storage (S3)"]
+```
+
 ---
 
 ## Vocabulary
@@ -396,6 +417,80 @@ Writes are 1% of traffic. No special optimization needed at baseline.
 | Object storage | S3 | Binary files, backups, static assets |
 | Container orchestration | Kubernetes | See `Kubernetes.md` |
 | Secrets management | Vault, AWS Secrets Manager | Never hardcode credentials |
+
+---
+
+## Top 10 Interview Questions
+
+<details>
+<summary><strong>Q: How do you approach a system design interview? What is the structure?</strong></summary>
+
+Spend the first 5 minutes clarifying functional and non-functional requirements — do not start drawing until you know what you are building. Then do a back-of-envelope estimation (requests/sec, storage, bandwidth). Next, design the high-level architecture: draw the core pipeline (client, DNS, load balancer, app, cache, database, queue). Finally, deep-dive into 1-2 components the interviewer cares about. Throughout, state trade-offs explicitly. The structure is: requirements, estimation, high-level design, deep dives.
+
+</details>
+
+<details>
+<summary><strong>Q: Explain the CAP theorem and how it applies to real system decisions.</strong></summary>
+
+The CAP theorem states that a distributed system can guarantee at most two of Consistency, Availability, and Partition Tolerance. Since network partitions are unavoidable in distributed systems, you are always choosing between consistency and availability during a partition. In practice: a banking ledger chooses consistency (reject writes during a partition rather than risk inconsistency), while a social media feed chooses availability (show potentially stale data rather than return errors).
+
+</details>
+
+<details>
+<summary><strong>Q: What are the main caching strategies and when do you use each?</strong></summary>
+
+Cache-aside (lazy loading): app checks cache, on miss reads from DB and populates cache. Simple and resilient but first read is always slow. Write-through: write to cache and DB simultaneously; cache is always fresh but write latency is higher. Write-back: write to cache first, async persist to DB; lowest write latency but risks data loss if cache crashes. Choose based on your read/write ratio and tolerance for stale data.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you estimate capacity for a system that handles 1 billion requests per day?</strong></summary>
+
+1 billion requests per day is roughly 12,000 requests per second (divide by 86,400). Peak traffic is typically 2-3x average, so plan for ~30,000 RPS. If each request is 50KB, bandwidth is ~1.5 GB/sec at peak. For storage: multiply daily events by average event size by retention days by replication factor. These numbers tell you whether a single database can handle the load or whether you need sharding, caching layers, and CDN offloading.
+
+</details>
+
+<details>
+<summary><strong>Q: When would you use a message queue, and what problems does it solve?</strong></summary>
+
+Use a message queue when you need to decouple producers from consumers, buffer spikes in traffic, enable retry logic, or process work asynchronously. If a user action triggers an email, a thumbnail resize, and an audit log write, doing all three synchronously in the request path increases latency and couples unrelated systems. Put them on a queue — the HTTP response returns immediately, workers process independently, and if a consumer fails, the message is retried.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you handle a database that is becoming the bottleneck?</strong></summary>
+
+Escalate through these options in order: add indexes and optimise queries first (free). Add a caching layer (Redis) to absorb read traffic. Add read replicas to scale reads horizontally. Vertically scale the primary (bigger machine). Partition the data by feature (separate databases per service). Shard the database as a last resort — it introduces cross-shard query complexity, rebalancing challenges, and operational burden. Exhaust every simpler option before sharding.
+
+</details>
+
+<details>
+<summary><strong>Q: What is the thundering herd problem and how do you prevent it?</strong></summary>
+
+When a popular cache entry expires, many concurrent requests simultaneously miss the cache and hit the database, potentially overwhelming it. Prevention strategies: use a mutex lock so only one request fetches from the database while others wait for the cache to be repopulated. Use probabilistic early expiration where each request has a small chance of refreshing the cache before TTL expires. Stagger TTLs with jitter to avoid many keys expiring at the same instant.
+
+</details>
+
+<details>
+<summary><strong>Q: What is the difference between horizontal and vertical scaling, and when do you use each?</strong></summary>
+
+Vertical scaling means adding more resources (CPU, RAM) to a single machine — simpler, no code changes, but has a ceiling. Horizontal scaling means adding more machines behind a load balancer — no ceiling, but requires stateless application design and adds complexity (load balancing, session management, data consistency). For app servers, horizontal scaling is almost always the right long-term choice. For databases, exhaust vertical scaling and read replicas before pursuing horizontal sharding.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you design a system for high availability (99.99% uptime)?</strong></summary>
+
+Eliminate every single point of failure. Deploy across multiple availability zones. Use active-active or active-passive load balancers. Deploy stateless app servers behind auto-scaling groups. Use database replication with automated failover (tested quarterly). Implement circuit breakers to prevent cascading failures. Use health checks at every layer. Define SLOs with error budgets and alert on symptoms (latency, error rate) not causes (CPU). 99.99% means at most 52 minutes of downtime per year — every component and every failover path must be tested, not just designed.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you choose between SQL and NoSQL databases?</strong></summary>
+
+Default to PostgreSQL (SQL) unless you have a specific reason not to. SQL gives you ACID transactions, flexible querying with JOINs, a mature ecosystem, and strong consistency. Choose NoSQL when your access pattern is simple key-value lookups at massive scale (DynamoDB), when you need horizontal write scalability beyond what a single primary can handle (Cassandra), when your schema is genuinely flexible and document-oriented (MongoDB), or when you need specialised functionality like time-series or graph queries.
+
+</details>
 
 ---
 

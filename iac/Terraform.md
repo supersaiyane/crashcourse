@@ -31,6 +31,27 @@ it knows exactly what to add, change, or remove.
 **Mental model:** Terraform is a reconciler with memory. Code says what you want, state
 remembers what exists, and `plan` shows the diff between them before anything happens.
 
+```mermaid
+graph LR
+    Write["Write .tf files"] --> Init["terraform init"]
+    Init --> Plan["terraform plan"]
+    Plan -->|review diff| Apply["terraform apply"]
+    Apply --> State["State file (S3 + DynamoDB lock)"]
+    State -->|next run| Plan
+
+    Apply --> Cloud["Cloud Provider API"]
+    Cloud --> Infra["Running Infrastructure"]
+
+    subgraph Managed Resources
+        Infra --> VPC["VPC / Network"]
+        Infra --> EC2["Compute"]
+        Infra --> RDS["Database"]
+        Infra --> S3["Storage"]
+    end
+
+    Destroy["terraform destroy"] --> Cloud
+```
+
 ---
 
 ## Part 1 — The vocabulary
@@ -273,6 +294,80 @@ terraform console                  terraform graph | dot -Tpng > g.png
 `resource "type" "name" {}` · `data "type" "name" {}` · `variable {}` · `output {}` ·
 `module {}` · `locals {}` · meta-args: `count`, `for_each`, `depends_on`, `lifecycle {}` ·
 functions: `merge`, `coalesce`, `lookup`, `toset`, `templatefile`, `jsonencode`, `try`.
+
+---
+
+## Top 10 Interview Questions
+
+<details>
+<summary><strong>Q: What is Terraform state and why is it critical?</strong></summary>
+
+State is Terraform's record of what infrastructure it manages. It maps your HCL resource definitions to real cloud resources (by storing their IDs, attributes, and dependencies). Without state, Terraform cannot compute a plan — it would not know what already exists. State must be stored remotely with locking (e.g., S3 + DynamoDB) in team environments to prevent concurrent applies from corrupting it.
+
+</details>
+
+<details>
+<summary><strong>Q: What happens if someone changes infrastructure manually in the console (drift)?</strong></summary>
+
+On the next `terraform plan`, Terraform compares your code (desired state) against what it finds in the cloud (actual state via API calls) and the state file. If someone changed a resource manually, Terraform detects the difference and proposes changes to bring reality back in line with code. This is why you manage resources in one place — either Terraform or the console, not both.
+
+</details>
+
+<details>
+<summary><strong>Q: What is the difference between `count` and `for_each`, and when do you use each?</strong></summary>
+
+Both create multiple instances of a resource. `count` uses a numeric index — removing an item from the middle reindexes everything after it, causing unnecessary destroy/recreate operations. `for_each` uses stable string keys from a map or set, so adding or removing an item only affects that specific resource. Prefer `for_each` whenever the set of items may change over time.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you import existing infrastructure into Terraform?</strong></summary>
+
+Use `terraform import <resource_address> <real_id>` to bring a manually created resource under Terraform management. This adds the resource to state but does not generate the HCL code — you must write the matching resource block yourself. After importing, run `terraform plan` to verify the code and state align. In Terraform 1.5+, you can also use `import` blocks in HCL for a more declarative approach.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you manage multiple environments (dev, staging, prod) with Terraform?</strong></summary>
+
+Three common approaches: (1) Separate directories per environment with their own state backends — strongest isolation. (2) Terraform workspaces — same code, separate state files, switched via `terraform workspace select`. (3) Terragrunt — a wrapper that keeps configurations DRY across environments with shared modules and per-environment variable files. Most production teams prefer separate directories or Terragrunt for clearer isolation.
+
+</details>
+
+<details>
+<summary><strong>Q: What are Terraform modules and why should you use them?</strong></summary>
+
+A module is a reusable, parameterized bundle of resources — just a directory of `.tf` files called with inputs. Modules eliminate copy-paste across environments, enforce standards (every VPC gets the same structure), and make infrastructure composable. Pin module versions for reproducibility. Use the public Terraform Registry for well-maintained community modules and write custom modules for organisation-specific patterns.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you handle secrets in Terraform?</strong></summary>
+
+Never store secrets in `.tf` files or commit `.tfvars` containing secrets to Git. Mark variables as `sensitive` so Terraform redacts them from plan output. Pass secret values via environment variables (`TF_VAR_*`), a secrets manager (Vault, AWS Secrets Manager), or encrypted variable files. Use a remote backend with encryption enabled for state, because state can contain secret values in plaintext.
+
+</details>
+
+<details>
+<summary><strong>Q: What does `-/+` mean in a Terraform plan, and why is it dangerous?</strong></summary>
+
+`-/+` means Terraform will destroy and recreate the resource (a "replacement"). This happens when a change affects an immutable attribute — for example, changing the AMI of an EC2 instance. For a stateless server, this is fine. For a database, it means data loss. Always read the plan carefully, especially for `-/+` on stateful resources. Use `lifecycle { prevent_destroy = true }` on critical resources as a safety net.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you structure a Terraform CI/CD pipeline?</strong></summary>
+
+On pull requests: run `terraform init`, `terraform validate`, `terraform plan -out=tf.plan` and post the plan output as a PR comment for review. On merge to main: run `terraform apply tf.plan` using the saved plan file so the exact reviewed changes are applied. Add `tflint` and policy checks (OPA, Sentinel, checkov) in the PR stage. Use remote state with locking to prevent concurrent applies.
+
+</details>
+
+<details>
+<summary><strong>Q: What is the difference between Terraform and Ansible?</strong></summary>
+
+Terraform is declarative and designed for infrastructure provisioning — creating, modifying, and destroying cloud resources (VPCs, instances, databases). Ansible is procedural (though it has declarative modules) and designed for configuration management — installing software, managing files, and configuring servers after they exist. They complement each other: Terraform creates the infrastructure, Ansible configures what runs on it. See `Ansible.md`.
+
+</details>
 
 ---
 

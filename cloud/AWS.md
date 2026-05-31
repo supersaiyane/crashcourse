@@ -31,6 +31,32 @@ to which resource). You pay only for what you use, by the second/GB/request.
 network + database inside a region, spread across AZs for resilience, and IAM decides who can
 touch what. Master the five primitives and the rest of the catalog clicks into place.
 
+```mermaid
+graph TB
+    Internet["Internet"] --> R53["Route 53 (DNS)"]
+    R53 --> ALB["Application Load Balancer (public subnet)"]
+
+    subgraph VPC ["VPC (Region: us-east-1)"]
+        subgraph AZ1 ["AZ-1"]
+            ALB --> App1["EC2 / ECS (private subnet)"]
+            App1 --> RDS1["RDS Primary (private subnet)"]
+        end
+        subgraph AZ2 ["AZ-2"]
+            ALB --> App2["EC2 / ECS (private subnet)"]
+            RDS1 -->|replication| RDS2["RDS Standby (private subnet)"]
+        end
+    end
+
+    App1 --> S3["S3 (object storage)"]
+    App2 --> S3
+    App1 --> SM["Secrets Manager"]
+    App1 --> CW["CloudWatch (logs + metrics)"]
+
+    IAM["IAM Roles + Policies"] -.->|governs access| App1
+    IAM -.-> App2
+    IAM -.-> S3
+```
+
 ---
 
 ## Part 1 — The vocabulary
@@ -249,6 +275,80 @@ aws secretsmanager get-secret-value --secret-id s --query SecretString --output 
 aws ssm get-parameter --name /p --with-decryption --query Parameter.Value --output text
 aws ce get-cost-and-usage ...
 ```
+
+---
+
+## Top 10 Interview Questions
+
+<details>
+<summary><strong>Q: What is a VPC and how do public and private subnets differ?</strong></summary>
+
+A VPC (Virtual Private Cloud) is your isolated network in AWS. Public subnets have a route to an Internet Gateway, so resources in them can have public IPs and reach the internet directly. Private subnets have no direct internet route — they egress through a NAT Gateway. The standard pattern: load balancers in public subnets, application servers and databases in private subnets. This limits the attack surface to only the load balancer.
+
+</details>
+
+<details>
+<summary><strong>Q: What is the difference between an IAM Role and an IAM User?</strong></summary>
+
+An IAM User has long-lived credentials (access key + secret) tied to a person or service. An IAM Role has no permanent credentials — it is assumed temporarily by a service (EC2, Lambda, ECS task) or a federated identity, and provides short-lived credentials that auto-rotate. Roles are the secure default for machine-to-machine access. Use SSO for humans and Roles for services; avoid IAM Users with static keys.
+
+</details>
+
+<details>
+<summary><strong>Q: When would you choose EC2 versus Lambda?</strong></summary>
+
+Choose Lambda for event-driven, short-lived workloads (under 15 minutes) where you want zero server management and pay-per-invocation pricing — API handlers, file processing triggers, scheduled tasks. Choose EC2 when you need long-running processes, full OS control, GPU access, or workloads with sustained high throughput where per-invocation pricing would be more expensive than a reserved instance. ECS/Fargate sits in between — containerised workloads without managing EC2 instances.
+
+</details>
+
+<details>
+<summary><strong>Q: How does S3 achieve 11 nines of durability?</strong></summary>
+
+S3 automatically replicates objects across a minimum of three Availability Zones within a region. Each AZ is a physically separate data centre with independent power and networking. The service uses checksums to detect and automatically repair any bit-level corruption. Durability (99.999999999%) means you would statistically lose one object out of 10 billion stored over 10,000 years. Availability is a separate metric — standard S3 offers 99.99% availability.
+
+</details>
+
+<details>
+<summary><strong>Q: How do Security Groups and NACLs differ?</strong></summary>
+
+Security Groups are stateful firewalls attached to resources (EC2, RDS, ALB) — if you allow inbound traffic, the return traffic is automatically allowed. They operate at the resource level and default to deny-all inbound. NACLs (Network Access Control Lists) are stateless firewalls at the subnet level — you must explicitly allow both inbound and outbound rules. In practice, Security Groups handle most access control; NACLs provide an additional layer for subnet-wide rules.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you design for high availability on AWS?</strong></summary>
+
+Spread resources across at least two Availability Zones. Use an ALB to distribute traffic across instances in multiple AZs. Use RDS Multi-AZ for automatic database failover. Use Auto Scaling Groups to replace failed instances automatically. Store state externally (S3, RDS, ElastiCache) so application instances are stateless and replaceable. Route 53 health checks can fail over across regions for disaster recovery.
+
+</details>
+
+<details>
+<summary><strong>Q: What are the main AWS cost optimisation strategies?</strong></summary>
+
+Start by right-sizing: most instances are over-provisioned. Use Reserved Instances or Savings Plans for predictable base load (up to 72% savings). Use Spot Instances for fault-tolerant workloads (up to 90% savings). Turn off non-production resources outside business hours. Delete unattached EBS volumes and unused Elastic IPs. Use S3 lifecycle policies to transition cold data to cheaper storage classes. Tag everything and use Cost Explorer to identify waste.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you securely connect to an EC2 instance without SSH keys?</strong></summary>
+
+Use AWS Systems Manager (SSM) Session Manager. It requires the SSM Agent on the instance (pre-installed on Amazon Linux and most AMIs) and an IAM role with the `AmazonSSMManagedInstanceCore` policy attached to the instance. No SSH port (22) needs to be open in the Security Group, no key pairs to manage or rotate, and all sessions are logged to CloudWatch or S3 for audit purposes.
+
+</details>
+
+<details>
+<summary><strong>Q: What is the AWS Well-Architected Framework?</strong></summary>
+
+It is a set of five design pillars: Operational Excellence (automate, observe, improve), Security (least privilege, encryption, traceability), Reliability (recover from failures, scale to meet demand), Performance Efficiency (right resource types, monitor), and Cost Optimization (eliminate waste, use the right pricing model). AWS provides a Well-Architected Tool to review workloads against these pillars. It is the standard framework for architecture reviews and interview discussions.
+
+</details>
+
+<details>
+<summary><strong>Q: How does an Application Load Balancer (ALB) route traffic?</strong></summary>
+
+An ALB operates at Layer 7 (HTTP/HTTPS). It uses listener rules to route requests based on host header, URL path, HTTP method, or query string to different target groups. Each target group contains registered targets (EC2 instances, ECS tasks, Lambda functions, or IP addresses). The ALB performs health checks on targets and only routes to healthy ones. It also handles SSL termination, sticky sessions, and integrates with WAF for web application security.
+
+</details>
 
 ---
 

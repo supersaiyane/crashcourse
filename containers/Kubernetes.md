@@ -26,6 +26,37 @@ continuously drives toward it.
 measures reality and acts to match it. Every object you create is just another "set point" the
 control loops work to satisfy.
 
+```mermaid
+graph TB
+    User["kubectl / GitOps"] -->|desired state YAML| API["API Server"]
+
+    subgraph Control Plane
+        API --> etcd["etcd (state store)"]
+        API --> Sched["Scheduler"]
+        API --> CM["Controller Manager"]
+        CM -->|reconciliation loop| API
+    end
+
+    Sched -->|assign pod to node| K1
+    Sched -->|assign pod to node| K2
+
+    subgraph Worker Node 1
+        K1["kubelet"] --> P1["Pod A"]
+        K1 --> P2["Pod B"]
+        K1 --> KP1["kube-proxy"]
+    end
+
+    subgraph Worker Node 2
+        K2["kubelet"] --> P3["Pod C"]
+        K2 --> P4["Pod D"]
+        K2 --> KP2["kube-proxy"]
+    end
+
+    LB["Load Balancer / Ingress"] --> KP1
+    LB --> KP2
+    Internet["Client traffic"] --> LB
+```
+
 ---
 
 ## Part 1 — The vocabulary (the object hierarchy)
@@ -289,6 +320,80 @@ kubectl top node|pod
 kubectl cordon|uncordon <node>
 kubectl drain <node> --ignore-daemonsets --delete-emptydir-data
 ```
+
+---
+
+## Top 10 Interview Questions
+
+<details>
+<summary><strong>Q: What is the difference between a Pod and a Deployment?</strong></summary>
+
+A Pod is the smallest schedulable unit — one or more containers sharing network and storage. A Deployment manages a ReplicaSet of Pods, handling rolling updates, rollbacks, and self-healing. You almost never create bare Pods in production because they do not self-heal or scale; the Deployment controller ensures the desired replica count is maintained.
+
+</details>
+
+<details>
+<summary><strong>Q: How does Kubernetes networking work — how do Pods communicate?</strong></summary>
+
+Every Pod gets its own IP address within the cluster's flat network. Pods on the same node communicate directly; Pods across nodes communicate via a CNI plugin (Calico, Cilium, Flannel) that routes traffic between nodes. Services provide a stable virtual IP and DNS name in front of a set of Pods, and kube-proxy handles the load balancing rules on each node.
+
+</details>
+
+<details>
+<summary><strong>Q: What is the reconciliation loop and why is it central to Kubernetes?</strong></summary>
+
+Controllers continuously compare desired state (what you declared in YAML) with actual state (what is running). When a gap is detected — a crashed Pod, a missing replica, a failed node — the controller takes action to close it. This declarative, loop-based model is why Kubernetes self-heals without step-by-step scripting.
+
+</details>
+
+<details>
+<summary><strong>Q: A Pod is stuck in CrashLoopBackOff. Walk through your debugging steps.</strong></summary>
+
+First, `kubectl describe pod <pod>` and read the Events at the bottom for scheduling or image-pull issues. Then `kubectl logs <pod> --previous` to see the stdout/stderr from the crashed container. Common causes: the application fails on startup (missing config, bad connection string), the health probe is misconfigured, or the container hits its memory limit (OOMKilled). Fix the root cause in the app or its configuration, not by restarting the Pod.
+
+</details>
+
+<details>
+<summary><strong>Q: What is the difference between a liveness probe and a readiness probe?</strong></summary>
+
+A liveness probe checks whether the container is alive — if it fails, kubelet restarts the container. A readiness probe checks whether the container is ready to receive traffic — if it fails, the Pod is removed from Service endpoints but not restarted. Getting readiness probes right is what makes rolling updates seamless: new Pods only receive traffic once they are genuinely ready.
+
+</details>
+
+<details>
+<summary><strong>Q: How does RBAC work in Kubernetes?</strong></summary>
+
+RBAC (Role-Based Access Control) uses four objects: Role (namespace-scoped permissions), ClusterRole (cluster-wide permissions), RoleBinding, and ClusterRoleBinding. A Role defines which API verbs (get, list, create, delete) are allowed on which resource types. A RoleBinding associates that Role with a user, group, or ServiceAccount. The principle of least privilege applies: grant only the verbs and resources needed.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you perform a zero-downtime rolling update?</strong></summary>
+
+A Deployment's rolling update strategy creates new Pods with the updated image before terminating old ones, controlled by `maxSurge` and `maxUnavailable`. Readiness probes ensure traffic only shifts to new Pods once they pass health checks. If the new version is broken, `kubectl rollout undo` instantly reverts to the previous ReplicaSet. The key requirement is that readiness probes are correctly configured — without them, traffic hits Pods before they are ready.
+
+</details>
+
+<details>
+<summary><strong>Q: What happens when a worker node goes down?</strong></summary>
+
+The node controller detects the node is not reporting heartbeats and marks it NotReady after a configurable timeout (default ~40 seconds). After the eviction timeout (default 5 minutes), Pods on that node are evicted and rescheduled to healthy nodes by their controllers (Deployments, StatefulSets). Pods without a controller (bare Pods) are lost permanently, which is why you always use a controller.
+
+</details>
+
+<details>
+<summary><strong>Q: When would you use a StatefulSet instead of a Deployment?</strong></summary>
+
+StatefulSets are for workloads that need stable network identities (each Pod gets a persistent hostname like `db-0`, `db-1`), ordered startup/shutdown, and stable persistent storage (each Pod gets its own PersistentVolumeClaim). Databases (PostgreSQL, Kafka, etcd) are the classic use case. If your application is stateless and does not need stable identity, use a Deployment.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you manage secrets in Kubernetes securely?</strong></summary>
+
+Native Kubernetes Secrets are only base64-encoded, not encrypted at rest by default. For production, enable encryption at rest on the API server and use an external secrets solution: HashiCorp Vault with the Vault Secrets Operator, AWS Secrets Manager with External Secrets Operator, or Bitnami Sealed Secrets for GitOps workflows. Never commit plain Secret manifests to Git — the secret values are trivially decoded.
+
+</details>
 
 ---
 

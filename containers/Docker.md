@@ -30,6 +30,25 @@ VMs. Containers are *isolated processes*, not *virtual machines*.
 
 Recipe → build → Image → run → Container. Keep these three straight and Docker stops being confusing.
 
+```mermaid
+graph LR
+    DF["Dockerfile"] -->|docker build| Img["Image"]
+    Img -->|docker push| Reg["Registry (ECR / GHCR / Docker Hub)"]
+    Reg -->|docker pull| Img2["Image (on host)"]
+    Img2 -->|docker run| C1["Container 1"]
+    Img2 -->|docker run| C2["Container 2"]
+    Img2 -->|docker run| C3["Container N"]
+
+    subgraph Runtime
+        C1 --> Vol["Volume (persistent data)"]
+        C1 --> Net["Docker Network"]
+        C2 --> Net
+        C3 --> Net
+    end
+
+    Net -->|port mapping| Host["Host / Load Balancer"]
+```
+
 ---
 
 ## Part 1 — The vocabulary
@@ -265,6 +284,80 @@ docker system df                    docker system prune -a --volumes
 `FROM` base · `WORKDIR` cwd · `COPY`/`ADD` files in · `RUN` build-time command ·
 `ENV` env var · `ARG` build arg · `EXPOSE` document port · `USER` drop privileges ·
 `ENTRYPOINT` fixed executable · `CMD` default args · `HEALTHCHECK` liveness.
+
+---
+
+## Top 10 Interview Questions
+
+<details>
+<summary><strong>Q: What is the difference between a Docker image and a container?</strong></summary>
+
+An image is a read-only, layered filesystem template containing the application and all its dependencies. A container is a running (or stopped) instance of an image with its own writable layer on top. You can create many containers from one image, and each container is isolated. Think of an image as a class and a container as an instance.
+
+</details>
+
+<details>
+<summary><strong>Q: How do Docker image layers work, and why does instruction order in a Dockerfile matter?</strong></summary>
+
+Each Dockerfile instruction (FROM, RUN, COPY) creates a new filesystem layer. Layers are cached and reused if nothing above them changed. If you COPY source code before installing dependencies, every code change invalidates the dependency cache and forces a full reinstall. Putting dependency installation before source code copy means only the final layer rebuilds on code changes, dramatically speeding up builds.
+
+</details>
+
+<details>
+<summary><strong>Q: What is a multi-stage build and when would you use one?</strong></summary>
+
+A multi-stage build uses multiple FROM statements in a Dockerfile. The first stage compiles or builds the application with all build tools. The final stage copies only the built artifact into a minimal base image (e.g., distroless or alpine). The result is a much smaller image (often 10-20MB instead of 800MB) with a reduced attack surface, since compilers, package managers, and source code are not shipped to production.
+
+</details>
+
+<details>
+<summary><strong>Q: How does Docker networking work between containers?</strong></summary>
+
+Containers on the same user-defined bridge network can reach each other by container name as a hostname. Docker provides an internal DNS resolver that maps container names to their IPs within the network. The default bridge network does not support name resolution — always create a custom network. For external access, you publish ports with `-p host:container` which sets up iptables rules on the host.
+
+</details>
+
+<details>
+<summary><strong>Q: What is the difference between CMD and ENTRYPOINT?</strong></summary>
+
+ENTRYPOINT sets the fixed executable that always runs. CMD provides default arguments that can be overridden at `docker run` time. When both are present, CMD arguments are appended to ENTRYPOINT. In practice: use ENTRYPOINT for the main binary (e.g., `["python", "app.py"]`) and CMD for default flags. If you only use CMD, the entire command can be replaced by the user at runtime.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you persist data in Docker, and what is the difference between a volume and a bind mount?</strong></summary>
+
+A named volume is managed by Docker and stored in Docker's storage directory — ideal for database data and production persistence. A bind mount maps a specific host directory into the container — useful for development where you want live code reloading. Both survive container removal, but volumes are portable and easier to back up, while bind mounts couple the container to a specific host path.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you keep Docker images secure?</strong></summary>
+
+Use minimal base images (slim, alpine, distroless) to reduce attack surface. Add a `USER` instruction to run as non-root. Never bake secrets into images — pass them at runtime via environment variables or a secrets manager. Scan images for CVEs with tools like Trivy or Docker Scout. Pin base image versions to avoid surprise changes. Use `.dockerignore` to prevent sensitive files from entering the build context.
+
+</details>
+
+<details>
+<summary><strong>Q: What happens when a container's main process exits?</strong></summary>
+
+The container stops. A Docker container is fundamentally one main process (PID 1). When that process exits, the container's lifecycle ends. This is why you should not try to run multiple services in a single container or rely on background daemons. If you need the container to restart automatically, use `--restart unless-stopped` or a container orchestrator like Kubernetes.
+
+</details>
+
+<details>
+<summary><strong>Q: What is Docker Compose and when would you use it versus Kubernetes?</strong></summary>
+
+Docker Compose defines multi-container applications in a single YAML file — it handles networking, volumes, environment variables, and startup ordering. Use Compose for local development, CI pipelines, and simple single-host deployments. Use Kubernetes when you need multi-node orchestration, auto-scaling, self-healing, rolling updates, and production-grade resilience. Compose is simplicity; Kubernetes is scale.
+
+</details>
+
+<details>
+<summary><strong>Q: Why should you avoid using the `latest` tag in production?</strong></summary>
+
+The `latest` tag is mutable — it points to whatever was most recently pushed. Using it means your deployments are not reproducible: the same tag might resolve to different images on different hosts or at different times. Pin to a specific version tag (e.g., `nginx:1.25.3`) or use the image digest (`nginx@sha256:...`) to guarantee that every environment runs the exact same image.
+
+</details>
 
 ---
 
