@@ -1,6 +1,6 @@
 <p align="center">
-  <img src="https://img.shields.io/badge/Crash_Courses-121-blue?style=for-the-badge" alt="Courses"/>
-  <img src="https://img.shields.io/badge/Categories-17-green?style=for-the-badge" alt="Categories"/>
+  <img src="https://img.shields.io/badge/Crash_Courses-136-blue?style=for-the-badge" alt="Courses"/>
+  <img src="https://img.shields.io/badge/Categories-19-green?style=for-the-badge" alt="Categories"/>
   <img src="https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge" alt="License"/>
   <img src="https://img.shields.io/github/stars/supersaiyane/crashcourse?style=for-the-badge" alt="Stars"/>
   <img src="https://img.shields.io/github/forks/supersaiyane/crashcourse?style=for-the-badge" alt="Forks"/>
@@ -258,6 +258,25 @@ Read it top-to-bottom to **learn**. Bookmark it and `Ctrl+F` to **reference**. F
 | 12-Factor App | [Twelve-Factor-App.md](patterns/Twelve-Factor-App.md) | The methodology for cloud-native applications |
 | Cloud-Native Patterns | [Cloud-Native-Patterns.md](patterns/Cloud-Native-Patterns.md) | Sidecar, ambassador, adapter, init container, leader election |
 
+### Interview Prep
+| Topic | File | What you'll learn |
+|-------|------|-------------------|
+| System Design Interview | [System-Design-Interview.md](interview/System-Design-Interview.md) | 45-min framework, estimation, trade-offs, level expectations |
+| Behavioral Interview | [Behavioral-Interview.md](interview/Behavioral-Interview.md) | STAR method, story bank, leadership principles, company-specific |
+| Resume & Positioning | [Resume-Positioning.md](interview/Resume-Positioning.md) | ATS optimization, impact bullets, SRE/DevOps positioning |
+| Salary Negotiation | [Salary-Negotiation.md](interview/Salary-Negotiation.md) | TC negotiation script, counter-offers, competing offers |
+| Coding Interview | [Coding-Interview.md](interview/Coding-Interview.md) | SRE coding strategy, 15 patterns, problem-solving framework |
+| Algo & DS Cheatsheets | [Algo-DS-Cheatsheets.md](interview/Algo-DS-Cheatsheets.md) | Hash maps, trees, graphs, heaps in real systems |
+
+### Engineering Career
+| Topic | File | What you'll learn |
+|-------|------|-------------------|
+| Engineering Career Path | [Engineering-Career-Path.md](career/Engineering-Career-Path.md) | IC levels L3→Staff→Principal, promotion, IC vs Manager |
+| Engineering Leadership | [Engineering-Leadership.md](career/Engineering-Leadership.md) | Tech lead, 1:1s, hiring, performance reviews, team design |
+| Career Transitions | [Career-Transitions.md](career/Career-Transitions.md) | IC→Manager, startup→enterprise, SRE→Platform, the five shifts |
+| Mentorship | [Mentorship.md](career/Mentorship.md) | Finding mentors, being a mentee, sponsorship, reverse mentoring |
+| Continuous Learning | [Continuous-Learning.md](career/Continuous-Learning.md) | Learning science, tech radar, deep work, staying relevant |
+
 ---
 
 ## Learning Paths
@@ -321,5 +340,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 <p align="center">
   <strong>If this helped you, give it a star! It helps others find it too.</strong><br/>
-  <sub>121 crash courses. 17 categories. Built for engineers who'd rather read docs than watch a 4-hour tutorial.</sub>
+  <sub>136 crash courses. 19 categories. Built for engineers who'd rather read docs than watch a 4-hour tutorial.</sub>
 </p>

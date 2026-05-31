@@ -1,7 +1,7 @@
 {
   "meta": {
-    "total": 121,
-    "categories": 17,
+    "total": 136,
+    "categories": 19,
     "updated": "2026-05-31"
   },
   "categories": [
@@ -107,7 +107,8 @@
         { "title": "Regex", "file": "Regex.md", "tags": ["patterns", "matching", "groups"] },
         { "title": "Makefile", "file": "Makefile.md", "tags": ["build", "automation", "tasks"] },
         { "title": "Python for SRE", "file": "Python-for-SRE.md", "tags": ["python", "automation", "api"] },
-        { "title": "Go for Ops", "file": "Go-for-Ops.md", "tags": ["golang", "cli", "k8s"] }
+        { "title": "Go for Ops", "file": "Go-for-Ops.md", "tags": ["golang", "cli", "k8s"] },
+        { "title": "System Troubleshooting", "file": "System-Troubleshooting.md", "tags": ["debugging", "perf", "strace"] }
       ]
     },
     {
@@ -133,7 +134,8 @@
         { "title": "WireGuard", "file": "WireGuard.md", "tags": ["vpn", "tunnels", "tailscale"] },
         { "title": "k6", "file": "k6.md", "tags": ["load-testing", "vus", "thresholds"] },
         { "title": "jq", "file": "jq.md", "tags": ["json", "parsing", "cli"] },
-        { "title": "yq", "file": "yq.md", "tags": ["yaml", "parsing", "cli"] }
+        { "title": "yq", "file": "yq.md", "tags": ["yaml", "parsing", "cli"] },
+        { "title": "Web Performance", "file": "Web-Performance.md", "tags": ["core-web-vitals", "lighthouse", "ttfb"] }
       ]
     },
     {
@@ -146,7 +148,8 @@
         { "title": "Redis", "file": "Redis.md", "tags": ["cache", "data-structures", "cluster"] },
         { "title": "Kafka", "file": "Kafka.md", "tags": ["streaming", "topics", "consumer-groups"] },
         { "title": "RabbitMQ", "file": "RabbitMQ.md", "tags": ["messaging", "exchanges", "queues"] },
-        { "title": "etcd", "file": "etcd.md", "tags": ["kv-store", "raft", "k8s"] }
+        { "title": "etcd", "file": "etcd.md", "tags": ["kv-store", "raft", "k8s"] },
+        { "title": "Database Internals", "file": "Database-Internals.md", "tags": ["b-trees", "mvcc", "wal"] }
       ]
     },
     {
@@ -177,7 +180,8 @@
         { "title": "Chaos Engineering", "file": "Chaos-Engineering.md", "tags": ["game-days", "failure", "chaos-mesh"] },
         { "title": "Disaster Recovery", "file": "Disaster-Recovery.md", "tags": ["rto", "rpo", "failover"] },
         { "title": "Reliability Patterns", "file": "Reliability-Patterns.md", "tags": ["circuit-breaker", "retry", "bulkhead"] },
-        { "title": "Runbooks", "file": "Runbook-template.md", "tags": ["runbook", "template", "oncall"] }
+        { "title": "Runbooks", "file": "Runbook-template.md", "tags": ["runbook", "template", "oncall"] },
+        { "title": "Testing Strategies", "file": "Testing-Strategies.md", "tags": ["test-pyramid", "contract", "e2e"] }
       ]
     },
     {
@@ -252,6 +256,33 @@
       "courses": [
         { "title": "12-Factor App", "file": "Twelve-Factor-App.md", "tags": ["methodology", "cloud-native", "stateless"] },
         { "title": "Cloud-Native Patterns", "file": "Cloud-Native-Patterns.md", "tags": ["sidecar", "ambassador", "init-container"] }
+      ]
+    },
+    {
+      "id": "interview",
+      "label": "Interview Prep",
+      "icon": "clipboard",
+      "color": "#f59e0b",
+      "courses": [
+        { "title": "System Design Interview", "file": "System-Design-Interview.md", "tags": ["framework", "estimation", "trade-offs"] },
+        { "title": "Behavioral Interview", "file": "Behavioral-Interview.md", "tags": ["star", "leadership", "conflict"] },
+        { "title": "Resume & Positioning", "file": "Resume-Positioning.md", "tags": ["resume", "ats", "impact"] },
+        { "title": "Salary Negotiation", "file": "Salary-Negotiation.md", "tags": ["compensation", "counter", "tc"] },
+        { "title": "Coding Interview", "file": "Coding-Interview.md", "tags": ["patterns", "big-o", "problem-solving"] },
+        { "title": "Algo & DS Cheatsheets", "file": "Algo-DS-Cheatsheets.md", "tags": ["hash-map", "trees", "graphs"] }
+      ]
+    },
+    {
+      "id": "career",
+      "label": "Engineering Career",
+      "icon": "rocket",
+      "color": "#ec4899",
+      "courses": [
+        { "title": "Engineering Career Path", "file": "Engineering-Career-Path.md", "tags": ["levels", "promotion", "ic-vs-manager"] },
+        { "title": "Engineering Leadership", "file": "Engineering-Leadership.md", "tags": ["tech-lead", "1-on-1", "hiring"] },
+        { "title": "Career Transitions", "file": "Career-Transitions.md", "tags": ["pivot", "ic-to-manager", "startup"] },
+        { "title": "Mentorship", "file": "Mentorship.md", "tags": ["mentor", "sponsor", "growth"] },
+        { "title": "Continuous Learning", "file": "Continuous-Learning.md", "tags": ["learning-science", "tech-radar", "deep-work"] }
       ]
     }
   ]
