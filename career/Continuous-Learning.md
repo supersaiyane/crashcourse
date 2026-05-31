@@ -13,25 +13,21 @@
 Technology changes faster than any career. The engineers who thrive aren't the ones who know the
 most — they're the ones who learn the fastest.
 
-That sounds like a motivational poster, but it has a concrete implication: the half-life of any
-specific technical skill is shrinking. A Kubernetes certification from three years ago covers APIs
-that are deprecated. A machine learning specialization from 2021 predates the architectural shift
-that LLMs caused. The knowledge you have right now has an expiration date. The question is not
-whether it will expire, but how quickly you can replace it when it does.
+The half-life of any specific technical skill is shrinking. A Kubernetes certification from three
+years ago covers deprecated APIs. A machine learning specialization from 2021 predates the shift
+that LLMs caused. The knowledge you have right now has an expiration date — the question is how
+quickly you can replace it when it does.
 
-The engineers who burn out aren't lazy — they're caught in the wrong loop. They read every new
-blog post. They spin up every new tool. They feel permanently behind because the surface area of
-"things I should know" keeps expanding while their working hours stay fixed. This is not a
-learning problem. It is a prioritization problem compounded by anxiety.
+The engineers who burn out are caught in the wrong loop: reading every new blog post, spinning up
+every new tool, feeling permanently behind. This is a prioritization problem compounded by
+anxiety, not a learning problem.
 
-The engineers who stagnate aren't unintelligent. They stopped learning deliberately. They learn
-reactively — picking up just enough to finish the current ticket — and never build the broader
-mental models that make new things click faster. They mistake familiarity with competence.
+The engineers who stagnate stopped learning deliberately. They pick up just enough to finish the
+current ticket and never build the broader mental models that make new things click faster. They
+mistake familiarity with competence.
 
-Both failure modes are fixable with a system.
-
-This crash course gives you that system. It is grounded in learning science — not productivity
-theater. The techniques here are backed by cognitive research, not career-guru intuition.
+Both failure modes are fixable with a system. This crash course gives you that system — grounded
+in learning science, not career-guru intuition.
 
 ---
 
@@ -157,8 +153,8 @@ queue weekly. Most things will lose urgency on their own. The ones that stay mat
 immediately after. Do not copy. Paraphrase. If you cannot paraphrase, you did not understand it.
 
 **Retrieval practice.** At the end of each week, close your notes and write down the three most
-important things you learned. Then check. The gap between what you thought you knew and what you
-actually wrote down is useful data about where your learning is shallow.
+important things you learned. Then check. The gap between what you thought you retained and what
+you actually wrote is data about where learning is still shallow.
 
 ---
 
@@ -173,16 +169,13 @@ have to commit to specific claims. You have to handle the edge cases. You have t
 understanding well enough that a reader can follow it. Every time you do this, you find the gaps
 in your own model.
 
-Giving a talk — even a five-minute lightning talk at a team meeting — has the same effect
-amplified. Questions from the audience surface blind spots you did not know you had.
+Giving a talk — even a five-minute lightning talk at a team meeting — amplifies the effect.
+Questions from the audience surface blind spots you did not know you had. Contributing to open
+source documentation forces you to understand a system well enough to explain it to strangers.
 
-Contributing to open source documentation forces you to understand a system well enough to
-explain it correctly to strangers.
-
-None of this requires a large audience. You are not trying to build a brand. You are using the
-act of explanation as a learning tool. A blog with three readers and a GitHub profile with modest
-stars still gives you all the cognitive benefit of teaching — and occasionally connects you with
-people thinking about the same problems.
+None of this requires a large audience. You are not building a brand — you are using explanation
+as a learning tool. A blog with three readers still gives you the full cognitive benefit of
+teaching, and occasionally connects you with people thinking about the same problems.
 
 ⚠️ One trap: learning in public can become performance rather than practice. If you are writing
 posts to look smart rather than to understand, the benefit collapses. The test: are you writing
@@ -191,12 +184,10 @@ the former.
 
 ### Building a second brain
 
-Your working memory can hold roughly four chunks of information at once. Your long-term memory is
-vast but unreliable for retrieval without structure. A second brain is the external system that
-bridges these — organized well enough that you can find things you once knew.
-
-The goal is not to capture everything. It is to capture things you will want to recall and
-connect. Good second-brain hygiene means:
+Your working memory holds roughly four chunks at once. Your long-term memory is vast but
+unreliable without structure. A second brain bridges the two — organized well enough that you can
+find things you once knew. The goal is not to capture everything; it is to capture what you will
+want to recall and connect. Good second-brain hygiene means:
 
 - Write notes in your own words, not as pastes from documentation.
 - Tag and link notes to related concepts — knowledge is a graph, not a list.
@@ -273,22 +264,17 @@ getting signal value but not the compounding return of active participation.
 
 ### Breadth vs depth — the compounding argument
 
-Early in your career, breadth wins. You are building vocabulary and surface area — enough to
-recognize patterns and have informed conversations. The T-shaped engineer needs a horizontal bar
-before the vertical one means much.
+Early in your career, breadth wins — you need enough vocabulary and surface area to recognize
+patterns and have informed conversations. Past the five-year mark, depth compounds. The engineer
+who deeply understands distributed consensus and observability builds intuition that cannot be
+shortcut. Each new system clicks faster because the mental model is rich.
 
-Past the five-year mark, depth begins to compound. The engineer who has spent three years truly
-understanding distributed consensus, failure modes, and observability in production systems builds
-intuition that cannot be shortcut. Each new system they encounter clicks faster because their
-mental model is rich. They see patterns that shallow generalists miss.
+The mistake is chasing breadth indefinitely. Adding a tenth tool to your resume has diminishing
+returns. Another thousand hours on distributed systems adds non-linear returns — because depth
+compounds and breadth does not.
 
-The mistake is chasing breadth indefinitely. At some point, adding a tenth tool to your resume
-has diminishing returns. Adding another thousand hours to your understanding of distributed systems
-adds non-linear returns — because depth compounds.
-
-The practical implication: identify the one or two domains where you want to be genuinely world-
-class. Invest there disproportionately. Be broad enough elsewhere to collaborate and recognize
-problems. But do not mistake exposure for mastery.
+Identify one or two domains where you want to be genuinely world-class. Invest there
+disproportionately. Stay broad enough to collaborate — but do not mistake exposure for mastery.
 
 ### Creating a personal technology radar
 
