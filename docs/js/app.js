@@ -65,7 +65,57 @@ function setTheme(t) {
 $id('theme-toggle').addEventListener('click', () => {
   const cur = document.documentElement.getAttribute('data-theme');
   setTheme(cur === 'dark' ? 'light' : 'dark');
+  initMermaid();
 });
+
+// ── Progress & Bookmarks (localStorage) ──────────────────────────────────────
+const STORAGE_KEYS = {
+  read:      'cc-read',       // JSON array of "catId/file" strings
+  bookmarks: 'cc-bookmarks',  // JSON array of "catId/file" strings
+  history:   'cc-history',    // JSON array of { key:"catId/file", ts:number }
+};
+
+function storageGet(key) {
+  try { return JSON.parse(localStorage.getItem(key)) || []; } catch { return []; }
+}
+function storageSet(key, val) {
+  localStorage.setItem(key, JSON.stringify(val));
+}
+function isRead(key)       { return storageGet(STORAGE_KEYS.read).includes(key); }
+function isBookmarked(key) { return storageGet(STORAGE_KEYS.bookmarks).includes(key); }
+
+function toggleRead(key) {
+  const arr = storageGet(STORAGE_KEYS.read);
+  const idx = arr.indexOf(key);
+  if (idx >= 0) arr.splice(idx, 1); else arr.push(key);
+  storageSet(STORAGE_KEYS.read, arr);
+  return idx < 0;
+}
+function toggleBookmark(key) {
+  const arr = storageGet(STORAGE_KEYS.bookmarks);
+  const idx = arr.indexOf(key);
+  if (idx >= 0) arr.splice(idx, 1); else arr.push(key);
+  storageSet(STORAGE_KEYS.bookmarks, arr);
+  return idx < 0;
+}
+function recordHistory(key) {
+  let arr = storageGet(STORAGE_KEYS.history);
+  arr = arr.filter(h => h.key !== key);
+  arr.unshift({ key, ts: Date.now() });
+  if (arr.length > 20) arr.length = 20;
+  storageSet(STORAGE_KEYS.history, arr);
+}
+function getReadCount() { return storageGet(STORAGE_KEYS.read).length; }
+function getCategoryProgress(catId, courses) {
+  const readSet = new Set(storageGet(STORAGE_KEYS.read));
+  let done = 0;
+  courses.forEach(c => { if (readSet.has(`${catId}/${c.file}`)) done++; });
+  return done;
+}
+function getTotalCourseCount() {
+  if (!INDEX) return 0;
+  return INDEX.categories.reduce((sum, cat) => sum + cat.courses.length, 0);
+}
 
 // ── State ─────────────────────────────────────────────────────────────────────
 let INDEX      = null;   // course-index.json data
@@ -122,6 +172,11 @@ function showView(name) {
       el.classList.add('hidden');
     }
   });
+  // Refresh progress/bookmarks when returning to hero or list
+  if (name === 'hero') {
+    refreshHeroSections();
+    renderCategories();
+  }
 }
 
 // ── Counters ──────────────────────────────────────────────────────────────────
@@ -161,6 +216,10 @@ async function renderCategories() {
 
     const sampleTitles = cat.courses.slice(0,3).map(c => c.title);
 
+    const done = getCategoryProgress(cat.id, cat.courses);
+    const total = cat.courses.length;
+    const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+
     card.innerHTML = `
       <div class="cat-top">
         <div class="cat-icon-wrap" style="background:${hexRgba(cat.color,0.12)};color:${cat.color}">
@@ -172,10 +231,14 @@ async function renderCategories() {
       </div>
       <div class="cat-body">
         <div class="cat-name">${esc(cat.label)}</div>
-        <div class="cat-count">${cat.courses.length} course${cat.courses.length!==1?'s':''}</div>
+        <div class="cat-count">${total} course${total!==1?'s':''}</div>
       </div>
       <div class="cat-pills">
         ${sampleTitles.map(t=>`<span class="cat-pill-tag">${esc(t)}</span>`).join('')}
+      </div>
+      <div class="cat-progress">
+        <div class="cat-progress-bar"><div class="cat-progress-fill" style="width:${pct}%"></div></div>
+        ${done > 0 ? `<div class="cat-progress-text">${done}/${total} completed</div>` : ''}
       </div>
     `;
 
@@ -205,11 +268,16 @@ async function renderList(catId) {
   wrap.innerHTML = '';
 
   cat.courses.forEach((course) => {
+    const key = `${catId}/${course.file}`;
     const btn = document.createElement('button');
     btn.className = 'c-pill';
+    if (isRead(key)) btn.classList.add('is-read');
+    if (isBookmarked(key)) btn.classList.add('is-bookmarked');
     btn.setAttribute('aria-label', `Open ${course.title}`);
     btn.innerHTML = `
       <span class="c-dot" style="background:${cat.color}"></span>
+      <svg class="c-star" width="11" height="11" viewBox="0 0 24 24" fill="#f59e0b" stroke="none" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 20.49 12 17.27 5.82 20.49 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      <svg class="c-read-check" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
       ${esc(course.title)}
       <svg class="c-chevron" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
         <path d="M5 12h14M12 5l7 7-7 7"/>
@@ -258,22 +326,68 @@ async function renderReader(catId, filename) {
     out.classList.remove('hidden');
     out.innerHTML = marked.parse(md);
 
-    // Add lang label to each pre block
+    // Add lang label to each pre block; render mermaid diagrams
     out.querySelectorAll('pre code').forEach((block) => {
       const lang = [...block.classList]
         .find(c => c.startsWith('language-'))
         ?.replace('language-','') || 'text';
+      if (lang === 'mermaid' && window.mermaid) {
+        const wrap = document.createElement('div');
+        wrap.className = 'mermaid-wrap';
+        wrap.innerHTML = `<pre class="mermaid">${block.textContent}</pre>`;
+        block.parentElement.replaceWith(wrap);
+        return;
+      }
       block.parentElement.setAttribute('data-lang', lang);
       if (!block.classList.contains('hljs') && window.hljs) {
         window.hljs.highlightElement(block);
       }
     });
 
+    // Initialize mermaid diagrams if any exist
+    if (window.mermaid && out.querySelector('.mermaid')) {
+      try { window.mermaid.run({ nodes: out.querySelectorAll('.mermaid') }); } catch {}
+    }
+
+    // Record reading history
+    const courseKey = `${catId}/${filename}`;
+    recordHistory(courseKey);
+
+    // Wire up reader action buttons
+    const btnRead = $id('btn-mark-read');
+    const btnBm   = $id('btn-bookmark');
+    const readLabel = btnRead.querySelector('.mark-read-label');
+
+    function syncReaderButtons() {
+      const r = isRead(courseKey);
+      btnRead.classList.toggle('active', r);
+      if (readLabel) readLabel.textContent = r ? 'Read' : 'Mark read';
+      btnBm.classList.toggle('active', isBookmarked(courseKey));
+    }
+    syncReaderButtons();
+
+    // Remove old listeners by cloning
+    const newBtnRead = btnRead.cloneNode(true);
+    const newBtnBm   = btnBm.cloneNode(true);
+    btnRead.replaceWith(newBtnRead);
+    btnBm.replaceWith(newBtnBm);
+
+    newBtnRead.addEventListener('click', () => {
+      toggleRead(courseKey);
+      const r2 = isRead(courseKey);
+      newBtnRead.classList.toggle('active', r2);
+      const lbl = newBtnRead.querySelector('.mark-read-label');
+      if (lbl) lbl.textContent = r2 ? 'Read' : 'Mark read';
+    });
+    newBtnBm.addEventListener('click', () => {
+      toggleBookmark(courseKey);
+      newBtnBm.classList.toggle('active', isBookmarked(courseKey));
+    });
+
     // Stash in search map if ready
     if (SEARCH_MAP) {
-      const key = `${catId}/${filename}`;
-      if (!SEARCH_MAP.has(key)) {
-        SEARCH_MAP.set(key, { catId, filename, title: course?.title || filename, content: md.slice(0,4000) });
+      if (!SEARCH_MAP.has(courseKey)) {
+        SEARCH_MAP.set(courseKey, { catId, filename, title: course?.title || filename, content: md.slice(0,4000) });
       }
     }
   } catch(err) {
@@ -452,11 +566,132 @@ if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(()=>{}));
 }
 
+// ── Continue reading / Bookmarks / Completion ────────────────────────────────
+function findCourseByKey(key) {
+  if (!INDEX) return null;
+  const [catId, file] = key.split('/');
+  for (const cat of INDEX.categories) {
+    if (cat.id === catId) {
+      const course = cat.courses.find(c => c.file === file);
+      if (course) return { cat, course };
+    }
+  }
+  return null;
+}
+
+function renderContinueSection() {
+  const section = $id('continue-section');
+  const grid = $id('continue-grid');
+  if (!INDEX || !section || !grid) return;
+
+  const history = storageGet(STORAGE_KEYS.history).slice(0, 3);
+  if (!history.length) { section.classList.add('hidden'); return; }
+
+  grid.innerHTML = '';
+  let shown = 0;
+
+  history.forEach(({ key }) => {
+    const found = findCourseByKey(key);
+    if (!found) return;
+    const { cat, course } = found;
+    const card = document.createElement('div');
+    card.className = 'continue-card';
+    card.setAttribute('role', 'button');
+    card.setAttribute('tabindex', '0');
+    card.innerHTML = `
+      <div class="continue-card-icon" style="background:${hexRgba(cat.color,0.12)};color:${cat.color}">
+        ${ICONS[cat.icon] || ICONS.rocket}
+      </div>
+      <div class="continue-card-text">
+        <div class="continue-card-title">${esc(course.title)}</div>
+        <div class="continue-card-cat">${esc(cat.label)}</div>
+      </div>
+    `;
+    const open = () => go(`/${cat.id}/${course.file}`);
+    card.addEventListener('click', open);
+    card.addEventListener('keydown', (e) => { if (e.key==='Enter'||e.key===' '){e.preventDefault();open();} });
+    grid.appendChild(card);
+    shown++;
+  });
+
+  section.classList.toggle('hidden', shown === 0);
+}
+
+function renderBookmarksSection() {
+  const section = $id('bookmarks-section');
+  const grid = $id('bookmarks-grid');
+  if (!INDEX || !section || !grid) return;
+
+  const bookmarks = storageGet(STORAGE_KEYS.bookmarks);
+  if (!bookmarks.length) { section.classList.add('hidden'); return; }
+
+  grid.innerHTML = '';
+  let shown = 0;
+
+  bookmarks.forEach((key) => {
+    const found = findCourseByKey(key);
+    if (!found) return;
+    const { cat, course } = found;
+    const card = document.createElement('div');
+    card.className = 'continue-card';
+    card.setAttribute('role', 'button');
+    card.setAttribute('tabindex', '0');
+    card.innerHTML = `
+      <div class="continue-card-icon" style="background:rgba(245,158,11,0.12);color:#f59e0b">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="#f59e0b" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 20.49 12 17.27 5.82 20.49 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      </div>
+      <div class="continue-card-text">
+        <div class="continue-card-title">${esc(course.title)}</div>
+        <div class="continue-card-cat">${esc(cat.label)}</div>
+      </div>
+    `;
+    const open = () => go(`/${cat.id}/${course.file}`);
+    card.addEventListener('click', open);
+    card.addEventListener('keydown', (e) => { if (e.key==='Enter'||e.key===' '){e.preventDefault();open();} });
+    grid.appendChild(card);
+    shown++;
+  });
+
+  section.classList.toggle('hidden', shown === 0);
+}
+
+function updateCompletionStat() {
+  const el = $id('completion-stat');
+  const numEl = $id('completion-num');
+  if (!el || !numEl || !INDEX) return;
+
+  const total = getTotalCourseCount();
+  const done = getReadCount();
+  if (done === 0) { el.style.display = 'none'; return; }
+
+  const pct = Math.round((done / total) * 100);
+  numEl.textContent = `${done}/${total}`;
+  el.style.display = '';
+}
+
+function refreshHeroSections() {
+  renderContinueSection();
+  renderBookmarksSection();
+  updateCompletionStat();
+}
+
+// ── Mermaid init ─────────────────────────────────────────────────────────────
+function initMermaid() {
+  if (!window.mermaid) return;
+  window.mermaid.initialize({
+    startOnLoad: false,
+    theme: document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default',
+    securityLevel: 'loose',
+  });
+}
+
 // ── Boot ──────────────────────────────────────────────────────────────────────
 (async function boot() {
   initTheme();
+  initMermaid();
   await loadIndex();
   renderCategories();
+  refreshHeroSections();
   route();
   if (!parseRoute().cat) setTimeout(animateCounters, 250);
 })();
