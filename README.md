@@ -1,6 +1,6 @@
 <p align="center">
-  <img src="https://img.shields.io/badge/Crash_Courses-55-blue?style=for-the-badge" alt="Courses"/>
-  <img src="https://img.shields.io/badge/Categories-13-green?style=for-the-badge" alt="Categories"/>
+  <img src="https://img.shields.io/badge/Crash_Courses-98-blue?style=for-the-badge" alt="Courses"/>
+  <img src="https://img.shields.io/badge/Categories-14-green?style=for-the-badge" alt="Categories"/>
   <img src="https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge" alt="License"/>
   <img src="https://img.shields.io/github/stars/supersaiyane/DevOps-Crash-Course?style=for-the-badge" alt="Stars"/>
   <img src="https://img.shields.io/github/forks/supersaiyane/DevOps-Crash-Course?style=for-the-badge" alt="Forks"/>
@@ -23,9 +23,6 @@
   <img src="https://img.shields.io/badge/Bash-4EAA25?style=flat-square&logo=gnubash&logoColor=white" alt="Bash"/>
   <img src="https://img.shields.io/badge/Git-F05032?style=flat-square&logo=git&logoColor=white" alt="Git"/>
   <img src="https://img.shields.io/badge/OpenTelemetry-000000?style=flat-square&logo=opentelemetry&logoColor=white" alt="OpenTelemetry"/>
-  <img src="https://img.shields.io/badge/Packer-02A8EF?style=flat-square&logo=packer&logoColor=white" alt="Packer"/>
-  <img src="https://img.shields.io/badge/Pulumi-8A3391?style=flat-square&logo=pulumi&logoColor=white" alt="Pulumi"/>
-  <img src="https://img.shields.io/badge/tmux-1BB91F?style=flat-square&logo=tmux&logoColor=white" alt="tmux"/>
   <img src="https://img.shields.io/badge/Ansible-EE0000?style=flat-square&logo=ansible&logoColor=white" alt="Ansible"/>
   <img src="https://img.shields.io/badge/Argo_CD-EF7B4D?style=flat-square&logo=argo&logoColor=white" alt="Argo CD"/>
   <img src="https://img.shields.io/badge/Istio-466BB0?style=flat-square&logo=istio&logoColor=white" alt="Istio"/>
@@ -36,6 +33,10 @@
   <img src="https://img.shields.io/badge/Nginx-009639?style=flat-square&logo=nginx&logoColor=white" alt="Nginx"/>
   <img src="https://img.shields.io/badge/Podman-892CA0?style=flat-square&logo=podman&logoColor=white" alt="Podman"/>
   <img src="https://img.shields.io/badge/Vim-019733?style=flat-square&logo=vim&logoColor=white" alt="Vim"/>
+  <img src="https://img.shields.io/badge/Python-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python"/>
+  <img src="https://img.shields.io/badge/Go-00ADD8?style=flat-square&logo=go&logoColor=white" alt="Go"/>
+  <img src="https://img.shields.io/badge/Envoy-AC6199?style=flat-square&logo=envoyproxy&logoColor=white" alt="Envoy"/>
+  <img src="https://img.shields.io/badge/Cloudflare-F38020?style=flat-square&logo=cloudflare&logoColor=white" alt="Cloudflare"/>
 </p>
 
 <h1 align="center">DevOps / SRE / Cloud / AI Crash Course</h1>
@@ -80,17 +81,23 @@ Read it top-to-bottom to **learn**. Bookmark it and `Ctrl+F` to **reference**. F
 | Helm | [Helm.md](containers/Helm.md) | Charts, values, templates, repositories, hooks |
 | Kustomize | [Kustomize.md](containers/Kustomize.md) | Bases, overlays, patches, generators, template-free K8s config |
 | Istio | [Istio.md](containers/Istio.md) | Service mesh, mTLS, traffic splitting, canary deploys, VirtualService |
+| Cilium | [Cilium.md](containers/Cilium.md) | eBPF networking, L7 policies, Hubble observability, ClusterMesh |
 | Podman | [Podman.md](containers/Podman.md) | Daemonless containers, rootless, Buildah, Skopeo, Quadlet |
+| Velero | [Velero.md](containers/Velero.md) | K8s backup/restore, disaster recovery, cluster migration |
+| Harbor | [Harbor.md](containers/Harbor.md) | Private container registry, scanning, replication, RBAC |
 
 ### Infrastructure as Code
 | Topic | File | What you'll learn |
 |-------|------|-------------------|
 | Terraform | [Terraform.md](iac/Terraform.md) | HCL, state, modules, workspaces, import, drift detection |
 | Ansible | [Ansible.md](iac/Ansible.md) | Agentless config management, playbooks, roles, vault, inventory |
+| Puppet | [Puppet.md](iac/Puppet.md) | Declarative config management, manifests, modules, Hiera, Bolt |
 | Packer | [Packer.md](iac/Packer.md) | Templates, builders, provisioners, golden images |
 | Pulumi | [Pulumi.md](iac/Pulumi.md) | IaC in real languages, stacks, state, vs Terraform |
 | Vault | [Vault.md](iac/Vault.md) | Secrets management, dynamic secrets, PKI, transit encryption |
 | Terragrunt | [Terragrunt.md](iac/Terragrunt.md) | DRY Terraform, multi-env, dependency orchestration |
+| Crossplane | [Crossplane.md](iac/Crossplane.md) | K8s-native cloud provisioning, Compositions, platform APIs |
+| OPA | [OPA.md](iac/OPA.md) | Policy as code, Rego, Gatekeeper, Conftest, admission control |
 
 ### Cloud Providers
 | Topic | File | What you'll learn |
@@ -98,6 +105,8 @@ Read it top-to-bottom to **learn**. Bookmark it and `Ctrl+F` to **reference**. F
 | AWS | [AWS.md](cloud/AWS.md) | EC2, S3, IAM, VPC, Lambda, RDS, CloudFormation |
 | Google Cloud | [GCP.md](cloud/GCP.md) | gcloud, GKE, Cloud Run, IAM, networking |
 | Azure | [Azure.md](cloud/Azure.md) | az CLI, ARM, AKS, App Service, networking |
+| Cloudflare | [Cloudflare.md](cloud/Cloudflare.md) | Edge network, CDN, WAF, Workers, Pages, R2, Zero Trust |
+| FinOps | [FinOps.md](cloud/FinOps.md) | Cloud cost optimization, right-sizing, reservations, Kubecost |
 
 ### Observability
 | Topic | File | What you'll learn |
@@ -107,6 +116,11 @@ Read it top-to-bottom to **learn**. Bookmark it and `Ctrl+F` to **reference**. F
 | Loki | [Loki.md](observability/Loki.md) | LogQL, labels, Promtail, log aggregation |
 | OpenTelemetry | [OpenTelemetry.md](observability/OpenTelemetry.md) | Traces, metrics, logs, SDK, collector, instrumentation |
 | Alertmanager | [Alertmanager.md](observability/Alertmanager.md) | Routing, grouping, silences, inhibition, receivers |
+| Tempo | [Tempo.md](observability/Tempo.md) | Distributed tracing backend, TraceQL, object storage |
+| Mimir | [Mimir.md](observability/Mimir.md) | Long-term Prometheus storage, multi-tenant, horizontal scaling |
+| Jaeger | [Jaeger.md](observability/Jaeger.md) | Distributed tracing, sampling, service dependency graphs |
+| ELK Stack | [ELK-Stack.md](observability/ELK-Stack.md) | Elasticsearch, Logstash, Kibana, index lifecycle management |
+| Fluentd & Fluent Bit | [Fluentd-FluentBit.md](observability/Fluentd-FluentBit.md) | Log collection, parsing, routing, K8s DaemonSet |
 
 ### CI/CD & GitOps
 | Topic | File | What you'll learn |
@@ -116,6 +130,8 @@ Read it top-to-bottom to **learn**. Bookmark it and `Ctrl+F` to **reference**. F
 | Jenkins | [Jenkins.md](cicd/Jenkins.md) | Pipelines, Jenkinsfile, agents, shared libraries |
 | Argo CD | [ArgoCD.md](cicd/ArgoCD.md) | GitOps, Applications, sync waves, multi-env promotion |
 | Flux | [Flux.md](cicd/Flux.md) | GitOps operator, Kustomizations, HelmRelease, image automation |
+| Tekton | [Tekton.md](cicd/Tekton.md) | K8s-native CI/CD, Tasks, Pipelines, Triggers, Chains |
+| Argo Rollouts | [Argo-Rollouts.md](cicd/Argo-Rollouts.md) | Progressive delivery, canary, blue-green, automated analysis |
 
 ### Linux & Terminal
 | Topic | File | What you'll learn |
@@ -127,17 +143,26 @@ Read it top-to-bottom to **learn**. Bookmark it and `Ctrl+F` to **reference**. F
 | systemd | [systemd.md](linux/systemd.md) | Units, services, timers, journalctl, security hardening |
 | awk | [awk.md](linux/awk.md) | Pattern scanning, field processing, one-liners for logs |
 | sed | [sed.md](linux/sed.md) | Stream editing, substitution, in-place transforms |
+| Regex | [Regex.md](linux/Regex.md) | Pattern matching, capture groups, lookahead, common patterns |
+| Makefile | [Makefile.md](linux/Makefile.md) | Task runner, build automation, project-level "how to run this" |
+| Python for SRE | [Python-for-SRE.md](linux/Python-for-SRE.md) | Automation scripts, API clients, custom exporters, ChatOps |
+| Go for Ops | [Go-for-Ops.md](linux/Go-for-Ops.md) | CLI tools, HTTP servers, K8s client-go, cross-compilation |
 
 ### Version Control
 | Topic | File | What you'll learn |
 |-------|------|-------------------|
 | Git | [Git.md](vcs/Git.md) | Branching, merging, rebasing, stashing, workflows |
+| pre-commit | [pre-commit.md](vcs/pre-commit.md) | Git hooks framework, linters, formatters, secret scanning |
 
 ### Networking & CLI Tools
 | Topic | File | What you'll learn |
 |-------|------|-------------------|
+| HTTP | [HTTP.md](networking/HTTP.md) | Methods, status codes, headers, TLS, CORS, HTTP/2 & /3 |
 | DNS / curl / dig | [DNS-curl-dig.md](networking/DNS-curl-dig.md) | DNS resolution, HTTP debugging, API testing |
 | Nginx | [Nginx.md](networking/Nginx.md) | Reverse proxy, load balancing, TLS, rate limiting |
+| Envoy | [Envoy.md](networking/Envoy.md) | L4/L7 proxy, xDS, circuit breaking, service mesh data plane |
+| WireGuard | [WireGuard.md](networking/WireGuard.md) | Modern VPN, site-to-site tunnels, Tailscale |
+| k6 | [k6.md](networking/k6.md) | Load testing, virtual users, thresholds, CI integration |
 | jq | [jq.md](networking/jq.md) | JSON parsing, filtering, transforming on the CLI |
 | yq | [yq.md](networking/yq.md) | YAML parsing, editing, converting on the CLI |
 
@@ -147,12 +172,19 @@ Read it top-to-bottom to **learn**. Bookmark it and `Ctrl+F` to **reference**. F
 | PostgreSQL | [PostgreSQL.md](data/PostgreSQL.md) | Operations, replication, VACUUM, EXPLAIN, backups, PgBouncer |
 | Redis | [Redis.md](data/Redis.md) | Data structures, persistence, Sentinel, Cluster, rate limiting |
 | Kafka | [Kafka.md](data/Kafka.md) | Topics, partitions, consumer groups, exactly-once, Schema Registry |
+| RabbitMQ | [RabbitMQ.md](data/RabbitMQ.md) | Exchanges, queues, routing, dead letters, quorum queues |
+| etcd | [etcd.md](data/etcd.md) | Distributed KV store, Raft consensus, K8s backing store |
 
 ### Security
 | Topic | File | What you'll learn |
 |-------|------|-------------------|
 | Trivy | [Trivy.md](security/Trivy.md) | Image/IaC/secret scanning, SBOM, CI integration |
 | Falco | [Falco.md](security/Falco.md) | Runtime security, syscall monitoring, custom rules, Falcosidekick |
+| Checkov | [Checkov.md](security/Checkov.md) | IaC static analysis, Terraform/K8s security scanning |
+| Cosign & Sigstore | [Cosign-Sigstore.md](security/Cosign-Sigstore.md) | Container image signing, verification, supply chain security |
+| Sealed Secrets & ESO | [Sealed-Secrets.md](security/Sealed-Secrets.md) | GitOps-safe secrets, External Secrets Operator, SOPS |
+| cert-manager | [cert-manager.md](security/cert-manager.md) | Automated TLS certificates, Let's Encrypt, K8s integration |
+| SSH | [SSH.md](security/SSH.md) | Key management, tunneling, hardening, jump hosts, certificates |
 
 ### SRE Processes & Practices
 | Topic | File | What you'll learn |
@@ -162,7 +194,15 @@ Read it top-to-bottom to **learn**. Bookmark it and `Ctrl+F` to **reference**. F
 | Postmortems & RCA | [Postmortems-RCA.md](processes/Postmortems-RCA.md) | Blameless culture, 5 Whys, action items, templates |
 | Capacity Planning | [Capacity-Planning.md](processes/Capacity-Planning.md) | Utilization, headroom, forecasting, load testing |
 | Chaos Engineering | [Chaos-Engineering.md](processes/Chaos-Engineering.md) | Game days, hypothesis-driven failure injection, Chaos Mesh |
+| Disaster Recovery | [Disaster-Recovery.md](processes/Disaster-Recovery.md) | RTO/RPO, failover, DR drills, multi-region, backup strategy |
+| Reliability Patterns | [Reliability-Patterns.md](processes/Reliability-Patterns.md) | Retries, circuit breakers, bulkheads, graceful degradation |
 | Runbooks | [Runbook-template.md](processes/Runbook-template.md) | Writing runbooks for 3 AM, reusable template |
+
+### Platform Engineering
+| Topic | File | What you'll learn |
+|-------|------|-------------------|
+| Backstage | [Backstage.md](platform/Backstage.md) | Developer portal, service catalog, templates, golden paths |
+| Feature Flags | [Feature-Flags.md](platform/Feature-Flags.md) | Progressive rollout, kill switches, A/B testing, OpenFeature |
 
 ### AI & LLM Engineering
 | Topic | File | What you'll learn |
@@ -170,11 +210,18 @@ Read it top-to-bottom to **learn**. Bookmark it and `Ctrl+F` to **reference**. F
 | LLM Fundamentals | [LLM-Fundamentals.md](ai/LLM-Fundamentals.md) | Tokens, context windows, temperature, embeddings, transformers |
 | Prompt Engineering | [Prompt-Engineering.md](ai/Prompt-Engineering.md) | Few-shot, chain-of-thought, structured outputs, prompt templates |
 | RAG | [RAG.md](ai/RAG.md) | Retrieval-augmented generation, chunking, embeddings, vector stores |
+| LangChain | [LangChain.md](ai/LangChain.md) | Chains, agents, tools, memory, LCEL, retrieval |
+| LangGraph | [LangGraph.md](ai/LangGraph.md) | Stateful multi-agent workflows, conditional edges, checkpoints |
 | MCP | [MCP.md](ai/MCP.md) | Model Context Protocol, tools, resources, building servers |
 | Ollama | [Ollama.md](ai/Ollama.md) | Local LLM inference, Modelfiles, quantization, API |
+| vLLM | [vLLM.md](ai/vLLM.md) | High-throughput serving, PagedAttention, tensor parallelism |
 | LLMOps | [LLMOps.md](ai/LLMOps.md) | Prompt versioning, evaluation, tracing, cost management |
+| LLM Observability | [LLM-Observability.md](ai/LLM-Observability.md) | LangSmith, Langfuse, OTel GenAI conventions, cost tracking |
 | LLM Security | [LLM-Security.md](ai/LLM-Security.md) | Prompt injection, OWASP LLM Top 10, guardrails, PII redaction |
+| AI Guardrails | [AI-Guardrails.md](ai/AI-Guardrails.md) | NeMo Guardrails, Llama Guard, input/output validation |
 | AIOps | [AIOps.md](ai/AIOps.md) | Anomaly detection, alert correlation, LLM-powered RCA |
+| Agentic Patterns | [Agentic-Patterns.md](ai/Agentic-Patterns.md) | ReAct, tool use, planning, multi-agent, orchestration |
+| Claude Code | [Claude-Code.md](ai/Claude-Code.md) | Agentic coding CLI, CLAUDE.md, hooks, MCP, sub-agents |
 
 ---
 
@@ -189,19 +236,28 @@ Pick your track and follow the arrows:
 > AWS _(or GCP/Azure)_ --> Terraform --> Terragrunt --> Packer --> Vault --> GitHub Actions --> Helm --> ArgoCD
 
 **Observability deep-dive:**
-> Prometheus --> Grafana --> Loki --> OpenTelemetry --> Alertmanager --> SRE Process --> Postmortems & RCA
+> Prometheus --> Grafana --> Loki --> Tempo --> OpenTelemetry --> Alertmanager --> Mimir --> SRE Process
 
 **Security track:**
-> Trivy --> Falco --> Vault --> LLM Security
+> Trivy --> Checkov --> Falco --> Cosign-Sigstore --> Sealed Secrets --> cert-manager --> SSH --> Vault
 
-**AI/ML for SRE:**
-> LLM Fundamentals --> Prompt Engineering --> RAG --> MCP --> Ollama --> LLMOps --> AIOps --> LLM Security
+**GitOps & progressive delivery:**
+> Git --> Kustomize --> Helm --> ArgoCD _(or Flux)_ --> Argo Rollouts --> Feature Flags
+
+**Service mesh & networking:**
+> HTTP --> Nginx --> Envoy --> Istio --> Cilium --> WireGuard --> k6
 
 **Data & messaging:**
-> PostgreSQL --> Redis --> Kafka
+> PostgreSQL --> Redis --> Kafka --> RabbitMQ --> etcd
+
+**AI/ML for SRE:**
+> LLM Fundamentals --> Prompt Engineering --> RAG --> LangChain --> LangGraph --> MCP --> Ollama --> vLLM --> LLMOps --> LLM Observability --> AIOps --> AI Guardrails --> LLM Security
+
+**Platform engineering:**
+> Backstage --> Crossplane --> Feature Flags --> Argo Rollouts --> OPA
 
 **Day-to-day productivity:**
-> Vim + tmux + awk + sed + jq + yq + DNS/curl/dig _(these pay for themselves on day one)_
+> Vim + tmux + awk + sed + Regex + jq + yq + Makefile + Python-for-SRE + Go-for-Ops
 
 ---
 
@@ -216,22 +272,6 @@ Contributions are welcome! The format is designed to extend cleanly:
 
 Please read [CONTRIBUTING.md](CONTRIBUTING.md) before submitting.
 
-### Wanted topics (PRs welcome!)
-- [ ] Puppet
-- [ ] Crossplane
-- [ ] Tekton
-- [ ] Cloudflare
-- [ ] FinOps
-- [ ] HTTP deep-dive
-- [ ] Tempo (distributed tracing)
-- [ ] Mimir (long-term Prometheus)
-- [ ] ELK / OpenSearch
-- [ ] Disaster Recovery
-- [ ] LangGraph (multi-agent AI)
-- [ ] Cilium / eBPF
-- [ ] etcd
-- [ ] Backstage (developer portals)
-
 ---
 
 ## License
@@ -242,5 +282,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 <p align="center">
   <strong>If this helped you, give it a star! It helps others find it too.</strong><br/>
-  <sub>Built for engineers who'd rather read docs than watch a 4-hour tutorial.</sub>
+  <sub>98 crash courses. 14 categories. Built for engineers who'd rather read docs than watch a 4-hour tutorial.</sub>
 </p>
