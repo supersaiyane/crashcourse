@@ -1,8 +1,8 @@
 {
   "meta": {
-    "total": 98,
-    "categories": 14,
-    "updated": "2025-05-31"
+    "total": 121,
+    "categories": 17,
+    "updated": "2026-05-31"
   },
   "categories": [
     {
@@ -36,7 +36,10 @@
         { "title": "Vault", "file": "Vault.md", "tags": ["secrets", "pki", "dynamic"] },
         { "title": "Terragrunt", "file": "Terragrunt.md", "tags": ["terraform", "dry", "multi-env"] },
         { "title": "Crossplane", "file": "Crossplane.md", "tags": ["k8s", "cloud", "compositions"] },
-        { "title": "OPA", "file": "OPA.md", "tags": ["policy", "rego", "admission"] }
+        { "title": "OPA", "file": "OPA.md", "tags": ["policy", "rego", "admission"] },
+        { "title": "SaltStack", "file": "SaltStack.md", "tags": ["config-mgmt", "states", "pillars"] },
+        { "title": "Chef", "file": "Chef.md", "tags": ["config-mgmt", "recipes", "cookbooks"] },
+        { "title": "Consul", "file": "Consul.md", "tags": ["discovery", "health-checks", "mesh"] }
       ]
     },
     {
@@ -49,7 +52,10 @@
         { "title": "Google Cloud", "file": "GCP.md", "tags": ["gke", "gcloud", "iam"] },
         { "title": "Azure", "file": "Azure.md", "tags": ["aks", "arm", "az-cli"] },
         { "title": "Cloudflare", "file": "Cloudflare.md", "tags": ["cdn", "waf", "workers"] },
-        { "title": "FinOps", "file": "FinOps.md", "tags": ["cost", "optimization", "kubecost"] }
+        { "title": "FinOps", "file": "FinOps.md", "tags": ["cost", "optimization", "kubecost"] },
+        { "title": "Cloud Networking", "file": "Cloud-Networking.md", "tags": ["vpc", "subnets", "peering"] },
+        { "title": "Cloud Security", "file": "Cloud-Security.md", "tags": ["iam", "encryption", "zero-trust"] },
+        { "title": "Cloud Architecture", "file": "Cloud-Architecture.md", "tags": ["well-architected", "landing-zones", "multi-account"] }
       ]
     },
     {
@@ -205,6 +211,47 @@
         { "title": "AIOps", "file": "AIOps.md", "tags": ["anomaly", "correlation", "rca"] },
         { "title": "Agentic Patterns", "file": "Agentic-Patterns.md", "tags": ["react", "tool-use", "orchestration"] },
         { "title": "Claude Code", "file": "Claude-Code.md", "tags": ["agentic", "cli", "sub-agents"] }
+      ]
+    },
+    {
+      "id": "design",
+      "label": "Software Engineering & Design",
+      "icon": "layers",
+      "color": "#f43f5e",
+      "courses": [
+        { "title": "System Design", "file": "System-Design.md", "tags": ["scalability", "availability", "cap"] },
+        { "title": "High-Level Design", "file": "HLD.md", "tags": ["components", "data-flow", "architecture"] },
+        { "title": "Low-Level Design", "file": "LLD.md", "tags": ["classes", "schemas", "state-machines"] },
+        { "title": "Design Patterns", "file": "Design-Patterns.md", "tags": ["gof", "factory", "strategy"] },
+        { "title": "Design Principles", "file": "Design-Principles.md", "tags": ["solid", "dry", "kiss"] },
+        { "title": "Clean Architecture", "file": "Clean-Architecture.md", "tags": ["hexagonal", "ports", "adapters"] },
+        { "title": "Microservices Patterns", "file": "Microservices-Patterns.md", "tags": ["saga", "cqrs", "event-sourcing"] },
+        { "title": "Domain-Driven Design", "file": "DDD.md", "tags": ["bounded-context", "aggregates", "ubiquitous"] },
+        { "title": "API Design Patterns", "file": "API-Design-Patterns.md", "tags": ["rest", "grpc", "graphql"] }
+      ]
+    },
+    {
+      "id": "dataops",
+      "label": "Data Engineering & MLOps",
+      "icon": "database",
+      "color": "#14b8a6",
+      "courses": [
+        { "title": "MLOps", "file": "MLOps.md", "tags": ["model-registry", "training", "drift"] },
+        { "title": "DataOps", "file": "DataOps.md", "tags": ["pipelines", "data-contracts", "quality"] },
+        { "title": "Apache Airflow", "file": "Airflow.md", "tags": ["dags", "operators", "scheduling"] },
+        { "title": "dbt", "file": "dbt.md", "tags": ["models", "tests", "incremental"] },
+        { "title": "Apache Spark", "file": "Spark.md", "tags": ["dataframes", "pyspark", "distributed"] },
+        { "title": "Data Quality", "file": "Data-Quality.md", "tags": ["great-expectations", "freshness", "contracts"] }
+      ]
+    },
+    {
+      "id": "patterns",
+      "label": "Cloud-Native Patterns",
+      "icon": "layers",
+      "color": "#d946ef",
+      "courses": [
+        { "title": "12-Factor App", "file": "Twelve-Factor-App.md", "tags": ["methodology", "cloud-native", "stateless"] },
+        { "title": "Cloud-Native Patterns", "file": "Cloud-Native-Patterns.md", "tags": ["sidecar", "ambassador", "init-container"] }
       ]
     }
   ]
