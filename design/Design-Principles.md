@@ -8,22 +8,15 @@ SOLID, DRY, KISS, YAGNI — the principles that separate code that survives prod
 
 Patterns are solutions. Principles are the reasoning behind when and whether to apply them.
 
-You can memorize the Factory pattern, the Observer pattern, the Decorator pattern. But if you don't understand *why* those patterns exist, you'll reach for them at the wrong time — over-engineering a two-file script or under-engineering a system that will need to scale across teams.
+You can memorize the Factory, Observer, Decorator patterns. But without understanding *why* they exist, you'll reach for them at the wrong time — over-engineering a two-file script or under-engineering a system that needs to scale across teams.
 
-Principles give you the judgment. They answer:
-- Why is this code hard to change?
-- Why does adding a feature here always break something over there?
-- Why does this codebase feel like it's fighting you?
-
-The answer is almost always a violated principle. Not a missing pattern — a missing principle.
+When code is hard to change, when adding a feature breaks something unrelated, when a codebase feels like it's fighting you — the answer is almost always a violated principle. Not a missing pattern.
 
 Spend two days here. The rest of your design education will make more sense.
 
 ---
 
 ## Vocabulary
-
-Before the deep dive, align on definitions. These terms show up everywhere.
 
 | Term | One-line definition |
 |---|---|
@@ -40,7 +33,7 @@ Before the deep dive, align on definitions. These terms show up everywhere.
 
 ## DAY 1 — SOLID Deep Dive
 
-SOLID is an acronym coined by Robert Martin. Each letter is a principle. Together they describe what well-structured object-oriented (and, increasingly, functional and service-oriented) code looks like.
+SOLID (Robert Martin) describes what well-structured object-oriented — and increasingly, service-oriented — code looks like. One principle per letter.
 
 ---
 
@@ -267,49 +260,33 @@ class OrderService:
 
 ## DAY 2 — Beyond SOLID
 
-SOLID is the foundation. These principles complete the picture.
-
----
-
 ### DRY — But Don't Over-DRY
 
-Don't Repeat Yourself means every piece of *knowledge* has one canonical home. It does not mean "never write similar-looking code twice."
+Every piece of *knowledge* has one canonical home. The test: if this rule changes, how many places need updating? More than one — DRY violation.
 
-The test for DRY is: if this rule changes, how many places do I need to update? If the answer is more than one, you have a DRY violation.
-
-**The over-DRY trap:**
-
-Two functions happen to share three lines of code today. You extract them into a shared helper. Six months later, one function needs to change and the other doesn't. Now your "shared" abstraction is a constraint — you have to either split it (reversing your earlier work) or add conditional logic that makes it worse than the duplication was.
-
-The rule of three is a useful heuristic: tolerate duplication once, consider abstracting on the third occurrence — and only when the duplication represents the same *concept*, not just similar-looking code.
+The over-DRY trap: two functions share three lines today, you extract a helper. Six months later one needs to change and the other doesn't. Your abstraction is now a constraint. The rule of three helps — tolerate duplication once, consider abstracting on the third occurrence, and only when it's the same *concept*, not just similar-looking code. Duplication is cheap. Wrong abstraction is expensive.
 
 ---
 
 ### KISS — Keep It Simple
 
-The simplest solution that correctly solves the problem is almost always the right solution.
+The simplest solution that correctly solves the problem is almost always the right solution. Every abstraction, every indirection, every configurable parameter is something the next engineer has to understand before changing anything.
 
-Complexity is a cost. Every abstraction, every indirection, every configurable parameter is something the next engineer has to understand before they can change anything. You are not being paid to write clever code. You are being paid to write code that the next person can understand and extend without fear.
-
-Ask yourself before every abstraction: what is this simplifying? If the answer is "it's more elegant" or "it could be useful someday," that's not a simplification — that's speculation.
+Before every abstraction ask: what is this simplifying? "It's more elegant" and "it could be useful someday" are not simplifications — they're speculation.
 
 ---
 
 ### YAGNI — You Aren't Gonna Need It
 
-Don't build features for requirements you don't have yet.
+Don't build for requirements you don't have yet. "We might need multi-tenancy later" is not a requirement. "We need multi-tenancy by Q3" is.
 
-"We might need multi-tenancy later" is not a requirement. "We need multi-tenancy by Q3" is. The first is an invitation to over-engineer. The second is a requirement you can design toward.
-
-YAGNI is not an argument against good architecture. It's an argument against speculative architecture. Build the right abstractions for the code you have today. When the new requirement arrives, refactor — don't pre-build.
+YAGNI is not an argument against good architecture — it's an argument against *speculative* architecture. Build the right abstractions for the code you have today. When the new requirement arrives, refactor.
 
 ---
 
 ### Composition over Inheritance
 
-Inheritance couples you to a parent class's implementation. When that parent changes, all children change with it. Deep inheritance hierarchies become brittle quickly.
-
-Composition gives you flexibility: you combine behaviors at runtime, you can swap components, and you don't inherit behavior you didn't ask for.
+Inheritance couples you to a parent's implementation — when that parent changes, all children change. Deep hierarchies become brittle. Composition gives you flexibility: combine behaviors at runtime, swap components, and avoid inheriting what you didn't ask for.
 
 ```python
 # Inheritance — rigid
@@ -318,44 +295,30 @@ class FlyingSwimmingDuck(FlyingBird, SwimmingAnimal): ...
 # Composition — flexible
 class Duck:
     def __init__(self, flyer, swimmer):
-        self.flyer = flyer
-        self.swimmer = swimmer
-
+        self.flyer, self.swimmer = flyer, swimmer
     def move_air(self): return self.flyer.fly()
     def move_water(self): return self.swimmer.swim()
 ```
 
-Use inheritance for true "is-a" relationships where the subtype genuinely extends and honors the parent's contract. Use composition when you want behavior, not identity.
+Use inheritance for true "is-a" relationships that honor the parent's contract. Use composition when you want behavior, not identity.
 
 ---
 
 ### Separation of Concerns
 
-Each module should own one concern. Concerns that bleed across modules create coupling — a change in one place ripples unexpectedly into another.
+Each module owns one concern. Classic separations: business logic vs. persistence, validation vs. transformation, policy vs. mechanism. In a web service — controller handles HTTP, service handles business logic, repository handles data access. None of these layers knows how the others are implemented.
 
-Classic separations: business logic vs. persistence, validation vs. transformation, policy vs. mechanism.
+This applies equally to infrastructure. Terraform provisions resources. Ansible configures them. The Terraform output feeds the Ansible inventory — clean handoff, no tangle. Don't write Ansible tasks that call the AWS API; that's Terraform's concern.
 
-In web services this maps directly: your controller handles HTTP. Your service handles business logic. Your repository handles data access. None of these layers should know how the other is implemented.
+**Terraform:** each module provisions one resource group (SRP). A new environment is a new `tfvars` file, not a copy-pasted module (OCP/DRY). Don't add variables for options you don't need yet (YAGNI).
 
-In infrastructure code: your Terraform module provisions resources. Your Ansible role configures them. They don't overlap. The Terraform output feeds the Ansible inventory — clean handoff, no tangle.
-
----
-
-### Applying Principles to Infrastructure Code
-
-Infrastructure-as-code has the same problems — and the same solutions.
-
-**Terraform:** each module provisions one resource group (SRP). Parameterize instead of forking — a new environment is a new `tfvars` file, not a copy-pasted module (OCP). If you're copy-pasting a security group block across environments, that's a DRY violation. Don't add variables for every conceivable option you don't need yet (YAGNI).
-
-**Ansible:** each role does one thing — install nginx, configure TLS, manage users (SRP). Roles configure software; Terraform provisions the machine — don't let them cross (SoC). Use role variables with sensible defaults instead of hardcoding the same value in ten task files (DRY).
+**Ansible:** each role does one thing — install nginx, configure TLS, manage users (SRP). Use role variables with defaults; don't hardcode the same value in ten task files (DRY).
 
 ---
 
 ### Principles in Code Review
 
-When you review code, you're enforcing principles even if you don't name them. Learn to name them — it makes feedback clearer and less personal.
-
-What to look for:
+Name the principle when you leave feedback — it makes comments clearer and less personal.
 
 | Smell | Likely violation |
 |---|---|
