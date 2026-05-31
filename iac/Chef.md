@@ -1,0 +1,698 @@
+# Chef — A 2-Day Crash Course
+
+Chef is a configuration management tool that uses Ruby-based recipes and cookbooks to define infrastructure as code — your servers converge to the desired state on every run.
+
+**Prerequisite:** `Linux.md`
+
+---
+
+## Part 0 — Why Chef
+
+Chef was one of the original configuration management tools, appearing in 2009 alongside Puppet. Even if you never write a Chef cookbook from scratch, you will encounter it in legacy environments and in shops that have been running it for a decade. Beyond the operational reality, Chef's mental model — the convergence loop, idempotent resources, the client-server architecture — influenced every tool that came after it. Understanding Chef sharpens the way you think about Ansible, Puppet, and Salt.
+
+The core idea is simple: you describe *what* you want, not *how* to get there. Chef's resource model handles the "how." Run `chef-client` on a node and it reads its run list, pulls the latest cookbooks, compiles a resource collection, and applies only the changes needed to close the gap between current state and desired state. That gap-closing process is convergence.
+
+---
+
+## Vocabulary
+
+| Term | What it is |
+|---|---|
+| **Recipe** | A Ruby file that declares resources. The unit of configuration logic. |
+| **Cookbook** | A directory containing recipes, templates, files, attributes, and metadata. The unit of distribution. |
+| **Resource** | A declaration of a desired state for a system component — package installed, service running, file containing certain content. |
+| **Node** | Any machine managed by Chef. It has attributes describing its current state. |
+| **Chef Server** | The central hub: stores cookbooks, node data, roles, environments, and data bags. Nodes pull from it. |
+| **Chef Workstation** | Your laptop or CI box — where you develop cookbooks and run `knife` commands. |
+| **Knife** | The CLI for interacting with Chef Server: upload cookbooks, manage nodes, bootstrap machines. |
+| **Ohai** | A tool that runs on each node before `chef-client` and collects system attributes (OS, IP, memory, CPU). Those attributes are available inside your recipes. |
+| **Run List** | The ordered list of recipes and roles applied to a node. |
+| **Role** | A named grouping of a run list and attributes applied to a category of nodes (e.g., `webserver`, `database`). |
+| **Environment** | A grouping (`production`, `staging`, `dev`) that can pin cookbook versions and override attributes. |
+| **Data Bag** | A global JSON store on Chef Server for shared data — credentials, user lists, config values. Can be encrypted. |
+| **Berkshelf** | A dependency manager for cookbooks — similar to Bundler for Ruby. Defined via `Berksfile`. |
+
+---
+
+## Day 1
+
+### Install Chef Workstation
+
+Chef Workstation bundles everything you need: `knife`, `chef-client`, `berks`, `cookstyle`, Test Kitchen, and InSpec.
+
+```bash
+# macOS
+brew install --cask chef-workstation
+
+# Ubuntu / Debian
+curl -fsSL https://omnitruck.chef.io/install.sh | sudo bash -s -- -P chef-workstation
+
+# Verify
+chef --version
+knife --version
+```
+
+After install, initialize your workstation:
+
+```bash
+chef generate repo ~/chef-repo
+cd ~/chef-repo
+```
+
+The repo layout:
+
+```
+chef-repo/
+  cookbooks/          # your cookbooks live here
+  roles/              # JSON/Ruby role definitions
+  environments/       # JSON/Ruby environment definitions
+  data_bags/          # JSON data bags
+  .chef/
+    config.rb         # knife configuration
+    credentials       # Chef Server API key path
+```
+
+### Your First Recipe
+
+Run in local mode (no Chef Server required) using `chef-client --local-mode` or the shorter alias `chef-apply`.
+
+```bash
+# One-shot recipe file: hello.rb
+cat > /tmp/hello.rb <<'EOF'
+file '/tmp/hello.txt' do
+  content 'Hello from Chef'
+  mode    '0644'
+  owner   'root'
+  group   'root'
+  action  :create
+end
+EOF
+
+sudo chef-apply /tmp/hello.rb
+```
+
+Run it twice. The second run does nothing — that is idempotency in action.
+
+### Core Resources
+
+**package** — install or remove a system package:
+
+```ruby
+package 'nginx' do
+  action :install
+end
+
+package 'telnet' do
+  action :purge
+end
+```
+
+**service** — manage a service:
+
+```ruby
+service 'nginx' do
+  action [:enable, :start]
+end
+```
+
+**file** — manage a plain file:
+
+```ruby
+file '/etc/motd' do
+  content "Managed by Chef\n"
+  mode    '0644'
+  owner   'root'
+  group   'root'
+end
+```
+
+**template** — render an ERB template to a file (covered in depth on Day 2):
+
+```ruby
+template '/etc/nginx/nginx.conf' do
+  source    'nginx.conf.erb'
+  mode      '0644'
+  owner     'root'
+  group     'root'
+  variables worker_processes: node['cpu']['total']
+  notifies  :reload, 'service[nginx]', :delayed
+end
+```
+
+**directory** — ensure a directory exists:
+
+```ruby
+directory '/var/app/releases' do
+  owner     'deploy'
+  group     'deploy'
+  mode      '0755'
+  recursive true
+end
+```
+
+**execute** — run an arbitrary command (use sparingly; prefer a purpose-built resource when one exists):
+
+```ruby
+execute 'bundle install' do
+  command 'bundle install --deployment'
+  cwd     '/var/app/current'
+  user    'deploy'
+  not_if  { ::File.exist?('/var/app/current/vendor/bundle') }
+end
+```
+
+### Chef-Client Local Mode
+
+Local mode reads cookbooks and data from your local filesystem instead of a Chef Server. Use it for development and testing.
+
+```bash
+# Apply a cookbook's default recipe in local mode
+sudo chef-client --local-mode --runlist 'recipe[myapp]' --cookbook-path ./cookbooks
+```
+
+Alternatively, create a minimal `client.rb`:
+
+```ruby
+# client.rb
+local_mode  true
+cookbook_path ['./cookbooks']
+```
+
+Then:
+
+```bash
+sudo chef-client -c client.rb -o 'recipe[myapp]'
+```
+
+### Knife Commands
+
+```bash
+# Bootstrap a node — installs chef-client and runs the initial converge
+knife bootstrap 10.0.0.5 --ssh-user ubuntu --sudo --node-name web-01 \
+  --run-list 'role[webserver]'
+
+# List nodes registered with Chef Server
+knife node list
+
+# Show a node's attributes and run list
+knife node show web-01
+
+# Set or update a node's run list
+knife node run_list set web-01 'role[webserver],recipe[myapp::deploy]'
+
+# Upload a cookbook to Chef Server
+knife cookbook upload myapp
+
+# List cookbooks on Chef Server
+knife cookbook list
+
+# Search nodes — uses Solr syntax
+knife search node 'role:webserver AND chef_environment:production'
+
+# Delete a node and its client key
+knife node delete web-01 -y
+knife client delete web-01 -y
+```
+
+---
+
+## Day 2
+
+### Cookbook Structure
+
+Generate a cookbook with the built-in generator:
+
+```bash
+chef generate cookbook cookbooks/myapp
+```
+
+The directory layout:
+
+```
+myapp/
+  metadata.rb           # name, version, dependencies
+  Berksfile             # external cookbook dependencies
+  attributes/
+    default.rb          # default attribute values
+  recipes/
+    default.rb          # default recipe (applied when you say recipe[myapp])
+    deploy.rb           # additional recipe
+  templates/
+    default/
+      nginx.conf.erb    # ERB templates
+  files/
+    default/
+      app.conf          # static files, copied verbatim
+  resources/            # custom resources (LWRP / HWRPs)
+  test/
+    integration/
+      default/
+        default_test.rb # InSpec tests
+  spec/
+    unit/               # ChefSpec unit tests
+```
+
+**metadata.rb:**
+
+```ruby
+name             'myapp'
+maintainer       'Your Name'
+maintainer_email 'you@example.com'
+license          'Apache-2.0'
+description      'Installs and configures myapp'
+version          '1.0.0'
+chef_version     '>= 16.0'
+
+depends 'nginx', '~> 11.0'
+depends 'mysql', '~> 8.0'
+```
+
+**attributes/default.rb:**
+
+```ruby
+default['myapp']['version']        = '2.3.1'
+default['myapp']['port']           = 8080
+default['myapp']['deploy_user']    = 'deploy'
+default['myapp']['document_root']  = '/var/www/myapp'
+```
+
+Attributes have a priority hierarchy: `default < normal < override < automatic`. Automatic attributes come from Ohai and cannot be overridden by recipes.
+
+### ERB Templates
+
+Templates live in `templates/default/`. ERB uses `<%= %>` for output and `<% %>` for control flow.
+
+`templates/default/vhost.conf.erb`:
+
+```erb
+<VirtualHost *:<%= @port %>>
+  ServerName  <%= node['fqdn'] %>
+  DocumentRoot <%= @document_root %>
+
+  <Directory "<%= @document_root %>">
+    AllowOverride All
+    Require all granted
+  </Directory>
+
+  ErrorLog  /var/log/apache2/<%= @app_name %>-error.log
+  CustomLog /var/log/apache2/<%= @app_name %>-access.log combined
+</VirtualHost>
+```
+
+Using the template in a recipe:
+
+```ruby
+template '/etc/apache2/sites-available/myapp.conf' do
+  source    'vhost.conf.erb'
+  variables(
+    port:          node['myapp']['port'],
+    document_root: node['myapp']['document_root'],
+    app_name:      'myapp'
+  )
+  notifies :restart, 'service[apache2]', :delayed
+end
+```
+
+### Roles
+
+Define a role in `roles/webserver.rb`:
+
+```ruby
+name 'webserver'
+description 'Front-end web server'
+
+run_list(
+  'recipe[base]',
+  'recipe[nginx]',
+  'recipe[myapp]'
+)
+
+default_attributes(
+  'nginx' => {
+    'worker_processes' => 4
+  }
+)
+```
+
+Upload and assign:
+
+```bash
+knife role from file roles/webserver.rb
+knife node run_list set web-01 'role[webserver]'
+```
+
+### Environments
+
+Define an environment in `environments/production.rb`:
+
+```ruby
+name 'production'
+description 'Production environment'
+
+cookbook_versions(
+  'nginx' => '~> 11.0',
+  'myapp' => '= 1.2.0'
+)
+
+override_attributes(
+  'myapp' => {
+    'port' => 80
+  }
+)
+```
+
+```bash
+knife environment from file environments/production.rb
+knife node environment_set web-01 production
+```
+
+Environments let you pin cookbook versions per fleet — staging can run `myapp 1.3.0-rc1` while production stays on `1.2.0`.
+
+### Data Bags
+
+Data bags store global JSON on Chef Server.
+
+```bash
+# Create a data bag container
+knife data bag create users
+
+# Create an item
+cat > /tmp/alice.json <<'EOF'
+{
+  "id": "alice",
+  "uid": 2001,
+  "shell": "/bin/bash",
+  "groups": ["deploy", "sudo"]
+}
+EOF
+knife data bag from file users /tmp/alice.json
+
+# Read it in a recipe
+alice = data_bag_item('users', 'alice')
+user alice['id'] do
+  uid   alice['uid']
+  shell alice['shell']
+end
+```
+
+For secrets, use encrypted data bags:
+
+```bash
+# Generate a shared secret
+openssl rand -base64 512 > /etc/chef/encrypted_data_bag_secret
+
+# Create encrypted item
+knife data bag create secrets
+knife data bag from file secrets db_creds.json \
+  --secret-file /etc/chef/encrypted_data_bag_secret
+```
+
+In a recipe, decrypt with:
+
+```ruby
+secret = Chef::EncryptedDataBagItem.load_secret('/etc/chef/encrypted_data_bag_secret')
+creds  = Chef::EncryptedDataBagItem.load('secrets', 'db_creds', secret)
+
+template '/etc/myapp/database.yml' do
+  variables db_password: creds['password']
+end
+```
+
+⚠️ The shared secret must be distributed out-of-band to every node. Consider using Chef Vault or a dedicated secrets manager (HashiCorp Vault) instead of encrypted data bags for new projects.
+
+### Chef Server Architecture
+
+```
+Workstation  --knife upload-->  Chef Server  <--pull--  Node (chef-client)
+                                     |
+                              Cookbook store
+                              Node index (Solr)
+                              Roles / Environments
+                              Data Bags
+```
+
+The node runs `chef-client` on a schedule (typically via cron or systemd timer, every 30 minutes). It authenticates with an RSA key pair, pulls its run list and cookbooks, then converges. The Chef Server never pushes — nodes pull.
+
+### Testing with Test Kitchen and InSpec
+
+Test Kitchen orchestrates the full test cycle: create a VM (or container), converge it with your cookbook, run InSpec assertions, then destroy it.
+
+`.kitchen.yml` in your cookbook root:
+
+```yaml
+driver:
+  name: vagrant
+
+provisioner:
+  name: chef_zero
+
+verifier:
+  name: inspec
+
+platforms:
+  - name: ubuntu-22.04
+  - name: centos-stream-9
+
+suites:
+  - name: default
+    run_list:
+      - recipe[myapp::default]
+    attributes:
+      myapp:
+        port: 8080
+```
+
+Run the test cycle:
+
+```bash
+kitchen create    # spin up VM
+kitchen converge  # run chef-client
+kitchen verify    # run InSpec tests
+kitchen destroy   # tear down VM
+
+kitchen test      # all four steps in sequence
+```
+
+InSpec test (`test/integration/default/default_test.rb`):
+
+```ruby
+describe package('nginx') do
+  it { should be_installed }
+end
+
+describe service('nginx') do
+  it { should be_enabled }
+  it { should be_running }
+end
+
+describe port(80) do
+  it { should be_listening }
+end
+
+describe file('/etc/nginx/nginx.conf') do
+  it { should be_file }
+  its('content') { should match(/worker_processes/) }
+end
+```
+
+For unit tests, use ChefSpec:
+
+```ruby
+# spec/unit/recipes/default_spec.rb
+require 'chefspec'
+
+describe 'myapp::default' do
+  let(:chef_run) { ChefSpec::SoloRunner.new.converge(described_recipe) }
+
+  it 'installs nginx' do
+    expect(chef_run).to install_package('nginx')
+  end
+
+  it 'enables and starts nginx service' do
+    expect(chef_run).to enable_service('nginx')
+    expect(chef_run).to start_service('nginx')
+  end
+end
+```
+
+### Chef vs Ansible vs Puppet vs Salt
+
+| Dimension | Chef | Ansible | Puppet | Salt |
+|---|---|---|---|---|
+| Language | Ruby DSL | YAML + Jinja2 | Puppet DSL | YAML + Jinja2 |
+| Agent | Required (`chef-client`) | Agentless (SSH) | Required (`puppet agent`) | Agent optional |
+| Architecture | Pull (client pulls from server) | Push (control node pushes) | Pull (agent pulls from master) | Push or pull |
+| Learning curve | High — requires Ruby comfort | Low — YAML-first | Medium — Puppet DSL | Medium |
+| Convergence model | Explicit resource model | Task execution model | Declarative catalog | State files |
+| Community depth | Large (Supermarket) | Large (Galaxy) | Large (Forge) | Moderate |
+| Best fit | Large orgs with Ruby teams, legacy estates | Ad-hoc automation, simpler orgs | Large enterprises, strict compliance | High-scale real-time orchestration |
+
+Choose based on your team's skills and what is already in production. For greenfield, Ansible wins on approachability. For existing Chef estates, stay the course and migrate incrementally.
+
+### Migration Strategies
+
+**Chef to Ansible:**
+1. Audit your cookbooks. Map each resource type to its Ansible module equivalent (`package` maps to `ansible.builtin.package`, `template` maps to `ansible.builtin.template`).
+2. Start with leaf nodes — nodes with no dependents. Convert one role at a time.
+3. Run both Chef and Ansible in parallel on a staging fleet. Compare converge outcomes.
+4. Once stable, remove `chef-client` from nodes and deregister from Chef Server.
+
+**Chef to Terraform + cloud-init:**
+If you are moving to immutable infrastructure, the goal shifts from configuration management to image baking (Packer) and orchestration (Terraform). Your Chef cookbooks become Packer provisioners. Over time, if images are replaced frequently enough, the cookbooks shrink until they disappear.
+
+---
+
+## Worked Example — LAMP Stack Cookbook
+
+```ruby
+# cookbooks/lamp/recipes/default.rb
+
+# Packages
+%w[apache2 mysql-server php libapache2-mod-php php-mysql].each do |pkg|
+  package pkg do
+    action :install
+  end
+end
+
+# Enable and start services
+%w[apache2 mysql].each do |svc|
+  service svc do
+    action [:enable, :start]
+  end
+end
+
+# Document root
+directory node['lamp']['document_root'] do
+  owner     'www-data'
+  group     'www-data'
+  mode      '0755'
+  recursive true
+end
+
+# Virtual host configuration
+template '/etc/apache2/sites-available/app.conf' do
+  source    'vhost.conf.erb'
+  variables(
+    document_root: node['lamp']['document_root'],
+    server_name:   node['fqdn']
+  )
+  notifies :restart, 'service[apache2]', :delayed
+end
+
+# Enable the site and disable the default
+execute 'a2ensite app' do
+  not_if { ::File.symlink?('/etc/apache2/sites-enabled/app.conf') }
+  notifies :restart, 'service[apache2]', :delayed
+end
+
+execute 'a2dissite 000-default' do
+  only_if { ::File.symlink?('/etc/apache2/sites-enabled/000-default.conf') }
+  notifies :restart, 'service[apache2]', :delayed
+end
+
+# Retrieve DB credentials from encrypted data bag
+secret = Chef::EncryptedDataBagItem.load_secret(node['lamp']['secret_file'])
+db     = Chef::EncryptedDataBagItem.load('secrets', 'mysql', secret)
+
+template '/var/www/app/config/database.php' do
+  source    'database.php.erb'
+  owner     'www-data'
+  mode      '0640'
+  variables(
+    db_host:     '127.0.0.1',
+    db_name:     db['name'],
+    db_user:     db['user'],
+    db_password: db['password']
+  )
+end
+```
+
+`attributes/default.rb`:
+
+```ruby
+default['lamp']['document_root'] = '/var/www/app/public'
+default['lamp']['secret_file']   = '/etc/chef/encrypted_data_bag_secret'
+```
+
+---
+
+## Pitfalls
+
+**Attribute precedence surprises.** `normal` attributes set via `knife node edit` persist across runs and override cookbook `default` attributes. If a value is not changing when you expect it to, check `knife node show <node> -F json` to see what is actually set.
+
+**Compile vs. converge phase confusion.** Chef executes recipes in two phases: compile (build the resource collection) and converge (apply it). Ruby code outside a resource block runs at compile time. Code inside a resource block runs at converge time. Mixing the two leads to ordering bugs. Use `lazy { }` blocks or `ruby_block` when you need runtime evaluation.
+
+**Stale cookbook versions on Chef Server.** If you bump the version in `metadata.rb` but forget to `knife cookbook upload`, nodes converge against the old version. Pin versions in environments and automate uploads in CI.
+
+**Ohai data not refreshed mid-run.** Ohai runs at the start of `chef-client`. If you install software in a recipe and then try to read Ohai data about that software in the same run, Ohai has not re-run yet. Use a subsequent converge or a `ruby_block` to re-invoke Ohai.
+
+**Bootstrapping credentials in plain text.** `knife bootstrap` can accept passwords on the command line. Use SSH keys and avoid `--ssh-password` in automation scripts.
+
+**Unbounded run lists.** A run list that includes dozens of recipes with no clear ownership becomes a maintenance burden. Prefer roles with clear names and keep individual cookbooks focused on a single concern.
+
+---
+
+## Quick Reference
+
+```bash
+# Workstation setup
+chef generate repo chef-repo
+chef generate cookbook cookbooks/myapp
+chef generate recipe cookbooks/myapp deploy
+
+# Local converge (no server)
+sudo chef-client --local-mode -o 'recipe[myapp]' --cookbook-path ./cookbooks
+
+# Chef Server — node management
+knife bootstrap <ip> -N <name> --run-list 'role[<role>]' -x ubuntu --sudo
+knife node list
+knife node show <name>
+knife node run_list set <name> 'role[webserver]'
+knife node environment_set <name> production
+
+# Cookbook management
+knife cookbook upload myapp
+knife cookbook list
+knife cookbook show myapp
+
+# Roles and environments
+knife role from file roles/webserver.rb
+knife role list
+knife environment from file environments/production.rb
+
+# Data bags
+knife data bag create <bag>
+knife data bag from file <bag> item.json
+knife data bag show <bag> <item>
+
+# Search
+knife search node 'role:webserver'
+knife search node 'chef_environment:production AND platform:ubuntu'
+
+# Test Kitchen
+kitchen test         # full cycle
+kitchen converge     # converge only
+kitchen verify       # InSpec only
+kitchen login        # SSH into the test VM
+
+# Linting
+cookstyle .          # RuboCop with Chef-aware cops
+```
+
+---
+
+## Next Steps
+
+- `Ansible.md` — agentless approach, YAML-first, easier onboarding
+- `Puppet.md` — declarative catalog model, strong compliance story
+- `SaltStack.md` — event-driven, high-scale real-time orchestration
+- `Terraform.md` — provision infrastructure; pair with Chef or replace configuration management in immutable pipelines
+
+---
+
+## The Mantra
+
+> Write what you want, not how to get there.
+> Run it twice — the second run should change nothing.
+> If it does, your resource is not idempotent.
+> Fix the resource, not the check.
