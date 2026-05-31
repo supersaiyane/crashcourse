@@ -30,6 +30,11 @@ function esc(s) {
     .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
+// Base URL for fetching markdown — works on GitHub Pages and locally
+const MD_BASE = location.hostname === 'localhost' || location.hostname === '127.0.0.1'
+  ? '../'
+  : 'https://raw.githubusercontent.com/supersaiyane/crashcourse/main/';
+
 function hexRgba(hex, a) {
   const r = parseInt(hex.slice(1,3),16);
   const g = parseInt(hex.slice(3,5),16);
@@ -233,7 +238,7 @@ async function renderReader(catId, filename) {
   out.innerHTML = '';
 
   try {
-    const res = await fetch(`../${catId}/${filename}`);
+    const res = await fetch(`${MD_BASE}${catId}/${filename}`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const md = await res.text();
 
@@ -277,7 +282,7 @@ async function renderReader(catId, filename) {
     out.innerHTML = `
       <div style="text-align:center;padding:60px 0;">
         <h3 style="font-size:18px;margin-bottom:8px;">Course not found</h3>
-        <p style="color:var(--text-muted);font-size:14px;">Could not load <code>${esc('../'+catId+'/'+filename)}</code></p>
+        <p style="color:var(--text-muted);font-size:14px;">Could not load <code>${esc(catId+'/'+filename)}</code></p>
         <p style="color:var(--text-muted);font-size:12px;margin-top:6px;">${esc(err.message)}</p>
       </div>`;
   }
@@ -419,7 +424,7 @@ async function buildSearchMap() {
         const key = `${cat.id}/${course.file}`;
         if (SEARCH_MAP.has(key)) return;
         try {
-          const r = await fetch(`../${cat.id}/${course.file}`);
+          const r = await fetch(`${MD_BASE}${cat.id}/${course.file}`);
           if (!r.ok) return;
           const text = await r.text();
           SEARCH_MAP.set(key, { catId: cat.id, filename: course.file, title: course.title, content: text.slice(0,4000) });
