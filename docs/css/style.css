@@ -369,6 +369,7 @@ code, pre { font-family: var(--font-mono); }
   max-width: 1300px;
   margin: 0 auto;
   padding: 48px 24px 80px;
+  text-align: center;
 }
 
 .section-eyebrow {
@@ -384,6 +385,9 @@ code, pre { font-family: var(--font-mono); }
   font-weight: 600;
   letter-spacing: -0.025em;
   margin-bottom: 24px;
+}
+.cat-grid {
+  text-align: left;
 }
 
 .cat-grid {
