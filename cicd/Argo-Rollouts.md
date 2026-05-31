@@ -1,0 +1,615 @@
+# Argo Rollouts — A 2-Day Crash Course
+
+Argo Rollouts is a progressive delivery controller for Kubernetes — it adds traffic-weighted canaries, blue-green deployments, and analysis-driven automated rollback that go well beyond what a standard Deployment can do.
+
+**Prerequisites:** [`Kubernetes.md`](../containers/Kubernetes.md), [`ArgoCD.md`](./ArgoCD.md)
+
+---
+
+## Part 0 — Why Argo Rollouts Exists
+
+A Kubernetes Deployment gives you one release strategy: rolling update. It shifts traffic from old pods to new pods proportionally as pods become ready. That works fine until something goes wrong partway through — at which point you have a partially deployed service, possibly serving errors to a fraction of your users, and your only escape is a manual `kubectl rollout undo`.
+
+Argo Rollouts changes the calculus. Instead of "replace pods and hope", you get:
+
+- **Traffic-weighted canaries** — send 5% of traffic to v2 before you commit to 100%
+- **Automated analysis** — query Prometheus (or Datadog, New Relic, etc.) during the rollout and automatically abort if error rate spikes
+- **Blue-green deployments** — maintain two fully provisioned stacks and flip traffic atomically
+- **Experiments** — run ephemeral parallel variants for A/B testing without a full rollout
+
+The controller watches `Rollout` custom resources (not `Deployment` objects) and integrates with your existing ingress or service mesh to manipulate real traffic, not just pod counts.
+
+---
+
+## Part 1 — Vocabulary
+
+Before you touch any YAML, get these terms clear in your head.
+
+| Term | What it means |
+|---|---|
+| **Rollout** | The CRD that replaces `Deployment`. Same pod template spec, plus a `strategy` block. |
+| **Strategy** | Either `canary` or `blueGreen`. You pick one per Rollout. |
+| **Step** | A discrete unit inside a canary strategy — `setWeight`, `pause`, or `analysis`. |
+| **SetWeight** | A step that routes N% of traffic to the canary. Requires a traffic routing integration for accuracy. |
+| **Pause** | A step that halts the rollout until a duration expires or you manually promote. |
+| **AnalysisTemplate** | A cluster- or namespace-scoped template defining what metrics to query and what constitutes success or failure. |
+| **AnalysisRun** | An instantiation of an `AnalysisTemplate`, created automatically during a rollout step. |
+| **Experiment** | A short-lived object that spins up one or more replica sets for parallel comparison without advancing the rollout. |
+| **TrafficRouting** | The integration layer — Istio VirtualService, Nginx ingress, AWS ALB — that makes `setWeight` real. |
+| **Promotion** | The act of advancing past a `pause` step, either manually or via automated analysis. |
+
+---
+
+## Day 1 — Getting Up and Running
+
+### Install the Controller
+
+```bash
+kubectl create namespace argo-rollouts
+kubectl apply -n argo-rollouts \
+  -f https://github.com/argoproj/argo-rollouts/releases/latest/download/install.yaml
+```
+
+Install the kubectl plugin for manual interaction:
+
+```bash
+# macOS
+brew install argoproj/tap/kubectl-argo-rollouts
+
+# Linux
+curl -LO https://github.com/argoproj/argo-rollouts/releases/latest/download/kubectl-argo-rollouts-linux-amd64
+chmod +x kubectl-argo-rollouts-linux-amd64
+sudo mv kubectl-argo-rollouts-linux-amd64 /usr/local/bin/kubectl-argo-rollouts
+```
+
+Verify:
+
+```bash
+kubectl argo rollouts version
+```
+
+### Convert a Deployment to a Rollout
+
+The migration is intentionally low-friction. The `Rollout` spec mirrors `Deployment` exactly — same `template`, same `selector`, same `replicas`. You add a `strategy` block and change `apiVersion` and `kind`.
+
+**Before (Deployment):**
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-app
+spec:
+  replicas: 5
+  selector:
+    matchLabels:
+      app: my-app
+  template:
+    metadata:
+      labels:
+        app: my-app
+    spec:
+      containers:
+        - name: app
+          image: my-app:1.0.0
+```
+
+**After (Rollout with canary):**
+
+```yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: my-app
+spec:
+  replicas: 5
+  selector:
+    matchLabels:
+      app: my-app
+  template:
+    metadata:
+      labels:
+        app: my-app
+    spec:
+      containers:
+        - name: app
+          image: my-app:1.0.0
+  strategy:
+    canary:
+      steps:
+        - setWeight: 20
+        - pause: {}          # pause indefinitely — requires manual promotion
+        - setWeight: 50
+        - pause: {duration: 10m}
+        - setWeight: 100
+```
+
+⚠️ If you have an existing `Deployment` with the same name and selector, delete it first. The controller does not auto-migrate running Deployments — it will conflict.
+
+```bash
+kubectl delete deployment my-app
+kubectl apply -f rollout.yaml
+```
+
+### Trigger an Update
+
+Change the image tag and apply:
+
+```bash
+kubectl argo rollouts set image my-app app=my-app:2.0.0
+```
+
+Or update the manifest and `kubectl apply`. The controller detects the pod template change and begins executing steps.
+
+### Watch the Rollout
+
+```bash
+kubectl argo rollouts get rollout my-app --watch
+```
+
+You will see output like:
+
+```
+Name:            my-app
+Namespace:       default
+Status:          ॥ Paused
+Step:            1/5
+SetWeight:       20
+...
+```
+
+The rollout stopped at the first `pause: {}`. Twenty percent of traffic is on v2. Eighty percent is still on v1.
+
+### Manual Promote
+
+Advance past the pause:
+
+```bash
+kubectl argo rollouts promote my-app
+```
+
+To skip all remaining steps and go straight to 100%:
+
+```bash
+kubectl argo rollouts promote my-app --full
+```
+
+### Abort a Rollout
+
+If something looks wrong, abort and roll back:
+
+```bash
+kubectl argo rollouts abort my-app
+```
+
+The controller scales down the canary and routes all traffic back to the stable revision. The `Rollout` moves to `Degraded` status. You can retry with a new image tag or fix the spec.
+
+### The Dashboard
+
+The controller ships a local dashboard for visual inspection:
+
+```bash
+kubectl argo rollouts dashboard
+```
+
+Open `http://localhost:3100`. You get a real-time view of all Rollouts, their steps, traffic weights, and analysis results. Useful during incidents — faster than reading YAML.
+
+---
+
+## Day 2 — Automation, Blue-Green, and Integration
+
+### Automated Analysis with Prometheus
+
+Manual promotion is useful for low-volume services. For anything important, you want the rollout to make its own go/no-go decision based on metrics.
+
+**Step 1 — Define an AnalysisTemplate:**
+
+```yaml
+apiVersion: argoproj.io/v1alpha1
+kind: AnalysisTemplate
+metadata:
+  name: success-rate
+spec:
+  args:
+    - name: service-name
+  metrics:
+    - name: success-rate
+      interval: 1m
+      successCondition: result[0] >= 0.95
+      failureLimit: 3
+      provider:
+        prometheus:
+          address: http://prometheus.monitoring.svc.cluster.local:9090
+          query: |
+            sum(rate(http_requests_total{
+              job="{{ args.service-name }}",
+              status!~"5.."
+            }[5m]))
+            /
+            sum(rate(http_requests_total{
+              job="{{ args.service-name }}"
+            }[5m]))
+```
+
+**Step 2 — Reference the template in your Rollout steps:**
+
+```yaml
+strategy:
+  canary:
+    steps:
+      - setWeight: 20
+      - pause: {duration: 5m}
+      - analysis:
+          templates:
+            - templateName: success-rate
+          args:
+            - name: service-name
+              value: my-app
+      - setWeight: 50
+      - pause: {duration: 10m}
+      - setWeight: 100
+```
+
+When the rollout reaches the `analysis` step, it creates an `AnalysisRun`. The run queries Prometheus every minute. If the success rate drops below 95% three times consecutively (`failureLimit: 3`), the run fails, the rollout aborts, and traffic returns to stable.
+
+You can also run analysis as a background step across the entire canary phase:
+
+```yaml
+strategy:
+  canary:
+    analysis:
+      templates:
+        - templateName: success-rate
+      args:
+        - name: service-name
+          value: my-app
+      startingStep: 1     # begin after first setWeight
+    steps:
+      - setWeight: 20
+      - pause: {duration: 10m}
+      - setWeight: 100
+```
+
+### Blue-Green Strategy
+
+Blue-green keeps two fully provisioned replica sets — active (stable) and preview (new version). Traffic stays on active until you promote.
+
+```yaml
+strategy:
+  blueGreen:
+    activeService: my-app-active
+    previewService: my-app-preview
+    autoPromotionEnabled: false   # require manual promotion
+    prePromotionAnalysis:
+      templates:
+        - templateName: success-rate
+      args:
+        - name: service-name
+          value: my-app-preview
+```
+
+You need two Services pointing at the same selector — the controller manages pod selector patches on these Services automatically. When you promote, the active Service flips to the new revision. The old revision stays running for `scaleDownDelaySeconds` (default 30 seconds) before scale-down, giving your load balancer time to drain connections.
+
+### Traffic Management Integrations
+
+Without a traffic routing integration, `setWeight` works by adjusting replica counts — an approximation, not real traffic splitting. For accurate splitting, wire in your ingress or service mesh.
+
+**Nginx Ingress:**
+
+```yaml
+strategy:
+  canary:
+    canaryService: my-app-canary
+    stableService: my-app-stable
+    trafficRouting:
+      nginx:
+        stableIngress: my-app-ingress
+    steps:
+      - setWeight: 10
+      - pause: {duration: 5m}
+      - setWeight: 100
+```
+
+**Istio:**
+
+```yaml
+strategy:
+  canary:
+    canaryService: my-app-canary
+    stableService: my-app-stable
+    trafficRouting:
+      istio:
+        virtualService:
+          name: my-app-vsvc
+          routes:
+            - primary
+    steps:
+      - setWeight: 10
+      - pause: {duration: 5m}
+      - setWeight: 100
+```
+
+The controller patches the `VirtualService` weights at each step. You define the `VirtualService` skeleton; Argo Rollouts manages the weight values.
+
+**AWS ALB:**
+
+```yaml
+trafficRouting:
+  alb:
+    ingress: my-app-ingress
+    servicePort: 80
+```
+
+Requires the AWS Load Balancer Controller. The Rollout controller patches ingress annotations to set target group weights.
+
+### Experiments
+
+An `Experiment` lets you spin up an ephemeral replica set for comparison without committing to a full rollout. Use it for A/B testing a UI change or benchmarking a CPU-heavy code path.
+
+```yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Experiment
+metadata:
+  name: my-app-ab-test
+spec:
+  duration: 1h
+  templates:
+    - name: baseline
+      replicas: 2
+      selector:
+        matchLabels:
+          app: my-app
+          variant: baseline
+      template:
+        metadata:
+          labels:
+            app: my-app
+            variant: baseline
+        spec:
+          containers:
+            - name: app
+              image: my-app:1.0.0
+    - name: candidate
+      replicas: 2
+      selector:
+        matchLabels:
+          app: my-app
+          variant: candidate
+      template:
+        metadata:
+          labels:
+            app: my-app
+            variant: candidate
+        spec:
+          containers:
+            - name: app
+              image: my-app:2.0.0
+  analyses:
+    - name: ab-analysis
+      templateName: success-rate
+```
+
+After `duration`, the Experiment scales down both replica sets. The `AnalysisRun` result is attached to the Experiment — you read it and decide whether to proceed with a full rollout.
+
+### Notifications
+
+Argo Rollouts emits events at each state transition. Forward these to Slack, PagerDuty, or any webhook via the Notifications Controller (shared with ArgoCD).
+
+Install the notifications controller alongside Argo Rollouts (it ships in the same repo). Then configure a `ConfigMap` with templates and triggers:
+
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: argo-rollouts-notification-configmap
+  namespace: argo-rollouts
+data:
+  trigger.on-rollout-aborted: |
+    - when: rollout.status.abort == true
+      send: [slack-message]
+  template.slack-message: |
+    message: |
+      Rollout {{ .rollout.metadata.name }} aborted in {{ .rollout.metadata.namespace }}
+  service.slack: |
+    token: $slack-token
+    channels:
+      - deployments
+```
+
+Secrets like `$slack-token` live in a `Secret` named `argo-rollouts-notification-secret`.
+
+### Integration with ArgoCD
+
+ArgoCD and Argo Rollouts compose cleanly. ArgoCD manages desired state in Git — it syncs your `Rollout` manifest to the cluster. Argo Rollouts manages execution — it controls traffic and analysis.
+
+Key points:
+
+- ArgoCD treats a `Rollout` mid-deployment as `Progressing` (not `Healthy`), so your application stays yellow in the ArgoCD UI until the rollout completes or is promoted. This is expected behavior.
+- If ArgoCD is set to auto-sync with `prune: true`, it will not delete the Rollout mid-flight — the controller owns live state during the rollout.
+- For full visibility, install the ArgoCD Rollouts extension (the `rollout-extension` plugin), which embeds the Rollouts UI panel inside the ArgoCD application view.
+- Use `syncOptions: ServerSideApply=true` when ArgoCD manages Rollouts to avoid field manager conflicts.
+
+### Flagger Comparison
+
+You will encounter Flagger (by Flux) as an alternative. Here is the honest comparison:
+
+| Dimension | Argo Rollouts | Flagger |
+|---|---|---|
+| Resource model | You manage the Rollout object directly | Flagger watches Deployments, creates its own Canary CRD |
+| GitOps fit | Native (ArgoCD ecosystem) | Native (Flux ecosystem) |
+| Traffic splitting | Explicit steps in YAML | Automated — Flagger decides timing based on metrics |
+| Control | High — you define every step | Lower — Flagger's algorithm drives promotion |
+| Blue-green | First-class support | Supported |
+| Learning curve | Steeper (more explicit) | Gentler (more opinionated) |
+
+If you are on Flux, Flagger is the natural choice. If you are on ArgoCD, Argo Rollouts fits your mental model better and gives you more explicit control.
+
+---
+
+## Worked Example — Canary with Automated Prometheus Analysis
+
+A complete, deployable example. It assumes you have Prometheus installed and an app exposing `http_requests_total` with `status` and `job` labels.
+
+```yaml
+# analysis-template.yaml
+apiVersion: argoproj.io/v1alpha1
+kind: AnalysisTemplate
+metadata:
+  name: http-success-rate
+  namespace: default
+spec:
+  args:
+    - name: service-name
+  metrics:
+    - name: success-rate
+      interval: 2m
+      count: 5
+      successCondition: result[0] >= 0.98
+      failureLimit: 2
+      provider:
+        prometheus:
+          address: http://prometheus-server.monitoring.svc.cluster.local
+          query: |
+            sum(rate(http_requests_total{
+              job="{{ args.service-name }}",
+              status!~"5.."
+            }[5m]))
+            /
+            sum(rate(http_requests_total{
+              job="{{ args.service-name }}"
+            }[5m]))
+---
+# rollout.yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: api-server
+  namespace: default
+spec:
+  replicas: 10
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      app: api-server
+  template:
+    metadata:
+      labels:
+        app: api-server
+    spec:
+      containers:
+        - name: api
+          image: my-org/api-server:1.0.0
+          ports:
+            - containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 5
+  strategy:
+    canary:
+      canaryService: api-server-canary
+      stableService: api-server-stable
+      trafficRouting:
+        nginx:
+          stableIngress: api-server-ingress
+      steps:
+        - setWeight: 10
+        - pause: {duration: 5m}
+        - analysis:
+            templates:
+              - templateName: http-success-rate
+            args:
+              - name: service-name
+                value: api-server-canary
+        - setWeight: 30
+        - pause: {duration: 5m}
+        - setWeight: 60
+        - pause: {duration: 5m}
+        - setWeight: 100
+```
+
+Deploy the template first, then the Rollout. Update the image:
+
+```bash
+kubectl argo rollouts set image api-server api=my-org/api-server:2.0.0
+```
+
+The rollout proceeds to 10%, pauses 5 minutes, runs analysis (5 samples over 10 minutes querying Prometheus), then continues to 30%, 60%, and 100% — or aborts automatically if success rate falls below 98% twice.
+
+---
+
+## Pitfalls
+
+**Forgetting to delete the existing Deployment.** If a `Deployment` with the same name and selector exists, the controller cannot take over. Delete it before applying the `Rollout`.
+
+**No traffic routing integration.** Without Nginx, Istio, or ALB wired in, `setWeight` only adjusts replica counts. With 10 replicas and `setWeight: 20`, you get 2 canary pods — but your Service round-robins to all pods, so actual traffic split depends on connection distribution, not exact percentage. For production use, set up a real traffic routing integration.
+
+**Readiness probe gaps.** Argo Rollouts relies on pod readiness to determine when a step is complete. If your readiness probe is too permissive or resolves before the app is truly ready, traffic gets sent to pods that are not ready to serve.
+
+**Analysis with no data.** If Prometheus has no data for the canary yet (cold start, low traffic), the query returns an empty result. By default this counts as a measurement failure. Handle it with `inconclusiveLimit` in the template so low-traffic windows do not cause false aborts.
+
+**Promotions during incidents.** `promote --full` skips all remaining steps including analysis. Fine for a hotfix under pressure. Dangerous as a habit — it defeats the purpose of the controller.
+
+**ArgoCD sync during rollout.** If ArgoCD auto-syncs while a rollout is in progress, it may reset the Rollout spec mid-flight. Use ArgoCD sync waves or `ignoreDifferences` to exclude in-flight status fields from ArgoCD's diff.
+
+**Forgetting `revisionHistoryLimit`.** The controller keeps old replica sets around for rollback. Without a limit, these accumulate over time. Set `revisionHistoryLimit: 3` unless you have a specific reason for more.
+
+---
+
+## Quick Reference
+
+```bash
+# Install plugin
+brew install argoproj/tap/kubectl-argo-rollouts
+
+# List all rollouts
+kubectl argo rollouts list rollouts
+
+# Get rollout status
+kubectl argo rollouts get rollout <name> --watch
+
+# Trigger update by changing image
+kubectl argo rollouts set image <rollout> <container>=<image>:<tag>
+
+# Manual promote past pause
+kubectl argo rollouts promote <name>
+
+# Promote past all steps immediately
+kubectl argo rollouts promote <name> --full
+
+# Abort and roll back
+kubectl argo rollouts abort <name>
+
+# Retry after abort
+kubectl argo rollouts retry rollout <name>
+
+# Undo to previous revision
+kubectl argo rollouts undo <name>
+
+# Open dashboard
+kubectl argo rollouts dashboard
+
+# List analysis runs
+kubectl get analysisruns
+
+# Inspect a rollout and its analysis
+kubectl argo rollouts get rollout <name>
+kubectl describe analysisrun <name>
+```
+
+---
+
+## Next Steps
+
+- [`ArgoCD.md`](./ArgoCD.md) — GitOps sync layer that manages the Rollout manifests
+- [`Kubernetes.md`](../containers/Kubernetes.md) — Deployments, Services, and the primitives Rollouts builds on
+- `Istio.md` — Service mesh for accurate traffic splitting
+- [`Prometheus.md`](../observability/Prometheus.md) — Metrics backend for automated analysis
+
+---
+
+## The Mantra
+
+Ship 10%, wait, measure, then commit — or let the metrics make the call for you.
