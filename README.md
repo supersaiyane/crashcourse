@@ -261,6 +261,40 @@ Pick your track and follow the arrows:
 
 ---
 
+## Going Forward v1
+
+Features and content coming next to make crashcourse more interactive and useful:
+
+### Interactive Features
+
+| Feature | What it adds |
+|---------|-------------|
+| **Quiz & Flashcards** | "Test yourself" section at the end of each course — 5-10 MCQs with hidden answers. Built for retention and interview prep. |
+| **Interactive CLI Playground** | Browser-based terminal (xterm.js) where you can try commands without installing anything. Pre-loaded scenarios per course. |
+| **Progress Tracker & Bookmarks** | Track which courses you've read, see completion percentage on the landing page, bookmark/favorite courses. All localStorage — no account needed. |
+| **Interview Questions Bank** | Top 10 interview questions per course — the questions hiring managers actually ask, with concise answers. |
+
+### Content Additions
+
+| Content | What it adds |
+|---------|-------------|
+| **Architecture Diagrams** | Mermaid/ASCII diagrams in each course showing how the tool fits in a real production stack. |
+| **Real-World Project Walkthroughs** | 3-5 end-to-end guides that chain multiple courses (e.g., "Deploy a production K8s cluster from scratch", "Build a full observability stack"). |
+| **Comparison Matrices** | Head-to-head comparison pages: Terraform vs Pulumi vs Crossplane, ArgoCD vs Flux, Prometheus vs Datadog, ELK vs Loki. |
+| **Video/GIF Demos** | Short terminal recordings (asciinema) for key commands. Seeing it run builds confidence faster than reading. |
+
+### Rollout Plan
+
+**Wave 1** (shipping first): Progress tracker + bookmarks, interview questions, architecture diagrams
+
+**Wave 2**: Quiz/flashcards, comparison matrices, terminal GIF demos
+
+**Wave 3**: Interactive CLI playground, multi-course project walkthroughs
+
+> Want to help build any of these? PRs are open. See [CONTRIBUTING.md](CONTRIBUTING.md).
+
+---
+
 ## Contributing
 
 Contributions are welcome! The format is designed to extend cleanly:
