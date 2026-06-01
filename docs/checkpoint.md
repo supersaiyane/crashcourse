@@ -20,12 +20,19 @@
 | 2026-05-31 15:30 | Footer links added | Done | Portfolio, LinkedIn, Medium, Book in footer | docs/index.html:128-155 |
 | 2026-05-31 21:30 | 15 new courses (interview, career, practices) | Done | interview/6, career/5, + 4 in existing categories | interview/System-Design-Interview.md:1, career/Engineering-Career-Path.md:1 |
 
+| 2026-06-01 00:30 | Wave 1: PWA progress tracker + mermaid.js | Done | app.js, style.css, index.html — localStorage tracking, bookmarks, continue-reading, mermaid rendering | docs/js/app.js:71, docs/css/style.css |
+| 2026-06-01 01:00 | Wave 1: Interview Q + diagrams batch 1 (5 priority) | Done | Kubernetes, Docker, Terraform, AWS, System-Design — both IQ + mermaid | containers/Kubernetes.md, iac/Terraform.md |
+| 2026-06-01 01:30 | Wave 1: Interview Q + diagrams batch 2 (5 courses) | Done | Prometheus, Git, Linux, Helm, GitHub-Actions — both IQ + mermaid | observability/Prometheus.md, vcs/Git.md |
+| 2026-06-01 02:00 | Wave 1: Interview Q + diagrams batch 3 (27 courses) | Partial | 14 both IQ+mermaid, 12 IQ-only, 1 mermaid-only — rate limit hit | observability/Grafana.md, cicd/ArgoCD.md |
+
 ## Next Session Resume Vector
 
-- 136 courses across 19 categories, all pushed and counts updated
-- README.md: badges, index, hero stats all reflect 136/19
-- course-index.json: all 136 entries present
-- Repo About description: updated to 136
+- 136 courses across 19 categories
+- Wave 1 progress: 37/136 courses have interview questions, 24/136 have mermaid diagrams
+- PWA progress tracker + bookmarks + mermaid.js rendering: DONE
+- 99 courses still need interview Q + diagrams
+- 13 courses have IQ but missing mermaid: Argo-Rollouts, Flux, GitLab-CI, Jenkins, Tekton, Azure, Cloud-Arch, Cloud-Net, Cloud-Sec, Cloudflare, FinOps, GCP
+- Podman has mermaid but missing IQ
+- Untouched categories: data/, dataops/, design/ (except System-Design), patterns/, platform/, processes/, interview/, career/, networking/, security/, most of ai/ + iac/ + containers/ + linux/
 - Site live at https://supersaiyane.github.io/crashcourse/
-- TODO.txt has Interactive Features section planned (quiz, flashcards, progress tracking)
-- 2 unstaged modified files: career/Continuous-Learning.md, docs/checkpoint.md
+- TODO.txt Wave 2 + Wave 3 not started
