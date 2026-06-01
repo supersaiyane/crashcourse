@@ -381,6 +381,21 @@ First, rotate the secret immediately — it is compromised the moment it enters 
 - Connect Git to CI/CD (PRs trigger pipelines — see `GitHub-Actions.md`) and GitOps (merges drive
   deploys — see `ArgoCD.md`).
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [The Coding Train — Git and GitHub for Beginners](https://www.youtube.com/@TheCodingTrain) — Daniel Shiffman's visual, friendly explanations of Git fundamentals
+- [Fireship — Git explained in 100 Seconds](https://www.youtube.com/@Fireship) — quick conceptual overview of Git internals and daily commands
+- [TechWorld with Nana — Git Tutorial for Beginners](https://www.youtube.com/@TechWorldwithNana) — practical walkthrough of branching, merging, and collaboration
+- [GitHub Official — Git and GitHub tutorials](https://www.youtube.com/@GitHub) — official guides on pull requests, code review, and GitHub Flow
+- [DevOps Toolkit — Git workflows](https://www.youtube.com/@DevOpsToolkit) — trunk-based development, Git Flow, and branching strategy comparisons
+
+**Official docs & blogs:**
+- [Pro Git Book (free online)](https://git-scm.com/book/en/v2) — the definitive Git reference, covers internals and advanced workflows
+- [Git Official Documentation](https://git-scm.com/doc)
+
+---
+
 **The mantra:** edit → add → commit, three areas (working/staging/repo). Branch for everything,
 merge via reviewed PRs, never rebase shared history, never commit secrets, and run `git status`
 whenever you're unsure. The reflog means almost nothing is ever truly lost.

@@ -772,4 +772,19 @@ Start with `flux get kustomizations` or `flux get helmreleases` for a quick stat
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [DevOps Toolkit — Flux and GitOps](https://www.youtube.com/@DevOpsToolkit) — Viktor Farcic's comparisons of Flux vs ArgoCD and GitOps deep dives
+- [CNCF — Flux talks from KubeCon](https://www.youtube.com/@cncf) — maintainer presentations on Flux v2 architecture, multi-tenancy, and SOPS integration
+- [TechWorld with Nana — GitOps with Flux](https://www.youtube.com/@TechWorldwithNana) — beginner walkthrough of Flux bootstrap and reconciliation
+- [Weaveworks — Flux tutorials](https://www.youtube.com/@intaborweave) — original creators of Flux covering real-world GitOps patterns
+- [Fireship — GitOps explained](https://www.youtube.com/@Fireship) — quick conceptual overview of GitOps and pull-based deployment
+
+**Official docs & blogs:**
+- [Flux Official Documentation](https://fluxcd.io/docs/)
+- [Weaveworks Blog — GitOps and Flux](https://www.weave.works/blog/) — in-depth guides on Flux patterns, SOPS encryption, and multi-cluster GitOps
+
+---
+
 **The mantra:** Git is the source of truth — if it is not in Git, it is not in your cluster.

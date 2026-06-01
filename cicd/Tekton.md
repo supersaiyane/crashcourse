@@ -632,6 +632,22 @@ Choose Tekton when you need full control over the execution environment, Kuberne
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [CNCF — Tekton talks from KubeCon](https://www.youtube.com/@cncf) — maintainer presentations on Tekton architecture, Chains, and supply chain security
+- [DevOps Toolkit — Tekton deep dives](https://www.youtube.com/@DevOpsToolkit) — Viktor Farcic's comparisons of Tekton vs Jenkins vs GitHub Actions
+- [TechWorld with Nana — Kubernetes CI/CD](https://www.youtube.com/@TechWorldwithNana) — beginner-friendly Kubernetes-native pipeline concepts
+- [IBM Technology — Tekton tutorials](https://www.youtube.com/@IBMTechnology) — practical walkthroughs from one of Tekton's original contributors
+- [Fireship — CI/CD in 100 Seconds](https://www.youtube.com/@Fireship) — quick conceptual overview of CI/CD pipelines
+
+**Official docs & blogs:**
+- [Tekton Official Documentation](https://tekton.dev/docs/)
+- [Tekton Hub](https://hub.tekton.dev/) — reusable Tasks and Pipelines from the community
+- [CD Foundation Blog](https://cd.foundation/blog/) — articles on Tekton, supply chain security, and Kubernetes-native CI
+
+---
+
 ## The Mantra
 
 > Every step is a container. Every pipeline is Kubernetes. You already have the primitives — now use them with intention.

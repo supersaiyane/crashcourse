@@ -653,4 +653,19 @@ The CI pipeline (GitHub Actions, GitLab CI, Jenkins) handles build, test, and im
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [DevOps Toolkit — ArgoCD playlist](https://www.youtube.com/@DevOpsToolkit) — Viktor Farcic's deep dives on ArgoCD patterns, ApplicationSets, and GitOps comparisons
+- [TechWorld with Nana — ArgoCD Tutorial](https://www.youtube.com/@TechWorldwithNana) — beginner-friendly walkthrough of ArgoCD setup and GitOps workflow
+- [CNCF — Argo Project talks from KubeCon](https://www.youtube.com/@cncf) — maintainer talks on new features, multi-cluster, and production patterns
+- [Codefresh — GitOps and Argo Ecosystem](https://www.youtube.com/@Codefresh) — practical tutorials from the team behind the Argo commercial offering
+- [Fireship — GitOps explained](https://www.youtube.com/@Fireship) — quick conceptual explainer on GitOps and continuous delivery
+
+**Official docs & blogs:**
+- [Argo CD Official Documentation](https://argo-cd.readthedocs.io/)
+- [Codefresh Blog — GitOps and Argo](https://codefresh.io/blog/) — in-depth articles on ArgoCD patterns, ApplicationSets, and multi-cluster GitOps
+
+---
+
 **The mantra:** Git is the only deploy button — everything else is just watching it happen.

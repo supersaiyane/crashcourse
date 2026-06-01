@@ -347,6 +347,21 @@ Both are CI/CD-as-code triggered by Git events. GitLab CI uses a stage-based mod
 - **Auto DevOps** and the built-in security scanners (SAST/DAST/dependency/container).
 - Pair with **Argo CD** for GitOps, or deploy straight to Kubernetes via the GitLab agent.
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [GitLab Official — CI/CD tutorials](https://www.youtube.com/@Gitlab) — deep dives on pipelines, runners, Auto DevOps, and GitLab Commit conference talks
+- [TechWorld with Nana — GitLab CI/CD Tutorial](https://www.youtube.com/@TechWorldwithNana) — beginner-friendly pipeline setup and concepts
+- [DevOps Toolkit — GitLab CI vs other tools](https://www.youtube.com/@DevOpsToolkit) — CI/CD comparison videos and GitOps patterns
+- [CNCF — GitOps talks from KubeCon](https://www.youtube.com/@cncf) — GitLab-to-Kubernetes deployment patterns and best practices
+- [Fireship — CI/CD in 100 Seconds](https://www.youtube.com/@Fireship) — quick conceptual overview of CI/CD pipelines
+
+**Official docs & blogs:**
+- [GitLab CI/CD Documentation](https://docs.gitlab.com/ee/ci/)
+- [GitLab Blog — CI/CD category](https://about.gitlab.com/blog/categories/ci-cd/) — release announcements, tutorials, and production patterns
+
+---
+
 **The mantra:** one `.gitlab-ci.yml`, ordered stages, parallel jobs within a stage, fresh
 container per job. Pass data via artifacts, speed via cache and `needs:`, gate prod with
 `when: manual`, and keep secrets in CI/CD variables.

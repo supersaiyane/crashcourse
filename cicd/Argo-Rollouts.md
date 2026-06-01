@@ -684,6 +684,21 @@ The Rollout spec mirrors a Deployment exactly — same `template`, `selector`, a
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [DevOps Toolkit — Argo Rollouts and progressive delivery](https://www.youtube.com/@DevOpsToolkit) — Viktor Farcic's deep dives on canary, blue-green, and analysis-driven rollbacks
+- [CNCF — Argo project talks from KubeCon](https://www.youtube.com/@cncf) — maintainer presentations on Rollouts architecture and real-world adoption
+- [Codefresh — Argo Rollouts tutorials](https://www.youtube.com/@Codefresh) — hands-on demos from the team behind the Argo commercial offering
+- [TechWorld with Nana — Kubernetes deployments](https://www.youtube.com/@TechWorldwithNana) — foundational deployment concepts that Rollouts builds on
+- [Fireship — Kubernetes explained](https://www.youtube.com/@Fireship) — quick conceptual overview for context
+
+**Official docs & blogs:**
+- [Argo Rollouts Official Documentation](https://argo-rollouts.readthedocs.io/)
+- [Codefresh Blog — Progressive Delivery](https://codefresh.io/blog/) — in-depth articles on canary strategies, traffic splitting, and analysis templates
+
+---
+
 ## The Mantra
 
 Ship 10%, wait, measure, then commit — or let the metrics make the call for you.

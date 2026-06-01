@@ -383,6 +383,22 @@ Jenkins gives you total control — any environment, any network, any build need
 - Evaluate whether a hosted tool (GitHub Actions / GitLab CI) removes the ops burden for your
   case — many teams migrate off Jenkins unless they need its on-prem flexibility.
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [CloudBees — Jenkins community and Jenkins World talks](https://www.youtube.com/@CloudBeesTV) — official Jenkins governance, plugin ecosystem, and enterprise patterns
+- [TechWorld with Nana — Jenkins Tutorial](https://www.youtube.com/@TechWorldwithNana) — beginner-friendly pipeline setup and declarative Jenkinsfile walkthrough
+- [DevOps Toolkit — Jenkins vs modern CI/CD](https://www.youtube.com/@DevOpsToolkit) — honest comparisons of Jenkins against GitHub Actions, GitLab CI, and Tekton
+- [CNCF — CI/CD talks from KubeCon](https://www.youtube.com/@cncf) — Kubernetes-native CI patterns relevant to Jenkins on K8s
+- [Fireship — CI/CD in 100 Seconds](https://www.youtube.com/@Fireship) — quick conceptual overview for context
+
+**Official docs & blogs:**
+- [Jenkins Official Documentation](https://www.jenkins.io/doc/)
+- [Jenkins Blog](https://www.jenkins.io/blog/) — release notes, security advisories, and community updates
+- [CloudBees Blog — Jenkins and CI/CD](https://www.cloudbees.com/blog) — enterprise Jenkins patterns and pipeline best practices
+
+---
+
 **The mantra:** pipeline-as-code in a Declarative `Jenkinsfile` (stages → steps), run on agents
 not the controller, secrets in the Credentials store, gate prod with `input`, and remember: you
 own the server, so back it up and keep it patched.

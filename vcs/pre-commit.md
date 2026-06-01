@@ -454,6 +454,20 @@ detect-secrets scan > .secrets.baseline
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [DevOps Toolkit — pre-commit and Git hooks](https://www.youtube.com/@DevOpsToolkit) — Viktor Farcic on automating code quality checks in developer workflows
+- [TechWorld with Nana — Git hooks explained](https://www.youtube.com/@TechWorldwithNana) — beginner-friendly context on how Git hooks work under the hood
+- [Fireship — Git hooks in 100 Seconds](https://www.youtube.com/@Fireship) — quick conceptual overview of hook-driven automation
+- [CNCF — Supply chain security talks](https://www.youtube.com/@cncf) — how pre-commit hooks fit into broader software supply chain security
+
+**Official docs & blogs:**
+- [pre-commit Official Documentation](https://pre-commit.com/)
+- [pre-commit Supported Hooks](https://pre-commit.com/hooks.html) — browseable directory of community-maintained hooks
+
+---
+
 ## The Mantra
 
 Automate the boring checks at commit time so your code review is about logic, not lint.

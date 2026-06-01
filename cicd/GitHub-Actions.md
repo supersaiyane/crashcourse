@@ -377,6 +377,21 @@ Use `if:` conditions on the deploy job: `if: github.ref == 'refs/heads/main'` en
 - Pair with **Argo CD** for GitOps deploys (Actions builds + pushes the image and bumps the tag in
   Git; Argo CD syncs it — see `ArgoCD.md`).
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [GitHub Official — GitHub Actions tutorials](https://www.youtube.com/@GitHub) — official walkthroughs, GitHub Universe talks, and new feature announcements
+- [TechWorld with Nana — GitHub Actions CI/CD](https://www.youtube.com/@TechWorldwithNana) — beginner-friendly pipeline setup and workflow authoring
+- [DevOps Toolkit — GitHub Actions comparisons](https://www.youtube.com/@DevOpsToolkit) — honest comparisons against GitLab CI, Jenkins, and Tekton
+- [Fireship — GitHub Actions in 100 Seconds](https://www.youtube.com/@Fireship) — quick explainer on Actions concepts and event-driven workflows
+- [CNCF — CI/CD talks from KubeCon](https://www.youtube.com/@cncf) — GitHub Actions in Kubernetes deployment pipelines and GitOps patterns
+
+**Official docs & blogs:**
+- [GitHub Actions Documentation](https://docs.github.com/en/actions)
+- [GitHub Blog — Actions category](https://github.blog/) — release announcements, security best practices, and reusable workflow patterns
+
+---
+
 **The mantra:** event → workflow → jobs (fresh machines, parallel) → steps (`uses` actions or
 `run` shell). Check out your code first, keep secrets in secrets (or use OIDC), gate prod with
 environments, and cache to stay fast.
