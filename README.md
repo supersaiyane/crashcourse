@@ -7,8 +7,8 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Crash_Courses-136-blue?style=for-the-badge" alt="Courses"/>
-  <img src="https://img.shields.io/badge/Categories-19-green?style=for-the-badge" alt="Categories"/>
+  <img src="https://img.shields.io/badge/Crash_Courses-153-blue?style=for-the-badge" alt="Courses"/>
+  <img src="https://img.shields.io/badge/Categories-20-green?style=for-the-badge" alt="Categories"/>
   <img src="https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge" alt="License"/>
   <img src="https://img.shields.io/github/stars/supersaiyane/crashcourse?style=for-the-badge&color=orange" alt="Stars"/>
   <img src="https://img.shields.io/github/forks/supersaiyane/crashcourse?style=for-the-badge" alt="Forks"/>
@@ -50,7 +50,7 @@
 <h1 align="center">DevOps / SRE / Cloud / AI Crash Course</h1>
 
 <p align="center">
-  <strong>136 crash courses. 19 categories. Zero to productive in 2 days per tool.</strong><br/>
+  <strong>153 crash courses. 20 categories. Zero to productive in 2 days per tool.</strong><br/>
   The only repo you need to go from "what is this?" to "I use it daily" — for Docker, Kubernetes, Terraform, AWS, Prometheus, LLMs, and 130 more tools.<br/>
   Concepts first, commands second. No fluff. No slides. Just what you need.
 </p>
@@ -290,6 +290,27 @@ Read it top-to-bottom to **learn**. Bookmark it and `Ctrl+F` to **reference**. F
 | Mentorship | [Mentorship.md](career/Mentorship.md) | Finding mentors, being a mentee, sponsorship, reverse mentoring |
 | Continuous Learning | [Continuous-Learning.md](career/Continuous-Learning.md) | Learning science, tech radar, deep work, staying relevant |
 
+### Product & Project Management
+| Topic | File | What you'll learn |
+|-------|------|-------------------|
+| Product Management Fundamentals | [Product-Management-Fundamentals.md](product/Product-Management-Fundamentals.md) | PM role, discovery vs delivery, PM vs PO vs PMM, working with engineering |
+| Product Strategy | [Product-Strategy.md](product/Product-Strategy.md) | Vision → strategy → roadmap, OKRs, North Star metrics, product-market fit |
+| Product Discovery | [Product-Discovery.md](product/Product-Discovery.md) | User research, JTBD, opportunity solution trees, assumption testing |
+| Product Roadmapping | [Product-Roadmapping.md](product/Product-Roadmapping.md) | Now-Next-Later, RICE scoring, stakeholder alignment, saying no |
+| Product Analytics | [Product-Analytics.md](product/Product-Analytics.md) | AARRR metrics, funnel analysis, cohort analysis, A/B testing |
+| User Stories & Requirements | [User-Stories-Requirements.md](product/User-Stories-Requirements.md) | User stories, acceptance criteria, INVEST, story mapping, PRDs |
+| Product-Led Growth | [Product-Led-Growth.md](product/Product-Led-Growth.md) | Freemium vs free trial, activation, virality loops, PLG metrics |
+| Stakeholder Management | [Stakeholder-Management.md](product/Stakeholder-Management.md) | Managing up/across/down, RACI, influencing without authority |
+| Agile & Scrum | [Agile-Scrum.md](product/Agile-Scrum.md) | Scrum framework, sprint planning, retros, velocity, story points |
+| Kanban | [Kanban.md](product/Kanban.md) | WIP limits, pull systems, flow metrics, Kanban vs Scrum |
+| Sprint Planning & Estimation | [Sprint-Planning-Estimation.md](product/Sprint-Planning-Estimation.md) | Story points, planning poker, capacity planning, velocity tracking |
+| JIRA & Project Tools | [JIRA-Project-Tools.md](product/JIRA-Project-Tools.md) | JIRA workflows, JQL, dashboards, Linear, Shortcut, GitHub Projects |
+| Risk Management | [Risk-Management.md](product/Risk-Management.md) | Risk registers, probability × impact, RAID logs, contingency planning |
+| Technical Program Management | [Technical-Program-Management.md](product/Technical-Program-Management.md) | TPM vs PM vs EM, cross-team coordination, launch readiness |
+| Delivery & Execution | [Delivery-Execution.md](product/Delivery-Execution.md) | Release planning, feature flags, go/no-go, launch checklists |
+| Project Management Fundamentals | [Project-Management-Fundamentals.md](product/Project-Management-Fundamentals.md) | Waterfall vs Agile, triple constraint, PMBOK, project charter |
+| PM in the AI Era | [PM-in-the-AI-Era.md](product/PM-in-the-AI-Era.md) | AI-augmented PM workflows, new skill stack, career positioning |
+
 ---
 
 ## Learning Paths
@@ -364,5 +385,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 </p>
 
 <p align="center">
-  <sub>136 crash courses. 19 categories. Built for engineers who'd rather read docs than watch a 4-hour tutorial.</sub>
+  <sub>153 crash courses. 20 categories. Built for engineers who'd rather read docs than watch a 4-hour tutorial.</sub>
 </p>

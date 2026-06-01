@@ -1,8 +1,8 @@
 {
   "meta": {
-    "total": 136,
-    "categories": 19,
-    "updated": "2026-05-31"
+    "total": 153,
+    "categories": 20,
+    "updated": "2026-06-01"
   },
   "categories": [
     {
@@ -283,6 +283,31 @@
         { "title": "Career Transitions", "file": "Career-Transitions.md", "tags": ["pivot", "ic-to-manager", "startup"] },
         { "title": "Mentorship", "file": "Mentorship.md", "tags": ["mentor", "sponsor", "growth"] },
         { "title": "Continuous Learning", "file": "Continuous-Learning.md", "tags": ["learning-science", "tech-radar", "deep-work"] }
+      ]
+    },
+    {
+      "id": "product",
+      "label": "Product & Project Management",
+      "icon": "clipboard",
+      "color": "#8b5cf6",
+      "courses": [
+        { "title": "Product Management Fundamentals", "file": "Product-Management-Fundamentals.md", "tags": ["pm", "discovery", "delivery"] },
+        { "title": "Product Strategy", "file": "Product-Strategy.md", "tags": ["vision", "okrs", "north-star"] },
+        { "title": "Product Discovery", "file": "Product-Discovery.md", "tags": ["jtbd", "interviews", "validation"] },
+        { "title": "Product Roadmapping", "file": "Product-Roadmapping.md", "tags": ["rice", "now-next-later", "prioritisation"] },
+        { "title": "Product Analytics", "file": "Product-Analytics.md", "tags": ["aarrr", "funnels", "ab-testing"] },
+        { "title": "User Stories & Requirements", "file": "User-Stories-Requirements.md", "tags": ["invest", "acceptance-criteria", "prd"] },
+        { "title": "Product-Led Growth", "file": "Product-Led-Growth.md", "tags": ["plg", "activation", "virality"] },
+        { "title": "Stakeholder Management", "file": "Stakeholder-Management.md", "tags": ["raci", "influence", "alignment"] },
+        { "title": "Agile & Scrum", "file": "Agile-Scrum.md", "tags": ["sprints", "velocity", "scrum-master"] },
+        { "title": "Kanban", "file": "Kanban.md", "tags": ["wip-limits", "flow", "cycle-time"] },
+        { "title": "Sprint Planning & Estimation", "file": "Sprint-Planning-Estimation.md", "tags": ["story-points", "planning-poker", "velocity"] },
+        { "title": "JIRA & Project Tools", "file": "JIRA-Project-Tools.md", "tags": ["jql", "workflows", "dashboards"] },
+        { "title": "Risk Management", "file": "Risk-Management.md", "tags": ["risk-register", "raid", "mitigation"] },
+        { "title": "Technical Program Management", "file": "Technical-Program-Management.md", "tags": ["tpm", "dependencies", "launch-readiness"] },
+        { "title": "Delivery & Execution", "file": "Delivery-Execution.md", "tags": ["release", "feature-flags", "launch"] },
+        { "title": "Project Management Fundamentals", "file": "Project-Management-Fundamentals.md", "tags": ["waterfall", "agile", "pmbok"] },
+        { "title": "PM in the AI Era", "file": "PM-in-the-AI-Era.md", "tags": ["ai-augmented", "career", "new-skill-stack"] }
       ]
     }
   ]
