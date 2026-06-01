@@ -379,5 +379,19 @@ Terraform is declarative and designed for infrastructure provisioning — creati
 - Compare with **Pulumi** (same goals, real programming languages — see `Pulumi.md`) and
   **Packer** for baking images that Terraform then deploys (see `Packer.md`).
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [HashiCorp — HashiConf Terraform Talks](https://www.youtube.com/@HashiCorp) — official deep dives on modules, state, workspaces, and provider development
+- [Ned in the Cloud — Terraform Deep Dives](https://www.youtube.com/@NedintheCloud) — thorough walkthroughs of state management, testing, and CI/CD patterns
+- [TechWorld with Nana — Terraform Beginner Tutorial](https://www.youtube.com/@TechWorldwithNana) — clear, structured introduction for first-time users
+- [Spacelift — Terraform Best Practices](https://www.youtube.com/@spacelift-io) — advanced patterns, drift detection, and IaC comparisons
+- [KodeKloud — Terraform for Beginners](https://www.youtube.com/@KodeKloud) — hands-on labs and exam-oriented walkthroughs
+
+**Official docs & blogs:**
+- [Terraform Documentation](https://developer.hashicorp.com/terraform/docs) — language reference, provider registry, and CLI docs
+- [HashiCorp Blog — Terraform](https://www.hashicorp.com/blog/products/terraform) — release announcements, patterns, and production case studies
+- [Spacelift Blog — Terraform](https://spacelift.io/blog) — IaC comparisons, advanced module patterns, and CI/CD integration guides
+
 **The mantra:** code = desired state, state = what exists, plan = the diff. Always plan before
 apply, store state remotely with locking, prefer `for_each`, and pin your versions.

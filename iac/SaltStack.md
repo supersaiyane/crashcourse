@@ -681,6 +681,19 @@ salt-call --local state.apply nginx         # masterless mode
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [Salt Project — Official Channel](https://www.youtube.com/@SaltProject) — SaltConf talks, state tutorials, and orchestration walkthroughs
+- [TechWorld with Nana — Configuration Management](https://www.youtube.com/@TechWorldwithNana) — beginner-friendly comparison of Salt, Ansible, and Puppet
+- [KodeKloud — SaltStack Basics](https://www.youtube.com/@KodeKloud) — hands-on labs covering states, pillars, and remote execution
+- [DevOps Toolkit (Viktor Farcic) — Config Management at Scale](https://www.youtube.com/@DevOpsToolkit) — where Salt fits in the modern automation landscape
+- [Learn Linux TV — Server Automation](https://www.youtube.com/@LearnLinuxTV) — practical Linux automation patterns applicable to Salt
+
+**Official docs & blogs:**
+- [Salt Documentation](https://docs.saltproject.io/en/latest/) — state reference, execution modules, and pillar guides
+- [Salt Project Blog](https://saltproject.io/blog/) — release notes, community updates, and event-driven automation patterns
+
 ## The Mantra
 
 > States declare intent. Execution enforces it. The bus makes it instant.

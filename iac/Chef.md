@@ -690,6 +690,20 @@ cookstyle .          # RuboCop with Chef-aware cops
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [Chef — Official Channel](https://www.youtube.com/@ChefSoftware) — ChefConf talks, InSpec tutorials, and cookbook development guides
+- [TechWorld with Nana — Configuration Management](https://www.youtube.com/@TechWorldwithNana) — beginner-friendly comparison of Chef, Ansible, and Puppet
+- [KodeKloud — Chef for Beginners](https://www.youtube.com/@KodeKloud) — hands-on labs covering recipes, cookbooks, and Test Kitchen
+- [Learn Linux TV — Server Configuration](https://www.youtube.com/@LearnLinuxTV) — practical server automation patterns relevant to Chef workflows
+- [DevOps Toolkit (Viktor Farcic) — Config Management Comparison](https://www.youtube.com/@DevOpsToolkit) — where Chef fits alongside Ansible, Puppet, and Salt
+
+**Official docs & blogs:**
+- [Chef Documentation](https://docs.chef.io/) — resource reference, cookbook development, and InSpec testing guide
+- [Chef Blog](https://www.chef.io/blog) — release notes, compliance automation, and migration patterns
+- [Chef Supermarket](https://supermarket.chef.io/) — community cookbooks with usage examples and version history
+
 ## The Mantra
 
 > Write what you want, not how to get there.

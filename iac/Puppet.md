@@ -666,4 +666,17 @@ pdk new class mymodule::config
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [Puppet — Official Channel](https://www.youtube.com/@Puppet) — PuppetConf talks, PDK tutorials, and module development guides
+- [KodeKloud — Puppet for Beginners](https://www.youtube.com/@KodeKloud) — hands-on labs covering manifests, modules, and Hiera
+- [TechWorld with Nana — Configuration Management](https://www.youtube.com/@TechWorldwithNana) — beginner-friendly overview of Puppet vs Ansible vs Chef
+- [Learn Linux TV — Puppet Basics](https://www.youtube.com/@LearnLinuxTV) — practical series on agent setup, manifests, and module structure
+- [DevOps Toolkit (Viktor Farcic) — Config Management Comparison](https://www.youtube.com/@DevOpsToolkit) — where Puppet fits in the modern IaC landscape
+
+**Official docs & blogs:**
+- [Puppet Documentation](https://www.puppet.com/docs/puppet/latest/puppet_index.html) — language reference, type reference, and module development guide
+- [Puppet Blog](https://www.puppet.com/blog) — release notes, State of DevOps reports, and compliance automation patterns
+
 **The mantra:** Describe what should exist — let the machine close the gap, every thirty minutes, forever.

@@ -256,5 +256,18 @@ packer inspect <template>.pkr.hcl    # show variables/builders/provisioners
 - Integrate with **Terraform** (consume the manifest) and **Ansible** (as the provisioner).
 - Schedule weekly rebuilds so security patches flow into images automatically.
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [HashiCorp — Packer Tutorials](https://www.youtube.com/@HashiCorp) — official walkthroughs of HCL2 templates, multi-cloud builds, and HCP Packer
+- [Ned in the Cloud — Packer and Immutable Infrastructure](https://www.youtube.com/@NedintheCloud) — practical deep dives into image pipelines and Terraform integration
+- [TechWorld with Nana — Packer Crash Course](https://www.youtube.com/@TechWorldwithNana) — beginner-friendly introduction to image baking concepts
+- [KodeKloud — Packer](https://www.youtube.com/@KodeKloud) — hands-on labs covering builders, provisioners, and post-processors
+- [Spacelift — Immutable Infrastructure Patterns](https://www.youtube.com/@spacelift-io) — Packer in the context of modern IaC workflows
+
+**Official docs & blogs:**
+- [Packer Documentation](https://developer.hashicorp.com/packer/docs) — builder, provisioner, and post-processor reference
+- [HashiCorp Blog — Packer](https://www.hashicorp.com/blog/products/packer) — release notes, HCP Packer features, and image management patterns
+
 **The mantra:** bake once, run many; never patch a running server. Packer builds the immutable
 image; Terraform and autoscaling deploy and replace it.

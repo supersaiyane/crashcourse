@@ -446,6 +446,20 @@ kubectl describe <constrainttype> <constraintname>
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [CNCF — OPA and Gatekeeper Talks](https://www.youtube.com/@cncf) — KubeCon presentations on policy-as-code architecture and admission control
+- [DevOps Toolkit (Viktor Farcic) — Policy as Code](https://www.youtube.com/@DevOpsToolkit) — practical OPA and Gatekeeper walkthroughs in Kubernetes contexts
+- [Styra — OPA Tutorials](https://www.youtube.com/@Styra) — official OPA maintainer content on Rego, bundles, and enterprise patterns
+- [TechWorld with Nana — Kubernetes Security](https://www.youtube.com/@TechWorldwithNana) — beginner-friendly overview of admission control and policy enforcement
+- [Spacelift — Policy Enforcement in IaC](https://www.youtube.com/@spacelift-io) — OPA and Conftest in Terraform and CI/CD pipelines
+
+**Official docs & blogs:**
+- [OPA Documentation](https://www.openpolicyagent.org/docs/latest/) — Rego language reference, integration guides, and decision log format
+- [Styra Blog](https://www.styra.com/blog/) — Rego patterns, Gatekeeper best practices, and policy management at scale
+- [Gatekeeper Documentation](https://open-policy-agent.github.io/gatekeeper/website/docs/) — ConstraintTemplate reference and audit mode guide
+
 ## The Mantra
 
 Policy as code. Tested, versioned, enforced at the boundary — not documented in a wiki nobody reads.

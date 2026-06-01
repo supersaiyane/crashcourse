@@ -445,6 +445,20 @@ kubectl get xr <name> -o yaml | grep -A 20 status
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [DevOps Toolkit (Viktor Farcic) — Crossplane Deep Dives](https://www.youtube.com/@DevOpsToolkit) — comprehensive series on Compositions, XRDs, and Crossplane vs Terraform
+- [Upbound — Official Crossplane Channel](https://www.youtube.com/@Upbound) — KubeCon talks, provider development, and platform building tutorials
+- [TechWorld with Nana — Kubernetes Infrastructure](https://www.youtube.com/@TechWorldwithNana) — beginner-friendly Kubernetes concepts that Crossplane builds on
+- [Spacelift — IaC Comparison](https://www.youtube.com/@spacelift-io) — where Crossplane fits in the IaC landscape alongside Terraform and Pulumi
+- [CNCF — Crossplane Presentations](https://www.youtube.com/@cncf) — KubeCon presentations on Crossplane architecture and real-world adoption
+
+**Official docs & blogs:**
+- [Crossplane Documentation](https://docs.crossplane.io/) — provider reference, Composition guide, and getting started tutorials
+- [Upbound Blog](https://blog.upbound.io/) — platform engineering patterns, provider updates, and production case studies
+- [Crossplane GitHub](https://github.com/crossplane/crossplane) — examples, issue tracker, and community Compositions
+
 ## The Mantra
 
 > Declare what you want. Let the control plane close the gap. Review the diff in Git, not in a console.

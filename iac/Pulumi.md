@@ -345,5 +345,18 @@ The Automation API lets you drive Pulumi programmatically from your own applicat
   team are developers; Terraform if you want the larger ecosystem and ops-friendly HCL. Both
   are excellent; many orgs standardize on one.
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [Pulumi — Official Channel](https://www.youtube.com/@PulumiTV) — tutorials, PulumiUp talks, and Automation API walkthroughs
+- [DevOps Toolkit (Viktor Farcic) — Pulumi vs Terraform](https://www.youtube.com/@DevOpsToolkit) — practical comparisons and real-world IaC decision-making
+- [Spacelift — Pulumi Overview](https://www.youtube.com/@spacelift-io) — IaC tool comparisons including Pulumi positioning
+- [TechWorld with Nana — Infrastructure as Code](https://www.youtube.com/@TechWorldwithNana) — beginner-friendly IaC concepts that apply to Pulumi
+
+**Official docs & blogs:**
+- [Pulumi Documentation](https://www.pulumi.com/docs/) — language guides, provider reference, and Automation API docs
+- [Pulumi Blog](https://www.pulumi.com/blog/) — tutorials, migration guides, and CrossGuard policy examples
+- [Pulumi Examples Repository](https://github.com/pulumi/examples) — production-ready code samples across languages and clouds
+
 **The mantra:** real language, same declarative model. Resources are a graph you construct;
 attributes are async Outputs you `.apply()`; stacks are environments. Preview, up, destroy.

@@ -786,4 +786,18 @@ After initial setup, revoke the root token with `vault token revoke`. For emerge
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [HashiCorp — HashiConf Vault Talks](https://www.youtube.com/@HashiCorp) — official sessions on secrets engines, auth methods, and production architecture
+- [Ned in the Cloud — Vault Deep Dives](https://www.youtube.com/@NedintheCloud) — practical walkthroughs of dynamic secrets, transit encryption, and HA setup
+- [KodeKloud — Vault for Beginners](https://www.youtube.com/@KodeKloud) — hands-on labs covering seal/unseal, policies, and AppRole auth
+- [TechWorld with Nana — Vault Crash Course](https://www.youtube.com/@TechWorldwithNana) — beginner-friendly introduction to secrets management concepts
+- [Spacelift — Secrets Management Patterns](https://www.youtube.com/@spacelift-io) — Vault in the context of IaC and CI/CD pipelines
+
+**Official docs & blogs:**
+- [Vault Documentation](https://developer.hashicorp.com/vault/docs) — secrets engines, auth methods, and operational guides
+- [HashiCorp Blog — Vault](https://www.hashicorp.com/blog/products/vault) — release announcements, zero-trust patterns, and production case studies
+- [HashiCorp Learn — Vault Tutorials](https://developer.hashicorp.com/vault/tutorials) — step-by-step guides from first secret to production HA clusters
+
 **The mantra:** Every secret has an owner, a TTL, and an audit trail — if it doesn't, it isn't a secret, it's a liability.

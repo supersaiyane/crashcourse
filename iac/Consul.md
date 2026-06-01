@@ -660,6 +660,20 @@ consul snapshot restore backup.snap
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [HashiCorp — HashiConf Consul Talks](https://www.youtube.com/@HashiCorp) — official sessions on service discovery, Connect mesh, and multi-datacenter patterns
+- [Ned in the Cloud — Consul Deep Dives](https://www.youtube.com/@NedintheCloud) — practical walkthroughs of ACLs, intentions, and federation
+- [TechWorld with Nana — Service Mesh & Discovery](https://www.youtube.com/@TechWorldwithNana) — beginner-friendly introduction to service discovery concepts
+- [KodeKloud — Consul for Beginners](https://www.youtube.com/@KodeKloud) — hands-on labs covering agents, KV store, and health checks
+- [DevOps Toolkit (Viktor Farcic) — Service Mesh Comparison](https://www.youtube.com/@DevOpsToolkit) — Consul Connect vs Istio and other mesh options
+
+**Official docs & blogs:**
+- [Consul Documentation](https://developer.hashicorp.com/consul/docs) — agent configuration, service mesh, and API reference
+- [HashiCorp Blog — Consul](https://www.hashicorp.com/blog/products/consul) — release announcements, mesh gateway patterns, and production architecture
+- [HashiCorp Learn — Consul Tutorials](https://developer.hashicorp.com/consul/tutorials) — step-by-step guides from dev agent to production clusters
+
 ## The Mantra
 
 Your services do not know where each other live — Consul does. Register everything, health-check everything, and let the mesh handle encryption. Stop hardcoding IPs the moment you hardcode one.

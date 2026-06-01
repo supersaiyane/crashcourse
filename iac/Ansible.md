@@ -825,5 +825,19 @@ Use Molecule, the standard role-testing framework. It spins up Docker containers
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [Learn Linux TV — Ansible Series](https://www.youtube.com/@LearnLinuxTV) — methodical, beginner-friendly series covering inventory, playbooks, roles, and Vault
+- [TechWorld with Nana — Ansible Tutorial](https://www.youtube.com/@TechWorldwithNana) — clear walkthrough from first playbook to production patterns
+- [KodeKloud — Ansible for Beginners](https://www.youtube.com/@KodeKloud) — hands-on labs with structured exercises and exam prep
+- [Jeff Geerling — Ansible 101](https://www.youtube.com/@JeffGeerling) — deep, practical series from the author of *Ansible for DevOps*
+- [Red Hat — Ansible Automates](https://www.youtube.com/@RedHat) — official talks on Ansible Automation Platform, AWX, and enterprise patterns
+
+**Official docs & blogs:**
+- [Ansible Documentation](https://docs.ansible.com/) — module index, playbook guide, and best practices
+- [Ansible Blog](https://www.ansible.com/blog) — release notes, use cases, and community contributions
+- [Jeff Geerling's Blog](https://www.jeffgeerling.com/) — practical Ansible guides, role testing with Molecule, and CI patterns
+
 **The mantra:** Describe the state you want, run the playbook, trust the diff — and if you
 wouldn't run it without `--check` first, you're not done writing it.

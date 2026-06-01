@@ -572,4 +572,18 @@ rm -rf .terragrunt-cache
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [Spacelift — Terragrunt Best Practices](https://www.youtube.com/@spacelift-io) — advanced patterns, DRY configurations, and Terragrunt vs plain Terraform
+- [Ned in the Cloud — Terragrunt Deep Dives](https://www.youtube.com/@NedintheCloud) — practical walkthroughs of multi-account setups and dependency management
+- [DevOps Toolkit (Viktor Farcic) — IaC at Scale](https://www.youtube.com/@DevOpsToolkit) — where Terragrunt fits in the broader IaC tooling landscape
+- [TechWorld with Nana — Terraform Ecosystem](https://www.youtube.com/@TechWorldwithNana) — beginner-friendly Terraform concepts that Terragrunt builds on
+- [HashiCorp — Terraform Patterns](https://www.youtube.com/@HashiCorp) — module design and state management patterns that inform Terragrunt usage
+
+**Official docs & blogs:**
+- [Terragrunt Documentation](https://terragrunt.gruntwork.io/docs/) — configuration reference, CLI commands, and migration guides
+- [Gruntwork Blog](https://blog.gruntwork.io/) — IaC best practices, multi-account patterns, and Terragrunt architecture guides
+- [Spacelift Blog — Terragrunt](https://spacelift.io/blog/terragrunt) — advanced Terragrunt patterns, CI/CD integration, and comparison guides
+
 **The mantra:** One root config, many modules — Terragrunt's job is to make the hundredth environment as simple as the first.
