@@ -687,6 +687,80 @@ flux uninstall
 
 ---
 
+## Top 10 Interview Questions
+
+<details>
+<summary><strong>Q: How does Flux differ from a traditional CI/CD push model?</strong></summary>
+
+In a push model, the CI pipeline holds cluster credentials and runs `kubectl apply` from outside. Flux inverts this — the controller runs inside the cluster and pulls from Git. Cluster credentials never leave the cluster, the attack surface is smaller, and drift is continuously corrected rather than detected only at deploy time.
+
+</details>
+
+<details>
+<summary><strong>Q: What is the difference between a Flux Kustomization CRD and a Kustomize kustomization.yaml?</strong></summary>
+
+A Flux `Kustomization` (API group `kustomize.toolkit.fluxcd.io`) is a CRD that tells the Kustomize Controller which Git path to apply on what interval with what health checks. A Kustomize `kustomization.yaml` is a plain file that instructs the `kustomize` tool how to assemble manifests. Flux uses both — the CRD points to a path, and Kustomize renders that path.
+
+</details>
+
+<details>
+<summary><strong>Q: How does Flux handle Helm releases, and what happens on a failed upgrade?</strong></summary>
+
+Flux's Helm Controller reads `HelmRelease` CRDs and manages the full lifecycle — install, upgrade, test, rollback. If an upgrade fails, the `remediation` block controls retry count and whether to roll back to the last successful release. Set `remediateLastFailure: true` and a retry count to get automatic rollback on failure.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you manage secrets in a Flux GitOps workflow?</strong></summary>
+
+Two main approaches: SOPS encrypts secret values in Git using age or PGP keys — Flux's Kustomize Controller has native SOPS decryption. Alternatively, Sealed Secrets uses a cluster-side key pair to decrypt `SealedSecret` CRDs. In both cases, plaintext secrets never appear in Git or travel over the wire unencrypted.
+
+</details>
+
+<details>
+<summary><strong>Q: What is image automation in Flux and how does it work?</strong></summary>
+
+Three components collaborate: `ImageRepository` scans a container registry for tags, `ImagePolicy` selects the desired tag (by semver, regex, or alphabetical filter), and `ImageUpdateAutomation` writes the selected tag back to Git via a commit. Flux then reconciles that commit into the cluster. The entire cycle is auditable in Git history.
+
+</details>
+
+<details>
+<summary><strong>Q: How does Flux handle multi-cluster deployments?</strong></summary>
+
+Flux runs per-cluster — you bootstrap it independently into each cluster. The recommended pattern is a single fleet repo with a directory per cluster (`clusters/production/`, `clusters/staging/`). Each Flux instance watches only its own path. Shared base manifests live in a common directory and are referenced via Kustomize overlays.
+
+</details>
+
+<details>
+<summary><strong>Q: What does `prune: true` do and why should you always enable it?</strong></summary>
+
+When `prune: true` is set on a Kustomization, resources removed from Git are also removed from the cluster. Without it, deleted manifests silently accumulate as orphaned resources, creating drift between Git and reality. Pruning is essential for Git to be the genuine single source of truth.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you enforce multi-tenancy and RBAC with Flux?</strong></summary>
+
+Each tenant gets a dedicated ServiceAccount with RBAC limited to their namespace. Their Flux Kustomization runs under that ServiceAccount via `serviceAccountName`. Even if a team pushes a manifest targeting another namespace, Flux rejects it because the ServiceAccount lacks permissions. The bootstrap flag `--network-policy=true` adds network isolation.
+
+</details>
+
+<details>
+<summary><strong>Q: How does Flux compare to Argo CD?</strong></summary>
+
+Both are pull-based GitOps controllers. Flux is a set of composable Kubernetes controllers with no UI — it is more Kubernetes-native and favours the CLI and API. Argo CD has a rich UI, Application and AppProject abstractions, and an opinionated sync model. Flux is often preferred for headless multi-cluster automation; Argo CD for teams that value a visual dashboard.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you debug a Flux reconciliation failure?</strong></summary>
+
+Start with `flux get kustomizations` or `flux get helmreleases` for a quick status. For detailed events, use `kubectl describe kustomization <name> -n flux-system`. Check controller logs with `flux logs --kind=Kustomization --name=<name>`. Run `flux check` to validate controller health and API compatibility before escalating.
+
+</details>
+
+---
+
 ## Next steps after Day 2
 
 - `ArgoCD.md` — Flux's main alternative; pull-based like Flux but with a UI and a different reconciliation model. Worth understanding the tradeoffs.

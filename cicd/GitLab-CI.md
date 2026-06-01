@@ -267,6 +267,80 @@ Key predefined vars: $CI_COMMIT_BRANCH $CI_COMMIT_SHA $CI_COMMIT_TAG
 
 ---
 
+## Top 10 Interview Questions
+
+<details>
+<summary><strong>Q: How do stages and jobs relate in a GitLab CI pipeline?</strong></summary>
+
+Stages define ordered phases (build, test, deploy). Each job belongs to a stage. Jobs in the same stage run in parallel; the pipeline advances to the next stage only when all jobs in the current stage pass. This gives a clear left-to-right flow you can monitor in the GitLab UI.
+
+</details>
+
+<details>
+<summary><strong>Q: What is the difference between artifacts and cache?</strong></summary>
+
+Artifacts are outputs a job produces (build files, test reports) that are passed to later jobs in the same pipeline and downloadable from the UI. Cache is a best-effort mechanism for reusing files (like `node_modules`) across pipeline runs to speed things up. Artifacts are guaranteed; cache is not.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you gate a production deployment behind a manual approval?</strong></summary>
+
+Add `when: manual` to the deploy job's `rules:` block. This creates a "play" button in the GitLab UI — the pipeline pauses at that job until someone clicks it. Combine with Protected Environments to restrict who can trigger the deploy to specific roles or users.
+
+</details>
+
+<details>
+<summary><strong>Q: How should secrets be handled in GitLab CI?</strong></summary>
+
+Store them as CI/CD Variables in Settings, marked as Masked (hidden in logs) and Protected (only available on protected branches). For more sensitive credentials, integrate with HashiCorp Vault. Never commit secrets to `.gitlab-ci.yml` or any file in the repository.
+
+</details>
+
+<details>
+<summary><strong>Q: What are GitLab runners, and when would you use self-managed runners?</strong></summary>
+
+Runners are the agents that execute jobs. GitLab provides shared runners on gitlab.com. Self-managed runners are ones you host yourself — you use them when you need access to private networks, special hardware (GPUs), compliance-driven infrastructure, or when shared runner capacity is insufficient.
+
+</details>
+
+<details>
+<summary><strong>Q: How does the `needs:` keyword improve pipeline performance?</strong></summary>
+
+By default, a stage waits for all jobs in the previous stage to finish. `needs:` creates a DAG (directed acyclic graph) — a job starts as soon as its specific dependencies finish, regardless of other jobs in the previous stage. This can dramatically reduce total pipeline duration for pipelines with independent job paths.
+
+</details>
+
+<details>
+<summary><strong>Q: How would you build and push a Docker image using GitLab CI?</strong></summary>
+
+Use a `docker:27` image with a `docker:27-dind` service. Authenticate to the built-in Container Registry with `$CI_REGISTRY_USER` and `$CI_JOB_TOKEN` (provided automatically by GitLab), then run `docker build` and `docker push`. Tag the image with `$CI_COMMIT_SHA` for traceability.
+
+</details>
+
+<details>
+<summary><strong>Q: What are `rules:` and why are they preferred over `only:`/`except:`?</strong></summary>
+
+`rules:` is the current, more powerful mechanism for controlling when a job runs. It evaluates conditions in order — the first matching rule wins. It supports `if`, `changes`, `exists`, and `when` in combination. `only:`/`except:` is the legacy approach with less flexibility and harder-to-predict behaviour in complex pipelines.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you keep large GitLab CI configurations maintainable?</strong></summary>
+
+Use `include:` to split pipelines across multiple files, hidden template jobs (names starting with `.`) combined with `extends:` for inheritance, and `default:` for shared settings like `image` and `before_script`. GitLab also ships ready-made templates for SAST, dependency scanning, and container scanning that you include in one line.
+
+</details>
+
+<details>
+<summary><strong>Q: How does GitLab CI compare to GitHub Actions?</strong></summary>
+
+Both are CI/CD-as-code triggered by Git events. GitLab CI uses a stage-based model (ordered stages, parallel jobs within a stage), while Actions uses independent workflow jobs with explicit `needs` dependencies. GitLab's advantage is the integrated platform (registry, environments, review apps, security scanners in one product). Actions' advantage is the larger marketplace of community actions and tighter GitHub integration.
+
+</details>
+
+---
+
 ## Next steps after Day 2
 - **Parent-child & multi-project pipelines** for monorepos and cross-repo orchestration.
 - **Review Apps** (ephemeral environments per merge request) — a GitLab signature feature.

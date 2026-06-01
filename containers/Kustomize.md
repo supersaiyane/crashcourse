@@ -25,6 +25,44 @@ surgical **patches** per environment that override only what differs. No templat
 and overlays (the stylesheets) that patch specific values per environment without touching the
 original. The base renders sensibly on its own; overlays only state what changes.
 
+```mermaid
+graph TB
+    subgraph "Git Repository"
+        subgraph "base/"
+            KBase[kustomization.yaml]
+            Deploy[deployment.yaml]
+            Svc[service.yaml]
+            CM[configmap.yaml]
+        end
+        subgraph "overlays/"
+            subgraph "dev/"
+                KDev[kustomization.yaml<br/>namePrefix: dev-<br/>image: dev-latest]
+            end
+            subgraph "staging/"
+                KStg[kustomization.yaml<br/>replicas: 2]
+            end
+            subgraph "prod/"
+                KProd[kustomization.yaml<br/>replicas: 8<br/>image: v1.4.2]
+            end
+        end
+    end
+
+    KDev -->|references| KBase
+    KStg -->|references| KBase
+    KProd -->|references| KBase
+    KBase --> Deploy
+    KBase --> Svc
+    KBase --> CM
+
+    KDev -->|kustomize build| DevOut[Dev Manifests]
+    KStg -->|kustomize build| StgOut[Staging Manifests]
+    KProd -->|kustomize build| ProdOut[Prod Manifests]
+
+    DevOut -->|kubectl apply| DevCluster[Dev Cluster]
+    StgOut -->|kubectl apply| StgCluster[Staging Cluster]
+    ProdOut -->|kubectl apply| ProdCluster[Prod Cluster]
+```
+
 ---
 
 ## Part 1 — The vocabulary
@@ -665,6 +703,80 @@ kubectl apply -k overlays/prod --dry-run=server
 # View the kustomization tree (debug overlay structure)
 kustomize cfg tree overlays/prod
 ```
+
+---
+
+## Top 10 Interview Questions
+
+<details>
+<summary><strong>Q: What problem does Kustomize solve that copying YAML files per environment does not?</strong></summary>
+
+Copying YAML creates drift — a fix in one copy is forgotten in others, and prod silently diverges from dev. Kustomize keeps a single base and layers environment-specific patches on top. Changes to the base propagate to every environment automatically, and the overlay diff is the only thing that varies.
+
+</details>
+
+<details>
+<summary><strong>Q: How does Kustomize differ from Helm, and when would you choose one over the other?</strong></summary>
+
+Helm uses Go templates to parameterise YAML, making it a packaging and distribution tool. Kustomize uses patch-based overlays with no templating language — the base YAML stays clean and readable. Choose Kustomize when you own the manifests and need per-environment customisation. Choose Helm when you consume third-party charts or need to distribute a packaged application to external users.
+
+</details>
+
+<details>
+<summary><strong>Q: What is a strategic merge patch and how does it differ from a JSON patch?</strong></summary>
+
+A strategic merge patch is a partial YAML fragment that mirrors the target resource structure — Kustomize merges it in, keeping everything not mentioned. A JSON patch (RFC 6902) uses explicit operations (`add`, `replace`, `remove`) on exact JSON paths. Strategic merge is readable and handles most cases, but JSON patches are needed for deleting fields or working with CRDs that have non-standard list merge keys.
+
+</details>
+
+<details>
+<summary><strong>Q: Why does Kustomize append a hash suffix to ConfigMap and Secret names, and what problem does it solve?</strong></summary>
+
+The hash suffix is derived from the content of the ConfigMap or Secret. When the content changes, the name changes, which forces Kubernetes to treat it as a new resource and triggers a rolling update of any pods referencing it. This solves the problem of config changes being invisible — without the hash, updating a ConfigMap does not restart pods that have already cached the old values.
+
+</details>
+
+<details>
+<summary><strong>Q: What happens if you change `commonLabels` on an existing Deployment?</strong></summary>
+
+Deployment selectors are immutable after creation. Changing `commonLabels` changes the selector, and Kubernetes rejects the update with an error. You must delete and recreate the Deployment. This is why you should set `commonLabels` once at initial deploy and not change them, or use `commonAnnotations` for metadata that might evolve.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you handle secrets safely with Kustomize?</strong></summary>
+
+Use `secretGenerator` with `envs` pointing to a file that is listed in `.gitignore`. Never put literal secret values in `kustomization.yaml` — that puts them in git history. In CI, populate the env file from a secrets manager (Vault, AWS Secrets Manager, Sealed Secrets) before running `kustomize build`. The generated Secret gets a content hash suffix like ConfigMaps.
+
+</details>
+
+<details>
+<summary><strong>Q: What is a Kustomize Component and when would you use one?</strong></summary>
+
+A Component (`kind: Component`) is a reusable kustomization fragment that multiple overlays can opt into independently. Unlike a base, it does not stand alone — it is a mixin for cross-cutting concerns like monitoring sidecars, HPA, or security policies. Prod can include the monitoring component while dev omits it, keeping the concern defined in one place.
+
+</details>
+
+<details>
+<summary><strong>Q: How does Kustomize integrate with GitOps tools like ArgoCD and Flux?</strong></summary>
+
+Both ArgoCD and Flux have native Kustomize support. They detect `kustomization.yaml` in the target path and run `kustomize build` automatically. ArgoCD Application manifests point at an overlay directory; Flux uses a `Kustomization` CRD with a `path` field. The rendered output is diffed against the live cluster and reconciled. This makes Kustomize overlays the natural unit of deployment in a GitOps workflow.
+
+</details>
+
+<details>
+<summary><strong>Q: How would you use Kustomize as a Helm post-renderer, and why would you want to?</strong></summary>
+
+You pipe Helm's rendered output through `kustomize build` using `--post-renderer`. This lets you patch third-party Helm charts without forking them — adding labels, annotations, sidecars, or security policies that the chart does not expose as values. The patches live in version control alongside the Helm release, keeping customisations auditable.
+
+</details>
+
+<details>
+<summary><strong>Q: What are common failure modes when using Kustomize in CI/CD pipelines?</strong></summary>
+
+Patches that reference a resource name not in the build output are silently ignored — the pipeline succeeds but the change is missing. `kustomize build` can produce empty output if resource paths are wrong, and piping that to `kubectl apply` deletes nothing but also deploys nothing. Always validate output with `kubectl diff -k` before applying, and check that `kustomize build` output is non-empty in your pipeline script.
+
+</details>
 
 ---
 

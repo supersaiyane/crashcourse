@@ -25,6 +25,19 @@ starts with `set -euo pipefail` (explained Day 1).
 is to make the recipe unambiguous, guard against bad inputs and failures, and stop immediately
 when something's wrong — because it won't use judgment, only your instructions.
 
+```mermaid
+graph LR
+    A[Engineer] -->|writes| B[Bash Script]
+    B -->|orchestrates| C[Linux Commands]
+    B -->|called by| D[Cron / systemd Timer]
+    B -->|called by| E[CI/CD Pipeline]
+    B -->|pipes to| F[awk / sed / jq]
+    C -->|manages| G[Servers / Containers]
+    B -->|entrypoint| H[Dockerfile]
+    D -->|logs to| I[journald / syslog]
+    E -->|triggers| J[Deploy / Build]
+```
+
 ---
 
 ## Part 1 — The anatomy of a script
@@ -345,6 +358,80 @@ shellcheck script.sh      # LINT your scripts — catches quoting bugs & more. U
 bash -n script.sh         # syntax check without running
 bash -x script.sh         # trace execution (debug)
 ```
+
+---
+
+## Top 10 Interview Questions
+
+<details>
+<summary><strong>Q: What does set -euo pipefail do and why should every script start with it?</strong></summary>
+
+`set -e` exits on any non-zero return code. `set -u` treats unset variables as errors, catching typos like `$flie` instead of `$file`. `set -o pipefail` makes a pipeline fail if any stage fails, not just the last one. Together they turn a silent-failure script into one that stops immediately when something goes wrong — which is the difference between a safe script and one that deletes the wrong directory because a variable was empty.
+
+</details>
+
+<details>
+<summary><strong>Q: Why must you always double-quote your variables in Bash?</strong></summary>
+
+An unquoted variable undergoes word splitting and glob expansion. If `$file` contains `my report.txt`, then `rm $file` runs `rm my report.txt` — two arguments, deleting the wrong things. Worse, if a variable is empty, `rm -rf $DIR/` becomes `rm -rf /`. Quoting with `"$file"` preserves the value as a single token and prevents these catastrophic bugs.
+
+</details>
+
+<details>
+<summary><strong>Q: How would you safely handle temporary files in a Bash script?</strong></summary>
+
+Use `mktemp` to create a temp file or directory, then register a `trap` on `EXIT` to clean it up: `tmpdir=$(mktemp -d); trap 'rm -rf "$tmpdir"' EXIT`. The trap fires no matter how the script exits — success, failure, or signal — so you never leak temp files on a production server.
+
+</details>
+
+<details>
+<summary><strong>Q: Explain the difference between $@ and $* in a script.</strong></summary>
+
+When double-quoted, `"$@"` expands each positional parameter as a separate word, preserving arguments that contain spaces. `"$*"` joins all parameters into a single string separated by the first character of IFS. In practice you almost always want `"$@"` when passing arguments through to another command, because it keeps multi-word arguments intact.
+
+</details>
+
+<details>
+<summary><strong>Q: When would you choose Python over Bash for an automation task?</strong></summary>
+
+Once the script needs structured data (JSON/YAML parsing), error handling beyond exit codes, HTTP API calls, or grows past about 100 lines. Bash is glue for commands; Python is for logic. If you find yourself writing associative arrays, complex string manipulation, or nested conditionals in Bash, you have already crossed the line.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you pass variables safely into an awk or sed command from Bash?</strong></summary>
+
+For awk, use the `-v` flag: `awk -v threshold="$val" '$3 > threshold'`. For sed, use double quotes around the expression but be careful with special characters. Never embed shell variables inside single-quoted awk programs — the shell cannot expand them. The `-v` approach avoids quoting nightmares entirely.
+
+</details>
+
+<details>
+<summary><strong>Q: What is a here-document and when would you use one?</strong></summary>
+
+A here-doc feeds a multi-line block of text to a command's stdin. `cat > config.yaml <<EOF ... EOF` writes a config file inline in your script. Quoting the delimiter (`<<'EOF'`) disables variable expansion inside the block, which matters when generating scripts or configs that themselves contain `$` signs.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you handle a script that needs to retry a flaky operation?</strong></summary>
+
+Use a counted loop with a sleep and an exit condition: `for attempt in {1..5}; do command && break; sleep 2; done`. Check the exit code after the loop to know whether it succeeded or exhausted retries. In production, add exponential backoff and log each attempt so you can trace failures in the journal.
+
+</details>
+
+<details>
+<summary><strong>Q: What is the main() pattern in Bash scripting and why use it?</strong></summary>
+
+You define all logic in functions, then call `main "$@"` at the bottom of the script. This keeps global scope clean, makes the script testable (you can source it without executing), and mirrors the structure of larger programs. It also makes the script's entry point obvious to anyone reading it.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you debug a Bash script that is failing silently?</strong></summary>
+
+Run it with `bash -x script.sh` to trace every command as it executes, showing variable expansions. For targeted debugging, add `set -x` before the suspect section and `set +x` after. Also check `$?` after critical commands, and use `trap 'echo "failed at line $LINENO" >&2' ERR` to pinpoint exactly where failure occurs.
+
+</details>
 
 ---
 

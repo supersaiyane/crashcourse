@@ -22,6 +22,48 @@ All of these become declarative Kubernetes YAML once Istio is installed.
 
 **Mental model:** Istio is an invisible network layer — it injects a sidecar proxy (Envoy) next to every pod, and those proxies handle all the cross-cutting concerns while your app just talks HTTP. The control plane (`istiod`) programs all those proxies from a single point. Your application never knows Istio is there.
 
+```mermaid
+graph TB
+    Client([External Client])
+    IGW[Istio Ingress Gateway]
+    subgraph "Kubernetes Cluster"
+        subgraph "Control Plane"
+            Istiod[istiod<br/>Config · Certs · Discovery]
+        end
+        subgraph "Pod A"
+            AppA[Service A]
+            EnvoyA[Envoy Sidecar]
+        end
+        subgraph "Pod B"
+            AppB[Service B]
+            EnvoyB[Envoy Sidecar]
+        end
+        subgraph "Pod C"
+            AppC[Service C]
+            EnvoyC[Envoy Sidecar]
+        end
+        Kiali[Kiali Dashboard]
+        Jaeger[Jaeger Tracing]
+        Prom[Prometheus Metrics]
+    end
+
+    Client --> IGW
+    IGW --> EnvoyA
+    EnvoyA --> AppA
+    EnvoyA -->|mTLS| EnvoyB
+    EnvoyB --> AppB
+    EnvoyB -->|mTLS| EnvoyC
+    EnvoyC --> AppC
+    Istiod -.->|xDS config| EnvoyA
+    Istiod -.->|xDS config| EnvoyB
+    Istiod -.->|xDS config| EnvoyC
+    EnvoyA -.-> Prom
+    EnvoyB -.-> Prom
+    EnvoyC -.-> Prom
+    Prom -.-> Kiali
+    EnvoyA -.-> Jaeger
+```
+
 ---
 
 ## Part 1 — The vocabulary
@@ -726,6 +768,80 @@ spec:
         methods: ["GET", "POST"]
         paths: ["/api/*"]
 ```
+
+---
+
+## Top 10 Interview Questions
+
+<details>
+<summary><strong>Q: What problem does a service mesh solve, and why can't you just handle it in application code?</strong></summary>
+
+A service mesh centralises cross-cutting concerns — retries, mTLS, circuit breaking, observability — in the infrastructure layer so every service gets them uniformly without each team reimplementing in different languages. Doing it in-app leads to inconsistent behaviour, duplicated effort, and drift the moment a new team joins.
+
+</details>
+
+<details>
+<summary><strong>Q: How does Istio inject the Envoy sidecar, and what happens if injection fails?</strong></summary>
+
+Istio uses a mutating admission webhook. When a pod is created in a labelled namespace (`istio-injection=enabled`), the webhook patches the pod spec to add the Envoy container. If injection fails — for example because the webhook is unreachable — the pod starts without a sidecar. Traffic flows but bypasses all mesh policy, which in STRICT mTLS mode means connections are refused by peers.
+
+</details>
+
+<details>
+<summary><strong>Q: Explain the relationship between VirtualService and DestinationRule.</strong></summary>
+
+A VirtualService defines routing rules — how traffic is matched and where it goes (host, subset, weight). A DestinationRule defines what happens after routing — which subsets exist (by label), load-balancing algorithm, connection pool limits, and outlier detection. You need both: a VirtualService referencing a subset that has no matching DestinationRule returns 503.
+
+</details>
+
+<details>
+<summary><strong>Q: How would you implement a canary deployment using Istio?</strong></summary>
+
+Deploy v2 alongside v1, define both as subsets in a DestinationRule, then create a VirtualService with weighted routing — e.g., 90% to v1 and 10% to v2. Monitor error rates and latency in Kiali or Grafana. Gradually shift the weight (50/50, then 100% to v2) as confidence grows. You can also use header-based matching to route specific test users to v2 before any percentage-based rollout.
+
+</details>
+
+<details>
+<summary><strong>Q: What is the difference between PERMISSIVE and STRICT mTLS in Istio?</strong></summary>
+
+PERMISSIVE mode accepts both plaintext and mTLS connections — useful during migration when not all workloads have sidecars yet. STRICT mode requires mTLS on every connection; any client without a sidecar (and therefore without a valid mesh certificate) is rejected. You move to STRICT once all workloads are injected to enforce zero-trust east-west encryption.
+
+</details>
+
+<details>
+<summary><strong>Q: How does Istio's AuthorizationPolicy differ from Kubernetes NetworkPolicy?</strong></summary>
+
+Kubernetes NetworkPolicy operates at L3/L4 — source IP, port, protocol. Istio AuthorizationPolicy operates at L7 — it can restrict by HTTP method, path, JWT claims, and service account identity. It also follows Istio's identity model (SPIFFE), so policy survives pod IP changes. The two are complementary: use NetworkPolicy for coarse isolation, AuthorizationPolicy for fine-grained access control.
+
+</details>
+
+<details>
+<summary><strong>Q: What observability does Istio provide out of the box, and what requires application changes?</strong></summary>
+
+Out of the box, Envoy generates request-level metrics (volume, latency, error rate) and creates trace spans for each hop — no application changes needed. The one requirement for distributed tracing is that the application propagates trace context headers (`x-b3-*` or `traceparent`) from incoming to outgoing requests. Without header propagation, you get per-hop spans but cannot stitch them into end-to-end traces.
+
+</details>
+
+<details>
+<summary><strong>Q: What is ambient mesh and when would you choose it over sidecars?</strong></summary>
+
+Ambient mesh replaces per-pod sidecars with a node-level ztunnel daemon for L4 mTLS and a namespace-level waypoint proxy for L7 policy. It cuts memory overhead by 60-70% and removes the need for pod restarts on injection. Choose ambient for large clusters where sidecar resource cost is significant, or when you cannot restart workloads to inject sidecars. Choose sidecars when you need per-pod L7 policy granularity that waypoint proxies do not yet fully support.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you debug a 503 error in an Istio mesh?</strong></summary>
+
+Start with `istioctl analyze` to check for configuration errors. Then use `istioctl proxy-config cluster <pod>` and `istioctl proxy-config route <pod>` to inspect what Envoy sees. Common causes: a VirtualService references a subset not defined in a DestinationRule, the destination service has no healthy endpoints, or a circuit breaker has ejected all hosts. Kiali's service graph shows error edges in red, and Hubble or Envoy access logs reveal the upstream response code.
+
+</details>
+
+<details>
+<summary><strong>Q: What are the resource overhead implications of Istio at scale, and how do you mitigate them?</strong></summary>
+
+Each Envoy sidecar consumes roughly 50MB RAM and a small CPU slice. At 500 pods, that is 25GB of RAM just for proxies. Mitigation options: use ambient mesh to remove per-pod sidecars, scope sidecar injection to namespaces that actually need mesh features, tune Envoy concurrency settings, and use Sidecar resources to limit the configuration each proxy receives — reducing memory consumption from large service discovery tables.
+
+</details>
 
 ---
 

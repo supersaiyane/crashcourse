@@ -18,6 +18,21 @@ This is why prompt engineering exists as a discipline. LLMs expose enormous capa
 
 **Mental model:** Prompting is programming in natural language — your prompt is the source code, the model is the runtime, and like any code, structure and precision matter more than cleverness.
 
+```mermaid
+flowchart TD
+    A[System Prompt\nRole + Constraints + Format] --> D[LLM Runtime]
+    B[Few-shot Examples] --> D
+    C[User Input\nwith Delimiters] --> D
+    D --> E{Output}
+    E --> F[Output Parser\nJSON / Schema]
+    E --> G[Guardrails\nValidation Layer]
+    F --> H[Application Logic]
+    G -->|Pass| H
+    G -->|Fail| I[Re-prompt or Reject]
+    J[Eval Suite\nGolden Dataset] -.->|Regression test| D
+    K[Prompt Versioning\nGit / Registry] -.->|Deploys| A
+```
+
 ---
 
 ## Part 1 — The vocabulary
@@ -508,6 +523,80 @@ A rough rule: 1 token ≈ 4 characters in English ≈ 0.75 words. A typical 500-
 Cost is input tokens + output tokens. Input is usually larger than output. For classification tasks, output is typically 5–50 tokens. For generation tasks, budget 200–1,000 tokens for output.
 
 Caching prefix tokens typically costs 10–25% of regular input token price, depending on provider. For long system prompts that repeat on every call, calculate your caching savings before assuming inference cost is fixed.
+
+---
+
+## Top 10 Interview Questions
+
+<details>
+<summary><strong>Q: What is the difference between zero-shot and few-shot prompting, and when do you use each?</strong></summary>
+
+Zero-shot gives the model only instructions, no examples. It works for unambiguous, well-defined tasks the model has seen in training. Few-shot provides 3-5 labeled input/output examples that demonstrate the exact mapping you need. Use few-shot when your task has custom categories, domain-specific vocabulary, or output formats the model wouldn't infer from instructions alone. Three good examples beat ten mediocre ones.
+
+</details>
+
+<details>
+<summary><strong>Q: How does chain-of-thought prompting improve accuracy?</strong></summary>
+
+Chain-of-thought forces the model to generate intermediate reasoning tokens before committing to a final answer. This shifts probability toward correct conclusions because the model must "show its work" rather than pattern-matching to a plausible-sounding answer. It measurably improves accuracy on multi-step reasoning, math, and logic tasks. The tradeoff is increased token usage and latency — use it when accuracy matters more than speed.
+
+</details>
+
+<details>
+<summary><strong>Q: How would you defend against prompt injection in a production system?</strong></summary>
+
+Use structural defenses: wrap user input in clearly labeled delimiters like XML tags, instruct the model to treat tagged content as data not instructions, validate and sanitize inputs, use structured output mode so injection attacks fail schema validation, and keep input length bounded. No prompt-level defense is perfect — add application-layer validation of outputs as a second layer. Treat user input as untrusted data, same as you would in SQL injection prevention.
+
+</details>
+
+<details>
+<summary><strong>Q: Why is output format specification critical in production prompts?</strong></summary>
+
+Without explicit format specification, the model returns whatever it thinks is appropriate — and that varies across requests. Variable output format breaks downstream parsing code. Specifying "respond with a JSON object with exactly these fields, no preamble, no explanation" constrains the output space, eliminates post-processing, and makes the system deterministic. Combined with structured output mode on the API, it guarantees schema conformance.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you version and test prompts in a production environment?</strong></summary>
+
+Store prompts as template files in version control with named variables, not as string literals in application code. Tag releases. Run a golden dataset (50+ representative inputs with expected outputs) against every prompt change as a CI gate. Use LLM-as-judge for open-ended quality scoring. A/B test in production with a traffic split before full rollout. Treat a prompt change as a code change — it requires review, testing, and a rollback path.
+
+</details>
+
+<details>
+<summary><strong>Q: What is role prompting and what does it actually do to the model's behavior?</strong></summary>
+
+Role prompting assigns a persona — "You are a senior DevOps engineer at a financial institution." It activates relevant knowledge clusters in the model's weights, sets vocabulary register, and implicitly constrains output style. It does not give the model knowledge it does not have; it focuses the probability distribution toward a specific domain and level of scrutiny. Concrete roles produce concrete output — vague roles like "be helpful" add noise.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you handle edge cases in production prompts?</strong></summary>
+
+Explicitly handle them in the system prompt with fallback instructions: "If the input is empty or irrelevant, respond with this specific error JSON." Common edge cases include empty input, wrong language, input that is already in the output format, extremely long input exceeding context, and questions instead of the expected document type. Without explicit handling, the model halluccinates a plausible-looking but incorrect output.
+
+</details>
+
+<details>
+<summary><strong>Q: What is the iterative refinement process for prompt development?</strong></summary>
+
+Write a prompt, run it against 10-20 representative inputs, find failure modes (hallucination, misclassification, format errors), diagnose whether the failure comes from ambiguity, missing examples, wrong format spec, or temperature. Change one thing, re-run, repeat. Never change multiple variables between test runs — you won't know what fixed it. Document versions so you can roll back if a new version regresses on cases the previous one handled.
+
+</details>
+
+<details>
+<summary><strong>Q: When would you use structured output mode versus free-form generation?</strong></summary>
+
+Use structured output mode whenever you parse model output programmatically, your downstream system expects a fixed schema, or you cannot tolerate parse errors. It uses the model's native function-calling to enforce JSON schema conformance — the model literally cannot emit non-conformant output. Free-form generation is appropriate for user-facing prose, creative tasks, and exploratory analysis where constraining the schema would limit usefulness.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you optimize prompt cost without sacrificing quality?</strong></summary>
+
+Optimize after achieving the quality you need, never before. Compress few-shot examples to input/output pairs only. Remove redundant instructions. Use prompt caching — structure prompts so the static system prompt comes first and is cached across requests (60% cost reduction on long prompts at scale). Use a two-stage pipeline with a cheap model for filtering and an expensive model only for ambiguous cases. Truncate long inputs to relevant sections before embedding them in the prompt.
+
+</details>
 
 ---
 

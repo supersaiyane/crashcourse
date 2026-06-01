@@ -482,6 +482,80 @@ Operations
 
 ---
 
+## Top 10 Interview Questions
+
+<details>
+<summary><strong>Q: What is the difference between a Security Group and a NACL?</strong></summary>
+
+Security Groups are stateful firewalls applied to individual ENIs (instances, load balancers, RDS). You write allow rules only; return traffic is automatically permitted. NACLs are stateless firewalls applied to entire subnets, with both allow and deny rules evaluated in numbered order. Because NACLs are stateless, you must explicitly allow ephemeral ports (1024-65535) for return traffic. In practice, Security Groups do 95% of the work; NACLs are used for broad subnet-level blocks or compliance requirements.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you design a VPC for a three-tier application?</strong></summary>
+
+Use a /16 VPC with three tiers of subnets across at least two AZs. Public subnets hold the ALB and NAT Gateways, with a route to the Internet Gateway. Private app subnets hold application servers, routing outbound through NAT. Private data subnets hold databases with no internet route at all. Security groups chain: ALB-sg allows 443 from the internet, app-sg allows 8080 from ALB-sg only, db-sg allows 5432 from app-sg only. Add S3 Gateway Endpoints and Secrets Manager Interface Endpoints to avoid NAT for AWS service calls.
+
+</details>
+
+<details>
+<summary><strong>Q: Why is VPC Peering non-transitive, and what is the alternative?</strong></summary>
+
+VPC Peering creates a direct private connection between two VPCs, but traffic cannot transit through one peer to reach a third. If VPC-A peers with VPC-B and VPC-B peers with VPC-C, A cannot reach C through B — you need a direct A-to-C peering. For more than 3-4 VPCs, this creates an unmanageable mesh. Transit Gateway solves this as a hub — all VPCs attach to the TGW and can route to each other through it, with route table segmentation for isolation.
+
+</details>
+
+<details>
+<summary><strong>Q: What are VPC Endpoints and when should you use them?</strong></summary>
+
+VPC Endpoints let you access AWS services (S3, DynamoDB, Secrets Manager, KMS) over the AWS backbone without leaving your VPC. Gateway Endpoints (S3, DynamoDB) are free and add a route table entry. Interface Endpoints (PrivateLink) create an ENI with a private IP in your subnet (~$7/month/AZ). Use them when your instances are in private subnets — they eliminate NAT Gateway dependency and data transfer costs, and keep traffic off the public internet for compliance.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you troubleshoot connectivity issues in a VPC?</strong></summary>
+
+Work through the checklist: Security Group (correct port and source?), NACL (inbound and outbound allowed, including ephemeral ports?), Route Table (route to destination exists?), IGW/NAT (attached and routed?), instance (process listening on correct port?), DNS (name resolving to expected IP?), peering/TGW (routes and acceptances on both sides?). Use VPC Flow Logs to find REJECT entries. AWS Reachability Analyzer traces the logical path and tells you exactly where it breaks.
+
+</details>
+
+<details>
+<summary><strong>Q: What is CIDR planning and why is it critical to get right early?</strong></summary>
+
+CIDR planning allocates non-overlapping IP address ranges to every VPC before you create anything. Overlapping CIDRs prevent peering and cause routing conflicts that require re-architecture to fix. Use a /16 per VPC (65,536 addresses), reserve ranges for future VPCs, and document allocations centrally (AWS IPAM or a spreadsheet). If VPC-A is 10.0.0.0/16, VPC-B should be 10.1.0.0/16. This is the networking decision you cannot easily undo.
+
+</details>
+
+<details>
+<summary><strong>Q: When would you use Direct Connect versus a Site-to-Site VPN?</strong></summary>
+
+Site-to-Site VPN runs encrypted IPsec tunnels over the public internet — it is fast to set up (minutes), costs less, but throughput caps at ~1.25 Gbps and latency varies. Direct Connect is a dedicated physical circuit with predictable latency, higher bandwidth, and lower data transfer costs. For BFSI and regulated workloads, Direct Connect is often a compliance requirement — no data traverses the public internet. Use VPN as a backup path alongside Direct Connect for failover.
+
+</details>
+
+<details>
+<summary><strong>Q: How does NAT Gateway pricing work and how do you reduce NAT costs?</strong></summary>
+
+NAT Gateway costs roughly $0.045/hour plus $0.045/GB of data processed. At scale, this adds up fast. Reduce costs by adding free S3 and DynamoDB Gateway Endpoints (eliminates NAT for those services), using Interface Endpoints for frequently called AWS services, and auditing what traffic actually needs internet access. Deploy one NAT per AZ for high availability, but be aware each one adds to the hourly cost.
+
+</details>
+
+<details>
+<summary><strong>Q: How does GCP networking differ from AWS networking?</strong></summary>
+
+GCP VPCs are global by default — a single VPC spans all regions, with subnets being regional. Firewall rules are VPC-wide and tag-based rather than per-subnet or per-instance. Cloud NAT is a managed service that does not require deploying in a specific subnet. There is no NACL equivalent. Cloud Load Balancing is global with a single anycast IP. This simplifies many patterns but means firewall rules need careful scoping to avoid overly permissive defaults.
+
+</details>
+
+<details>
+<summary><strong>Q: How would you design network security for a regulated (BFSI/PCI) environment?</strong></summary>
+
+Separate VPCs (not just subnets) for production, pre-production, and development. No Internet Gateway on production VPCs — all inbound traffic enters through a DMZ/ingress VPC with WAF and IDS. Cross-zone traffic routes through an inspection VPC with AWS Network Firewall. Direct Connect for all cloud-to-datacenter traffic. TLS everywhere, including between tiers. VPC Flow Logs enabled on all production VPCs, shipped to an immutable log store. PCI cardholder data in a dedicated CDE subnet with strict segmentation validated by annual pen testing.
+
+</details>
+
+---
+
 ## The Mantra
 
 > Know your CIDR. Trace your route. Check your security group before you blame the code.

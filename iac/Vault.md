@@ -21,6 +21,22 @@ The shift in thinking is from "where do I put this password" to "how does my ser
 
 **Mental model:** Vault is a bank vault with a programmable API. You deposit secrets. Every client — a developer, a CI pipeline, a Kubernetes pod — must authenticate (show ID at the door) before they can reach the teller window. The teller checks their policy (what they're allowed to withdraw), hands over only what they're entitled to, and writes every transaction in a permanent ledger. The vault itself is locked (sealed) when the bank is closed, and only a quorum of keyholders can open it.
 
+```mermaid
+graph TD
+    A[Developer] -->|userpass / LDAP| V[Vault Server]
+    B[CI Pipeline] -->|AppRole / OIDC| V
+    C[K8s Pod] -->|ServiceAccount JWT| V
+    V -->|KV engine| D[Static Secrets]
+    V -->|Database engine| E[Dynamic Creds<br/>Postgres / MySQL]
+    V -->|PKI engine| F[TLS Certificates]
+    V -->|Transit engine| G[Encryption as a Service]
+    V -->|Audit backend| H[Audit Log<br/>file / syslog]
+    V -->|Raft / Consul| I[HA Storage]
+    J[Cloud KMS<br/>AWS / GCP / Azure] -->|auto-unseal| V
+    K[Vault Agent<br/>sidecar] -->|token renewal<br/>secret templating| C
+    V -->|policy check| L[HCL Policies]
+```
+
 ---
 
 ## Part 1 — The vocabulary
@@ -675,6 +691,80 @@ vault server -config=<file>    # start server with config file
 vault server -dev              # start in dev mode (never production)
 vault status                   # cluster status, seal state, version
 ```
+
+---
+
+## Top 10 Interview Questions
+
+<details>
+<summary><strong>Q: What is the difference between static and dynamic secrets in Vault?</strong></summary>
+
+Static secrets are key-value pairs you write manually and rotate on your own schedule (KV engine). Dynamic secrets are generated on demand with a TTL — Vault creates a unique credential (e.g., a Postgres user) per request and automatically revokes it when the lease expires. Dynamic secrets eliminate shared, long-lived passwords and give you per-client identity in the database.
+
+</details>
+
+<details>
+<summary><strong>Q: Explain the seal/unseal process and why it exists.</strong></summary>
+
+Vault encrypts all storage with a master key. On startup, Vault is sealed — it cannot read its own data. Unsealing requires a quorum of Shamir key shares (e.g., 3 of 5) to reconstruct the master key. This ensures no single person or compromised key can access the vault. In production, auto-unseal via cloud KMS replaces the manual process while preserving the security model.
+
+</details>
+
+<details>
+<summary><strong>Q: How does AppRole authentication work and when would you use it?</strong></summary>
+
+AppRole uses two credentials: a Role ID (non-sensitive, like a username) and a Secret ID (sensitive, short-lived, often single-use). A machine presents both to get a Vault token. You use it for service-to-Vault authentication — your CI pipeline generates a Secret ID at deploy time and injects it into the service, which combines it with its baked-in Role ID to authenticate at startup.
+
+</details>
+
+<details>
+<summary><strong>Q: What is the Transit engine and how does it differ from storing encrypted data in KV?</strong></summary>
+
+The Transit engine provides encryption-as-a-service — your application sends plaintext, Vault returns ciphertext, and the encryption key never leaves Vault. With KV, you store the secret itself in Vault. Transit is for encrypting data your application stores elsewhere (a database field, a file), while KV is for centralizing the secrets themselves. Transit also supports key rotation and re-wrapping without exposing the key material.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you handle Vault in a Kubernetes environment?</strong></summary>
+
+Enable the Kubernetes auth method so pods authenticate using their ServiceAccount JWT — no injected credentials needed. Use the Vault Agent Injector (a mutating webhook) to automatically add a sidecar that handles token renewal and writes secrets to shared volumes. Alternatively, the Vault CSI Provider mounts secrets as files via the Secrets Store CSI Driver. The pod never calls the Vault API directly.
+
+</details>
+
+<details>
+<summary><strong>Q: What happens when a dynamic secret lease expires while an application is using it?</strong></summary>
+
+Vault revokes the credential in the backend system (e.g., drops the Postgres user). Any active database connections using that credential will fail on the next query. Applications must be designed to handle reconnects, and Vault Agent or the application itself should renew leases proactively before expiry. Setting appropriate TTLs and max TTLs is critical to avoid mid-request credential revocation.
+
+</details>
+
+<details>
+<summary><strong>Q: Why is audit logging critical in Vault, and what happens if audit backends fail?</strong></summary>
+
+Audit logging records every request and response with full identity context, providing a tamper-evident trail for compliance and incident investigation. If all configured audit backends become unavailable (e.g., disk full), Vault stops processing all requests by design — it refuses to operate without an audit trail. This is a safety feature, but it means you must monitor audit log destinations and alert on write failures.
+
+</details>
+
+<details>
+<summary><strong>Q: Explain Vault's policy system and the principle of least privilege.</strong></summary>
+
+Policies are HCL documents that grant or deny capabilities (create, read, update, delete, list, sudo) on specific paths. Every token has one or more policies attached. Without an explicit allow, access is denied by default. You follow least privilege by granting each service only the paths and capabilities it needs — a payments service reads `database/creds/payments` and nothing else. The `root` policy bypasses all checks and should be revoked after initial setup.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you set up Vault for high availability?</strong></summary>
+
+Use the integrated Raft storage backend with a minimum of three nodes across separate availability zones. One node is the active leader handling all writes; standbys forward requests and can promote if the leader fails. Auto-unseal via cloud KMS ensures nodes recover from restarts without human intervention. For larger deployments, five nodes tolerate two simultaneous failures.
+
+</details>
+
+<details>
+<summary><strong>Q: How would you rotate the root token and manage break-glass access?</strong></summary>
+
+After initial setup, revoke the root token with `vault token revoke`. For emergency access, use `vault operator generate-root` which requires a quorum of unseal key holders to produce a new root token — this is your break-glass procedure. Day-to-day administration should use dedicated admin tokens with tightly scoped policies, not root. Document and rehearse the root token generation process so it works under pressure.
+
+</details>
 
 ---
 

@@ -16,6 +16,22 @@ Argo CD is that controller. It runs as a set of pods in your cluster. You tell i
 
 **Mental model:** Git is the source of truth; Argo CD is the enforcement agent that makes the cluster confess to it.
 
+```mermaid
+graph LR
+    Dev["Developer"] -->|"git push"| Git["Git Repository"]
+    Git -->|"webhook / poll"| ArgoCD["Argo CD Controller"]
+    ArgoCD -->|"diff & apply"| K8s["Kubernetes Cluster"]
+    K8s -->|"live state"| ArgoCD
+    ArgoCD -->|"sync status"| UI["Argo CD UI / CLI"]
+    ArgoCD -->|"alerts"| Notify["Slack / PagerDuty"]
+    Git -->|"Helm charts"| ArgoCD
+    Git -->|"Kustomize overlays"| ArgoCD
+    AppSet["ApplicationSet"] -->|"generates"| Apps["Application CRs"]
+    Apps --> ArgoCD
+    SSO["OIDC / SSO"] --> UI
+    SealedSec["Sealed Secrets / ESO"] --> K8s
+```
+
 ---
 
 ## Part 1 — The vocabulary
@@ -542,6 +558,80 @@ argocd admin export > backup.yaml
 argocd admin import < backup.yaml
 argocd version
 ```
+
+---
+
+## Top 10 Interview Questions
+
+<details>
+<summary><strong>Q: What problem does Argo CD solve that a CI pipeline with kubectl apply does not?</strong></summary>
+
+A CI pipeline applies manifests and walks away — it has no awareness of post-deploy drift. Argo CD continuously reconciles, detecting and optionally correcting any divergence between Git and the live cluster. It also removes the need to store cluster credentials in CI, because the controller runs inside the cluster and pulls from Git.
+
+</details>
+
+<details>
+<summary><strong>Q: How does Argo CD detect drift, and what happens when it finds it?</strong></summary>
+
+Argo CD periodically refreshes (default every 3 minutes or via webhook) by fetching the latest commit and rendering manifests, then diffs the result against live cluster state. If they diverge, the Application moves to `OutOfSync`. With `selfHeal` enabled, Argo CD automatically re-applies the Git state; without it, drift is surfaced in the UI for manual resolution.
+
+</details>
+
+<details>
+<summary><strong>Q: What is the difference between Sync Status and Health Status?</strong></summary>
+
+Sync Status tells you whether the manifests in Git have been applied to the cluster (`Synced` or `OutOfSync`). Health Status tells you whether the running resources are actually working (`Healthy`, `Progressing`, `Degraded`). An Application can be `Synced` but `Degraded` — the manifests applied successfully but the pods are crash-looping.
+
+</details>
+
+<details>
+<summary><strong>Q: How would you handle secrets in a GitOps workflow with Argo CD?</strong></summary>
+
+Never commit plaintext secrets to Git. The two dominant patterns are Sealed Secrets (encrypt with a cluster-specific public key, commit the SealedSecret resource, and the controller decrypts in-cluster) and External Secrets Operator (commit an ExternalSecret that references a path in Vault, AWS Secrets Manager, or GCP Secret Manager — the operator materialises the real Secret).
+
+</details>
+
+<details>
+<summary><strong>Q: What is an ApplicationSet and when would you use one?</strong></summary>
+
+An ApplicationSet generates multiple Application resources from a template and a generator (list, Git directory, cluster, pull request, etc.). You use it when you have many environments, clusters, or tenants and writing one Application YAML per target does not scale. A single ApplicationSet can produce hundreds of Applications from a directory structure or a cluster list.
+
+</details>
+
+<details>
+<summary><strong>Q: How do sync waves and hooks work, and what is a common ordering pattern?</strong></summary>
+
+Sync waves are integer annotations that control the order resources are applied within a single sync — lower waves apply first. Hooks are Jobs annotated to run at specific sync phases (PreSync, Sync, PostSync, SyncFail). A common pattern is wave `-1` for Namespaces and CRDs, wave `0` for application workloads, and a PostSync hook for smoke tests.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you promote a release from staging to production in a GitOps model with Argo CD?</strong></summary>
+
+CI builds and pushes the image, then updates the image tag in the staging overlay via an automated commit. Argo CD auto-syncs staging. After verification, a PR is opened updating the production overlay with the same tag. On merge, Argo CD detects the change and syncs production — either automatically or after a manual sync if auto-sync is disabled for production.
+
+</details>
+
+<details>
+<summary><strong>Q: What is an AppProject, and why should you not use the default project in a multi-team cluster?</strong></summary>
+
+An AppProject scopes which Git repos, clusters, and namespaces a set of Applications can access. The `default` project has no restrictions — any team could deploy to any namespace from any repo. In a multi-team environment, you create explicit AppProjects with tight `sourceRepos` and `destinations` to enforce RBAC boundaries.
+
+</details>
+
+<details>
+<summary><strong>Q: Why should you avoid using HEAD as targetRevision for production Applications?</strong></summary>
+
+HEAD always resolves to the latest commit on the branch. If someone pushes a broken commit, production auto-syncs to it immediately. For production, pin `targetRevision` to a Git tag or a specific commit SHA so deployments are predictable and deliberate, requiring an explicit tag bump to deploy.
+
+</details>
+
+<details>
+<summary><strong>Q: How would you integrate Argo CD with your existing CI pipeline?</strong></summary>
+
+The CI pipeline (GitHub Actions, GitLab CI, Jenkins) handles build, test, and image push. Its final step commits the new image tag to a GitOps repo. Argo CD watches that repo and handles the deploy. The CI pipeline can then call `argocd app wait --health` to gate on successful deployment. The pipeline never needs cluster credentials — it writes to Git, and Argo CD reads from Git.
+
+</details>
 
 ---
 

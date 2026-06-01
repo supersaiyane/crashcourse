@@ -31,6 +31,22 @@ work. Think "the language is the templating engine," not "I'm scripting API call
 desired state is produced by *running your program*, where each `new Resource(...)` you
 construct becomes a node in the dependency graph.
 
+```mermaid
+graph TD
+    A[Developer] -->|writes| B[Program<br/>TypeScript / Python / Go]
+    B -->|constructs| C[Resource Graph]
+    C -->|diffed against| D[State<br/>Pulumi Cloud / S3 / local]
+    C -->|reconciled by| E[Pulumi Engine]
+    E -->|API calls| F[AWS]
+    E -->|API calls| G[GCP]
+    E -->|API calls| H[Azure]
+    I[Stack: dev] --> D
+    J[Stack: prod] --> D
+    K[Config + Secrets<br/>per-stack, encrypted] --> B
+    L[CrossGuard<br/>policy-as-code] -->|validates| C
+    B -->|unit tests| M[Jest / pytest]
+```
+
 ---
 
 ## Part 1 — The vocabulary (and the Terraform translation)
@@ -244,6 +260,80 @@ pulumi about                       # environment/plugin info
 ### Output handling cheat
 `output.apply(v => ...)` transform one · `pulumi.all([a,b]).apply(([a,b]) => ...)` combine ·
 `pulumi.interpolate\`...${out}...\`` string-build · `config.requireSecret("k")` encrypted input.
+
+---
+
+## Top 10 Interview Questions
+
+<details>
+<summary><strong>Q: How does Pulumi differ from Terraform fundamentally?</strong></summary>
+
+Both use a declarative desired-state model with state tracking and preview-before-apply. The key difference is the authoring layer: Terraform uses HCL (a purpose-built config language), while Pulumi uses real programming languages (TypeScript, Python, Go, C#). This gives you loops, functions, classes, type checking, IDE support, and your language's testing and package ecosystem — but the underlying reconciliation model is the same.
+
+</details>
+
+<details>
+<summary><strong>Q: What are Outputs in Pulumi and why do they trip people up?</strong></summary>
+
+An Output is an async value representing a resource attribute that is not known until the resource is created (like a bucket ARN). You cannot use it as a plain string — concatenation produces `[object]`. You must use `.apply()`, `pulumi.interpolate`, or `pulumi.all()` to transform or combine Outputs. This is the single biggest source of beginner confusion.
+
+</details>
+
+<details>
+<summary><strong>Q: How does Pulumi handle secrets compared to Terraform?</strong></summary>
+
+Pulumi encrypts secrets in state automatically when you use `pulumi config set --secret` or `config.requireSecret()`. Terraform stores all values in state as plaintext by default, requiring you to encrypt the state file externally or use a backend with server-side encryption. Pulumi's approach is more secure out of the box for sensitive configuration values.
+
+</details>
+
+<details>
+<summary><strong>Q: What is a Pulumi Stack and how do you use stacks for multi-environment deployments?</strong></summary>
+
+A Stack is an isolated instance of a Pulumi project with its own config and state — analogous to a Terraform workspace. You create one stack per environment (dev, staging, prod), set per-stack config values, and select the target stack before deploying. Your code can branch on `pulumi.getStack()` to adjust behaviour per environment.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you create reusable infrastructure components in Pulumi?</strong></summary>
+
+You create a class extending `ComponentResource`. This groups related resources under a single logical parent with its own inputs, outputs, and encapsulation — equivalent to a Terraform module but with full OOP capabilities. Components can be published as packages (npm, pip) and shared across teams, with strong typing and IDE autocomplete.
+
+</details>
+
+<details>
+<summary><strong>Q: Can you test Pulumi infrastructure code? How?</strong></summary>
+
+Yes — this is a major advantage over HCL. You write unit tests with your language's standard framework (Jest for TypeScript, pytest for Python) by mocking the cloud provider. You can assert properties like "every S3 bucket has encryption enabled" before any deployment happens. For policy enforcement, Pulumi offers CrossGuard, which runs policy-as-code checks in CI.
+
+</details>
+
+<details>
+<summary><strong>Q: What happens if you rename a resource's logical name in Pulumi?</strong></summary>
+
+The first argument to every resource constructor is its logical name, which identifies it in state. Changing it makes Pulumi think the old resource was deleted and a new one must be created — a destroy-and-recreate. To rename safely without replacement, use the `aliases` resource option to tell Pulumi about the old name.
+
+</details>
+
+<details>
+<summary><strong>Q: How does Pulumi's state management work?</strong></summary>
+
+State can be stored in Pulumi Cloud (free tier available), self-managed backends (S3, GCS, Azure Blob, local file), or Pulumi Enterprise. Each stack has its own state file. Pulumi diffs the resource graph your program produces against the stored state and applies only the delta. Unlike Terraform, secrets in state are encrypted by default.
+
+</details>
+
+<details>
+<summary><strong>Q: How would you migrate existing Terraform infrastructure to Pulumi?</strong></summary>
+
+Pulumi provides `pulumi convert --from terraform` to translate HCL to your target language. For existing cloud resources already managed by Terraform, you use `pulumi import` to adopt them into Pulumi state without recreating them. You can also consume existing Terraform modules directly from Pulumi using the Terraform bridge, allowing incremental migration.
+
+</details>
+
+<details>
+<summary><strong>Q: What is the Automation API and when would you use it?</strong></summary>
+
+The Automation API lets you drive Pulumi programmatically from your own application code — no CLI required. You can build self-service platforms, custom deployment pipelines, or infrastructure provisioning APIs where users request resources through a UI and your backend creates stacks, sets config, and runs `up` behind the scenes. It turns infrastructure deployment into a library call.
+
+</details>
 
 ---
 

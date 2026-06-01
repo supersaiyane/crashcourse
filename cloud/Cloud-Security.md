@@ -503,6 +503,80 @@ Result: a documented, auditable baseline that satisfies RBI IT Framework require
 
 ---
 
+## Top 10 Interview Questions
+
+<details>
+<summary><strong>Q: Explain the Shared Responsibility Model and give an example of where it trips teams up.</strong></summary>
+
+The cloud provider secures the infrastructure (physical, hypervisor, managed service internals); you secure everything you deploy on top (IAM, network config, encryption, data, application code). The common trap is RDS — teams assume AWS manages database security because it is "managed," but you own encryption enablement, network access (security groups), IAM authentication, backup policy, and parameter group hardening. Anything you configure, you own.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you implement least privilege in practice, not just in theory?</strong></summary>
+
+Start with a broad policy in a dev environment, let the workload run for a few weeks, then use IAM Access Analyzer (AWS) or IAM Recommender (GCP) to see which permissions were actually used. Remove everything else. For new policies, write them action-by-action against specific resource ARNs with Condition blocks — restrict by VPC, region, MFA presence. Fail CI pipelines on any policy containing `Action: *, Resource: *`. Least privilege is iterative, not one-shot.
+
+</details>
+
+<details>
+<summary><strong>Q: What are SCPs, and how do they interact with IAM policies?</strong></summary>
+
+Service Control Policies are guardrails applied at the AWS Organizations OU or account level. They set the maximum permissions any principal in the account can have — they restrict, never grant. If an SCP denies `ec2:*` in region `ap-east-1`, no IAM policy in that account can override it, not even the root user. Use them for non-negotiable boundaries: deny unapproved regions, deny disabling CloudTrail, deny public S3. IAM policies grant permissions within the SCP boundary.
+
+</details>
+
+<details>
+<summary><strong>Q: How does OIDC federation work for CI/CD, and why is it better than stored credentials?</strong></summary>
+
+The CI/CD system (GitHub Actions, GitLab) presents a JWT token to AWS STS, which validates it against a configured OIDC provider. STS issues temporary role credentials (15 min to 1 hour). No long-lived access keys are stored anywhere — not in CI secrets, not in environment variables. This eliminates the risk of key leakage through build logs, repo forks, or compromised CI environments. The trust policy on the role scopes which repos and branches can assume it.
+
+</details>
+
+<details>
+<summary><strong>Q: What is envelope encryption and how does KMS use it?</strong></summary>
+
+KMS generates a data encryption key (DEK) and returns both the plaintext DEK and a KMS-encrypted copy. Your application encrypts data locally with the plaintext DEK, then stores the encrypted DEK alongside the encrypted data. To decrypt, you send the encrypted DEK to KMS, which decrypts it and returns the plaintext DEK. This lets you encrypt large datasets efficiently while the actual master key material never leaves KMS — you get performance and security.
+
+</details>
+
+<details>
+<summary><strong>Q: What should you alert on for cloud security, and how do you prioritize findings?</strong></summary>
+
+Alert immediately on: root account login, CloudTrail disabled in any region, SCP modifications, S3 public access block disabled, security groups opening 0.0.0.0/0 on SSH/RDP/database ports, and any GuardDuty HIGH/CRITICAL findings. Prioritize by blast radius — a compromised IAM role with admin access is more urgent than a single overly permissive security group. Target 0 critical findings within 24 hours, 0 high within 72 hours.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you handle secrets management in production?</strong></summary>
+
+Store all credentials in a secrets manager (AWS Secrets Manager, GCP Secret Manager, HashiCorp Vault). Enable automatic rotation for database credentials. Access secrets at runtime via SDK calls, not environment variables or config files. Combine with managed identities so the application authenticates to the secrets manager without storing any credentials. Run truffleHog and gitleaks as pre-commit hooks and in CI. If a credential is ever committed to git, rotate it immediately — assume compromise even for private repos.
+
+</details>
+
+<details>
+<summary><strong>Q: Walk me through how you would respond to a compromised IAM access key.</strong></summary>
+
+Contain first: deactivate the access key immediately (`aws iam update-access-key --status Inactive`). Check CloudTrail for all API calls made by the compromised key — what did the attacker access, create, or modify? Isolate any EC2 instances launched by the key (replace security group with deny-all). Snapshot EBS volumes for forensics. Rotate all secrets the compromised identity could access. Eradicate persistence — check for new IAM users, roles, Lambda functions, or EC2 instances the attacker may have created. Redeploy from IaC, not from compromised resources. Postmortem: how did the key leak, and what control prevents recurrence?
+
+</details>
+
+<details>
+<summary><strong>Q: What is Zero Trust and how do you implement it in the cloud?</strong></summary>
+
+Zero Trust means no implicit trust based on network location — every request is authenticated, authorized, and logged, even between internal services. Implement with: IAM roles for every service (no anonymous internal traffic), mTLS between services via a service mesh, security groups per service rather than per tier, just-in-time production access for humans (time-limited, approval-required), and continuous authorization with short-lived tokens. The shift is from "inside the VPC is trusted" to "prove your identity on every request."
+
+</details>
+
+<details>
+<summary><strong>Q: How do you approach compliance (SOC2, PCI-DSS, RBI) in cloud architecture?</strong></summary>
+
+Compliance is a floor, not a ceiling. Map each compliance requirement to a technical control: data residency → SCP region restriction, audit trails → CloudTrail with S3 Object Lock, encryption → KMS CMKs with rotation, access control → least-privilege IAM with MFA. Use CSPM tools (Prowler, Security Hub with CIS benchmarks) for continuous assessment. For PCI-DSS, reduce scope aggressively — tokenize card data via a compliant third party (Stripe) to minimize your cardholder data environment. Document controls, test them, and prove they work over time (SOC2 Type II).
+
+</details>
+
+---
+
 ## Next Steps
 
 Work through these files after this one:

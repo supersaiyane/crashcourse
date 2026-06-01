@@ -22,6 +22,22 @@ The insight is that you spend far more time reading and navigating text than you
 
 **Mental model:** Your keyboard is an instrument — Normal mode is the instrument's full range; Insert mode is just one note.
 
+```mermaid
+graph TD
+    A[SSH into Server] --> B[Vim]
+    B --> C[Normal Mode]
+    B --> D[Insert Mode]
+    B --> E[Visual Mode]
+    B --> F[Command Mode]
+    F -->|:w :q| G[Filesystem]
+    F -->|:%s| H[Regex Engine]
+    F -->|:!cmd| I[Shell Commands]
+    B -->|reads| J[.vimrc Config]
+    J -->|loads| K[Plugins]
+    B -->|edits| L[Config Files / Code]
+    L --> M[Deploy / Commit]
+```
+
 ---
 
 ## Part 1 — The vocabulary
@@ -632,6 +648,80 @@ Ctrl-w q        close split
 :sort u                        sort and deduplicate
 :help topic                    built-in help
 ```
+
+---
+
+## Top 10 Interview Questions
+
+<details>
+<summary><strong>Q: What are Vim's modes and why does modal editing matter?</strong></summary>
+
+Vim has Normal, Insert, Visual, and Command modes. Normal mode treats keystrokes as commands rather than text input. This matters because you spend far more time navigating and editing than typing new characters — modal editing optimises for the common case. On a remote server at 2 AM with no GUI, this design lets you work at full speed.
+
+</details>
+
+<details>
+<summary><strong>Q: Explain the operator-motion-object grammar with an example.</strong></summary>
+
+Vim commands compose like a language: `d` (delete) + `i` (inner) + `w` (word) = `diw`, which deletes the word under the cursor. `ci"` changes everything inside double quotes. You learn a small set of operators (`d`, `c`, `y`) and motions (`w`, `$`, `gg`), and they combine into hundreds of precise edits without memorising each one individually.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you do a global find-and-replace across an entire file?</strong></summary>
+
+`:%s/old/new/g` — the `%` means the whole file, `s` is substitute, and `g` replaces all occurrences per line, not just the first. Add `c` for confirmation on each match (`:%s/old/new/gc`). For paths or URLs containing slashes, use an alternate delimiter like `:%s|http://|https://|g`.
+
+</details>
+
+<details>
+<summary><strong>Q: What is the dot command and how does it improve efficiency?</strong></summary>
+
+`.` repeats the last change. The workflow is: make an edit once (e.g., `ciw new_value Esc`), move to the next occurrence with `n`, press `.` to repeat. This is faster than a global substitution when you need to review each change, and it composes with any operator-motion combination.
+
+</details>
+
+<details>
+<summary><strong>Q: How would you edit a file on a server where you opened it without sudo but need root to save?</strong></summary>
+
+Use `:w !sudo tee %` — this pipes the buffer through `sudo tee` writing to the current filename (`%`). It lets you save without exiting Vim, re-opening with `sudo`, and losing your edits. This is a common situation when editing configs in `/etc`.
+
+</details>
+
+<details>
+<summary><strong>Q: What are macros and when would you use them in production work?</strong></summary>
+
+Macros record a sequence of keystrokes and replay them. `qa` starts recording into register `a`, `q` stops, `@a` replays, `100@a` replays 100 times. They are useful for repetitive structured edits — reformatting log entries, adding a prefix to 200 lines, or restructuring config blocks where a regex substitution would be fragile.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you handle the "staircase paste" problem when pasting code into Vim?</strong></summary>
+
+Autoindent causes cascading indentation when pasting external text. Run `:set paste` before pasting to disable autoindent, then `:set nopaste` after. Alternatively, use `"+p` to paste from the system clipboard register, which avoids the problem entirely if Vim was compiled with clipboard support.
+
+</details>
+
+<details>
+<summary><strong>Q: What is the difference between a buffer, a window, and a tab in Vim?</strong></summary>
+
+A buffer is an in-memory copy of a file. A window is a viewport showing a buffer. A tab is a collection of windows. You can have multiple windows showing the same buffer, and buffers exist even when no window displays them. `:ls` lists buffers, `:b N` switches, `:bd` closes. Understanding this prevents confusion when `:q` closes a window but leaves the buffer open.
+
+</details>
+
+<details>
+<summary><strong>Q: How would you comment out 50 lines quickly in Vim?</strong></summary>
+
+Use block visual mode: `Ctrl-v`, select the column on 50 lines with `49j`, press `I` to insert at the column, type `# `, press `Esc`. All 50 lines get the prefix simultaneously. Alternatively, use the `:g` command: `:10,59s/^/# /` to prepend a comment to lines 10 through 59.
+
+</details>
+
+<details>
+<summary><strong>Q: What Vim configuration would you recommend for a production server's /etc/vimrc?</strong></summary>
+
+Keep it minimal: `set nocompatible`, `set backspace=indent,eol,start`, `set number`, `set incsearch`, `set hlsearch`, `syntax on`. On shared servers, avoid plugins and heavy customisation — other engineers need to use the same Vim. Save personal configuration for your own `~/.vimrc` and keep the system config functional and non-surprising.
+
+</details>
 
 ---
 

@@ -416,6 +416,80 @@ Failover drills are run quarterly and documented in the runbook.
 
 ---
 
+## Top 10 Interview Questions
+
+<details>
+<summary><strong>Q: Walk me through the AWS Well-Architected Framework pillars and which one you consider most important.</strong></summary>
+
+The six pillars are Operational Excellence, Security, Reliability, Performance Efficiency, Cost Optimization, and Sustainability. Security is the most important because a security failure can be existential — data breaches, regulatory fines, and loss of customer trust. But in practice, the pillars interact: poor operational excellence (no IaC, no runbooks) undermines reliability, and ignoring cost optimization makes the architecture unsustainable. The framework is a checklist you apply to every workload, not a one-time exercise.
+
+</details>
+
+<details>
+<summary><strong>Q: Why should you use a multi-account strategy instead of a single account?</strong></summary>
+
+A single account means no blast-radius isolation — a misconfigured IAM role, a runaway cost, or a security breach affects everything. Multi-account gives you separate billing boundaries, independent IAM boundaries, and environment isolation (dev cannot accidentally touch prod). You also get per-account service quotas, which prevents one team's workload from throttling another's. The overhead of managing multiple accounts is solved by AWS Control Tower or equivalent landing zone tooling.
+
+</details>
+
+<details>
+<summary><strong>Q: What is a Landing Zone and how would you set one up?</strong></summary>
+
+A landing zone is a pre-configured, governed multi-account environment — the blueprint before any workloads are deployed. AWS Control Tower automates it: OU structure, foundational accounts (security, log archive, shared services), SCPs for guardrails, CloudTrail and Config enabled everywhere, and Account Factory for self-service account creation. For heavily regulated environments (BFSI), the Landing Zone Accelerator provides deeper customization of every guardrail and network topology.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you choose between the different DR patterns — backup/restore, pilot light, warm standby, and active-active?</strong></summary>
+
+The choice is driven by documented RTO and RPO requirements, not technical preference. Backup/restore is cheapest but has hours-long RTO. Pilot light keeps a DB replica running and scales compute on failover (30-60 min RTO). Warm standby runs a scaled-down full stack (5-30 min RTO). Active-active serves traffic from both regions simultaneously (near-zero RTO, highest cost). The common mistake is over-engineering — building active-active for a workload that tolerates a 4-hour outage wastes significant money.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you enforce security guardrails across an organization without blocking teams?</strong></summary>
+
+Use SCPs (AWS) or Organization Policies (GCP) to set hard boundaries — deny unapproved regions, deny disabling CloudTrail, deny public S3 buckets. These are preventive and non-negotiable. Layer on detective controls (Config rules, Security Hub) that alert on drift without blocking. Give teams autonomy within the guardrails — they choose their instance types, database engines, and application architecture, but the security baseline is not optional. This is the "paved road" model.
+
+</details>
+
+<details>
+<summary><strong>Q: What is the difference between multi-AZ and multi-region, and when do you need each?</strong></summary>
+
+Multi-AZ deploys across availability zones within one region — it survives individual data center failures and is the baseline for any production workload. Multi-region deploys across geographic regions and is needed for data residency requirements or RTO/RPO that single-region cannot meet. Multi-region is 3-5x more expensive and operationally complex (data replication, conflict resolution, global routing). Most workloads only need multi-AZ.
+
+</details>
+
+<details>
+<summary><strong>Q: How would you design a BFSI-compliant cloud architecture for a bank?</strong></summary>
+
+Start with data residency — restrict all resources to approved regions via SCP. Separate accounts for production, non-production, security, and networking. Immutable audit logs in a Log Archive account with S3 Object Lock (7+ year retention). Encryption with customer-managed KMS keys. Network segmentation with private subnets, no direct internet access, all egress through an inspection VPC. Segregation of duties — developers cannot deploy to production; CI/CD pipelines handle deployment via cross-account roles.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you approach cost optimization in cloud architecture without sacrificing reliability?</strong></summary>
+
+Tag everything from day one so you can attribute spend. Right-size based on actual utilization data, not guesses. Use Savings Plans for steady-state workloads and Spot for fault-tolerant batch. Schedule non-production environments to shut down outside business hours. The key principle is that every optimization has a reliability tradeoff — make it explicitly. Right-sizing to the bone or using Spot for stateful services to save 10% more is recklessness, not FinOps.
+
+</details>
+
+<details>
+<summary><strong>Q: What would you look for in an architecture review?</strong></summary>
+
+Walk through each Well-Architected pillar as a checklist. Key red flags: console-only resources (no IaC), IAM wildcard policies, single-AZ databases, no budget alerts, untagged resources, no runbooks mapped to alerts, default instance sizes without utilization data. The output is a prioritized list of improvements, not a pass/fail. Focus on High Risk Issues — the ones that have caused actual incidents at scale. Architecture reviews are iterative, not gates.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you present an architecture decision in an interview or design review?</strong></summary>
+
+Use this structure: business requirements and constraints (SLA, compliance, expected scale), key architectural decisions and the trade-offs you accepted (why this approach, not that one), how the design addresses each Well-Architected pillar, what you would do differently with more time, and how the architecture evolves as requirements change. Interviewers care more about your reasoning process than the specific services you chose. Explaining why you chose warm standby over active-active demonstrates maturity.
+
+</details>
+
+---
+
 ## Next Steps
 
 This file is foundational. The following files go deeper on specific domains:

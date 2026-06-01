@@ -302,6 +302,80 @@ Ops:  back up $JENKINS_HOME · update plugins · run on agents · JCasC for serv
 
 ---
 
+## Top 10 Interview Questions
+
+<details>
+<summary><strong>Q: What is the difference between Declarative and Scripted pipeline syntax?</strong></summary>
+
+Declarative pipelines use a structured `pipeline { }` block with predefined sections (`agent`, `stages`, `post`). Scripted pipelines are raw Groovy code wrapped in `node { }`. Declarative is the recommended approach — it is more readable, easier to lint, and covers most use cases. Scripted is for when you genuinely need Groovy control flow that Declarative cannot express.
+
+</details>
+
+<details>
+<summary><strong>Q: Why should you never run builds on the Jenkins controller?</strong></summary>
+
+The controller manages scheduling, the UI, and configuration. Running builds on it competes for resources, degrades performance for all users, and is a security risk — build code executes with the controller's permissions. Always delegate builds to agents, ideally ephemeral containers or Kubernetes pods.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you manage secrets in Jenkins securely?</strong></summary>
+
+Store them in Jenkins Credentials (Manage Jenkins, then Credentials). Reference them in the pipeline with `credentials('id')` in the `environment` block or `withCredentials([...])` in a step. Jenkins masks credential values in console output. Never hardcode secrets in the `Jenkinsfile` or pass them as plain parameters.
+
+</details>
+
+<details>
+<summary><strong>Q: What is a Multibranch Pipeline and when do you use it?</strong></summary>
+
+A Multibranch Pipeline automatically discovers branches and pull requests in a repository, creates a pipeline job for each, and runs the `Jenkinsfile` found in that branch. It is the standard approach for repos where you want CI on every branch and PR without manually creating jobs.
+
+</details>
+
+<details>
+<summary><strong>Q: How do Shared Libraries work and what problem do they solve?</strong></summary>
+
+Shared Libraries are Git repositories containing reusable Groovy code (custom steps, pipeline templates). You reference them with `@Library('name') _` in your `Jenkinsfile`. They solve the problem of keeping hundreds of Jenkinsfiles consistent — define the standard pipeline once in the library and call it everywhere, so changes propagate centrally.
+
+</details>
+
+<details>
+<summary><strong>Q: How would you implement a production approval gate?</strong></summary>
+
+Use the `input` step. It pauses the pipeline and presents a prompt in the UI. The `submitter` parameter restricts who can approve. This is Jenkins's equivalent of GitHub environment protection rules or GitLab's `when: manual`. Keep the `input` in a dedicated stage so the agent is released while waiting.
+
+</details>
+
+<details>
+<summary><strong>Q: What is Jenkins Configuration as Code (JCasC)?</strong></summary>
+
+JCasC lets you define the Jenkins server's own configuration — system settings, credentials, security realm, tool installations, agent templates — in a YAML file. This makes the server itself reproducible and version-controlled, eliminating the "click through the UI" configuration pattern that is fragile and unauditable.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you scale Jenkins for a large engineering organisation?</strong></summary>
+
+Use ephemeral agents — the Kubernetes plugin spins up a fresh pod per build, then tears it down. This gives clean environments, avoids agent maintenance, and scales with cluster capacity. For isolation between teams, use folder-level RBAC, separate agent labels, and Shared Libraries to enforce pipeline standards.
+
+</details>
+
+<details>
+<summary><strong>Q: What is the biggest operational risk with Jenkins, and how do you mitigate it?</strong></summary>
+
+Plugin and controller version drift. Jenkins has 1800+ plugins, and incompatible updates cause cryptic failures. Mitigate by pinning plugin versions, testing updates in a staging Jenkins instance, automating backups of `$JENKINS_HOME`, and keeping the controller patched for security CVEs.
+
+</details>
+
+<details>
+<summary><strong>Q: How does Jenkins compare to modern CI/CD tools like GitHub Actions or GitLab CI?</strong></summary>
+
+Jenkins gives you total control — any environment, any network, any build need — at the cost of operational burden (you host, patch, and scale it). GitHub Actions and GitLab CI are managed services with less flexibility but near-zero ops overhead. Jenkins remains dominant in enterprises with on-prem requirements, air-gapped networks, or complex legacy builds that the hosted tools cannot accommodate.
+
+</details>
+
+---
+
 ## Next steps after Day 2
 - **Configuration as Code (JCasC)** to define the Jenkins server itself in YAML.
 - **Kubernetes plugin** for ephemeral per-build pods (scalable, clean agents).

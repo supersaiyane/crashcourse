@@ -27,6 +27,19 @@ Prometheus, Loki feels immediately familiar.
 *labels only* and stores raw log lines. You first pick a stream by labels (the index does this
 fast), then `|=` grep within it (scanned at query time). Cheap index, cheap storage, fast enough.
 
+```mermaid
+graph TD
+    APP[Application Logs<br/>stdout / files] --> AGENT[Promtail / Grafana Alloy<br/>collects & labels]
+    AGENT -->|push| DIST[Loki Distributor]
+    DIST --> ING[Loki Ingester<br/>recent chunks in memory]
+    ING -->|flush| OBJ[(Object Storage<br/>S3 / GCS)]
+    OBJ --> QRY[Loki Querier]
+    ING --> QRY
+    QRY --> GRAF[Grafana<br/>Explore / Dashboards]
+    QRY --> RULER[Loki Ruler<br/>LogQL alert rules]
+    RULER --> AM[Alertmanager]
+```
+
 ---
 
 ## Part 1 — The vocabulary & architecture
@@ -226,6 +239,80 @@ logcli query '{app="api"} |= "error"' --since=1h
 logcli labels                 # list available labels
 logcli labels app             # list values for a label
 ```
+
+---
+
+## Top 10 Interview Questions
+
+<details>
+<summary><strong>Q: How does Loki's indexing strategy differ from Elasticsearch, and why does that matter for cost?</strong></summary>
+
+Loki indexes only the label set (low-cardinality metadata like `app`, `namespace`, `env`), not the log content itself. Log lines are stored compressed in cheap object storage. Elasticsearch indexes the full text of every field, which gives richer search but costs significantly more in compute and storage. Loki trades query-time flexibility for an order-of-magnitude reduction in infrastructure cost.
+
+</details>
+
+<details>
+<summary><strong>Q: What is the most common mistake teams make when configuring Loki labels?</strong></summary>
+
+Putting high-cardinality values — `user_id`, `request_id`, `trace_id`, `IP address` — into labels. Each unique label combination creates a separate stream, and millions of tiny streams destroy Loki's ingestion performance and blow up storage. High-cardinality data belongs in the log line body, extracted at query time with `| json` or `| regexp`.
+
+</details>
+
+<details>
+<summary><strong>Q: Explain the difference between a log query and a metric query in LogQL.</strong></summary>
+
+A log query returns raw log lines — e.g. `{app="api"} |= "error"`. A metric query wraps a log query in an aggregation function and returns a numeric time series — e.g. `rate({app="api"} |= "error" [5m])` gives error lines per second. Metric queries let you graph and alert on log patterns using the same Grafana panels as Prometheus metrics.
+
+</details>
+
+<details>
+<summary><strong>Q: How would you investigate a latency spike using Loki and Grafana together?</strong></summary>
+
+Start from the Prometheus metrics panel showing the latency spike. Note the time window. Switch to Grafana Explore with the Loki data source, set the same time range, and query `{app="checkout"} | json | duration > 2s` to find slow requests. Chain additional filters like `|~ "timeout|refused"` to narrow down. The shared time range across metrics and logs panels on one dashboard is the key — you correlate the spike with the exact log lines that explain it.
+
+</details>
+
+<details>
+<summary><strong>Q: What is the role of Promtail (or Grafana Alloy) in the Loki architecture?</strong></summary>
+
+Promtail/Alloy is the agent that runs on your hosts or as a Kubernetes DaemonSet. It tails log files or container stdout, attaches labels (from static config or Kubernetes metadata), and pushes the labeled streams to Loki. It is the equivalent of an exporter in the Prometheus world. Misconfigured labels are almost always an agent-side problem, not a Loki-side one.
+
+</details>
+
+<details>
+<summary><strong>Q: How does Loki handle alerting on log patterns?</strong></summary>
+
+Loki has a built-in ruler component that evaluates LogQL metric queries on a schedule — identical to Prometheus recording/alerting rules. For example, `sum(rate({app="api"} |= "Exception" [5m])) > 1` fires when the exception rate exceeds one per second. The ruler sends firing alerts to Alertmanager, which handles grouping, routing, and notification — the same pipeline as Prometheus alerts.
+
+</details>
+
+<details>
+<summary><strong>Q: You run a LogQL query and it is very slow. What are the likely causes and how do you fix it?</strong></summary>
+
+The most common cause is a missing or overly broad label selector — scanning all streams instead of narrowing by `app`, `namespace`, or `env` first. Second, the time range may be too wide; narrow it to the incident window. Third, complex regex line filters (`|~`) on high-volume streams are expensive; prefer exact match (`|=`) where possible. Finally, check whether the query is hitting the ingesters (recent data, fast) or object storage (historical data, slower).
+
+</details>
+
+<details>
+<summary><strong>Q: How do you extract structured fields from JSON logs in Loki without pre-indexing them?</strong></summary>
+
+Use the `| json` parser stage in LogQL. For example, `{app="api"} | json | status >= 500` parses every log line as JSON at query time and filters on the extracted `status` field. For logfmt logs, use `| logfmt`. For unstructured text, use `| pattern` or `| regexp` with named capture groups. The key insight is that these fields are never indexed — they are extracted on the fly, keeping the index small and cheap.
+
+</details>
+
+<details>
+<summary><strong>Q: What deployment modes does Loki support, and when would you choose each?</strong></summary>
+
+Loki supports three modes: monolithic (single binary, good for small teams and development), simple scalable (read/write/backend separation, good for medium workloads), and microservices (each component — distributor, ingester, querier, compactor — runs independently, necessary at high scale). Start monolithic, move to simple scalable when you hit ingestion or query bottlenecks, and go to full microservices only when you need independent scaling of specific components.
+
+</details>
+
+<details>
+<summary><strong>Q: How does Loki compare to Grafana's other LGTM components in terms of the data model?</strong></summary>
+
+Loki mirrors Prometheus intentionally. Both use the same `{label="value"}` selector syntax, the same label-based data model, and integrate natively in Grafana. Prometheus stores numeric samples indexed by metric name and labels; Loki stores raw log lines indexed only by labels. Tempo stores traces indexed only by trace ID. The shared label model is what enables cross-signal correlation — you can jump from a metric alert to matching logs to a related trace using the same label values.
+
+</details>
 
 ---
 

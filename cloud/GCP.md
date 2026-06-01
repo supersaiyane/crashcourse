@@ -264,6 +264,80 @@ gcloud billing accounts list
 
 ---
 
+## Top 10 Interview Questions
+
+<details>
+<summary><strong>Q: How does GCP's resource hierarchy differ from AWS, and why does it matter?</strong></summary>
+
+GCP organizes everything under Organization → Folders → Projects, where a Project is the fundamental billing, IAM, and API boundary. Unlike AWS accounts, you routinely create many Projects to separate apps and environments. This gives you clean blast-radius isolation and per-project billing without the overhead of managing separate accounts and cross-account roles.
+
+</details>
+
+<details>
+<summary><strong>Q: When would you choose Cloud Run over GKE?</strong></summary>
+
+Cloud Run is the right choice for stateless HTTP services where you want zero infrastructure management — it scales to zero, handles TLS and load balancing automatically, and deploys in one command. GKE is for workloads that need persistent volumes, custom networking (service meshes), long-running background processes, or fine-grained control over scheduling and resource allocation across many services.
+
+</details>
+
+<details>
+<summary><strong>Q: What is Workload Identity and why should you use it instead of service account key files?</strong></summary>
+
+Workload Identity maps a Kubernetes service account to a GCP service account, letting GKE pods authenticate to GCP APIs without downloading JSON key files. Key files are static credentials that can leak through git, CI logs, or container images. Workload Identity provides short-lived, automatically rotated tokens — the same security posture as AWS IAM roles for EC2.
+
+</details>
+
+<details>
+<summary><strong>Q: How is a GCP VPC different from an AWS VPC?</strong></summary>
+
+A GCP VPC is global — it spans all regions, with subnets being regional. This means resources in different regions can communicate privately without peering. Firewall rules are also VPC-wide by default (tag-based), not per-subnet like AWS security groups. Cloud Load Balancing is global too, providing a single anycast IP for worldwide traffic distribution.
+
+</details>
+
+<details>
+<summary><strong>Q: How would you handle secrets in a GCP production environment?</strong></summary>
+
+Store secrets in Secret Manager with automatic replication, access them at runtime via the SDK using a service account that has only the `secretmanager.secretAccessor` role. Never bake secrets into container images or environment variables in Cloud Run YAML. For GKE, mount secrets via the Secret Manager CSI driver or use Workload Identity to access them in application code.
+
+</details>
+
+<details>
+<summary><strong>Q: What is BigQuery's architecture and when does it shine?</strong></summary>
+
+BigQuery is a serverless, columnar data warehouse that separates storage from compute. You pay for storage at rest and for bytes scanned per query. It handles petabyte-scale analytics without you managing clusters, indexes, or partitions. It shines for ad-hoc analytics, large-scale ETL, and scenarios where you want to query terabytes without provisioning infrastructure — but it is not a replacement for transactional databases.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you enforce least-privilege IAM in a multi-project GCP environment?</strong></summary>
+
+Use predefined roles rather than basic roles (Owner/Editor/Viewer). Grant roles at the narrowest scope — a specific resource or project, not the folder or organization. Use Organization Policy constraints to enforce guardrails (e.g., restrict which APIs can be enabled). Run the IAM Recommender periodically to identify over-granted permissions and tighten them based on actual usage.
+
+</details>
+
+<details>
+<summary><strong>Q: How would you design a CI/CD pipeline deploying to Cloud Run?</strong></summary>
+
+Push code to a Git repo, trigger Cloud Build on commit, build and push the container image to Artifact Registry, then deploy to Cloud Run with `gcloud run deploy`. Use separate projects for staging and production. Authenticate Cloud Build to production via cross-project service account impersonation — no static keys. Gate production deploys behind a manual approval step or a canary traffic split in Cloud Run.
+
+</details>
+
+<details>
+<summary><strong>Q: What GCP services would you use to build an observability stack?</strong></summary>
+
+Cloud Logging for log aggregation and search, Cloud Monitoring for metrics and alerting (with custom dashboards), and Cloud Trace for distributed tracing. For a more open approach, deploy OpenTelemetry collectors on GKE that ship to Cloud Monitoring or to a self-managed Prometheus/Grafana stack. Use Error Reporting to surface application exceptions automatically from logs.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you control costs in GCP and what are the common cost traps?</strong></summary>
+
+Set budget alerts per project immediately. Use Committed Use Discounts (CUDs) for steady-state GKE and Compute Engine workloads. The common traps are: idle GKE nodes running 24/7 in non-prod, oversized Cloud SQL instances with Multi-AZ enabled in dev, egress charges from cross-region traffic, and BigQuery queries scanning full tables instead of using partitioning and clustering. Export billing data to BigQuery for granular cost analysis by label.
+
+</details>
+
+---
+
 ## Next steps after Day 2
 - **BigQuery** — if you touch analytics/data, this is GCP's standout; learn `bq query`.
 - **Cloud Build** for CI/CD; **Workload Identity** for keyless auth between GCP and GKE/GitHub.

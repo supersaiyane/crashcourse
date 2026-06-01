@@ -485,6 +485,80 @@ terraform apply
 
 ---
 
+## Top 10 Interview Questions
+
+<details>
+<summary><strong>Q: How does Cloudflare's reverse proxy work, and what does the orange cloud toggle do?</strong></summary>
+
+When the orange cloud (proxy) is enabled, Cloudflare terminates the TCP/TLS connection from the client, applies WAF rules, caching, and bot protection, then forwards the request to your origin. Your origin IP is hidden behind Cloudflare's anycast IPs. Grey cloud (DNS only) resolves the record directly to your origin with no protection. The key decision: proxy everything web-facing, leave mail and non-HTTP services grey.
+
+</details>
+
+<details>
+<summary><strong>Q: What is the difference between Full and Full (Strict) SSL modes, and which should you use?</strong></summary>
+
+Full mode encrypts the connection between Cloudflare and your origin but does not validate the origin certificate — a self-signed cert works. Full (Strict) validates the certificate against a trusted CA, which prevents man-in-the-middle attacks between Cloudflare and your origin. Always use Full (Strict) with a valid certificate (Let's Encrypt or Cloudflare Origin CA). Flexible mode sends plaintext to your origin and should be avoided.
+
+</details>
+
+<details>
+<summary><strong>Q: How do Workers differ from traditional serverless functions like AWS Lambda?</strong></summary>
+
+Workers run on Cloudflare's edge in V8 isolates, not containers. This means no cold starts — a Worker responds in under 5ms globally. They are limited to 10ms CPU time (free tier) or 30s (paid), so they are designed for lightweight request processing, not heavy compute. Workers intercept HTTP requests before they reach your origin, making them ideal for authentication, routing, A/B testing, and header manipulation at the edge.
+
+</details>
+
+<details>
+<summary><strong>Q: How would you protect a login endpoint from credential stuffing attacks?</strong></summary>
+
+Configure a rate limiting rule on the login path — for example, 5 POST requests per minute per IP to `/login`, with a block action for 10 minutes. Layer on Bot Fight Mode to fingerprint and challenge automated clients. Add a custom WAF rule blocking suspicious user agents from datacenter ASNs. At the application level, implement account lockout and monitor the Security Events dashboard for blocked attempts.
+
+</details>
+
+<details>
+<summary><strong>Q: What is Cloudflare Tunnel and why would you use it instead of exposing public ports?</strong></summary>
+
+Cloudflare Tunnel (`cloudflared`) creates an outbound-only encrypted connection from your server to Cloudflare's network. Your origin has no public IP, no open inbound ports, and no firewall rules to manage. All traffic reaches your service through Cloudflare, where it is authenticated, rate-limited, and inspected. This eliminates an entire class of attacks — port scanning, direct DDoS, and origin IP discovery.
+
+</details>
+
+<details>
+<summary><strong>Q: How does R2 compare to AWS S3, and when would you choose it?</strong></summary>
+
+R2 is S3-compatible object storage with zero egress fees — you pay only for storage and operations. At scale, S3 egress costs can dominate your bill; R2 eliminates that entirely. R2 sits inside Cloudflare's network, so Workers can read/write objects with negligible latency. Choose R2 when you serve large volumes of data to users (images, videos, downloads) or when your architecture is already on Cloudflare. S3 has a deeper ecosystem and more integrations.
+
+</details>
+
+<details>
+<summary><strong>Q: How does Cloudflare Zero Trust replace a traditional VPN?</strong></summary>
+
+Zero Trust puts an identity-based access gate in front of any URL. Users authenticate via an identity provider (Google, GitHub, Okta) and receive a signed JWT cookie. Access policies are per-application — you can require specific email domains, device posture checks, or group memberships. Unlike a VPN, there is no network-level access; users can only reach the specific applications they are authorized for. Combined with Tunnel, your internal services have no public exposure at all.
+
+</details>
+
+<details>
+<summary><strong>Q: How would you manage Cloudflare configuration as code?</strong></summary>
+
+Use the Cloudflare Terraform provider to manage DNS records, WAF rulesets, Workers routes, Access policies, and rate limiting rules. Store the API token in a secrets manager or CI environment variable — never in source control. Use scoped API tokens with minimum permissions. Run `terraform plan` in CI on pull requests and `terraform apply` on merge to main. This gives you version control, peer review, and rollback for all Cloudflare configuration.
+
+</details>
+
+<details>
+<summary><strong>Q: What caching mistakes do teams commonly make with Cloudflare?</strong></summary>
+
+The most common mistake is caching HTML unintentionally — a broad cache rule captures dynamic pages, and users see stale content after deployments. Always bypass cache for API routes and HTML; cache only static assets (JS, CSS, images). The second mistake is not purging cache after deploys, so users load old JavaScript against a new API. Automate cache purging in your CI pipeline using the Cloudflare API.
+
+</details>
+
+<details>
+<summary><strong>Q: How would you architect a globally distributed application entirely on Cloudflare?</strong></summary>
+
+Static frontend on Pages (deployed from Git, CDN-backed). API layer as Workers with routes on your domain. Data in D1 (SQLite at edge) for reads, Hyperdrive for connection pooling to a central Postgres. File storage in R2 with presigned upload URLs generated by Workers. Admin panel behind Zero Trust Access. WAF managed ruleset on block, rate limiting on auth endpoints. All configuration in Terraform. The only external dependency is your database — everything else runs inside Cloudflare's network.
+
+</details>
+
+---
+
 ## Next Steps
 
 - `DNS-curl-dig.md` — deepen your understanding of what happens below the orange cloud

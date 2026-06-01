@@ -320,6 +320,80 @@ Final monthly spend: $30,800. Savings: $21,200/month, or 41%. Ongoing discipline
 
 ---
 
+## Top 10 Interview Questions
+
+<details>
+<summary><strong>Q: What is FinOps and how does it differ from traditional cost-cutting?</strong></summary>
+
+FinOps is a shared operating model where engineering, finance, and product collaborate on cloud spending decisions using real-time data. It is not about spending less — it is about spending with intention. Traditional cost-cutting is top-down and periodic; FinOps is continuous, data-driven, and embedded into engineering workflows. The lifecycle is Inform → Optimize → Operate, repeated continuously.
+
+</details>
+
+<details>
+<summary><strong>Q: What are unit economics and why do they matter more than total spend?</strong></summary>
+
+Unit economics is the cost to produce one unit of business value — one API call, one active user, one transaction. Total spend can increase with growth, which is healthy. Unit cost trending upward while volume grows means your architecture is not scaling efficiently. Tracking cost-per-unit connects engineering decisions to business outcomes and gives product teams a metric they can reason about.
+
+</details>
+
+<details>
+<summary><strong>Q: What is the difference between Reserved Instances and Savings Plans?</strong></summary>
+
+Reserved Instances commit to a specific instance type in a specific region for 1-3 years. Savings Plans commit to a minimum spend ($/hour) across any instance family in a region (Compute Savings Plan) or specific instance family (EC2 Instance Savings Plan). Savings Plans are more flexible — if you change instance types during the commitment period, the discount still applies. Generally prefer Compute Savings Plans unless you are certain your instance family will not change.
+
+</details>
+
+<details>
+<summary><strong>Q: When should you use Spot instances, and when should you avoid them?</strong></summary>
+
+Use Spot for stateless, fault-tolerant, or batch workloads — CI/CD agents, data pipelines, ML training with checkpointing, and stateless web tiers behind auto-scaling groups. Avoid Spot for databases, stateful services without replication, and single-instance workloads with no failover. Design for interruption: checkpoint progress, use mixed instance policies, and choose instance families with low interruption rates.
+
+</details>
+
+<details>
+<summary><strong>Q: What are the most common sources of cloud waste?</strong></summary>
+
+In order of frequency: idle resources running at under 5% CPU for weeks, orphaned storage (unattached EBS volumes, old snapshots, unused S3 data), NAT Gateway data transfer charges, oversized databases in non-production environments, and dev/staging environments running 24/7 when they are used 8 hours a day. Together these typically account for 20-40% of an unoptimized bill.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you implement cost allocation in a multi-team organization?</strong></summary>
+
+Start with four mandatory tags on every resource: `team`, `env`, `service`, and `cost-center`. Enforce tagging at creation time using SCPs (AWS), Organization Policies (GCP), or Azure Policy with deny effects. Use Cost Explorer grouped by tag to build showback reports per team. Graduate to chargeback once teams trust the data. The biggest challenge is untagged legacy resources — audit and tag them before the numbers are meaningful.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you right-size instances in production without causing outages?</strong></summary>
+
+Pull p95 CPU and memory utilization for the top 20 most expensive instances over 30 days. Target 60-80% CPU at p95. Use AWS Compute Optimizer, GCP Recommender, or Azure Advisor for automated suggestions. Test the smaller instance type in staging first, measuring actual latency and throughput impact. Roll out in production via blue-green or canary deployment — never resize in place during business hours.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you handle cost visibility for Kubernetes workloads?</strong></summary>
+
+Cloud billing shows node-level costs, not pod or namespace costs. Install OpenCost (CNCF open-source) or Kubecost to allocate costs to namespaces, deployments, and labels. Track the ratio of CPU/memory requests to actual usage — over-requesting is the Kubernetes equivalent of over-provisioning. Set namespace-level ResourceQuotas to enforce per-team budgets and prevent runaway requests.
+
+</details>
+
+<details>
+<summary><strong>Q: What is the biggest mistake teams make with cloud reservations?</strong></summary>
+
+Reserving too early, before usage patterns are stable. If you commit to `m5.xlarge` instances and then migrate to Graviton six months later, you either pay a modification penalty or waste the reservation. Wait for 3-6 months of stable usage data. Start with 1-year no-upfront Compute Savings Plans — lower discount but lower risk. Never reserve workloads you are planning to migrate or deprecate.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you embed FinOps culture so it sticks beyond the initial optimization?</strong></summary>
+
+Three things make FinOps stick: weekly 30-minute cost reviews with engineering, finance, and product; cost anomaly alerts routed to Slack so the owning team hears about spikes before finance does; and engineering OKRs that include a unit cost metric alongside features and uptime. Without cultural embedding, right-sized instances get upsized, scheduled shutdowns get disabled, and savings erode within a quarter.
+
+</details>
+
+---
+
 ## Next Steps
 
 The files below are the natural companions to this crash course. After you have your FinOps foundation in place, go deeper in the platforms you actually use:

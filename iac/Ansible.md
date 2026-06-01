@@ -34,6 +34,21 @@ model is simpler, easier to reason about, and trivial to extend to ephemeral inf
 **Mental model:** Ansible is a remote control with a script — you describe the buttons to
 press in order, and it presses them on every machine in your list simultaneously.
 
+```mermaid
+graph TD
+    A[Control Node<br/>laptop / CI runner] -->|SSH| B[Web Server 1]
+    A -->|SSH| C[Web Server 2]
+    A -->|SSH| D[DB Server]
+    E[Inventory<br/>hosts + groups] --> A
+    F[Playbooks<br/>YAML desired state] --> A
+    G[Roles<br/>reusable bundles] --> F
+    H[Ansible Vault<br/>encrypted secrets] --> F
+    I[Galaxy<br/>community roles] --> G
+    A -->|Dynamic Inventory| J[Cloud API<br/>AWS / GCP / Azure]
+    J -->|host list| E
+    F -->|Jinja2| K[Templates<br/>.j2 files]
+```
+
 ---
 
 ## Part 1 — The vocabulary
@@ -700,6 +715,80 @@ ansible-playbook site.yml --list-hosts
 ansible-playbook site.yml --start-at-task "Deploy nginx config"
 ansible-playbook site.yml --step                     # prompt before each task
 ```
+
+---
+
+## Top 10 Interview Questions
+
+<details>
+<summary><strong>Q: What is idempotency in Ansible and why does it matter?</strong></summary>
+
+Idempotency means running a playbook once or ten times produces the same end state. Modules like `apt` and `copy` check current state before acting, so re-runs report `ok` instead of `changed`. It matters because it makes playbooks safe to re-run in production without fear of side effects — you can schedule nightly convergence runs and trust that only genuine drift is corrected.
+
+</details>
+
+<details>
+<summary><strong>Q: How does Ansible differ from Puppet or Chef?</strong></summary>
+
+Ansible is agentless and push-based — it connects over SSH and requires nothing installed on targets. Puppet and Chef are agent-based and pull-based, with a daemon on every node phoning home to a central server. Ansible's model is simpler to bootstrap and suits ephemeral infrastructure well, while Puppet and Chef excel at continuous enforcement on long-lived fleets.
+
+</details>
+
+<details>
+<summary><strong>Q: Explain the difference between `vars`, `defaults`, and `group_vars` in variable precedence.</strong></summary>
+
+Role `defaults/main.yml` has the lowest precedence and is designed to be overridden by callers. `group_vars/` sits in the middle and is the right place for environment-specific values. Role `vars/main.yml` has high precedence and is used for role internals that should rarely be overridden externally. Extra vars (`-e`) always win. Understanding this ladder prevents the "wrong value wins" debugging trap.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you manage secrets in Ansible?</strong></summary>
+
+Ansible Vault encrypts files at rest using AES-256. You prefix vault variables with `vault_` and reference them from plaintext variable files. In CI, the vault password is stored as a pipeline secret and passed via `--vault-password-file`. For more advanced use cases, you integrate with HashiCorp Vault or cloud KMS rather than storing encrypted blobs in Git.
+
+</details>
+
+<details>
+<summary><strong>Q: What are handlers and when should you use them?</strong></summary>
+
+Handlers are tasks that run only when notified by another task that actually changed something. The classic example is restarting nginx only when its config file changes. Without handlers, you'd either restart on every run (wasteful and disruptive) or skip the restart entirely (leaving stale config loaded). Handlers fire once at the end of the play, even if notified multiple times.
+
+</details>
+
+<details>
+<summary><strong>Q: How would you implement a zero-downtime rolling deployment with Ansible?</strong></summary>
+
+Use `serial` in the play to process a batch of hosts at a time (e.g., `serial: 2` or `serial: "25%"`). Combine it with `max_fail_percentage: 0` to abort the entire play if any host in a batch fails. This ensures you never take the whole fleet down simultaneously, and a bad deploy stops before it reaches every node.
+
+</details>
+
+<details>
+<summary><strong>Q: What is the difference between `command`, `shell`, and `raw` modules?</strong></summary>
+
+`command` runs a command without shell processing (no pipes, redirects, or environment variables). `shell` runs through `/bin/sh`, enabling pipes and globbing but introducing injection risks. `raw` sends a command over SSH without requiring Python on the target — useful for bootstrapping minimal hosts. Prefer purpose-built modules over all three whenever possible, because modules are idempotent and these are not.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you handle dynamic inventory in a cloud environment?</strong></summary>
+
+You install the cloud collection (e.g., `amazon.aws`) and write a YAML inventory plugin config that queries the cloud API for running instances, filtering by tags and regions. Ansible rebuilds the host list at runtime, so autoscaling groups and ephemeral instances are always current. You can use `keyed_groups` to auto-create Ansible groups from instance tags.
+
+</details>
+
+<details>
+<summary><strong>Q: Describe a production-ready Ansible project structure.</strong></summary>
+
+Separate inventory per environment (`inventory/dev/`, `inventory/prod/`), each with its own `group_vars/` and `host_vars/`. Roles live under `roles/` with the standard directory layout (tasks, handlers, templates, defaults, vars, meta). Playbooks are thin orchestration files that compose roles. A `requirements.yml` pins Galaxy roles and collections. An `ansible.cfg` sets defaults to keep CLI commands short.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you test Ansible roles before applying them to production?</strong></summary>
+
+Use Molecule, the standard role-testing framework. It spins up Docker containers or VMs, applies your role, and runs verifiers (typically Testinfra or Ansible's own assert module) to confirm the result. In CI, every PR runs `molecule test` to catch regressions. Before any production run, you also use `--check --diff` for a dry run that shows exactly what would change without touching real systems.
+
+</details>
 
 ---
 

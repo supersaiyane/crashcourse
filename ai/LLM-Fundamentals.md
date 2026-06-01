@@ -20,6 +20,20 @@ You don't need to implement a transformer from scratch. You need a working menta
 
 **Mental model:** An LLM is an extremely sophisticated autocomplete. Given the sequence of tokens before a blank, it assigns a probability distribution over every token in its vocabulary for what comes next. It samples from that distribution and repeats. The quality of your input — the prompt — directly shapes that distribution. Good prompts concentrate probability mass on useful outputs. Bad prompts spread it across garbage.
 
+```mermaid
+flowchart LR
+    A[Raw Text] --> B[Tokenizer]
+    B --> C[Embedding Layer]
+    C --> D[Transformer Blocks\nAttention + FFN]
+    D --> E[Output Logits]
+    E --> F[Sampling\nTemp / Top-p / Top-k]
+    F --> G[Generated Token]
+    G -->|Append & Repeat| B
+    H[Prompt Engineering] -.->|Shapes distribution| E
+    I[Fine-tuning] -.->|Adjusts weights| D
+    J[RAG] -.->|Injects context| A
+```
+
 ---
 
 ## Part 1 — The vocabulary
@@ -472,6 +486,80 @@ Output tokens are typically 3–4x more expensive than input tokens per provider
 | Summarization, chat | 0.5–0.7 |
 | Creative writing, brainstorming | 0.8–1.0 |
 | Never use in production | > 1.2 |
+
+---
+
+## Top 10 Interview Questions
+
+<details>
+<summary><strong>Q: What is a token and why does tokenization matter for cost and performance?</strong></summary>
+
+A token is the atomic unit an LLM operates on — roughly 0.75 words in English. Tokenization matters because every API call is billed per token, context windows are measured in tokens, and non-English or code-heavy inputs tokenize less efficiently, consuming more budget for the same semantic content. In production, counting tokens before sending is the single most impactful cost optimization.
+
+</details>
+
+<details>
+<summary><strong>Q: Explain the transformer attention mechanism in plain terms.</strong></summary>
+
+Each token computes a Query, Key, and Value vector. The attention score between two tokens is the dot product of their Query and Key — high scores mean "pay close attention here." The output for each token is a weighted sum of all Value vectors. This mechanism, stacked across many layers, lets the model relate every token to every other token in the context, capturing both syntax and semantics.
+
+</details>
+
+<details>
+<summary><strong>Q: What is the difference between temperature and top-p, and when would you use each?</strong></summary>
+
+Temperature scales the logits before sampling — lower values sharpen the distribution toward high-probability tokens (more deterministic), higher values flatten it (more creative). Top-p (nucleus sampling) restricts sampling to the smallest set of tokens whose cumulative probability exceeds p. In production, use temperature near 0 for classification and extraction, 0.5-0.7 for chat, and top-p around 0.9 as a complementary control. Most practitioners set one or both.
+
+</details>
+
+<details>
+<summary><strong>Q: How do embeddings enable semantic search?</strong></summary>
+
+Embeddings convert text into dense numeric vectors where semantically similar text produces geometrically nearby vectors. By computing cosine similarity between a query embedding and document embeddings, you can find the most relevant content regardless of exact keyword overlap. This is the foundation of RAG — you embed your knowledge base, embed the query, and retrieve the closest chunks.
+
+</details>
+
+<details>
+<summary><strong>Q: What is hallucination and how do you mitigate it in production?</strong></summary>
+
+Hallucination is the model generating confident, plausible-sounding text that is factually wrong — a structural property of next-token prediction. Mitigations include grounding the model in provided context ("based only on these documents"), using structured output to constrain the output space, instructing the model to say "I don't know," adding retrieval (RAG) so the model cites rather than invents, and running output validation with a second model or rule-based checks.
+
+</details>
+
+<details>
+<summary><strong>Q: When would you choose RAG over fine-tuning?</strong></summary>
+
+Choose RAG when the knowledge changes frequently, is domain-specific but documentable, and needs to be traceable to a source. Fine-tuning is better when you need to change the model's behavior or output style and have hundreds of labeled input-output pairs. RAG is cheaper, more maintainable, and lets you update knowledge without retraining. Fine-tuning requires retraining on every model update and doesn't solve knowledge freshness.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you handle context window overflow in a production application?</strong></summary>
+
+Always count tokens before sending using libraries like tiktoken. Implement explicit truncation strategies — summarize older conversation turns, drop least-relevant chunks in RAG, or use a sliding window. Never rely on the API to truncate silently, as it drops the oldest tokens which may include critical system instructions. For long documents, use chunked summarization (summarize chunks, then summarize summaries).
+
+</details>
+
+<details>
+<summary><strong>Q: What metrics should you log for every LLM API call in production?</strong></summary>
+
+At minimum: model name, prompt_tokens, completion_tokens, total cost, latency (time-to-first-token and total), request ID, user/session ID, and a prompt hash for caching and debugging. These metrics are your cost signal, latency signal, and audit trail. Without them, diagnosing production issues or explaining a cost spike is guesswork.
+
+</details>
+
+<details>
+<summary><strong>Q: How does prompt caching work and when is it valuable?</strong></summary>
+
+Prompt caching reuses computed key-value states for identical prompt prefixes across requests. If your system prompt is 2,000 tokens and every request shares it, the provider computes it once and caches it — subsequent requests only pay for the variable portion. This can cut costs by 60-90% for high-volume features with long, stable system prompts. Both Anthropic and OpenAI offer this natively.
+
+</details>
+
+<details>
+<summary><strong>Q: How would you evaluate an LLM-powered feature before shipping it?</strong></summary>
+
+Build a golden dataset of 50-200 real input/expected-output pairs covering happy paths and edge cases. Define metrics appropriate to the task — accuracy and F1 for classification, faithfulness and relevance for generation (using LLM-as-judge). Run evals on every prompt change as a regression gate. Track scores over time in a tool like LangSmith or Langfuse. Without a baseline, you cannot tell if a change helped or hurt.
+
+</details>
 
 ---
 

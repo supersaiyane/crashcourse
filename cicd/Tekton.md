@@ -550,6 +550,80 @@ when:
 
 ---
 
+## Top 10 Interview Questions
+
+<details>
+<summary><strong>Q: What makes Tekton different from Jenkins or GitHub Actions?</strong></summary>
+
+Tekton runs entirely as Kubernetes custom resources — every pipeline is a CRD, every step is a container, and the cluster scheduler handles execution. There is no separate server to maintain. This gives you native RBAC, resource limits, and pod-level isolation, at the cost of more YAML verbosity compared to the simpler config files of hosted tools.
+
+</details>
+
+<details>
+<summary><strong>Q: What is the relationship between Pipeline, PipelineRun, Task, and TaskRun?</strong></summary>
+
+A Task is a reusable template containing Steps (containers). A TaskRun instantiates a Task into a Pod. A Pipeline is an ordered graph of Tasks. A PipelineRun instantiates a Pipeline, creating one TaskRun per Task. The hierarchy is: Pipeline contains Tasks; PipelineRun creates TaskRuns; TaskRun creates a Pod.
+
+</details>
+
+<details>
+<summary><strong>Q: How do Tasks share data in a Tekton pipeline?</strong></summary>
+
+Through Workspaces. A Pipeline declares named Workspaces, and the PipelineRun binds them to actual storage (PVC, emptyDir, Secret, ConfigMap). The most common pattern is a `volumeClaimTemplate` that creates an ephemeral PVC per run — both the clone Task and the build Task mount the same PVC, so cloned source code is visible to subsequent Tasks.
+
+</details>
+
+<details>
+<summary><strong>Q: What is the difference between `runAfter` and a result dependency?</strong></summary>
+
+`runAfter` creates soft ordering — Task B waits for Task A to finish but does not consume any output from it. A result reference like `$(tasks.build.results.IMAGE_URL)` creates a hard dependency — Task B cannot start until Task A produces that specific result. Use result references when you need the data; use `runAfter` when you only need sequencing.
+
+</details>
+
+<details>
+<summary><strong>Q: How do Tekton Triggers work?</strong></summary>
+
+Three resources collaborate: an EventListener pod receives HTTP webhooks, a TriggerBinding extracts fields from the payload into variables, and a TriggerTemplate uses those variables to instantiate a PipelineRun. You expose the EventListener via an Ingress and register the URL as a webhook in your Git provider. Always configure the interceptor secret to prevent unauthorized PipelineRun creation.
+
+</details>
+
+<details>
+<summary><strong>Q: What is Tekton Chains and why does it matter for supply chain security?</strong></summary>
+
+Chains automatically signs TaskRun and PipelineRun attestations using cosign. Every completed build gets a signed SLSA provenance attestation stored alongside the image in your registry. This provides tamper-evident proof of what was built, from what source, by which pipeline — critical for compliance and software supply chain security.
+
+</details>
+
+<details>
+<summary><strong>Q: What is the result size limit and how do you work around it?</strong></summary>
+
+Results are stored as annotations on the TaskRun object, capped at 4096 bytes total by default. If you try to pass a large artifact (an SBOM, a JSON blob) through results, the TaskRun fails with an annotation size error. Pass large data through a Workspace (a mounted volume) instead of results — results are for small values like image digests or commit SHAs.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you handle PVC access mode conflicts in multi-node clusters?</strong></summary>
+
+`ReadWriteOnce` PVCs can only mount to one node. If Tasks in a Pipeline get scheduled on different nodes, the second Task fails to mount. Use `ReadWriteMany` storage (NFS, AWS EFS, Longhorn with RWX) for Workspaces shared across Tasks. Alternatively, use `volumeClaimTemplate` with a storage class that supports RWX access.
+
+</details>
+
+<details>
+<summary><strong>Q: How does Tekton integrate with a GitOps tool like Argo CD?</strong></summary>
+
+Tekton handles CI (build, test, push). Its final Task updates a GitOps repository with the new image digest via a git commit. Argo CD watches that repo and applies the diff to the cluster. Tekton never talks to Argo CD directly — Git is the interface between CI and CD. This separation keeps cluster credentials out of the CI pipeline.
+
+</details>
+
+<details>
+<summary><strong>Q: When would you choose Tekton over a simpler CI tool?</strong></summary>
+
+Choose Tekton when you need full control over the execution environment, Kubernetes-native RBAC for pipeline permissions, air-gapped or on-prem operation, and supply chain security via Chains. It is stronger than hosted tools for regulated environments where you must audit exactly what container image ran each step. If your needs are simpler and you are already on GitHub or GitLab, their built-in CI is easier to start with.
+
+</details>
+
+---
+
 ## Part 5 — Next Steps
 
 - `ArgoCD.md` — Wire the GitOps half. Tekton pushes an image and updates a manifest; ArgoCD reconciles the cluster to match.

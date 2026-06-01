@@ -25,6 +25,36 @@ single pane of glass operators actually look at.
 it) on **dashboards** (the wall). Change the time range at the top and every panel re-queries
 for that window.
 
+```mermaid
+graph LR
+    subgraph Data Sources
+        PROM[Prometheus<br/>metrics]
+        LOKI[Loki<br/>logs]
+        TEMPO[Tempo<br/>traces]
+        PG[PostgreSQL]
+        CW[CloudWatch]
+    end
+
+    subgraph Grafana
+        DS[Data Source<br/>Connectors]
+        QE[Query Engine]
+        DASH[Dashboards<br/>& Panels]
+        ALERT[Alerting<br/>Engine]
+    end
+
+    PROM --> DS
+    LOKI --> DS
+    TEMPO --> DS
+    PG --> DS
+    CW --> DS
+    DS --> QE
+    QE --> DASH
+    QE --> ALERT
+    ALERT --> SLACK[Slack]
+    ALERT --> PD[PagerDuty]
+    DASH --> USER[Operator / NOC Screen]
+```
+
 ---
 
 ## Part 1 — The vocabulary
@@ -202,6 +232,80 @@ AS CODE
   Dashboard settings -> JSON Model (commit to Git)
   provisioning/datasources/*.yaml  and  provisioning/dashboards/*.yaml
 ```
+
+---
+
+## Top 10 Interview Questions
+
+<details>
+<summary><strong>Q: Grafana does not store data itself — so what exactly does it do, and why is that separation valuable?</strong></summary>
+
+Grafana is a visualization and alerting layer that queries external data sources (Prometheus, Loki, PostgreSQL, CloudWatch, etc.) in real time. The separation means you can swap or add backends without changing dashboards, and each backend scales independently. It also means Grafana stays lightweight — it renders, it does not retain.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you make a single Grafana dashboard work for dozens of services without duplicating it?</strong></summary>
+
+You define template variables (Dashboard settings → Variables) using queries like `label_values(http_requests_total, job)`. Panels reference `$job` instead of a hardcoded value. A dropdown lets operators switch between services, and the "All" option shows everything at once. This turns one dashboard into a reusable instrument for every team.
+
+</details>
+
+<details>
+<summary><strong>Q: What is the difference between Grafana-managed alerting and Prometheus Alertmanager-based alerting? When would you use each?</strong></summary>
+
+Prometheus alerting evaluates PromQL rules inside Prometheus and fires to Alertmanager for routing and grouping. Grafana-managed alerting evaluates queries from any data source (not just Prometheus) inside Grafana and routes notifications via its own contact points and policies. Use Prometheus/Alertmanager when you want alerting decoupled from the UI layer. Use Grafana alerting when you need to alert on non-Prometheus sources or want a single pane for both dashboards and alert configuration.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you version-control Grafana dashboards in a team environment?</strong></summary>
+
+Export the dashboard JSON model (Dashboard settings → JSON Model) and commit it to Git. For automated deployments, use Grafana's provisioning system — place YAML files in `provisioning/datasources/` and `provisioning/dashboards/` so Grafana loads them at startup. The kube-prometheus-stack Helm chart ships dashboards this way. This makes dashboards reviewable, reproducible, and recoverable.
+
+</details>
+
+<details>
+<summary><strong>Q: A dashboard panel shows "No data." Walk through how you would troubleshoot it.</strong></summary>
+
+First, check the time range — a too-narrow or future window shows nothing. Second, open the panel editor and run the query in Explore to see if the data source returns results. Third, verify the data source connection (Connections → Data sources → Test). Fourth, check that variable values resolve correctly — a `$namespace` set to a non-existent value filters everything out. Finally, confirm the metric actually exists in the backend (e.g. run `up` in Prometheus).
+
+</details>
+
+<details>
+<summary><strong>Q: What are Grafana annotations, and how do they help during incident investigation?</strong></summary>
+
+Annotations overlay event markers — such as deployments, config changes, or scaling events — directly on time-series graphs. During an incident, you can visually correlate a latency spike with a deploy marker at the same timestamp, immediately narrowing the blast radius. Annotations can be added manually, via API, or automatically from CI/CD pipelines.
+
+</details>
+
+<details>
+<summary><strong>Q: How does Grafana correlate metrics and logs on the same dashboard?</strong></summary>
+
+You place a Prometheus panel (e.g. error rate) and a Loki panel (e.g. `{app="api"} |= "error"`) on the same dashboard sharing the same time range and variables. When you drag-select a spike on the metrics graph, the time range updates and the Loki panel shows the matching logs. This metrics-to-logs correlation is the fastest path from "something is wrong" to "here is why."
+
+</details>
+
+<details>
+<summary><strong>Q: What are Grafana library panels, and when would you use them?</strong></summary>
+
+A library panel is a reusable panel definition stored centrally. When you update it, every dashboard that references it gets the change. Use them for standardized panels — golden-signal stats, SLO burn-rate gauges — that appear across many team dashboards. This avoids drift and reduces maintenance when query logic or thresholds change.
+
+</details>
+
+<details>
+<summary><strong>Q: You inherit a Grafana instance with 200 click-created dashboards and no provisioning. How do you bring it under control?</strong></summary>
+
+Export each dashboard's JSON via the Grafana API (`/api/dashboards/uid/<uid>`), organize them into a Git repo by team or service, and set up provisioning YAML so Grafana reads from that repo on startup. Going forward, treat the repo as the source of truth and use CI to deploy changes. For the transition, keep Grafana in read-write mode but review and merge any click-edits back into Git periodically.
+
+</details>
+
+<details>
+<summary><strong>Q: What is the LGTM stack, and why has it become a popular observability choice?</strong></summary>
+
+LGTM stands for Loki (logs), Grafana (visualization), Tempo (traces), and Mimir (metrics). All four are Grafana Labs projects designed to work together — same label model, native cross-linking (trace-to-log, metric-to-trace via exemplars), and a single Grafana UI. The appeal is a unified, open-source observability platform with no vendor lock-in, lower cost than commercial alternatives, and consistent operational patterns across all three signals.
+
+</details>
 
 ---
 

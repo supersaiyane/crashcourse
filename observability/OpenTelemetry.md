@@ -32,6 +32,35 @@ become the industry default — supported by essentially every observability ven
 in the middle receives it, processes it, and fans it out to whatever backends you choose.
 Instrument once, route anywhere, no lock-in.
 
+```mermaid
+graph LR
+    subgraph Applications
+        A1[Service A<br/>OTel SDK]
+        A2[Service B<br/>OTel SDK]
+        A3[Service C<br/>OTel SDK]
+    end
+
+    subgraph OTel Collector
+        RCV[Receivers<br/>OTLP / Prometheus / Filelog]
+        PROC[Processors<br/>batch / filter / tail_sampling]
+        EXP[Exporters<br/>per signal]
+    end
+
+    A1 -->|OTLP| RCV
+    A2 -->|OTLP| RCV
+    A3 -->|OTLP| RCV
+    RCV --> PROC
+    PROC --> EXP
+
+    EXP -->|traces| TEMPO[Tempo / Jaeger]
+    EXP -->|metrics| PROM[Prometheus / Mimir]
+    EXP -->|logs| LOKI[Loki / Elasticsearch]
+
+    TEMPO --> GRAF[Grafana]
+    PROM --> GRAF
+    LOKI --> GRAF
+```
+
 ---
 
 ## Part 1 — The vocabulary
@@ -250,6 +279,80 @@ Collector config shape:
               loki, debug, <vendor>
   service.pipelines.{traces,metrics,logs}: wire receivers -> processors -> exporters
 ```
+
+---
+
+## Top 10 Interview Questions
+
+<details>
+<summary><strong>Q: What problem does OpenTelemetry solve that vendor-specific SDKs do not?</strong></summary>
+
+Vendor-specific SDKs lock your instrumentation to one backend. Switching from Datadog to Grafana or Jaeger means re-instrumenting every service. OTel provides a single, vendor-neutral standard (SDKs + OTLP wire protocol) so you instrument once and route telemetry to any backend by changing Collector config, not application code. It eliminates vendor lock-in at the instrumentation layer.
+
+</details>
+
+<details>
+<summary><strong>Q: What is the difference between a trace, a span, and a span context?</strong></summary>
+
+A trace is the full journey of one request across all services — a tree of spans sharing one trace ID. A span is a single timed operation within that tree (e.g. an HTTP handler, a DB call). Span context is the minimal payload — trace ID, span ID, sampling flags — that gets propagated between services via headers (e.g. W3C `traceparent`) to link spans into one trace.
+
+</details>
+
+<details>
+<summary><strong>Q: Why should you run an OTel Collector instead of exporting directly from your app to a backend?</strong></summary>
+
+The Collector decouples your applications from backends. It batches, retries, samples, scrubs PII, and routes each signal to the right destination — all without touching application code. Switching vendors or adding a second backend is a Collector config change. Without it, every backend change requires a code change and redeploy across all services.
+
+</details>
+
+<details>
+<summary><strong>Q: Explain the difference between head-based and tail-based sampling. When would you use each?</strong></summary>
+
+Head-based sampling decides at the start of the trace (e.g. keep 10% randomly). It is simple and low-overhead but may drop interesting traces — errors and slow requests get sampled at the same rate as healthy ones. Tail-based sampling decides after the trace completes, in the Collector, so you can keep 100% of errors and slow traces while dropping most fast/healthy ones. Use head sampling for quick wins early on; move to tail sampling when you need to control costs without losing important traces.
+
+</details>
+
+<details>
+<summary><strong>Q: What are OTel semantic conventions, and why do they matter?</strong></summary>
+
+Semantic conventions are standardized attribute names — `http.request.method`, `db.system`, `service.name`, `deployment.environment`. Using them means backends, dashboards, and correlation features work out of the box because they know what each attribute means. Custom or inconsistent names break cross-service correlation and make dashboards non-portable.
+
+</details>
+
+<details>
+<summary><strong>Q: A distributed trace shows two disconnected fragments instead of one tree. What is the likely cause?</strong></summary>
+
+Broken context propagation. One of the services in the chain is not forwarding the `traceparent` header — typically a manually constructed HTTP client, a message queue consumer that does not extract trace context from message attributes, or a proxy that strips unknown headers. The fix is to ensure every service boundary propagates the W3C trace context, either via auto-instrumentation or manual propagation.
+
+</details>
+
+<details>
+<summary><strong>Q: How does auto-instrumentation work, and what are its limitations?</strong></summary>
+
+Auto-instrumentation uses language-specific hooks (Java agent, Python monkey-patching, .NET instrumentation libraries) to wrap common frameworks — HTTP servers, DB clients, gRPC — and emit spans without source code changes. It covers framework-level operations but not your business logic. You still need manual spans for domain-specific operations like "process_order" or "calculate_risk_score," and you need to add meaningful attributes (order ID, amount) that auto-instrumentation cannot infer.
+
+</details>
+
+<details>
+<summary><strong>Q: Describe the Collector's pipeline architecture. What are receivers, processors, and exporters?</strong></summary>
+
+The Collector pipeline has three stages: receivers accept telemetry in (OTLP, Prometheus scrape, filelog, etc.), processors transform it in the middle (batching, memory limiting, attribute filtering, tail sampling), and exporters send it out (to Tempo, Prometheus, Loki, a vendor, etc.). Pipelines are defined per signal (traces, metrics, logs), and each can have different processing chains. This architecture lets you add processing without changing instrumented applications.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you correlate traces, metrics, and logs using OTel?</strong></summary>
+
+All three signals share the same resource attributes (especially `service.name`). Traces carry a trace ID that gets injected into log lines via the OTel log bridge, so you can jump from a log entry to its trace. Metrics use exemplars — when recording a histogram observation, you attach the current trace ID, so clicking a metric data point in Grafana opens the corresponding trace. The Collector routes all three signals from the same pipeline, ensuring consistent labeling.
+
+</details>
+
+<details>
+<summary><strong>Q: What are the GenAI semantic conventions in OTel, and how are they relevant to SRE?</strong></summary>
+
+The `gen_ai.*` semantic conventions are emerging standards for tracing LLM calls — attributes like `gen_ai.system`, `gen_ai.request.model`, `gen_ai.usage.input_tokens`, `gen_ai.usage.output_tokens`. For SRE teams building or operating AI-powered tooling, these conventions enable token cost observability, latency tracking per model, and error rate monitoring on LLM endpoints — the same RED signals you track for any service, applied to GenAI workloads.
+
+</details>
 
 ---
 

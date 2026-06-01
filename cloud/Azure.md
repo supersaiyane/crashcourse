@@ -268,6 +268,80 @@ az deployment group create --resource-group RG --template-file main.bicep
 
 ---
 
+## Top 10 Interview Questions
+
+<details>
+<summary><strong>Q: How does Azure's resource hierarchy work, and what is a Resource Group?</strong></summary>
+
+Azure organizes resources under Tenant → Management Groups → Subscriptions → Resource Groups. A Resource Group is a logical container that groups related resources for a workload or environment. Critically, deleting a Resource Group deletes everything inside it, making lifecycle management clean. Subscriptions are the billing and quota boundary — always confirm your active subscription before acting.
+
+</details>
+
+<details>
+<summary><strong>Q: What is a Managed Identity and why should you use it over storing credentials?</strong></summary>
+
+A Managed Identity lets Azure resources (VMs, Container Apps, AKS pods) authenticate to other Azure services without any credentials in code or config. Azure handles the credential lifecycle — issuance, rotation, and revocation — entirely. This eliminates the risk of leaked secrets in git, environment variables, or CI logs. It is the Azure equivalent of AWS IAM roles for EC2 or GCP Workload Identity.
+
+</details>
+
+<details>
+<summary><strong>Q: How does Azure RBAC differ from AWS IAM?</strong></summary>
+
+Azure RBAC assigns roles to principals (users, groups, managed identities) at a specific scope — management group, subscription, resource group, or individual resource. The scope inheritance means a role assigned at subscription level applies to all resource groups below it. AWS IAM attaches policies to principals directly. Azure also has Entra ID as a separate identity layer for authentication, while AWS combines authn and authz in IAM.
+
+</details>
+
+<details>
+<summary><strong>Q: When would you use Azure Container Apps versus AKS?</strong></summary>
+
+Container Apps is the managed, serverless container platform — ideal for stateless HTTP services, event-driven microservices, and teams that want autoscaling (including to zero) without managing Kubernetes infrastructure. AKS gives you full Kubernetes control for complex workloads requiring custom networking, persistent storage, service meshes, or multi-container pods with sidecar patterns. If you do not need kubectl, Container Apps is simpler and cheaper.
+
+</details>
+
+<details>
+<summary><strong>Q: How would you secure secrets in an Azure production environment?</strong></summary>
+
+Store all secrets, keys, and certificates in Azure Key Vault. Grant access using RBAC roles like "Key Vault Secrets User" scoped to the specific vault. Combine Key Vault with a managed identity so applications fetch secrets at runtime without storing them anywhere. Never put connection strings or passwords in app settings, ARM templates, or source code. For Kubernetes workloads, use the Key Vault CSI driver to mount secrets as volumes.
+
+</details>
+
+<details>
+<summary><strong>Q: What is Azure Policy and how does it compare to AWS SCPs?</strong></summary>
+
+Azure Policy evaluates resource configurations against rules and can audit, deny, or auto-remediate non-compliant resources. It operates at management group, subscription, or resource group scope. AWS SCPs restrict maximum permissions at the Organizations level but do not remediate. Azure Policy is both a guardrail (deny unencrypted storage accounts) and a compliance reporter (audit all resources missing required tags), making it more versatile than SCPs alone.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you approach networking in Azure — VNets, NSGs, and peering?</strong></summary>
+
+A Virtual Network (VNet) is your isolated network, segmented by subnets. Network Security Groups (NSGs) act as stateful firewalls applied to subnets or individual NICs. For multi-VNet connectivity, use VNet Peering (non-transitive) or Azure Virtual WAN for hub-and-spoke at scale. Private Endpoints bring Azure PaaS services (SQL, Storage, Key Vault) into your VNet so traffic stays on the Microsoft backbone — the Azure equivalent of AWS PrivateLink.
+
+</details>
+
+<details>
+<summary><strong>Q: What is Bicep and how does it compare to Terraform for Azure IaC?</strong></summary>
+
+Bicep is Azure's native IaC language — a clean DSL that compiles down to ARM templates. It has first-class support for every Azure resource, immediate access to new features, and tight integration with `az deployment`. Terraform's azurerm provider is the choice for multi-cloud environments or teams already standardized on Terraform. Bicep is simpler for Azure-only shops; Terraform provides portability and a larger ecosystem of modules.
+
+</details>
+
+<details>
+<summary><strong>Q: How does Azure Monitor and Log Analytics work for observability?</strong></summary>
+
+Azure Monitor collects metrics and logs from all Azure resources. Log Analytics workspaces store log data, queryable with KQL (Kusto Query Language). You create alert rules based on metric thresholds or log query results. Application Insights provides application-level telemetry — request rates, dependency tracking, and exceptions. For Kubernetes, Container Insights adds pod and node-level metrics. The key skill is writing KQL queries to diagnose production issues quickly.
+
+</details>
+
+<details>
+<summary><strong>Q: How would you design a disaster recovery strategy for an Azure workload?</strong></summary>
+
+Define your RTO and RPO first — they determine the DR tier. Azure Site Recovery (ASR) handles VM replication to a secondary region for warm standby. For databases, Azure SQL auto-failover groups and Cosmos DB multi-region writes provide data-layer DR. Use Azure Front Door or Traffic Manager for global traffic routing with health probes. Test failover quarterly. The common mistake is building active-active for a workload that only needs a 4-hour RTO — pilot light or warm standby is usually sufficient and far cheaper.
+
+</details>
+
+---
+
 ## Next steps after Day 2
 - **Bicep** deeply if you go Azure-native; **Terraform azurerm** if multi-cloud.
 - **Entra ID** concepts (app registrations, service principals, conditional access) — Azure's

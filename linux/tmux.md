@@ -27,6 +27,21 @@ anything long on a server *without* tmux (or screen) is asking to lose it.
 window. You *attach* to it to see it and *detach* to leave it running. Think of it as remote-
 desktop for the terminal: closing the window doesn't close the work.
 
+```mermaid
+graph TD
+    A[Engineer Laptop] -->|SSH| B[Remote Server]
+    B --> C[tmux Server Process]
+    C --> D[Session: deploy]
+    C --> E[Session: monitoring]
+    D --> F[Window 1: Editor]
+    D --> G[Window 2: Logs]
+    F --> H[Pane: vim]
+    F --> I[Pane: shell]
+    A -->|disconnect / reconnect| C
+    E --> J[Window 1: htop]
+    E --> K[Window 2: tail -f]
+```
+
 ---
 
 ## Part 1 — The hierarchy and the prefix key
@@ -247,6 +262,80 @@ CONFIG
   ~/.tmux.conf      C-b :source-file ~/.tmux.conf   (or prefix r if bound)
   key settings: set -g mouse on ; set -g prefix C-a ; set -g history-limit 50000
 ```
+
+---
+
+## Top 10 Interview Questions
+
+<details>
+<summary><strong>Q: Why should you always run long-running commands inside tmux on a remote server?</strong></summary>
+
+A process started in a plain SSH session is tied to that session. If the connection drops — laptop sleeps, WiFi flickers, VPN reconnects — the process receives SIGHUP and terminates, potentially mid-migration or mid-deploy. tmux decouples the process from your terminal. The session persists on the server, and you reattach with `tmux attach -t name` after reconnecting.
+
+</details>
+
+<details>
+<summary><strong>Q: What is the difference between detaching and killing a tmux session?</strong></summary>
+
+Detaching (`C-b d`) leaves the session and all its processes running on the server — you just disconnect your view. Killing (`tmux kill-session -t name`) terminates the session and sends SIGHUP to every process inside it. During an incident, you detach to preserve running diagnostics. You kill only when you are truly finished.
+
+</details>
+
+<details>
+<summary><strong>Q: Explain the tmux hierarchy: session, window, pane.</strong></summary>
+
+A session is the top-level workspace that survives disconnects. Each session contains one or more windows, which are like browser tabs — full-screen views you switch between. Each window can be split into panes, which are side-by-side or stacked terminal views within that window. A typical setup: one session for a deploy, with a window split into a pane for the deploy command and a pane tailing logs.
+
+</details>
+
+<details>
+<summary><strong>Q: What does the prefix key do and why do people remap it?</strong></summary>
+
+Every tmux shortcut starts with the prefix key (default `Ctrl-b`), then a command key. Nothing happens until you press the prefix first. People remap it to `Ctrl-a` because it is easier to reach and matches GNU screen's default. The trade-off is that `Ctrl-a` is "beginning of line" in readline, so you lose that shortcut in the shell — but most people find the ergonomic benefit worth it.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you scroll back through output in a tmux pane?</strong></summary>
+
+Enter copy mode with `C-b [`. You can then scroll with arrow keys, Page Up/Down, or use `/` and `?` to search. Press `q` to exit copy mode. Without copy mode, the scrollback appears inaccessible because tmux intercepts terminal scroll events. Setting `set -g mouse on` in `.tmux.conf` also enables mouse-wheel scrolling.
+
+</details>
+
+<details>
+<summary><strong>Q: How would you set up a repeatable tmux layout for daily work?</strong></summary>
+
+Script it with `tmux new-session -d -s dev`, then `tmux split-window`, `tmux send-keys`, and `tmux attach`. For complex layouts, use tmuxinator or tmuxp — they define panes, windows, and startup commands in a YAML file. Run one command and your entire development environment appears identically every time.
+
+</details>
+
+<details>
+<summary><strong>Q: Can two engineers share a tmux session for pair debugging?</strong></summary>
+
+Yes. Both SSH into the same server and run `tmux attach -t session-name`. They both see and can type in the same session simultaneously. This is a simple way to pair on an incident without screen-sharing tools. For read-only access, one person can attach with `tmux attach -t session-name -r`.
+
+</details>
+
+<details>
+<summary><strong>Q: What is the zoom toggle and when is it useful?</strong></summary>
+
+`C-b z` temporarily expands the current pane to fill the entire window. Press it again to restore the split layout. This is invaluable when you have a multi-pane setup but need to read a full stack trace or long log output in one pane without permanently rearranging your layout.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you increase the scrollback buffer size?</strong></summary>
+
+Add `set -g history-limit 50000` to `~/.tmux.conf`. The default is 2000 lines, which is often too small for tailing verbose application logs during an incident. After changing the config, either restart tmux or reload with `C-b :source-file ~/.tmux.conf`. The setting only applies to new panes, not existing ones.
+
+</details>
+
+<details>
+<summary><strong>Q: What are the most important .tmux.conf settings for a production SRE?</strong></summary>
+
+`set -g mouse on` for quick pane switching and scrolling. `set -g history-limit 50000` for adequate scrollback. Remap the prefix to something comfortable. `bind | split-window -h -c "#{pane_current_path}"` so new panes open in the same directory. `setw -g mode-keys vi` if you use Vim. These five settings cover 90% of daily friction.
+
+</details>
 
 ---
 

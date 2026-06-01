@@ -18,6 +18,41 @@ Podman solves all three. It speaks the same CLI as Docker, produces OCI-complian
 
 **Mental model:** Podman is Docker without the middleman. Each `podman run` forks a container directly from your shell. No central daemon, no root requirement, no single point of failure. The process tree is your process tree — you can see it with `ps`, kill it with `kill`, and manage it with systemd like any other service.
 
+```mermaid
+graph TB
+    subgraph "Docker Architecture"
+        DockerCLI[docker CLI] --> DockerD[dockerd<br/>Root Daemon]
+        DockerD --> ContA1[Container A]
+        DockerD --> ContB1[Container B]
+    end
+
+    subgraph "Podman Architecture"
+        PodmanCLI[podman CLI] --> ContA2[Container A]
+        PodmanCLI --> ContB2[Container B]
+        subgraph "Pod"
+            InfraCont[Infra Container<br/>Shared Network NS]
+            ContC[Container C]
+            ContD[Container D]
+        end
+        PodmanCLI --> InfraCont
+    end
+
+    subgraph "Ecosystem Tools"
+        Buildah[Buildah<br/>Image Builder]
+        Skopeo[Skopeo<br/>Registry Ops]
+        Quadlet[Quadlet<br/>systemd Generator]
+    end
+
+    PodmanCLI -.-> Buildah
+    PodmanCLI -.-> Skopeo
+    Quadlet -.->|generates units| Systemd[systemd]
+    Systemd -->|manages| PodmanCLI
+
+    Registry[(OCI Registry)]
+    PodmanCLI -->|push/pull| Registry
+    Skopeo -->|copy/inspect| Registry
+```
+
 ---
 
 ## Part 1 — The vocabulary

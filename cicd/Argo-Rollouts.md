@@ -601,6 +601,80 @@ kubectl describe analysisrun <name>
 
 ---
 
+## Top 10 Interview Questions
+
+<details>
+<summary><strong>Q: What problem does Argo Rollouts solve that a standard Kubernetes Deployment does not?</strong></summary>
+
+A Deployment only supports rolling updates — it replaces pods proportionally with no traffic awareness. Argo Rollouts adds traffic-weighted canaries, blue-green deployments, and automated analysis-driven rollback. You can send 5% of traffic to a new version, query Prometheus for error rates, and abort automatically if metrics degrade — none of which a Deployment can do.
+
+</details>
+
+<details>
+<summary><strong>Q: What is the difference between a canary and a blue-green strategy in Argo Rollouts?</strong></summary>
+
+Canary gradually shifts traffic through configurable weight steps (10%, 30%, 60%, 100%), with optional analysis at each step. Blue-green maintains two fully provisioned replica sets — active and preview — and flips traffic atomically on promotion. Use canary for gradual risk reduction; use blue-green when you need instant cutover and fast rollback.
+
+</details>
+
+<details>
+<summary><strong>Q: How does automated analysis work during a rollout?</strong></summary>
+
+You define an `AnalysisTemplate` with a metric query (Prometheus, Datadog, etc.), a success condition, and a failure limit. When the rollout reaches an `analysis` step, it creates an `AnalysisRun` that queries the metric provider at intervals. If the success condition fails more times than `failureLimit`, the run fails and the rollout aborts automatically, returning all traffic to stable.
+
+</details>
+
+<details>
+<summary><strong>Q: Why is a traffic routing integration important for canary deployments?</strong></summary>
+
+Without one, `setWeight` only adjusts replica counts — a rough approximation. With 10 replicas and `setWeight: 20`, you get 2 canary pods, but a Service round-robins to all pods, so actual traffic distribution depends on connection patterns, not exact percentage. Integrating with Nginx, Istio, or AWS ALB gives real traffic splitting at the ingress or mesh level.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you handle the cold-start problem where Prometheus has no data for a new canary?</strong></summary>
+
+On a cold start or during low traffic, the Prometheus query returns empty results, which count as measurement failures by default. Use `inconclusiveLimit` in the AnalysisTemplate — it lets you tolerate a number of inconclusive measurements without triggering an abort. Also add an initial `pause` step before analysis to let metrics accumulate.
+
+</details>
+
+<details>
+<summary><strong>Q: How does Argo Rollouts integrate with Argo CD?</strong></summary>
+
+Argo CD syncs the `Rollout` manifest from Git to the cluster. Argo Rollouts executes the progressive delivery strategy. During a rollout, Argo CD shows the Application as `Progressing`. Install the Argo CD Rollouts extension for embedded visibility. Use `syncOptions: ServerSideApply=true` to avoid field manager conflicts between the two controllers.
+
+</details>
+
+<details>
+<summary><strong>Q: What happens when you run `promote --full` and when is it appropriate?</strong></summary>
+
+`promote --full` skips all remaining steps — including pauses and analysis — and sends 100% of traffic to the canary immediately. It is appropriate for emergency hotfixes where you have high confidence and need speed. It is dangerous as a habit because it completely bypasses the safety net of progressive delivery.
+
+</details>
+
+<details>
+<summary><strong>Q: How do Experiments differ from a canary rollout?</strong></summary>
+
+An Experiment spins up one or more ephemeral replica sets for a fixed duration for comparison (A/B testing, benchmarking) without advancing a full rollout. It runs analysis and scales down when the duration expires. A canary rollout is the actual deployment progression. Use Experiments to test a hypothesis; use canary to ship the change.
+
+</details>
+
+<details>
+<summary><strong>Q: What is `revisionHistoryLimit` and why should you set it?</strong></summary>
+
+The controller keeps old replica sets around for rollback. Without a limit, these accumulate indefinitely, consuming cluster resources. Set `revisionHistoryLimit: 3` (or similar) to keep the last few revisions for quick rollback while preventing unbounded growth.
+
+</details>
+
+<details>
+<summary><strong>Q: How would you migrate an existing Deployment to a Rollout?</strong></summary>
+
+The Rollout spec mirrors a Deployment exactly — same `template`, `selector`, and `replicas`. Change the `apiVersion` to `argoproj.io/v1alpha1`, the `kind` to `Rollout`, and add a `strategy` block. Delete the existing Deployment first to avoid selector conflicts, then apply the Rollout. The controller takes over pod management immediately.
+
+</details>
+
+---
+
 ## Next Steps
 
 - [`ArgoCD.md`](./ArgoCD.md) — GitOps sync layer that manages the Rollout manifests
