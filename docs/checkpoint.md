@@ -27,6 +27,7 @@
 
 | 2026-06-01 07:45 | Wave 3 project catalog expanded | Done | TODO.txt: 33 tiered projects (1-14yr exp) replacing old 5-project list | TODO.txt:366-473 |
 | 2026-06-01 08:30 | Wave 1: Recommended learning resources | Done | All 136 courses — YouTube, docs, blogs curated per tool | containers/Kubernetes.md, ai/LLM-Fundamentals.md |
+| 2026-06-01 09:30 | DSA separate repo plan | Done | dsa.txt: 25 full courses, 8 categories, 3 learning paths, FAANG-calibrated | dsa.txt (local, gitignored) |
 
 ## Next Session Resume Vector
 
@@ -38,5 +39,6 @@
   - Interview Questions: 37/136 (27%) — 99 courses still need IQ section
   - Architecture Diagrams: 24/136 (18%) — 99 need both; 13 have IQ but no mermaid; Podman has mermaid but no IQ
 - TODO.txt has 33 industry-grade projects in 4 tiers + 3 bonus interview projects
+- dsa.txt has full plan for separate DSA repo (25 courses, Python, FAANG-focused)
 - Wave 2 (quiz, comparisons, GIFs) + Wave 3 (CLI playground) not started
 - Site live at https://supersaiyane.github.io/crashcourse/
