@@ -261,6 +261,24 @@ openssl s_client -connect host:443 -servername host </dev/null | openssl x509 -n
 - Load testing endpoints (`hey`, `wrk`, `vegeta`) and synthetic monitoring (blackbox_exporter —
   see `Prometheus.md`).
 
+---
+
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [Hussein Nasser — DNS and Networking playlist](https://www.youtube.com/@haboread) — deep dives on DNS resolution, TCP handshakes, and how curl works under the hood
+- [Computerphile — DNS Explained](https://www.youtube.com/@Computerphile) — clear visual explanations of recursive resolution, caching, and record types
+- [NetworkChuck — DNS, curl, and Networking](https://www.youtube.com/@NetworkChuck) — beginner-friendly hands-on walkthroughs of dig, nslookup, and curl
+- [PowerCert Animated Videos — DNS](https://www.youtube.com/@PowerCertAnimatedVideos) — animated explanations of DNS hierarchy and query flow
+- [Fireship — HTTP Networking Concepts](https://www.youtube.com/@Fireship) — fast conceptual primers on the protocols that sit on top of DNS
+
+**Official docs & blogs:**
+- [curl Official Documentation](https://curl.se/docs/) — the definitive reference for every flag, protocol, and use case
+- [Julia Evans — Networking Zines](https://jvns.ca/) — approachable illustrated guides to DNS, HTTP, and networking debugging
+- [MDN Web Docs — HTTP](https://developer.mozilla.org/en-US/docs/Web/HTTP) — thorough reference for headers, methods, status codes, and caching
+
+---
+
 **The mantra:** name → IP → port → HTTP, debugged left to right. `dig +short` (and `@resolver` to
 beat the cache) for DNS; `nc -zv` for the port; `curl -v` to watch the whole request and read the
 status code that tells you which layer broke.

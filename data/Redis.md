@@ -582,4 +582,19 @@ redis-cli --cluster rebalance host:port
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [Redis Official — YouTube channel](https://www.youtube.com/@Redisinc) — data structure walkthroughs, Redis Stack demos, and conference talks on clustering and persistence
+- [Hussein Nasser — Redis playlist](https://www.youtube.com/@haboread) — deep dives on pub/sub vs Streams, persistence trade-offs, and Redis as a primary database
+- [Fireship — Redis in 100 Seconds](https://www.youtube.com/@Fireship) — a fast mental-model primer before going deeper
+- [TechWorld with Nana — Redis Crash Course](https://www.youtube.com/@TechWorldwithNana) — hands-on walkthrough of caching patterns, Sentinel, and Docker Compose setups
+- [CMU Database Group — In-Memory Databases](https://www.youtube.com/@CMUDatabaseGroup) — academic context on why in-memory stores behave differently from disk-based engines
+
+**Official docs & blogs:**
+- [Redis Official Documentation](https://redis.io/docs/) — comprehensive reference covering data types, commands, persistence, clustering, and client libraries
+- [Redis University (free courses)](https://university.redis.io/) — structured learning paths for data modelling, Streams, and RediSearch
+
+---
+
 **The mantra:** Put Redis in front of the slow thing — keep it small, keep it expiring, keep it fast.

@@ -440,6 +440,22 @@ docker buildx imagetools inspect IMAGE:TAG \
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [CNCF — Sigstore talks (KubeCon)](https://www.youtube.com/@cncf) — maintainer presentations on keyless signing, Fulcio, Rekor, and the transparency log architecture
+- [John Hammond — Supply Chain Security](https://www.youtube.com/@_JohnHammond) — hands-on demonstrations of image signing, verification, and attestation workflows
+- [Snyk — Software Supply Chain](https://www.youtube.com/@Snyksec) — broader context on SBOMs, provenance, and how signing fits into the supply chain security model
+- [Chainguard — Sigstore Tutorials](https://www.youtube.com/@Chainguard) — practical guides on Cosign, SLSA provenance, and policy enforcement with Kyverno
+- [LiveOverflow — Cryptography and Signing](https://www.youtube.com/@LiveOverflow) — foundational understanding of the cryptographic primitives that underpin Sigstore
+
+**Official docs & blogs:**
+- [Sigstore Official Documentation](https://docs.sigstore.dev/) — architecture overview, Cosign CLI reference, Fulcio and Rekor setup, and keyless signing guide
+- [Chainguard Blog](https://www.chainguard.dev/unchained) — practical articles on image signing, SLSA compliance, and supply chain hardening
+- [OWASP Software Supply Chain Security](https://owasp.org/www-project-software-component-verification-standard/) — the broader security framework that Sigstore helps implement
+
+---
+
 ## The Mantra
 
 > Sign at build time. Verify at deploy time. Enforce at admission time. Log everything in Rekor. Trust identities, not keys.

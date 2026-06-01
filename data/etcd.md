@@ -450,6 +450,21 @@ etcdctl auth enable
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [CNCF — etcd Deep Dive (KubeCon talks)](https://www.youtube.com/@caboread) — maintainer-led sessions on Raft consensus, compaction, defragmentation, and disaster recovery
+- [Hussein Nasser — Consensus and Distributed Systems](https://www.youtube.com/@haboread) — explains Raft, leader election, and linearizable reads in the context etcd operates in
+- [TechWorld with Nana — Kubernetes Architecture](https://www.youtube.com/@TechWorldwithNana) — covers etcd's role as the Kubernetes control plane backing store
+- [Fireship — Distributed Systems in 100 Seconds](https://www.youtube.com/@Fireship) — quick conceptual grounding before diving into etcd specifics
+- [CMU Database Group — Distributed Consensus](https://www.youtube.com/@CMUDatabaseGroup) — academic treatment of Raft and Paxos that deepens your understanding of etcd's guarantees
+
+**Official docs & blogs:**
+- [etcd Official Documentation](https://etcd.io/docs/) — operations guide, API reference, clustering, authentication, and disaster recovery procedures
+- [etcd Learning Resources (etcd.io)](https://etcd.io/docs/v3.5/learning/) — visual explanations of Raft, data model, and client design
+
+---
+
 ## The Mantra
 
 Your cluster is only as healthy as its etcd. Back up before you touch the control plane. Compact before the quota bites. Test the restore before the incident forces you to. And when something goes wrong at 2 AM, remember: the data is almost certainly still there — you just need the last good snapshot and four commands to bring it back.

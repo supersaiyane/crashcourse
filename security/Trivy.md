@@ -669,4 +669,20 @@ trivy image --skip-db-update --offline-scan myapp:latest
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [Aqua Security — Trivy playlist](https://www.youtube.com/@AquaSecurityOpenSource) — official walkthroughs of image scanning, SBOM generation, misconfiguration detection, and CI integration
+- [John Hammond — Container Security](https://www.youtube.com/@_JohnHammond) — hands-on demonstrations of vulnerability scanning, image hardening, and security tooling in practice
+- [CNCF — Supply Chain Security talks](https://www.youtube.com/@cncf) — KubeCon presentations on scanning, SBOMs, and securing the container build pipeline
+- [Snyk — Container Security](https://www.youtube.com/@Snyksec) — comparisons of scanning approaches, vulnerability prioritisation, and shift-left security patterns
+- [LiveOverflow — Security Tooling](https://www.youtube.com/@LiveOverflow) — deep technical explorations of how vulnerability scanners work under the hood
+
+**Official docs & blogs:**
+- [Trivy Official Documentation](https://aquasecurity.github.io/trivy/) — installation, scanner configuration, CI/CD integration, and policy-as-code reference
+- [Aqua Security Blog](https://blog.aquasec.com/) — vulnerability research, Trivy release notes, and supply chain security best practices
+- [Snyk Vulnerability Database](https://security.snyk.io/) — cross-reference CVEs found by Trivy with detailed remediation guidance
+
+---
+
 **The mantra:** Scan early, scan everything, and gate on what you can fix — a vulnerability you can see is one you can close.

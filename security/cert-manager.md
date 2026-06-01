@@ -537,6 +537,22 @@ kubectl describe clusterissuer letsencrypt-prod
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [CNCF — cert-manager talks (KubeCon)](https://www.youtube.com/@cncf) — maintainer-led sessions on architecture, ACME challenges, and trust management
+- [TechWorld with Nana — Kubernetes TLS](https://www.youtube.com/@TechWorldwithNana) — practical walkthroughs of cert-manager with Ingress controllers and Let's Encrypt
+- [John Hammond — TLS and Certificate Security](https://www.youtube.com/@_JohnHammond) — understanding certificate chains, trust anchors, and what can go wrong
+- [That DevOps Guy — cert-manager Tutorial](https://www.youtube.com/@yourdevopsguy) — step-by-step setup of cert-manager with DNS01 and HTTP01 solvers
+- [Computerphile — How TLS Works](https://www.youtube.com/@Computerphile) — foundational cryptography concepts that explain why certificate automation matters
+
+**Official docs & blogs:**
+- [cert-manager Official Documentation](https://cert-manager.io/docs/) — installation, issuer configuration, ACME setup, and troubleshooting reference
+- [Let's Encrypt Documentation](https://letsencrypt.org/docs/) — understanding the ACME protocol, rate limits, and certificate lifecycle that cert-manager automates
+- [Jetstack Blog](https://www.jetstack.io/blog/) — advanced cert-manager patterns, trust distribution, and enterprise PKI with Kubernetes
+
+---
+
 ## The Mantra
 
 Declare the certificate. Trust the controller. Observe the state. Never touch a cert by hand again.

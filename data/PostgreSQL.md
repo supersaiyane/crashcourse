@@ -769,4 +769,20 @@ WHERE context IN ('postmaster', 'sighup');
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [Hussein Nasser — PostgreSQL playlist](https://www.youtube.com/@haboread) — internals-first deep dives on indexing, WAL, MVCC, connection pooling, and replication
+- [CMU Database Group — Intro to Database Systems (Andy Pavlo)](https://www.youtube.com/@CMUDatabaseGroup) — full university lecture series covering storage engines, query processing, and concurrency control with Postgres examples
+- [Fireship — PostgreSQL in 100 Seconds](https://www.youtube.com/@Fireship) — fast conceptual overview to orient before diving deeper
+- [Citus Data — Scaling Postgres](https://www.youtube.com/@citusdata) — weekly short episodes on EXPLAIN plans, partitioning, extensions, and operational tuning
+- [Postgres FM Podcast](https://www.youtube.com/@PostgresFM) — practitioner conversations on upgrades, vacuuming, logical replication, and day-to-day operations
+
+**Official docs & blogs:**
+- [PostgreSQL Official Documentation](https://www.postgresql.org/docs/current/) — the canonical reference; start with the Tutorial and Server Administration sections
+- [Use The Index, Luke](https://use-the-index-luke.com/) — the best resource on SQL indexing and EXPLAIN plans, language-agnostic but heavily Postgres-flavoured
+- [Crunchy Data Blog](https://www.crunchydata.com/blog) — production-focused articles on performance, extensions, and Kubernetes operators
+
+---
+
 **The mantra:** Own the data layer — if you can't read an EXPLAIN plan, tune a VACUUM, and promote a standby at 2am, you don't yet operate Postgres, you just use it.

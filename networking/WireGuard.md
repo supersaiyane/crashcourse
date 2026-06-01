@@ -454,6 +454,22 @@ You have the tunnel. Now build the rest of the stack:
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [NetworkChuck — WireGuard VPN Tutorial](https://www.youtube.com/@NetworkChuck) — step-by-step setup of WireGuard on Linux, Docker, and cloud instances
+- [Hussein Nasser — VPN and Tunnelling](https://www.youtube.com/@haboread) — deep dives on how WireGuard compares to OpenVPN and IPsec at the protocol level
+- [Fireship — VPN Explained](https://www.youtube.com/@Fireship) — fast conceptual primer on tunnelling, encryption, and when you actually need a VPN
+- [Lawrence Systems — WireGuard Setup Guide](https://www.youtube.com/@LAWRENCESYSTEMS) — practical enterprise deployment with pfSense, OPNsense, and site-to-site tunnels
+- [Computerphile — Encryption and Tunnelling](https://www.youtube.com/@Computerphile) — foundational cryptography concepts that underpin WireGuard's Noise protocol
+
+**Official docs & blogs:**
+- [WireGuard Official Documentation](https://www.wireguard.com/) — protocol whitepaper, quickstart guide, and platform-specific installation instructions
+- [WireGuard Conceptual Overview](https://www.wireguard.com/papers/wireguard.pdf) — the original academic paper explaining the cryptographic design and performance characteristics
+- [Arch Wiki — WireGuard](https://wiki.archlinux.org/title/WireGuard) — the most detailed community-maintained setup and troubleshooting guide
+
+---
+
 ## The Mantra
 
 > One interface. One config file. One handshake. If the handshake is green and the routes match the AllowedIPs, traffic flows. Everything else is debugging those two things.

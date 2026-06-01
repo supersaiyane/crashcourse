@@ -456,6 +456,22 @@ Full details in the DAY 1 tables above.
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [Hussein Nasser — HTTP playlist](https://www.youtube.com/@haboread) — deep dives on HTTP/1.1, HTTP/2, HTTP/3, keep-alive, head-of-line blocking, and TLS handshakes
+- [Computerphile — HTTP and the Web](https://www.youtube.com/@Computerphile) — clear visual explanations of request/response, caching, and how the web works at the protocol level
+- [Fireship — HTTP in 100 Seconds](https://www.youtube.com/@Fireship) — fast conceptual primer covering methods, status codes, and the evolution from HTTP/1 to HTTP/3
+- [PowerCert Animated Videos — HTTP vs HTTPS](https://www.youtube.com/@PowerCertAnimatedVideos) — animated walkthrough of TLS, certificates, and why HTTPS matters
+- [NetworkChuck — HTTP Deep Dive](https://www.youtube.com/@NetworkChuck) — hands-on demonstration of HTTP requests with curl and browser developer tools
+
+**Official docs & blogs:**
+- [MDN Web Docs — HTTP](https://developer.mozilla.org/en-US/docs/Web/HTTP) — the most thorough reference for methods, headers, status codes, caching, CORS, and content negotiation
+- [Julia Evans — HTTP Zine](https://jvns.ca/) — approachable illustrated guide to HTTP requests, responses, and debugging
+- [curl Documentation — HTTP Protocol](https://everything.curl.dev/http) — practical HTTP reference from the perspective of the tool you will use most
+
+---
+
 ## The Mantra
 
 > Read the wire before you read the code. The response headers tell you what happened; the status code tells you who is responsible; the body tells you why. `curl -v` costs you ten seconds and saves you an hour.

@@ -620,6 +620,22 @@ Once this is solid, continue with:
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [CNCF — Envoy Proxy talks (KubeCon)](https://www.youtube.com/@cncf) — maintainer presentations on xDS, filter chains, and production deployment patterns
+- [Hussein Nasser — Envoy and Service Mesh](https://www.youtube.com/@haboread) — deep dives on L4/L7 proxying, circuit breaking, and how Envoy compares to Nginx and HAProxy
+- [Fireship — Service Mesh Explained](https://www.youtube.com/@Fireship) — quick conceptual overview of where Envoy fits in the mesh architecture
+- [Tetrate — Envoy Fundamentals](https://www.youtube.com/@Tetrate) — structured course on Envoy configuration, clusters, routes, and observability
+- [Computerphile — Proxy Servers](https://www.youtube.com/@Computerphile) — foundational concepts on forward and reverse proxies that contextualise Envoy's role
+
+**Official docs & blogs:**
+- [Envoy Proxy Official Documentation](https://www.envoyproxy.io/docs/envoy/latest/) — architecture overview, configuration reference, and xDS API specification
+- [Envoy Blog](https://blog.envoyproxy.io/) — release notes, production case studies, and performance benchmarking
+- [Tetrate — Learn Envoy](https://www.tetrate.io/learn-envoy/) — guided tutorials from basic routing to advanced traffic management
+
+---
+
 ## The Mantra
 
 > Envoy doesn't hide complexity — it makes complexity observable. Every timeout, every retry, every circuit trip is a metric. Your job is to read those metrics and set the right thresholds. The proxy tells you what's happening; you decide what to do about it.

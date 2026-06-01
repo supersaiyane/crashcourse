@@ -542,6 +542,22 @@ export BC_API_KEY=your_key_here
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [Bridgecrew (Prisma Cloud) — Checkov playlist](https://www.youtube.com/@PrismaCloudbyPaloAltoNetworks) — official tutorials on policy-as-code scanning for Terraform, CloudFormation, Kubernetes, and Dockerfiles
+- [John Hammond — Infrastructure Security](https://www.youtube.com/@_JohnHammond) — hands-on demonstrations of catching misconfigurations before they reach production
+- [CNCF — Policy-as-Code talks](https://www.youtube.com/@cncf) — KubeCon presentations on OPA, Checkov, and the broader shift-left security movement
+- [Snyk — IaC Security](https://www.youtube.com/@Snyksec) — comparisons of IaC scanning tools and strategies for integrating them into CI pipelines
+- [The Cyber Mentor — Cloud Security](https://www.youtube.com/@TCMSecurityAcademy) — offensive cloud security perspective that shows what Checkov's policies are designed to prevent
+
+**Official docs & blogs:**
+- [Checkov Official Documentation](https://www.checkov.io/1.Welcome/Quick%20Start.html) — installation, CLI usage, custom policy authoring, and CI/CD integration guide
+- [Bridgecrew Blog](https://www.paloaltonetworks.com/blog/) — IaC security research, new policy announcements, and misconfiguration case studies
+- [OWASP — Infrastructure as Code Security](https://owasp.org/www-project-devsecops-guideline/) — the DevSecOps framework that Checkov helps implement
+
+---
+
 ## The Mantra
 
 > Catch it in the plan. Fix it in the file. Never fix it in the account.

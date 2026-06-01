@@ -605,6 +605,22 @@ kubectl logs -n external-secrets \
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [CNCF — Sealed Secrets and Kubernetes Secrets Management](https://www.youtube.com/@cncf) — KubeCon talks on encrypting secrets for GitOps workflows
+- [TechWorld with Nana — Kubernetes Secrets](https://www.youtube.com/@TechWorldwithNana) — practical walkthrough of Sealed Secrets with Flux and ArgoCD
+- [John Hammond — Secrets in Kubernetes](https://www.youtube.com/@_JohnHammond) — security-focused demonstration of why base64 is not encryption and how Sealed Secrets solves it
+- [That DevOps Guy — Sealed Secrets Tutorial](https://www.youtube.com/@yourdevopsguy) — step-by-step setup of the controller, kubeseal CLI, and key rotation
+- [Snyk — Kubernetes Security](https://www.youtube.com/@Snyksec) — broader context on secrets management, RBAC, and securing the Kubernetes supply chain
+
+**Official docs & blogs:**
+- [Sealed Secrets GitHub Repository](https://github.com/bitnami-labs/sealed-secrets) — installation, usage, key management, and architecture documentation
+- [Bitnami Blog — Sealed Secrets](https://engineering.bitnami.com/) — the original design rationale and production deployment patterns
+- [OWASP — Secrets Management Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html) — broader framework for secrets handling that Sealed Secrets fits into
+
+---
+
 ## The Mantra
 
 > Encrypt before commit, sync from the source of truth, never trust base64.

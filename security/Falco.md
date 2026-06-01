@@ -575,4 +575,20 @@ loki:
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [CNCF — Falco talks (KubeCon)](https://www.youtube.com/@cncf) — maintainer-led sessions on rule writing, kernel driver architecture, and production deployment patterns
+- [Sysdig — Falco and Runtime Security](https://www.youtube.com/@Sysdig) — tutorials on detecting container escapes, cryptominers, and lateral movement with Falco rules
+- [John Hammond — Runtime Security](https://www.youtube.com/@_JohnHammond) — hands-on demonstrations of detecting live attacks in containers and Kubernetes
+- [The Cyber Mentor — Container Security](https://www.youtube.com/@TCMSecurityAcademy) — offensive security perspective that helps you understand what Falco is designed to detect
+- [Aqua Security — Cloud Native Security](https://www.youtube.com/@AquaSecurityOpenSource) — broader supply chain and runtime security context for positioning Falco in your stack
+
+**Official docs & blogs:**
+- [Falco Official Documentation](https://falco.org/docs/) — installation, rule syntax, output channels, and driver configuration reference
+- [Falco Rules Repository](https://github.com/falcosecurity/rules) — the default ruleset with detailed descriptions of each detection
+- [Sysdig Blog — Falco](https://sysdig.com/blog/) — real-world detection stories, rule-writing guides, and runtime security architecture
+
+---
+
 **The mantra:** Falco doesn't stop the attacker at the door — it names them, timestamps them, and pages you the moment they touch something they shouldn't.

@@ -469,6 +469,22 @@ ORDER BY last_autovacuum NULLS FIRST;
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [CMU Database Group — Intro to Database Systems (Andy Pavlo)](https://www.youtube.com/@CMUDatabaseGroup) — the gold-standard university lecture series covering B-trees, buffer pools, query execution, concurrency control, and recovery
+- [CMU Database Group — Advanced Database Systems](https://www.youtube.com/@CMUDatabaseGroup) — follow-on lectures on MVCC, column stores, LSM trees, and distributed query processing
+- [Hussein Nasser — Database Engineering playlist](https://www.youtube.com/@haboread) — practitioner-focused explanations of indexing internals, WAL, page splits, and storage engine trade-offs
+- [Fireship — 7 Database Paradigms](https://www.youtube.com/@Fireship) — fast mental-model overview of relational, document, graph, columnar, and time-series engines
+- [Computerphile — B-Trees and Hashing](https://www.youtube.com/@Computerphile) — visual, approachable explanations of the data structures that underpin every database
+
+**Official docs & blogs:**
+- [Use The Index, Luke](https://use-the-index-luke.com/) — the definitive guide to SQL indexing, covering B-tree mechanics, partial indexes, and EXPLAIN plans across engines
+- [Alex Petrov — Database Internals (O'Reilly)](https://www.databass.dev/) — companion site for the book covering storage engines, distributed systems, and consensus
+- [Brandur Leach — Postgres Internals Blog](https://brandur.org/) — detailed articles on MVCC, WAL, VACUUM, and transactional guarantees in practice
+
+---
+
 ## The Mantra
 
 **You don't fix what you can't see. EXPLAIN ANALYZE first, hypothesize second, change third.**

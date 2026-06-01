@@ -536,4 +536,20 @@ Once you're comfortable producing and consuming reliably, the natural extensions
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [Confluent — YouTube channel](https://www.youtube.com/@Confluent) — official Kafka tutorials, Kafka Streams, ksqlDB, Connect, and conference keynotes
+- [Hussein Nasser — Kafka playlist](https://www.youtube.com/@haboread) — internals-first explanations of partitions, consumer groups, replication, and exactly-once semantics
+- [Fireship — Kafka in 100 Seconds](https://www.youtube.com/@Fireship) — quick conceptual overview before the deep dive
+- [Stephane Maarek — Apache Kafka for Beginners](https://www.youtube.com/@StephaneMaarek) — structured walkthrough from zero to production-ready topics, consumers, and Connect
+- [Tim Berglund (Confluent) — Kafka Internals](https://www.youtube.com/@Confluent) — deep technical talks on log compaction, KRaft, and partition leadership
+
+**Official docs & blogs:**
+- [Apache Kafka Official Documentation](https://kafka.apache.org/documentation/) — the canonical reference for broker configuration, producer/consumer APIs, and operations
+- [Confluent Blog](https://www.confluent.io/blog/) — production patterns, performance tuning, and Kafka ecosystem updates
+- [Confluent Developer — Kafka Tutorials](https://developer.confluent.io/) — hands-on exercises for Streams, Connect, and Schema Registry
+
+---
+
 **The mantra:** The log never lies — design your system so every state change is an event, and you'll never need a migration you can't replay.

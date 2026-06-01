@@ -569,6 +569,22 @@ Permissions that matter:
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [NetworkChuck — SSH Tutorial](https://www.youtube.com/@NetworkChuck) — beginner-friendly walkthrough of key generation, config files, tunnelling, and ProxyJump
+- [John Hammond — SSH Security](https://www.youtube.com/@_JohnHammond) — hands-on demonstrations of SSH hardening, key management, and common attack vectors
+- [The Cyber Mentor — SSH for Penetration Testing](https://www.youtube.com/@TCMSecurityAcademy) — offensive perspective on SSH that teaches you what to defend against
+- [Computerphile — Public Key Cryptography](https://www.youtube.com/@Computerphile) — the cryptographic foundations that make SSH key authentication work
+- [LiveOverflow — SSH Internals](https://www.youtube.com/@LiveOverflow) — deep technical exploration of the SSH protocol, key exchange, and authentication mechanisms
+
+**Official docs & blogs:**
+- [OpenSSH Manual Pages](https://www.openssh.com/manual.html) — the definitive reference for `ssh`, `sshd_config`, `ssh-keygen`, and `ssh-agent`
+- [SSH.com — SSH Academy](https://www.ssh.com/academy/ssh) — structured guides on key management, tunnelling, certificate authorities, and enterprise SSH
+- [Mozilla InfoSec — OpenSSH Guidelines](https://infosec.mozilla.org/guidelines/openssh) — production-hardened configuration recommendations from Mozilla's security team
+
+---
+
 ## The Mantra
 
 > Generate strong keys. Disable passwords. Never forward your agent. Use ProxyJump over multi-hop chains. Sign certificates instead of distributing keys. Know what's in your `sshd_config`.

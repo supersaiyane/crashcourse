@@ -254,6 +254,23 @@ ltrimstr("p")   ltrimstr/rtrimstr   tostring  tonumber
 - Combine with `curl` for API workflows and with `kubectl`/cloud CLIs for ops automation in Bash
   scripts (see `Bash.md`).
 
+---
+
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [Fireship — jq in 100 Seconds](https://www.youtube.com/@Fireship) — fast conceptual primer on the pipeline model
+- [Hussein Nasser — JSON Processing](https://www.youtube.com/@haboread) — practical demonstrations of jq in API debugging and data transformation workflows
+- [NetworkChuck — Command Line Tools](https://www.youtube.com/@NetworkChuck) — hands-on terminal walkthroughs that include jq for parsing API output
+- [LearnLinuxTV — jq Tutorial](https://www.youtube.com/@LearnLinuxTV) — step-by-step jq usage for sysadmin and DevOps tasks
+
+**Official docs & blogs:**
+- [jq Official Manual](https://stedolan.github.io/jq/manual/) — the definitive reference for every builtin, filter, and operator
+- [jq Playground (jqplay.org)](https://jqplay.org/) — interactive browser-based tool to experiment with jq expressions against live JSON
+- [Julia Evans — jq Zine](https://jvns.ca/) — illustrated quick-reference covering the most useful jq patterns
+
+---
+
 **The mantra:** jq is a pipeline for JSON — data flows through `.`, reshaped at each `|`. `.field`
 to extract, `.[]` to iterate, `select()` to filter, `{}` to reshape, `-r`+`@tsv` to feed the
 shell. Single-quote the program, default missing fields with `//`.

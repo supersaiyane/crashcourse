@@ -461,6 +461,22 @@ The gains came in this order: layout stability, server latency, image size, Java
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [Google Chrome Developers — Web Performance](https://www.youtube.com/@ChromeDevs) — Core Web Vitals deep dives, Lighthouse walkthroughs, and rendering pipeline explanations from the Chrome team
+- [Fireship — Web Performance in 100 Seconds](https://www.youtube.com/@Fireship) — fast primer on lazy loading, code splitting, and the metrics that matter
+- [Hussein Nasser — Web Performance playlist](https://www.youtube.com/@haboread) — backend-focused performance topics including connection pooling, HTTP/2, caching, and CDN architecture
+- [Computerphile — How Browsers Work](https://www.youtube.com/@Computerphile) — visual explanations of the rendering pipeline, DOM construction, and layout
+- [Harry Roberts (CSS Wizardry)](https://www.youtube.com/@csswizardry) — advanced front-end performance patterns, resource hints, and font loading strategies
+
+**Official docs & blogs:**
+- [web.dev — Performance](https://web.dev/performance/) — Google's canonical resource for Core Web Vitals, Lighthouse, and performance best practices
+- [MDN Web Docs — Web Performance](https://developer.mozilla.org/en-US/docs/Web/Performance) — reference material on critical rendering path, resource loading, and performance APIs
+- [WebPageTest Documentation](https://docs.webpagetest.org/) — advanced waterfall analysis, scripted tests, and real-device performance measurement
+
+---
+
 ## The Mantra
 
 Measure before you optimize. The waterfall tells you where time is actually going — not where you assume it's going. Fix the biggest bottleneck first, measure again, repeat. Performance work compounds: a 300ms TTFB reduction and a 40% image size reduction and a 200KB JS reduction don't add — they multiply, because each one unblocks the next step in the rendering chain faster.

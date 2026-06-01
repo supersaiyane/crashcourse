@@ -721,4 +721,20 @@ $upstream_cache_status       # HIT / MISS / BYPASS / EXPIRED
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [Hussein Nasser — Nginx playlist](https://www.youtube.com/@haboread) — deep dives on reverse proxy internals, connection handling, load balancing algorithms, and TLS termination
+- [NetworkChuck — Nginx Crash Course](https://www.youtube.com/@NetworkChuck) — hands-on setup of reverse proxies, virtual hosts, and basic load balancing
+- [Fireship — Nginx in 100 Seconds](https://www.youtube.com/@Fireship) — fast mental model of what Nginx does and where it sits in the stack
+- [TechWorld with Nana — Nginx Tutorial](https://www.youtube.com/@TechWorldwithNana) — practical walkthrough of Nginx as a reverse proxy with Docker
+- [Computerphile — Web Server Architecture](https://www.youtube.com/@Computerphile) — explains the event-driven model that makes Nginx different from thread-per-connection servers
+
+**Official docs & blogs:**
+- [Nginx Official Documentation](https://nginx.org/en/docs/) — directive reference, configuration guide, and module documentation
+- [Nginx Blog](https://www.nginx.com/blog/) — production patterns, performance tuning, and security hardening guides
+- [Digital Ocean — Nginx Tutorials](https://www.digitalocean.com/community/tags/nginx) — step-by-step guides for common reverse proxy, TLS, and load balancing setups
+
+---
+
 **The mantra:** Nginx does not run your app — it protects it, routes to it, and makes it fast; keep your app config in your app and your edge config in Nginx.

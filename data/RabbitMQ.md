@@ -631,6 +631,22 @@ Once you are comfortable with RabbitMQ basics, the natural next topics are:
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [Hussein Nasser — RabbitMQ playlist](https://www.youtube.com/@haboread) — deep dives on exchange types, prefetch, acknowledgements, and comparing RabbitMQ to Kafka
+- [CloudAMQP — RabbitMQ Tutorials](https://www.youtube.com/@CloudAMQP) — official hosting provider with clear walkthroughs on clustering, shovel, federation, and monitoring
+- [Fireship — Message Queues Explained](https://www.youtube.com/@Fireship) — fast overview of the pub/sub and work-queue patterns RabbitMQ implements
+- [TechWorld with Nana — RabbitMQ Crash Course](https://www.youtube.com/@TechWorldwithNana) — hands-on setup with Docker, exchanges, queues, and a simple producer/consumer
+- [Michael Klishin — RabbitMQ Internals (Erlang Solutions)](https://www.youtube.com/@ErlangSolutions) — conference talks on Quorum Queues, flow control, and Erlang runtime tuning
+
+**Official docs & blogs:**
+- [RabbitMQ Official Documentation](https://www.rabbitmq.com/docs) — tutorials, guides on clustering, TLS, monitoring, and all exchange/queue types
+- [RabbitMQ Blog](https://blog.rabbitmq.com/) — release notes, performance benchmarks, and migration guides for Quorum Queues and Streams
+- [CloudAMQP Blog](https://www.cloudamqp.com/blog/) — practical production advice on sizing, monitoring, and common misconfigurations
+
+---
+
 ## The Mantra
 
 > Decouple first, optimize later. A queue between two services costs you a little complexity and buys you independent deployability, resilience under load, and the freedom to scale each side on its own terms. Most production incidents involving direct service calls would not have happened if there had been a queue in between.

@@ -230,6 +230,22 @@ yq -o=props '.' f.yaml              -> java properties (also: csv, tsv, xml)
 - `yq` for non-YAML: it also reads/writes JSON, XML, TOML, and properties — one tool for config
   format conversion.
 
+---
+
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [Fireship — YAML in 100 Seconds](https://www.youtube.com/@Fireship) — fast primer on the data format yq operates on
+- [Hussein Nasser — YAML and Config Management](https://www.youtube.com/@haboread) — practical context for why YAML processing matters in DevOps pipelines
+- [TechWorld with Nana — Kubernetes YAML](https://www.youtube.com/@TechWorldwithNana) — the Kubernetes manifests you will most often process with yq
+- [LearnLinuxTV — Command Line YAML Tools](https://www.youtube.com/@LearnLinuxTV) — hands-on terminal walkthroughs covering yq for sysadmin tasks
+
+**Official docs & blogs:**
+- [yq Official Documentation (Mike Farah)](https://mikefarah.gitbook.io/yq/) — the definitive reference for operators, expressions, and recipes
+- [jq Official Manual](https://stedolan.github.io/jq/manual/) — yq's expression language is modelled on jq, so this remains essential background reading
+
+---
+
 **The mantra:** yq is jq for YAML — same `.`-through-`|` pipeline to read, plus `= value` with
 `-i` to edit files in place (comments preserved). `select(.kind==...)` for multi-doc manifests,
 `env()`/`strenv()` to inject CI values, and never edit YAML with `sed`.
