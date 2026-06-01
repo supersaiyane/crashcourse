@@ -695,6 +695,21 @@ from airflow.providers.dbt.cloud.operators.dbt import DbtCloudRunJobOperator
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [Astronomer — Apache Airflow Tutorials](https://www.youtube.com/@astronomerio) — DAG design, TaskFlow API, dynamic task mapping, and production deployment patterns
+- [DataTalksClub — Data Engineering Zoomcamp](https://www.youtube.com/@DataTalksClub) — Airflow modules in the context of end-to-end data engineering
+- [Marc Lamberti — Airflow Tutorials](https://www.youtube.com/results?search_query=marc+lamberti+airflow) — practical Airflow: XCom, sensors, executors, and common pitfalls
+- [coder2j — Apache Airflow](https://www.youtube.com/results?search_query=coder2j+airflow) — beginner-friendly walkthroughs of DAG authoring and operator usage
+- [Databricks — Orchestration](https://www.youtube.com/@Databricks) — how Airflow fits into broader data platform orchestration
+
+**Official docs & blogs:**
+- [Apache Airflow Documentation](https://airflow.apache.org/docs/) — concepts, operators, executors, and the official tutorial
+- [Astronomer Blog](https://www.astronomer.io/blog/) — production Airflow patterns, scaling strategies, and migration guides
+
+---
+
 ## The Mantra
 
 > Define it in Python. Schedule it. Let it retry. Read the logs. Backfill with confidence.

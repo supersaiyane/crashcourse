@@ -564,6 +564,21 @@ These files build on what you've just learned:
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [Christopher Okhravi — Design Patterns](https://www.youtube.com/@ChristopherOkhravi) — the best video series on GoF patterns: clear UML, concrete examples, and honest discussion of when not to use each one
+- [Derek Banas — Design Patterns](https://www.youtube.com/@deaborsen) — quick, dense walkthroughs of all 23 patterns with code examples
+- [sudoCODE — Design Patterns in Practice](https://www.youtube.com/@sudocode) — how patterns show up in real systems, not just textbooks
+- [Fireship — 10 Design Patterns Explained](https://www.youtube.com/@Fireship) — fast, visual introductions that help you recognise patterns before diving deep
+- [Robert C. Martin (Uncle Bob) — SOLID and Design Principles](https://www.youtube.com/results?search_query=uncle+bob+clean+code+solid) — the principles that determine when to reach for a pattern
+
+**Official docs & blogs:**
+- [refactoring.guru — Design Patterns](https://refactoring.guru/design-patterns) — the definitive visual catalog: all 23 GoF patterns with UML, code in 8 languages, and real-world analogies
+- [Source Making — Design Patterns](https://sourcemaking.com/design_patterns) — patterns, anti-patterns, and refactoring techniques with clear diagrams
+
+---
+
 ## The Mantra
 
 > Recognize the shape of the problem. Name the pattern. Apply only what the problem requires. Stop.

@@ -359,6 +359,21 @@ Each step writes to a saga state table: `saga_id`, `step`, `status`, `timestamp`
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [ByteByteGo — Microservices](https://www.youtube.com/@ByteByteGo) — visual explanations of saga pattern, API gateway, service discovery, and event-driven architectures
+- [CNCF — Microservices Talks](https://www.youtube.com/@cncf) — conference talks on service meshes, sidecar patterns, and production-grade microservices from practitioners
+- [Gaurav Sen — Distributed Systems](https://www.youtube.com/@gaborsen) — intuition-first coverage of eventual consistency, circuit breakers, and decomposition strategies
+- [Martin Fowler — Microservices](https://www.youtube.com/results?search_query=martin+fowler+microservices) — the measured perspective on when microservices help and when they hurt
+- [CodeOpinion — Practical Microservices](https://www.youtube.com/@CodeOpinion) — real-world patterns: outbox, saga, CQRS, and messaging in practice
+
+**Official docs & blogs:**
+- [microservices.io (Chris Richardson)](https://microservices.io/patterns/) — the definitive pattern catalog: decomposition, data management, communication, observability
+- [martinfowler.com — Microservices](https://martinfowler.com/microservices/) — the foundational articles on microservice trade-offs, prerequisites, and monolith-first strategy
+
+---
+
 ## The Mantra
 
 Microservices solve organizational scale, not technical complexity — decompose by team boundaries, accept eventual consistency as the default, and reach for a pattern only when you can name the problem it solves.

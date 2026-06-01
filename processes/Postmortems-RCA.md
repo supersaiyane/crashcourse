@@ -258,6 +258,21 @@ CLOSE THE LOOP
 - Tie action items to **error budgets** (`SRE-Process.md`): repeated budget burn justifies pausing
   features to do reliability work the postmortems identified.
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [Google SRE — Postmortem Culture](https://www.youtube.com/results?search_query=google+SRE+postmortem+blameless) — blameless postmortems, action item tracking, and learning from incidents
+- [USENIX SREcon — Root Cause Analysis](https://www.youtube.com/results?search_query=usenix+srecon+postmortem+root+cause) — practitioner talks on systemic analysis, contributing factors, and 5 Whys
+- [PagerDuty — Post-Incident Reviews](https://www.youtube.com/@PagerDuty) — structuring reviews, writing timelines, and extracting actionable improvements
+- [DevOps Enterprise Summit — Learning from Failure](https://www.youtube.com/results?search_query=devops+enterprise+summit+postmortem) — organisational approaches to incident learning
+- [John Allspaw — Resilience Engineering](https://www.youtube.com/results?search_query=john+allspaw+resilience+engineering) — moving beyond root cause to systemic understanding of failure
+
+**Official docs & blogs:**
+- [sre.google — Postmortem Culture](https://sre.google/sre-book/postmortem-culture/) — Google's postmortem philosophy, template, and best practices
+- [learning.pagerduty.com — Postmortems](https://postmortems.pagerduty.com/) — PagerDuty's open-source guide to running effective post-incident reviews
+
+---
+
 **The mantra:** blameless always — incidents are system failures, not people failures. Facts in the
 timeline, depth in the analysis (multiple causes, not one), and the payoff in specific, owned,
 shipped action items. A postmortem isn't done until the fixes land.

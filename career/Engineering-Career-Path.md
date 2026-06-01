@@ -302,6 +302,21 @@ When you are ready to go deeper:
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [Rahul Pandey and Taro — Career Growth](https://www.youtube.com/@RahulPandeyrkp) — leveling frameworks, promotion strategies, and navigating the IC vs management fork
+- [ThePrimeagen — Engineering Career](https://www.youtube.com/@ThePrimeagen) — honest takes on career progression, technical depth, and what senior-plus engineers actually do
+- [LeadDev — Conference Talks](https://www.youtube.com/results?search_query=leaddev+engineering+career) — staff engineer perspectives, technical leadership, and career ladders at scale
+- [Fireship — Tech Career](https://www.youtube.com/@Fireship) — fast overviews of career paths, technology trends, and skill investment decisions
+- [Healthy Software Developer — Career Health](https://www.youtube.com/@HealthyDev) — sustainable career growth, avoiding burnout, and long-term career planning
+
+**Official docs & blogs:**
+- [staffeng.com (Will Larson)](https://staffeng.com/) — stories and archetypes of staff-plus engineers: tech lead, architect, solver, right hand
+- [pragmaticengineer.com (Gergely Orosz)](https://blog.pragmaticengineer.com/) — engineering career insights, compensation, and what high-performing engineering organisations look like
+
+---
+
 ## The Mantra
 
 > Scope up before you level up. Impact is what others can describe about your work. Influence is what changes because you were in the room. Build all three — scope, impact, influence — and the title follows.

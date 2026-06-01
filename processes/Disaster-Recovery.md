@@ -327,6 +327,21 @@ Banking, Financial Services, and Insurance (BFSI) workloads carry specific regul
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [Google SRE — DiRT and Disaster Recovery](https://www.youtube.com/results?search_query=google+SRE+disaster+recovery+DiRT) — Google's Disaster Recovery Testing programme and lessons from large-scale drills
+- [USENIX SREcon — DR and Business Continuity](https://www.youtube.com/results?search_query=usenix+srecon+disaster+recovery) — practitioner talks on RTO/RPO targets, failover testing, and DR automation
+- [PagerDuty — Business Continuity](https://www.youtube.com/@PagerDuty) — connecting DR plans to incident response and operational readiness
+- [Gremlin — Failover Testing](https://www.youtube.com/@GremlinInc) — validating DR mechanisms through controlled chaos experiments
+- [AWS re:Invent — Disaster Recovery](https://www.youtube.com/results?search_query=aws+reinvent+disaster+recovery) — multi-region architectures, pilot light, warm standby, and active-active patterns
+
+**Official docs & blogs:**
+- [AWS Disaster Recovery Whitepaper](https://docs.aws.amazon.com/whitepapers/latest/disaster-recovery-workloads-on-aws/disaster-recovery-workloads-on-aws.html) — the four DR strategies with cost and RTO trade-offs
+- [sre.google — Data Integrity](https://sre.google/sre-book/data-integrity/) — Google's approach to backup, restore, and data integrity under failure
+
+---
+
 ## The Mantra
 
 **You do not have a DR plan until you have run a drill, measured the actual RTO and RPO, found the gaps, and fixed them. Everything before that is a hypothesis.**

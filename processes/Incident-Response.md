@@ -237,6 +237,21 @@ GOLDEN RULES
   that open channels and track timelines automatically.
 - Track **MTTR/MTTD** over time and run **game days** to keep the process sharp.
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [Google SRE — Incident Management](https://www.youtube.com/results?search_query=google+SRE+incident+management) — Google's approach to incident command, communication, and post-incident learning
+- [PagerDuty — Incident Response](https://www.youtube.com/@PagerDuty) — on-call workflows, escalation patterns, and incident commander training
+- [USENIX SREcon — Incident Response Talks](https://www.youtube.com/results?search_query=usenix+srecon+incident+response) — war stories and frameworks from SRE practitioners
+- [DevOps Enterprise Summit — Resilience](https://www.youtube.com/results?search_query=devops+enterprise+summit+incident) — organisational incident response at scale
+- [Gremlin — Game Days and Drills](https://www.youtube.com/@GremlinInc) — practising incident response through controlled failure injection
+
+**Official docs & blogs:**
+- [learning.pagerduty.com — Incident Response Guide](https://response.pagerduty.com/) — the full open-source incident response process: roles, communication, and post-incident
+- [sre.google — Managing Incidents](https://sre.google/sre-book/managing-incidents/) — Google's incident management chapter from the SRE Book
+
+---
+
 **The mantra:** declare early, name one Incident Commander who coordinates (not fixes), mitigate
 before you diagnose (what changed?), communicate on a cadence, restore-and-verify, then learn
 blamelessly. Structure beats heroics every time.

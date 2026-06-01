@@ -536,6 +536,21 @@ You now have the foundations. Go deeper in these directions:
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [DataTalksClub — Data Quality](https://www.youtube.com/@DataTalksClub) — data validation, testing strategies, and quality frameworks in the modern data stack
+- [dbt Labs — Testing and Data Quality](https://www.youtube.com/@daborsen) — built-in dbt tests, custom generic tests, and data contracts
+- [Seattle Data Guy — Data Quality Engineering](https://www.youtube.com/@SeattleDataGuy) — practical data quality: profiling, anomaly detection, and pipeline validation
+- [Great Expectations — Tutorials](https://www.youtube.com/results?search_query=great+expectations+data+quality) — expectation suites, data docs, and checkpoint workflows
+- [Astronomer — Data Quality in Pipelines](https://www.youtube.com/@astronomerio) — wiring quality gates into Airflow DAGs
+
+**Official docs & blogs:**
+- [Great Expectations Documentation](https://docs.greatexpectations.io/) — expectations, data sources, checkpoints, and the validation workflow
+- [dbt Documentation — Tests](https://docs.getdbt.com/docs/build/data-tests) — schema tests, data tests, and how to enforce contracts at transformation time
+
+---
+
 ## The Mantra
 
 > Validate at the boundary. Contract before you consume. Alert before the stakeholder does.

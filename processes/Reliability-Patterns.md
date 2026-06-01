@@ -610,6 +610,21 @@ start at  : 10, tune with load testing
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [Google SRE — Reliability Patterns](https://www.youtube.com/results?search_query=google+SRE+reliability+patterns) — circuit breakers, retries, timeouts, and load shedding from Google's SRE practice
+- [USENIX SREcon — Resilience Engineering](https://www.youtube.com/results?search_query=usenix+srecon+resilience+patterns) — practitioner talks on bulkheads, backpressure, and graceful degradation
+- [Martin Fowler — Circuit Breaker](https://www.youtube.com/results?search_query=martin+fowler+circuit+breaker) — the pattern that protects distributed systems from cascading failure
+- [Gremlin — Reliability Testing](https://www.youtube.com/@GremlinInc) — validating retry logic, circuit breaker thresholds, and timeout behaviour under real failure
+- [CNCF — Service Mesh and Resilience](https://www.youtube.com/@cncf) — implementing reliability patterns at the infrastructure layer with Istio and Envoy
+
+**Official docs & blogs:**
+- [sre.google — Handling Overload](https://sre.google/sre-book/handling-overload/) — load shedding, graceful degradation, and managing cascading failures
+- [Microsoft Azure — Reliability Patterns](https://learn.microsoft.com/en-us/azure/architecture/patterns/category/resiliency) — the cloud design pattern catalog for retry, circuit breaker, bulkhead, and throttling
+
+---
+
 ## The Mantra
 
 > Design for failure. Fail fast. Recover gracefully. Never let one broken thing break everything else.

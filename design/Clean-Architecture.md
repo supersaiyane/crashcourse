@@ -388,6 +388,21 @@ Everything points inward. Domain points at nothing.
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [Robert C. Martin (Uncle Bob) — Clean Architecture](https://www.youtube.com/results?search_query=uncle+bob+clean+architecture) — the original author explaining dependency rules, use cases, and why frameworks are details
+- [CodeOpinion — Clean Architecture in Practice](https://www.youtube.com/@CodeOpinion) — practical implementation of ports and adapters, CQRS, and bounded contexts in real codebases
+- [ArjanCodes — Clean Architecture in Python](https://www.youtube.com/@ArjanCodes) — layer-by-layer implementation showing how the dependency rule works in practice
+- [Milan Jovanovic — Clean Architecture .NET](https://www.youtube.com/@MilanJovanovic) — detailed walkthroughs of domain layer, application layer, and infrastructure boundaries
+- [Christopher Okhravi — Hexagonal Architecture](https://www.youtube.com/@ChristopherOkhravi) — the ports and adapters variant that maps directly to Clean Architecture's dependency inversion
+
+**Official docs & blogs:**
+- [Clean Code Blog — Architecture](https://blog.cleancoder.com/) — Uncle Bob's original essays on the screaming architecture, the dependency rule, and the clean architecture circle diagram
+- [Alistair Cockburn — Hexagonal Architecture](https://alistair.cockburn.us/hexagonal-architecture/) — the original ports and adapters article that Clean Architecture builds upon
+
+---
+
 ## The Mantra
 
 > Business logic belongs to no framework.

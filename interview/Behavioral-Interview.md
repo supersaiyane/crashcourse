@@ -295,6 +295,21 @@ For each story, capture:
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [Exponent — Behavioral Interview](https://www.youtube.com/@tryexponent) — mock behavioral interviews with STAR method breakdowns and real-time feedback
+- [Rahul Pandey and Taro — Career Growth](https://www.youtube.com/@RahulPandeyrkp) — how to frame stories for impact, leadership, and conflict resolution questions
+- [Jeff H Sipe — Interview Coach](https://www.youtube.com/results?search_query=jeff+h+sipe+behavioral+interview) — structured preparation for "tell me about a time" questions with common pitfalls
+- [Dan Croitor — Amazon Leadership Principles](https://www.youtube.com/results?search_query=dan+croitor+amazon+behavioral+interview) — preparing behavioral answers mapped to leadership principle frameworks
+- [A Life After Layoff — Interview Preparation](https://www.youtube.com/results?search_query=a+life+after+layoff+behavioral+interview) — practical tips for structuring answers, handling curveballs, and showing self-awareness
+
+**Official docs & blogs:**
+- [interviewing.io Blog — Behavioral Interviews](https://interviewing.io/blog) — data on what interviewers actually look for and the most common mistakes
+- [levels.fyi — Interview Guides](https://www.levels.fyi/blog/) — leveling expectations and how behavioral signal maps to seniority
+
+---
+
 ## The Mantra
 
 **Your story is the proof. Specificity is credibility. Reflection is maturity. Own every outcome — good and bad — and let the interviewer see exactly how you think.**

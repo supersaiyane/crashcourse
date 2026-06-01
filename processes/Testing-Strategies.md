@@ -407,6 +407,21 @@ stages:
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [Google SRE — Testing for Reliability](https://www.youtube.com/results?search_query=google+SRE+testing+reliability) — testing in production, canary analysis, and building confidence in releases
+- [USENIX SREcon — Testing Strategies](https://www.youtube.com/results?search_query=usenix+srecon+testing+strategies) — practitioner talks on test pyramids, contract testing, and integration testing at scale
+- [DevOps Enterprise Summit — Continuous Testing](https://www.youtube.com/results?search_query=devops+enterprise+summit+testing) — shifting testing left, test automation, and deployment confidence
+- [Fireship — Testing Explained](https://www.youtube.com/@Fireship) — fast visual primers on unit, integration, and e2e testing strategies
+- [Continuous Delivery (Dave Farley) — Testing](https://www.youtube.com/@ContinuousDelivery) — test-driven development, acceptance testing, and testing in production pipelines
+
+**Official docs & blogs:**
+- [martinfowler.com — Testing](https://martinfowler.com/testing/) — the test pyramid, test doubles, integration testing strategies, and contract tests
+- [sre.google — Testing for Reliability](https://sre.google/sre-book/testing-reliability/) — Google's approach to testing distributed systems for reliability
+
+---
+
 ## The Mantra
 
 **Test at the lowest level that gives you confidence. Test at higher levels only what lower levels can't reach. Test in production what no environment can replicate.**

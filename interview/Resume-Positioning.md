@@ -442,6 +442,21 @@ Resume done. Keep moving:
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [Rahul Pandey and Taro — Resume Reviews](https://www.youtube.com/@RahulPandeyrkp) — live resume teardowns for engineers at every level, with before/after examples
+- [Exponent — Resume and Application Strategy](https://www.youtube.com/@tryexponent) — how to position experience for top-tier companies
+- [Tiff in Tech — Tech Resume Tips](https://www.youtube.com/@TiffInTech) — practical resume formatting, ATS optimisation, and storytelling for tech roles
+- [A Life After Layoff — Resume Writing](https://www.youtube.com/results?search_query=a+life+after+layoff+resume) — recruiter perspective on what gets resumes past the first screen
+- [Jeff Su — Resume and Career](https://www.youtube.com/results?search_query=jeff+su+resume+tech) — concise tips on bullet writing, quantifying impact, and resume structure
+
+**Official docs & blogs:**
+- [levels.fyi — Compensation and Leveling](https://www.levels.fyi/) — understand leveling across companies so you can position your resume at the right seniority
+- [interviewing.io Blog — Resume Insights](https://interviewing.io/blog) — data-driven analysis of what resume signals actually predict interview performance
+
+---
+
 ## The Mantra
 
 Your resume does not get you the job — it gets you the conversation.

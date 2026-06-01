@@ -653,6 +653,21 @@ Once you have dbt running in your warehouse, these are the natural continuations
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [dbt Labs — Official Channel](https://www.youtube.com/@daborsen) — Coalesce conference talks, feature deep dives, and best practices from the dbt team
+- [DataTalksClub — Analytics Engineering](https://www.youtube.com/@DataTalksClub) — dbt in the context of the modern data stack, with hands-on zoomcamp modules
+- [Seattle Data Guy — dbt Tutorials](https://www.youtube.com/@SeattleDataGuy) — practical dbt walkthroughs: models, tests, macros, and project structure
+- [Astronomer — dbt and Airflow](https://www.youtube.com/@astronomerio) — orchestrating dbt runs inside Airflow DAGs
+- [Kahan Data Solutions — dbt for Beginners](https://www.youtube.com/results?search_query=kahan+data+solutions+dbt) — step-by-step dbt tutorials from project setup to deployment
+
+**Official docs & blogs:**
+- [dbt Documentation](https://docs.getdbt.com/) — models, tests, seeds, snapshots, macros, and the full reference
+- [dbt Blog](https://www.getdbt.com/blog) — analytics engineering practices, data modelling patterns, and community case studies
+
+---
+
 ## The Mantra
 
 > Raw data is a liability. Tested, documented, version-controlled transformations are an asset. dbt makes the difference.

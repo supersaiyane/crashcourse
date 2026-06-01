@@ -530,6 +530,21 @@ auth:
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [Backstage Official — Tutorials and Demos](https://www.youtube.com/results?search_query=backstage+spotify+developer+portal) — getting started, plugin development, and catalog configuration
+- [Spotify Engineering — Backstage](https://www.youtube.com/results?search_query=spotify+engineering+backstage) — the origin story, design decisions, and how Spotify uses Backstage internally
+- [CNCF — Backstage Talks](https://www.youtube.com/@cncf) — KubeCon and community talks on Backstage adoption, plugin ecosystem, and platform engineering
+- [DevOps Toolkit (Viktor Farcic) — Developer Portals](https://www.youtube.com/@DevOpsToolkit) — comparing Backstage with alternatives and building internal developer platforms
+- [Roadie — Backstage Tutorials](https://www.youtube.com/results?search_query=roadie+backstage) — practical walkthroughs of catalog setup, Scaffolder templates, and TechDocs
+
+**Official docs & blogs:**
+- [Backstage Documentation](https://backstage.io/docs/) — getting started, software catalog, Scaffolder, TechDocs, and plugin development
+- [Backstage Blog](https://backstage.io/blog/) — release notes, adoption stories, and platform engineering best practices
+
+---
+
 ## The Mantra
 
 > A portal nobody uses is just another tool to maintain. Build for the engineer who is new, frustrated, and in a hurry — make discovery instant, creation trivial, and documentation automatic. That is the entire job.

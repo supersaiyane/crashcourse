@@ -541,6 +541,21 @@ terminationGracePeriodSeconds: 30
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [CNCF — Cloud Native Talks](https://www.youtube.com/@cncf) — KubeCon talks on sidecar, ambassador, adapter, and service mesh patterns from practitioners
+- [DevOps Toolkit (Viktor Farcic) — Cloud Native](https://www.youtube.com/@DevOpsToolkit) — hands-on demonstrations of cloud-native patterns with Kubernetes, Helm, and GitOps
+- [Spotify Engineering — Platform and Cloud Native](https://www.youtube.com/results?search_query=spotify+engineering+cloud+native) — how Spotify builds and operates cloud-native infrastructure at scale
+- [TechWorld with Nana — Kubernetes Patterns](https://www.youtube.com/@TechWorldwithNana) — init containers, sidecars, and multi-container pod patterns explained with examples
+- [IBM Technology — Cloud Native Patterns](https://www.youtube.com/@IBMTechnology) — circuit breakers, bulkheads, and resilience patterns in cloud-native architectures
+
+**Official docs & blogs:**
+- [CNCF Cloud Native Definition](https://www.cncf.io/about/who-we-are/) — the official definition, landscape, and trail map for cloud-native technologies
+- [Kubernetes Patterns (O'Reilly)](https://www.oreilly.com/library/view/kubernetes-patterns-2nd/9781098131678/) — Bilgin Ibryam's comprehensive catalog of cloud-native patterns for Kubernetes
+
+---
+
 ## The Mantra
 
 > Build for the platform. Configure from outside. Fail loudly and recover fast. Separate concerns — one container, one responsibility. The platform handles orchestration; your code handles business logic. If your container cannot start cleanly, stop, init, and start again — that is not a bug, that is the design.

@@ -314,6 +314,21 @@ Once you're grounded in transitions, these build on this material:
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [Rahul Pandey and Taro — Career Transitions](https://www.youtube.com/@RahulPandeyrkp) — switching companies, changing roles, and evaluating offers beyond total compensation
+- [Tiff in Tech — Career Changes in Tech](https://www.youtube.com/@TiffInTech) — practical guidance on pivoting between roles, industries, and company sizes
+- [LeadDev — Career Growth Talks](https://www.youtube.com/results?search_query=leaddev+career+transition+engineering) — talks on moving from IC to manager, manager back to IC, and cross-functional transitions
+- [Healthy Software Developer — Sustainable Careers](https://www.youtube.com/@HealthyDev) — making career changes without burning out, building transferable skills, and long-term planning
+- [ThePrimeagen — Career Decisions](https://www.youtube.com/@ThePrimeagen) — honest perspectives on when to stay, when to leave, and how to evaluate career opportunities
+
+**Official docs & blogs:**
+- [staffeng.com (Will Larson)](https://staffeng.com/) — career archetypes and how lateral moves build the range that vertical moves cannot
+- [pragmaticengineer.com (Gergely Orosz)](https://blog.pragmaticengineer.com/) — data-driven insights on job market trends, company tiers, and career decision frameworks
+
+---
+
 ## The Mantra
 
 > Move deliberately. Build capital before you spend it. Every lateral move that compounds your range is more valuable than a vertical move that narrows it. The goal isn't to climb the ladder — it's to become the kind of engineer the ladder was built to recognize.

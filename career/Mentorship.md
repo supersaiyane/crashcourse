@@ -357,6 +357,21 @@ Use this at the start of a mentorship to align expectations:
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [Rahul Pandey and Taro — Mentorship and Sponsorship](https://www.youtube.com/@RahulPandeyrkp) — how to find mentors, build sponsor relationships, and structure mentoring conversations
+- [LeadDev — Mentoring Talks](https://www.youtube.com/results?search_query=leaddev+mentoring+engineering) — conference talks on effective mentoring programmes, reverse mentoring, and sponsorship
+- [Healthy Software Developer — Growth Relationships](https://www.youtube.com/@HealthyDev) — building trust in mentoring relationships and creating psychological safety
+- [Lenny Rachitsky — Career Mentorship](https://www.youtube.com/@LennyRachitsky) — interviews with senior leaders on the mentoring relationships that shaped their careers
+- [ThePrimeagen — Learning and Teaching](https://www.youtube.com/@ThePrimeagen) — the dynamics of teaching and learning in engineering, and why mentoring accelerates both sides
+
+**Official docs & blogs:**
+- [leaddev.com — Mentoring](https://leaddev.com/) — articles on mentoring programmes, sponsorship vs mentorship, and scaling mentoring in engineering teams
+- [staffeng.com (Will Larson)](https://staffeng.com/) — how staff-plus engineers use mentoring and sponsorship as force multipliers
+
+---
+
 ## The Mantra
 
 > Find someone who's already made the mistakes you haven't made yet. Be honest with them. Do what you say you'll do. Then become that person for someone else.

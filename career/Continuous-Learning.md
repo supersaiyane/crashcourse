@@ -449,6 +449,21 @@ Once you have a working learning system, the adjacent files worth reading:
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [Fireship — Tech Trends and Learning](https://www.youtube.com/@Fireship) — fast, dense introductions to new technologies that help you decide what to learn next
+- [ThePrimeagen — Learning and Growth](https://www.youtube.com/@ThePrimeagen) — honest takes on learning strategies, deep vs broad knowledge, and staying current
+- [Tiff in Tech — Continuous Learning](https://www.youtube.com/@TiffInTech) — learning habits, course reviews, and building a personal development system
+- [Rahul Pandey and Taro — Skill Building](https://www.youtube.com/@RahulPandeyrkp) — deliberate practice, T-shaped skill development, and compounding learning investments
+- [Healthy Software Developer — Sustainable Learning](https://www.youtube.com/@HealthyDev) — avoiding tutorial overload, building real projects, and learning without burnout
+
+**Official docs & blogs:**
+- [pragmaticengineer.com (Gergely Orosz)](https://blog.pragmaticengineer.com/) — what skills compound over a career, and how top engineers invest their learning time
+- [staffeng.com (Will Larson)](https://staffeng.com/) — how staff-plus engineers balance depth and breadth in their continuous learning
+
+---
+
 ## The mantra
 
 > Know less. Understand more. Teach it. Build it. Repeat.

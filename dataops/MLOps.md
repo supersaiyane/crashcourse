@@ -403,4 +403,19 @@ Most organizations are at Level 0 or 1. Level 2 is the practical target for team
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [MLOps Community — Talks and Interviews](https://www.youtube.com/@MLOps) — practitioner discussions on model serving, feature stores, experiment tracking, and production ML
+- [Weights & Biases — MLOps Tutorials](https://www.youtube.com/@WeightsBiases) — experiment tracking, model registry, and production monitoring walkthroughs
+- [DataTalksClub — MLOps Zoomcamp](https://www.youtube.com/@DataTalksClub) — free, structured course covering the full MLOps lifecycle from training to deployment
+- [Chip Huyen — ML Systems Design](https://www.youtube.com/results?search_query=chip+huyen+mlops+ml+systems) — practical ML engineering: data distribution shifts, feature engineering, and serving patterns
+- [Full Stack Deep Learning](https://www.youtube.com/results?search_query=full+stack+deep+learning) — infrastructure, tooling, and deployment for production ML systems
+
+**Official docs & blogs:**
+- [MLflow Documentation](https://mlflow.org/docs/latest/index.html) — experiment tracking, model registry, and deployment APIs
+- [neptune.ai Blog — MLOps](https://neptune.ai/blog) — in-depth articles on experiment tracking, model versioning, and production monitoring patterns
+
+---
+
 **The mantra:** A model that isn't monitored isn't deployed — it's abandoned.

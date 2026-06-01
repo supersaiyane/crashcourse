@@ -445,6 +445,21 @@ for scanner.Scan() {
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [NeetCode — Coding Interview Patterns](https://www.youtube.com/@NeetCode) — the NeetCode 150 roadmap: pattern-based problem solving with clear explanations
+- [Exponent — Coding Mock Interviews](https://www.youtube.com/@tryexponent) — full mock coding sessions with interviewer feedback and time management
+- [ByteByteGo — Data Structures and Algorithms](https://www.youtube.com/@ByteByteGo) — visual explanations of the structures and patterns that appear in interviews
+- [Back To Back SWE — Algorithm Patterns](https://www.youtube.com/results?search_query=back+to+back+swe+algorithm) — deep dives into sliding window, two pointers, BFS/DFS, and dynamic programming
+- [Abdul Bari — Algorithms](https://www.youtube.com/@abdul_bari) — clear, whiteboard-style explanations of fundamental algorithms and complexity analysis
+
+**Official docs & blogs:**
+- [neetcode.io — Roadmap](https://neetcode.io/) — structured problem roadmap organised by pattern, with video solutions
+- [LeetCode Patterns Guide](https://leetcode.com/discuss/general-discussion/460599/blind-75-leetcode-questions) — the Blind 75 list and pattern-based approach to interview preparation
+
+---
+
 ## The Mantra
 
 You are not here to impress with brilliance. You are here to show that you solve problems the way a good engineer does — by understanding the problem first, starting simple, thinking out loud, and iterating until it works.

@@ -675,6 +675,21 @@ security:
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [ByteByteGo — API Design](https://www.youtube.com/@ByteByteGo) — REST vs gRPC vs GraphQL comparisons, API gateway patterns, and versioning strategies
+- [Gaurav Sen — API Design Interviews](https://www.youtube.com/@gaborsen) — rate limiting, pagination, idempotency, and designing APIs that scale
+- [Hussein Nasser — Backend Engineering](https://www.youtube.com/@haborsen) — deep dives into HTTP/2, gRPC internals, WebSockets, and API protocol trade-offs
+- [Postman — API Design](https://www.youtube.com/@postman) — contract-first design, OpenAPI specifications, and API testing workflows
+- [CodeOpinion — REST, CQRS, and Event-Driven APIs](https://www.youtube.com/@CodeOpinion) — when REST is not enough and how event-driven and CQRS patterns change your API surface
+
+**Official docs & blogs:**
+- [Google API Design Guide](https://cloud.google.com/apis/design) — the best opinionated guide to resource-oriented API design, naming, errors, and versioning
+- [Microsoft REST API Guidelines](https://github.com/microsoft/api-guidelines) — comprehensive conventions for URL structure, filtering, pagination, and error responses
+
+---
+
 ## The Mantra
 
 > Design for the consumer, not the implementation. The API surface is a promise — once published, you own it.

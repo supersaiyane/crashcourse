@@ -462,6 +462,21 @@ For each: identify the single hardest component, explain the fan-out or consiste
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [ByteByteGo — System Design Interview](https://www.youtube.com/@ByteByteGo) — Alex Xu's visual walkthroughs of real interview problems: URL shortener, chat system, notification service
+- [Exponent — System Design Mock Interviews](https://www.youtube.com/@tryexponent) — full mock interviews with feedback, covering structure, estimation, and trade-off conversations
+- [Gaurav Sen — System Design](https://www.youtube.com/@gaborsen) — intuition-first explanations of consistent hashing, load balancing, and database selection
+- [sudoCODE — System Design Playlist](https://www.youtube.com/@sudocode) — practical system design with clear diagrams and interviewer-perspective commentary
+- [NeetCode — System Design for Interviews](https://www.youtube.com/@NeetCode) — structured approach to common interview problems with time management tips
+
+**Official docs & blogs:**
+- [ByteByteGo Blog](https://blog.bytebytego.com/) — visual system design explanations, architecture deep dives, and interview preparation guides
+- [interviewing.io Blog](https://interviewing.io/blog) — data-driven insights on what actually matters in system design interviews
+
+---
+
 ## The Mantra
 
 You are not there to impress — you are there to think out loud.

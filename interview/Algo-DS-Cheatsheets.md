@@ -363,6 +363,21 @@ Rule of thumb: O(n log n) is acceptable for most interview problems. O(n²) is a
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [NeetCode — Data Structures and Algorithms](https://www.youtube.com/@NeetCode) — pattern-based problem solving: arrays, trees, graphs, dynamic programming, and the NeetCode 150 roadmap
+- [Abdul Bari — Algorithms](https://www.youtube.com/@abdul_bari) — clear, whiteboard-style explanations of sorting, searching, graph algorithms, and complexity analysis
+- [Back To Back SWE — Algorithm Deep Dives](https://www.youtube.com/results?search_query=back+to+back+swe+data+structures) — detailed walkthroughs of tries, heaps, segment trees, and advanced patterns
+- [Errichto — Competitive Programming](https://www.youtube.com/results?search_query=errichto+algorithms) — advanced algorithm techniques and optimisation strategies
+- [ByteByteGo — Visual Data Structures](https://www.youtube.com/@ByteByteGo) — visual explanations of how data structures work under the hood
+
+**Official docs & blogs:**
+- [neetcode.io — Roadmap and Practice](https://neetcode.io/) — structured problem roadmap by pattern with video explanations
+- [Big-O Cheat Sheet](https://www.bigocheatsheet.com/) — time and space complexity reference for all common data structures and algorithms
+
+---
+
 ## The Mantra
 
 **Know your access pattern before you pick your structure. The right tool chosen for the wrong reason is still the wrong choice.**

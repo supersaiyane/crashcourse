@@ -444,6 +444,21 @@ Open Questions:
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [ByteByteGo — System Design Fundamentals](https://www.youtube.com/@ByteByteGo) — component diagrams, data flow walkthroughs, and capacity estimation for HLD interviews
+- [Gaurav Sen — High Level Design](https://www.youtube.com/@gaborsen) — breaking down large systems into components with clear trade-off reasoning
+- [sudoCODE — HLD and System Design](https://www.youtube.com/@sudocode) — practical HLD examples: payment systems, chat applications, notification services
+- [Tech Dummies Narendra L — System Design](https://www.youtube.com/@TechDummiesNaworknowledge) — component-level design with database selection, caching layers, and queue placement
+- [Martin Fowler — Software Architecture](https://www.youtube.com/results?search_query=martin+fowler+software+architecture) — the principles behind why certain component boundaries work and others do not
+
+**Official docs & blogs:**
+- [martinfowler.com — Application Architecture](https://martinfowler.com/tags/application%20architecture.html) — patterns for component decomposition, bounded contexts, and integration styles
+- [Microsoft Azure Architecture Center](https://learn.microsoft.com/en-us/azure/architecture/) — reference architectures with component diagrams, decision trees, and failure mode analysis
+
+---
+
 ## The Mantra
 
 Design the failure modes before you design the happy path. The happy path is optimistic fiction. The failure modes are where your system actually lives.

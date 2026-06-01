@@ -452,6 +452,21 @@ These principles are the foundation. Build on them:
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [Robert C. Martin (Uncle Bob) — SOLID Principles](https://www.youtube.com/results?search_query=uncle+bob+solid+principles+clean+code) — the original author on SRP, OCP, LSP, ISP, DIP with real-world reasoning
+- [Christopher Okhravi — SOLID and Design Principles](https://www.youtube.com/@ChristopherOkhravi) — thoughtful, example-driven explanations of each principle with honest trade-off discussion
+- [Fireship — SOLID in 100 Seconds](https://www.youtube.com/@Fireship) — fast visual primers that make each principle memorable before you dive deeper
+- [CodeAesthetic — Naming, Abstraction, and Code Smells](https://www.youtube.com/@CodeAesthetic) — the practical side of principles: what good and bad design actually looks like
+- [ArjanCodes — Software Design in Python](https://www.youtube.com/@ArjanCodes) — SOLID, DRY, KISS, and YAGNI applied in real codebases
+
+**Official docs & blogs:**
+- [martinfowler.com — Design](https://martinfowler.com/design.html) — coupling, cohesion, refactoring, and the thinking behind good design decisions
+- [Clean Code Blog (Robert C. Martin)](https://blog.cleancoder.com/) — the original essays on SOLID, clean architecture, and software craftsmanship
+
+---
+
 ## The Mantra
 
 > Write code for the next engineer, not for the compiler.

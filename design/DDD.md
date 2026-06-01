@@ -279,6 +279,21 @@ This structure lets the Orders team and the Fulfillment team deploy independentl
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [Martin Fowler — Domain-Driven Design Talks](https://www.youtube.com/results?search_query=martin+fowler+domain+driven+design) — bounded contexts, aggregates, and the strategic patterns that matter most in practice
+- [CodeOpinion — DDD in Practice](https://www.youtube.com/@CodeOpinion) — practical DDD: aggregate boundaries, domain events, and integration patterns in real systems
+- [Vaughn Vernon — Implementing DDD](https://www.youtube.com/results?search_query=vaughn+vernon+domain+driven+design) — the author of "Implementing Domain-Driven Design" on aggregates, bounded contexts, and context mapping
+- [GOTO Conferences — DDD Talks](https://www.youtube.com/results?search_query=GOTO+domain+driven+design) — practitioner talks on event storming, strategic design, and bounded context integration
+- [Milan Jovanovic — DDD Building Blocks](https://www.youtube.com/@MilanJovanovic) — entities, value objects, domain events, and repository patterns with code examples
+
+**Official docs & blogs:**
+- [martinfowler.com — DDD](https://martinfowler.com/tags/domain%20driven%20design.html) — bounded context, ubiquitous language, aggregate, and event sourcing explained by Fowler
+- [Domain Language (Eric Evans)](https://www.domainlanguage.com/) — resources from the creator of DDD, including the original reference material
+
+---
+
 ## The Mantra
 
 > Model the business, not the database. Own your language, own your boundaries, own your events. When the domain expert and the code agree on what a word means, you're doing it right.

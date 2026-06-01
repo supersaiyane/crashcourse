@@ -575,4 +575,19 @@ POST-EXPERIMENT
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [Gremlin — Chaos Engineering](https://www.youtube.com/@GremlinInc) — game day planning, failure injection patterns, and building reliability confidence
+- [USENIX SREcon — Chaos Engineering Talks](https://www.youtube.com/results?search_query=usenix+srecon+chaos+engineering) — practitioner experiences with chaos experiments at scale
+- [Netflix Technology Blog — Chaos Talks](https://www.youtube.com/results?search_query=netflix+chaos+engineering+simian+army) — the origin of chaos engineering: Chaos Monkey, Simian Army, and fault injection at Netflix
+- [Google SRE — DiRT (Disaster Recovery Testing)](https://www.youtube.com/results?search_query=google+SRE+disaster+recovery+testing+DiRT) — Google's approach to large-scale failure drills
+- [DevOps Enterprise Summit — Resilience](https://www.youtube.com/results?search_query=devops+enterprise+summit+resilience+chaos) — organisational adoption of chaos practices
+
+**Official docs & blogs:**
+- [principlesofchaos.org](https://principlesofchaos.org/) — the foundational principles of chaos engineering, co-authored by Netflix engineers
+- [Gremlin Blog — Chaos Engineering](https://www.gremlin.com/blog/) — tutorials, case studies, and best practices for running chaos experiments safely
+
+---
+
 **The mantra:** Break it in a drill so it doesn't break in production.

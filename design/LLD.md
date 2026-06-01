@@ -654,6 +654,21 @@ Sequence diagram symbols:
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [sudoCODE — Low Level Design Playlist](https://www.youtube.com/@sudocode) — class diagrams, design patterns in practice, and LLD interview walkthroughs
+- [Christopher Okhravi — Design Patterns](https://www.youtube.com/@ChristopherOkhravi) — GoF patterns explained with clear UML and code, the building blocks of every LLD
+- [Gaurav Sen — Object-Oriented Design](https://www.youtube.com/@gaborsen) — parking lot, elevator, chess, and other classic LLD interview problems
+- [Concept and Coding — LLD Series](https://www.youtube.com/results?search_query=concept+and+coding+low+level+design) — step-by-step LLD solutions with class diagrams, SOLID principles, and implementations
+- [Derek Banas — Design Patterns](https://www.youtube.com/@deaborsen) — rapid pattern overviews useful as quick refreshers before interviews
+
+**Official docs & blogs:**
+- [refactoring.guru — Design Patterns](https://refactoring.guru/design-patterns) — visual catalog of all 23 GoF patterns with code examples in multiple languages
+- [Source Making — Design Patterns](https://sourcemaking.com/design_patterns) — patterns with UML diagrams, real-world analogies, and anti-pattern warnings
+
+---
+
 ## The Mantra
 
 > Design the data first. The classes follow. The API follows the classes. The tests follow the API.

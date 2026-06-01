@@ -505,6 +505,21 @@ Once you have internalized this crash course:
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [ByteByteGo — System Design Interview](https://www.youtube.com/@ByteByteGo) — visual walkthroughs of distributed systems concepts, capacity estimation, and real-world architectures
+- [Gaurav Sen — System Design](https://www.youtube.com/@gaborsen) — intuition-first explanations of consistent hashing, load balancing, database sharding, and interview strategy
+- [sudoCODE — System Design Playlist](https://www.youtube.com/@sudocode) — practical system design with diagrams, trade-off discussions, and production patterns
+- [Martin Fowler — Talks and Keynotes](https://www.youtube.com/results?search_query=martin+fowler+software+architecture) — architecture patterns, evolutionary design, and distributed systems thinking from one of the original voices
+- [MIT 6.824 Distributed Systems](https://www.youtube.com/results?search_query=MIT+6.824+distributed+systems) — the academic foundation: Raft, MapReduce, GFS, and fault tolerance
+
+**Official docs & blogs:**
+- [martinfowler.com — Architecture](https://martinfowler.com/architecture/) — patterns of enterprise application architecture, microservices trade-offs, event sourcing
+- [AWS Architecture Center](https://aws.amazon.com/architecture/) — reference architectures, well-architected framework, and real-world design patterns at scale
+
+---
+
 ## The Mantra
 
 Design for failure. Scale for the next order of magnitude, not the current one. Alert on symptoms. Measure before you optimize. Make trade-offs explicit — never implicit.

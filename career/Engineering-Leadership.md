@@ -382,4 +382,19 @@ Weeks 9–12: Articulate a direction. Share it. Revise it.
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [LeadDev — Engineering Leadership Talks](https://www.youtube.com/results?search_query=leaddev+engineering+leadership) — conference talks on managing teams, running architecture reviews, and influencing without authority
+- [Rahul Pandey and Taro — Tech Leadership](https://www.youtube.com/@RahulPandeyrkp) — 1:1s, performance conversations, managing up, and the transition from IC to lead
+- [Lenny Rachitsky — Product and Engineering Leadership](https://www.youtube.com/@LennyRachitsky) — how engineering and product leadership intersect, with interviews from top engineering leaders
+- [Healthy Software Developer — Leadership](https://www.youtube.com/@HealthyDev) — sustainable leadership practices, team dynamics, and avoiding common management pitfalls
+- [ThePrimeagen — Technical Leadership](https://www.youtube.com/@ThePrimeagen) — the technical side of leadership: code review culture, architecture decisions, and mentoring
+
+**Official docs & blogs:**
+- [leaddev.com Blog](https://leaddev.com/) — articles on engineering management, technical leadership, and scaling teams
+- [pragmaticengineer.com (Gergely Orosz)](https://blog.pragmaticengineer.com/) — engineering management insights, hiring, and what distinguishes good engineering organisations
+
+---
+
 **The mantra:** Your job is no longer to be the best engineer on the team. Your job is to make the team better than it would be without you — and then make yourself unnecessary.

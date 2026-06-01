@@ -572,4 +572,19 @@ Payback period:           [investment / monthly_time_saved]
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [Google SRE — class SRE implements DevOps](https://www.youtube.com/results?search_query=google+class+SRE+implements+devops) — Google's official series explaining SLOs, error budgets, toil, and incident management
+- [USENIX SREcon — Conference Talks](https://www.youtube.com/results?search_query=usenix+srecon) — practitioner talks on reliability engineering, on-call, and operational excellence
+- [DevOps Enterprise Summit — Talks](https://www.youtube.com/results?search_query=devops+enterprise+summit) — enterprise reliability, SLO adoption, and organizational transformation
+- [PagerDuty — Incident Management](https://www.youtube.com/@PagerDuty) — on-call best practices, incident response, and operational maturity
+- [Gremlin — Reliability Engineering](https://www.youtube.com/@GremlinInc) — chaos engineering, game days, and building confidence in reliability
+
+**Official docs & blogs:**
+- [sre.google — Site Reliability Engineering Books](https://sre.google/books/) — the free SRE Book, SRE Workbook, and Building Secure and Reliable Systems
+- [learning.pagerduty.com — Incident Response](https://response.pagerduty.com/) — PagerDuty's open-source incident response documentation and training guides
+
+---
+
 **The mantra:** Reliability is an engineering problem — define it precisely, measure it honestly, and let the number make the hard calls so people don't have to.

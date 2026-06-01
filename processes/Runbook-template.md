@@ -288,6 +288,21 @@ FIRST TRIAGE QUESTION, ALWAYS: "what changed recently?" (deploy/config/traffic)
 - Keep runbooks in Git alongside code so they're reviewed and versioned (`Git.md`).
 - Feed incident learnings back into runbooks as postmortem action items (`Postmortems-RCA.md`).
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [Google SRE — On-Call and Runbooks](https://www.youtube.com/results?search_query=google+SRE+on+call+runbooks) — how Google structures runbooks, links them to alerts, and keeps them current
+- [PagerDuty — Runbook Automation](https://www.youtube.com/@PagerDuty) — runbook design, automation patterns, and integrating runbooks with incident response
+- [USENIX SREcon — Operational Documentation](https://www.youtube.com/results?search_query=usenix+srecon+runbooks+documentation) — practitioner talks on writing documentation that works at 3am
+- [Gremlin — Game Days](https://www.youtube.com/@GremlinInc) — validating runbooks through controlled failure exercises
+- [DevOps Enterprise Summit — Toil Reduction](https://www.youtube.com/results?search_query=devops+enterprise+summit+toil+automation) — automating repetitive runbook steps and reducing operational toil
+
+**Official docs & blogs:**
+- [sre.google — Being On-Call](https://sre.google/sre-book/being-on-call/) — Google's approach to on-call, including runbook requirements and alert hygiene
+- [learning.pagerduty.com — Incident Response](https://response.pagerduty.com/) — how runbooks integrate into the broader incident response process
+
+---
+
 **The mantra:** write the recipe a tired stranger can follow under fire — exact commands, the
 baseline, flagged danger, clear decisions, mitigation first, verification, and escalation. Link it
 from the alert, test it, date it, and turn the repetitive ones into code.

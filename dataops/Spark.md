@@ -664,6 +664,21 @@ You've covered the core of Spark — enough to write production jobs and underst
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [Databricks — Apache Spark](https://www.youtube.com/@Databricks) — Spark Summit talks, performance tuning, Structured Streaming, and Delta Lake integration
+- [DataTalksClub — Data Engineering Zoomcamp](https://www.youtube.com/@DataTalksClub) — Spark modules covering batch processing, partitioning, and cluster management
+- [Rock the JVM — Spark with Scala](https://www.youtube.com/@rockthejvm) — deep Spark internals: DAGs, stages, shuffles, and catalyst optimizer
+- [Seattle Data Guy — Spark Tutorials](https://www.youtube.com/@SeattleDataGuy) — practical PySpark: DataFrames, joins, window functions, and common performance mistakes
+- [Bryan Cafferky — PySpark](https://www.youtube.com/results?search_query=bryan+cafferky+pyspark) — beginner-friendly PySpark walkthroughs with real datasets
+
+**Official docs & blogs:**
+- [Apache Spark Documentation](https://spark.apache.org/docs/latest/) — programming guides for RDDs, DataFrames, Structured Streaming, and MLlib
+- [Databricks Blog](https://www.databricks.com/blog) — Spark performance tuning, Photon engine, and production deployment patterns
+
+---
+
 ## The Mantra
 
 **Transformations describe. Actions execute. Shuffles cost. Schema first, collect never, tune after you measure.**

@@ -426,6 +426,21 @@ These topics build directly on DataOps foundations — each one is a natural nex
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [DataTalksClub — Data Engineering Zoomcamp](https://www.youtube.com/@DataTalksClub) — free, structured course covering ingestion, transformation, orchestration, and data quality
+- [Astronomer — Airflow and DataOps](https://www.youtube.com/@astronomerio) — pipeline orchestration patterns, data contracts, and DataOps best practices
+- [dbt Labs — Analytics Engineering](https://www.youtube.com/@daborsen) — how transformation fits into the broader DataOps lifecycle
+- [Seattle Data Guy — Data Engineering](https://www.youtube.com/@SeattleDataGuy) — practical data pipeline design, testing, and observability
+- [Databricks — Data Engineering](https://www.youtube.com/@Databricks) — lakehouse architecture, Delta Lake, and production data pipeline patterns
+
+**Official docs & blogs:**
+- [DataOps Manifesto](https://dataopsmanifesto.org/) — the foundational principles of DataOps as a discipline
+- [dbt Blog — Analytics Engineering](https://www.getdbt.com/blog) — data quality, testing, documentation, and the modern data stack
+
+---
+
 ## The Mantra
 
 > Your data pipeline is production software. Version it, test it, monitor it, and deploy it — or eventually it will lie to you at the worst possible moment.

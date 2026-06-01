@@ -242,6 +242,21 @@ COST (FinOps):  right-size requests/limits · reserved/committed/spot for baseli
 - Tie to **SLOs/error budgets** (`SRE-Process.md`): saturation that threatens SLOs justifies
   capacity investment; load tests validate you can meet SLOs at peak.
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [Google SRE — Capacity Planning](https://www.youtube.com/results?search_query=google+SRE+capacity+planning) — load testing, traffic forecasting, and N+1 redundancy from Google's SRE practice
+- [USENIX SREcon — Capacity and Scaling](https://www.youtube.com/results?search_query=usenix+srecon+capacity+planning) — real-world capacity planning frameworks and war stories
+- [PagerDuty — Operational Readiness](https://www.youtube.com/@PagerDuty) — connecting capacity planning to SLO targets and incident prevention
+- [DevOps Enterprise Summit — Scaling](https://www.youtube.com/results?search_query=devops+enterprise+summit+capacity+scaling) — enterprise capacity planning, cloud cost management, and forecasting
+- [Gremlin — Load Testing and Capacity](https://www.youtube.com/@GremlinInc) — finding real ceilings through chaos experiments and load tests
+
+**Official docs & blogs:**
+- [sre.google — Software Engineering for SRE](https://sre.google/sre-book/software-engineering-in-sre/) — capacity planning principles from Google's SRE Book
+- [AWS Well-Architected — Performance Efficiency](https://docs.aws.amazon.com/wellarchitected/latest/performance-efficiency-pillar/welcome.html) — right-sizing, auto-scaling, and load testing guidance
+
+---
+
 **The mantra:** measure utilization and trends, find the bottleneck (it's often the database, not
 CPU), run to a safe target with N+1 headroom, forecast demand (trend + seasonality + events), load
 test to find your real ceiling, and right-size for efficient reliability — enough headroom to be

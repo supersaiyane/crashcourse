@@ -328,6 +328,21 @@ default: false   ← ALWAYS the safe, known-good state
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [DevOps Toolkit (Viktor Farcic) — Feature Flags](https://www.youtube.com/@DevOpsToolkit) — progressive delivery, feature flag patterns, and integration with GitOps
+- [LaunchDarkly — Feature Management](https://www.youtube.com/results?search_query=launchdarkly+feature+flags) — flag lifecycle, targeting rules, and kill switches in production
+- [CNCF — Progressive Delivery](https://www.youtube.com/@cncf) — how feature flags combine with canary deployments and A/B testing in cloud-native stacks
+- [Fireship — Feature Flags Explained](https://www.youtube.com/@Fireship) — fast visual introduction to why feature flags exist and how they work
+- [Martin Fowler — Feature Toggles](https://www.youtube.com/results?search_query=martin+fowler+feature+toggles) — the conceptual framework: release, experiment, ops, and permission toggles
+
+**Official docs & blogs:**
+- [martinfowler.com — Feature Toggles](https://martinfowler.com/articles/feature-toggles.html) — the definitive article on toggle categories, lifecycle, and maintenance discipline
+- [OpenFeature Specification](https://openfeature.dev/) — the vendor-neutral standard for feature flag evaluation, hooks, and provider integration
+
+---
+
 ## The Mantra
 
 > Ship dark. Target narrow. Roll out slowly. Kill fast. Clean up always.

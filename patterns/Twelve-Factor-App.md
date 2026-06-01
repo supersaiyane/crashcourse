@@ -444,6 +444,21 @@ These documents build directly on the 12-Factor principles:
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [CNCF — 12-Factor and Cloud Native](https://www.youtube.com/@cncf) — conference talks on applying twelve-factor principles in containerised, cloud-native environments
+- [DevOps Toolkit (Viktor Farcic) — Cloud Native Patterns](https://www.youtube.com/@DevOpsToolkit) — practical application of twelve-factor methodology with Kubernetes, Docker, and CI/CD
+- [Fireship — 12-Factor App in 100 Seconds](https://www.youtube.com/@Fireship) — fast visual primer on all twelve factors and why they matter
+- [TechWorld with Nana — Cloud Native DevOps](https://www.youtube.com/@TechWorldwithNana) — how twelve-factor principles map to Docker, Kubernetes, and modern deployment workflows
+- [IBM Technology — Cloud Native](https://www.youtube.com/@IBMTechnology) — enterprise perspective on twelve-factor apps, microservices, and cloud migration
+
+**Official docs & blogs:**
+- [12factor.net](https://12factor.net/) — the original methodology by Adam Wiggins: all twelve factors with rationale and examples
+- [Beyond the Twelve-Factor App (O'Reilly)](https://www.oreilly.com/library/view/beyond-the-twelve-factor/9781492042631/) — Kevin Hoffman's extension to fifteen factors for modern cloud-native applications
+
+---
+
 ## The Mantra
 
 > One codebase. Explicit dependencies. Config in the environment. Backing services as attachments. Build once, release with config, run anywhere. Stateless processes. Self-binding ports. Scale by process type. Fast start, clean stop. Dev matches prod. Log to stdout. Admin tasks from the same release.

@@ -326,6 +326,21 @@ structured is [current TC]. Is there room to get to [specific target]?"
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [Rahul Pandey and Taro — Salary Negotiation](https://www.youtube.com/@RahulPandeyrkp) — negotiation frameworks, counter-offer scripts, and real examples from tech compensation
+- [Exponent — Offer Negotiation](https://www.youtube.com/@tryexponent) — step-by-step walkthroughs of negotiating base, equity, signing bonus, and level
+- [Tiff in Tech — Compensation Conversations](https://www.youtube.com/@TiffInTech) — how to research market rates, handle recruiter calls, and negotiate with confidence
+- [A Life After Layoff — Negotiation Tactics](https://www.youtube.com/results?search_query=a+life+after+layoff+salary+negotiation) — the recruiter's perspective on negotiation, and what actually moves the needle
+- [Josh Fluke — Tech Salary Insights](https://www.youtube.com/results?search_query=josh+fluke+salary+negotiation) — compensation transparency and negotiation strategies for tech roles
+
+**Official docs & blogs:**
+- [levels.fyi — Compensation Data](https://www.levels.fyi/) — the definitive crowdsourced compensation database: know the bands before you negotiate
+- [Candor Salary Negotiation Guide](https://candor.co/guides/salary-negotiation) — practical scripts, email templates, and decision frameworks for tech offer negotiation
+
+---
+
 ## The Mantra
 
 **You are not asking for a favor. You are completing a transaction between professionals. They know the band. You know the market. The conversation is expected. Have it.**
