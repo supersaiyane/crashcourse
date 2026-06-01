@@ -32,18 +32,20 @@
 | 2026-06-01 12:23 | Fix hero subtitle 98→136 | Done | index.html (meta+OG+hero), manifest.json | docs/index.html:7,12,93, docs/manifest.json:4 |
 | 2026-06-01 12:45 | 15 industry case study projects added | Done | TODO.txt: projects #34-48 (Netflix, Uber, Stripe, Spotify, LinkedIn, etc.) | TODO.txt (local, gitignored) |
 | 2026-06-01 13:00 | README optimized for discoverability | Done | Social badges, star CTA, clear use case, tweet button, repo topics updated | README.md:1-55, README.md:345-360 |
-| 2026-06-01 21:00 | 16/17 product/ courses written | In Progress | PM, Strategy, Discovery, Roadmapping, Analytics, PLG, User-Stories, Stakeholder, Agile-Scrum, Kanban, Risk, Sprint, JIRA, TPM, Delivery, PM-AI-Era done. Project-Mgmt-Fundamentals pending | product/Product-Management-Fundamentals.md:1 |
+| 2026-06-01 21:00 | 17 product/ courses written | Done | All 17: PM, Strategy, Discovery, Roadmapping, Analytics, PLG, User-Stories, Stakeholder, Agile-Scrum, Kanban, Risk, Sprint, JIRA, TPM, Delivery, Project-Mgmt, PM-AI-Era | product/Product-Management-Fundamentals.md:1 |
+| 2026-06-01 21:30 | Counts updated to 153/20 | Done | README, index.html, manifest.json, course-index.json, repo description all updated | README.md:10, docs/index.html:99, docs/data/course-index.json:2 |
 
 ## Next Session Resume Vector
 
-- 136 courses across 19 categories, all pushed
+- 153 courses across 20 categories, all pushed
 - Wave 1 completed features:
   - Progress Tracker & Bookmarks: DONE (100%)
-  - Recommended Learning Resources: DONE (136/136)
+  - Recommended Learning Resources: DONE (136/153 — 17 new product/ courses need resources added)
 - Wave 1 remaining features:
-  - Interview Questions: 37/136 (27%) — 99 courses still need IQ section
-  - Architecture Diagrams: 24/136 (18%) — 99 need both; 13 have IQ but no mermaid; Podman has mermaid but no IQ
-- TODO.txt has 33 industry-grade projects in 4 tiers + 3 bonus interview projects
+  - Interview Questions: 37/153 (24%) — need IQ for 99 original + 17 product courses
+  - Architecture Diagrams: 24/153 (16%) — need mermaid for 99 original + 17 product courses
+  - Learning Resources: 17 new product/ courses need resources section
+- TODO.txt has 48 project walkthroughs (33 + 15 industry case studies)
 - dsa.txt has full plan for separate DSA repo (25 courses, Python, FAANG-focused)
 - Wave 2 (quiz, comparisons, GIFs) + Wave 3 (CLI playground) not started
 - Site live at https://supersaiyane.github.io/crashcourse/
