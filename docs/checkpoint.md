@@ -28,6 +28,8 @@
 | 2026-06-01 07:45 | Wave 3 project catalog expanded | Done | TODO.txt: 33 tiered projects (1-14yr exp) replacing old 5-project list | TODO.txt:366-473 |
 | 2026-06-01 08:30 | Wave 1: Recommended learning resources | Done | All 136 courses — YouTube, docs, blogs curated per tool | containers/Kubernetes.md, ai/LLM-Fundamentals.md |
 | 2026-06-01 09:30 | DSA separate repo plan | Done | dsa.txt: 25 full courses, 8 categories, 3 learning paths, FAANG-calibrated | dsa.txt (local, gitignored) |
+| 2026-06-01 12:00 | PM courses planned + TODO status table | Done | TODO.txt: 16 product/project courses + master status table | TODO.txt (local, gitignored) |
+| 2026-06-01 12:23 | Fix hero subtitle 98→136 | Done | index.html (meta+OG+hero), manifest.json | docs/index.html:7,12,93, docs/manifest.json:4 |
 
 ## Next Session Resume Vector
 
