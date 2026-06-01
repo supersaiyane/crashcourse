@@ -26,14 +26,17 @@
 | 2026-06-01 02:00 | Wave 1: Interview Q + diagrams batch 3 (27 courses) | Partial | 14 both IQ+mermaid, 12 IQ-only, 1 mermaid-only — rate limit hit | observability/Grafana.md, cicd/ArgoCD.md |
 
 | 2026-06-01 07:45 | Wave 3 project catalog expanded | Done | TODO.txt: 33 tiered projects (1-14yr exp) replacing old 5-project list | TODO.txt:366-473 |
+| 2026-06-01 08:30 | Wave 1: Recommended learning resources | Done | All 136 courses — YouTube, docs, blogs curated per tool | containers/Kubernetes.md, ai/LLM-Fundamentals.md |
 
 ## Next Session Resume Vector
 
 - 136 courses across 19 categories, all pushed
-- Wave 1 progress: 37/136 IQ, 24/136 mermaid, PWA features DONE
-- 99 courses still need interview Q + diagrams (resume agents after rate limit resets)
-- 13 courses have IQ but missing mermaid: Argo-Rollouts, Flux, GitLab-CI, Jenkins, Tekton, Azure, Cloud-Arch, Cloud-Net, Cloud-Sec, Cloudflare, FinOps, GCP
-- Podman has mermaid but missing IQ
-- TODO.txt now has 33 industry-grade projects in 4 tiers + 3 bonus interview projects
+- Wave 1 completed features:
+  - Progress Tracker & Bookmarks: DONE (100%)
+  - Recommended Learning Resources: DONE (136/136)
+- Wave 1 remaining features:
+  - Interview Questions: 37/136 (27%) — 99 courses still need IQ section
+  - Architecture Diagrams: 24/136 (18%) — 99 need both; 13 have IQ but no mermaid; Podman has mermaid but no IQ
+- TODO.txt has 33 industry-grade projects in 4 tiers + 3 bonus interview projects
 - Wave 2 (quiz, comparisons, GIFs) + Wave 3 (CLI playground) not started
 - Site live at https://supersaiyane.github.io/crashcourse/
