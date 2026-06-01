@@ -1,8 +1,16 @@
 <p align="center">
+  <a href="https://github.com/supersaiyane/crashcourse/stargazers"><img src="https://img.shields.io/github/stars/supersaiyane/crashcourse?style=social" alt="Star on GitHub"/></a>
+  &nbsp;&nbsp;
+  <a href="https://github.com/supersaiyane/crashcourse/network/members"><img src="https://img.shields.io/github/forks/supersaiyane/crashcourse?style=social" alt="Fork on GitHub"/></a>
+  &nbsp;&nbsp;
+  <a href="https://github.com/supersaiyane/crashcourse/watchers"><img src="https://img.shields.io/github/watchers/supersaiyane/crashcourse?style=social" alt="Watch on GitHub"/></a>
+</p>
+
+<p align="center">
   <img src="https://img.shields.io/badge/Crash_Courses-136-blue?style=for-the-badge" alt="Courses"/>
   <img src="https://img.shields.io/badge/Categories-19-green?style=for-the-badge" alt="Categories"/>
   <img src="https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge" alt="License"/>
-  <img src="https://img.shields.io/github/stars/supersaiyane/crashcourse?style=for-the-badge" alt="Stars"/>
+  <img src="https://img.shields.io/github/stars/supersaiyane/crashcourse?style=for-the-badge&color=orange" alt="Stars"/>
   <img src="https://img.shields.io/github/forks/supersaiyane/crashcourse?style=for-the-badge" alt="Forks"/>
 </p>
 
@@ -42,15 +50,20 @@
 <h1 align="center">DevOps / SRE / Cloud / AI Crash Course</h1>
 
 <p align="center">
-  <strong>Zero to productive in 2 days per tool.</strong><br/>
-  One file per technology. Concepts first, commands second.<br/>
-  No fluff. No slides. Just what you need to get things done.
+  <strong>136 crash courses. 19 categories. Zero to productive in 2 days per tool.</strong><br/>
+  The only repo you need to go from "what is this?" to "I use it daily" — for Docker, Kubernetes, Terraform, AWS, Prometheus, LLMs, and 130 more tools.<br/>
+  Concepts first, commands second. No fluff. No slides. Just what you need.
 </p>
 
 <p align="center">
   <a href="#index">Browse Topics</a> &bull;
   <a href="#learning-paths">Learning Paths</a> &bull;
+  <a href="https://supersaiyane.github.io/crashcourse/">Live Website</a> &bull;
   <a href="#contributing">Contributing</a>
+</p>
+
+<p align="center">
+  <strong>If this repo helped you, <a href="https://github.com/supersaiyane/crashcourse/stargazers">give it a star</a> — it helps others find it too.</strong>
 </p>
 
 ---
@@ -339,6 +352,17 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ---
 
 <p align="center">
-  <strong>If this helped you, give it a star! It helps others find it too.</strong><br/>
+  <strong>Found this useful? <a href="https://github.com/supersaiyane/crashcourse/stargazers">Star this repo</a> — it takes 2 seconds and helps thousands of engineers discover it.</strong>
+</p>
+
+<p align="center">
+  <a href="https://github.com/supersaiyane/crashcourse/stargazers"><img src="https://img.shields.io/github/stars/supersaiyane/crashcourse?style=social&label=Star" alt="Star"/></a>
+  &nbsp;
+  <a href="https://github.com/supersaiyane/crashcourse/network/members"><img src="https://img.shields.io/github/forks/supersaiyane/crashcourse?style=social&label=Fork" alt="Fork"/></a>
+  &nbsp;
+  <a href="https://twitter.com/intent/tweet?text=136%20crash%20courses%20for%20DevOps%2C%20SRE%2C%20Cloud%20%26%20AI%20engineers.%20Zero%20to%20productive%20in%202%20days.&url=https%3A%2F%2Fgithub.com%2Fsupersaiyane%2Fcrashcourse"><img src="https://img.shields.io/twitter/url?style=social&url=https%3A%2F%2Fgithub.com%2Fsupersaiyane%2Fcrashcourse" alt="Tweet"/></a>
+</p>
+
+<p align="center">
   <sub>136 crash courses. 19 categories. Built for engineers who'd rather read docs than watch a 4-hour tutorial.</sub>
 </p>
