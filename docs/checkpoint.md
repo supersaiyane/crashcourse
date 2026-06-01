@@ -25,14 +25,15 @@
 | 2026-06-01 01:30 | Wave 1: Interview Q + diagrams batch 2 (5 courses) | Done | Prometheus, Git, Linux, Helm, GitHub-Actions — both IQ + mermaid | observability/Prometheus.md, vcs/Git.md |
 | 2026-06-01 02:00 | Wave 1: Interview Q + diagrams batch 3 (27 courses) | Partial | 14 both IQ+mermaid, 12 IQ-only, 1 mermaid-only — rate limit hit | observability/Grafana.md, cicd/ArgoCD.md |
 
+| 2026-06-01 07:45 | Wave 3 project catalog expanded | Done | TODO.txt: 33 tiered projects (1-14yr exp) replacing old 5-project list | TODO.txt:366-473 |
+
 ## Next Session Resume Vector
 
-- 136 courses across 19 categories
-- Wave 1 progress: 37/136 courses have interview questions, 24/136 have mermaid diagrams
-- PWA progress tracker + bookmarks + mermaid.js rendering: DONE
-- 99 courses still need interview Q + diagrams
+- 136 courses across 19 categories, all pushed
+- Wave 1 progress: 37/136 IQ, 24/136 mermaid, PWA features DONE
+- 99 courses still need interview Q + diagrams (resume agents after rate limit resets)
 - 13 courses have IQ but missing mermaid: Argo-Rollouts, Flux, GitLab-CI, Jenkins, Tekton, Azure, Cloud-Arch, Cloud-Net, Cloud-Sec, Cloudflare, FinOps, GCP
 - Podman has mermaid but missing IQ
-- Untouched categories: data/, dataops/, design/ (except System-Design), patterns/, platform/, processes/, interview/, career/, networking/, security/, most of ai/ + iac/ + containers/ + linux/
+- TODO.txt now has 33 industry-grade projects in 4 tiers + 3 bonus interview projects
+- Wave 2 (quiz, comparisons, GIFs) + Wave 3 (CLI playground) not started
 - Site live at https://supersaiyane.github.io/crashcourse/
-- TODO.txt Wave 2 + Wave 3 not started
