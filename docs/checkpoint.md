@@ -31,6 +31,7 @@
 | 2026-06-01 12:00 | PM courses planned + TODO status table | Done | TODO.txt: 16 product/project courses + master status table | TODO.txt (local, gitignored) |
 | 2026-06-01 12:23 | Fix hero subtitle 98→136 | Done | index.html (meta+OG+hero), manifest.json | docs/index.html:7,12,93, docs/manifest.json:4 |
 | 2026-06-01 12:45 | 15 industry case study projects added | Done | TODO.txt: projects #34-48 (Netflix, Uber, Stripe, Spotify, LinkedIn, etc.) | TODO.txt (local, gitignored) |
+| 2026-06-01 13:00 | README optimized for discoverability | Done | Social badges, star CTA, clear use case, tweet button, repo topics updated | README.md:1-55, README.md:345-360 |
 
 ## Next Session Resume Vector
 
