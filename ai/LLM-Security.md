@@ -501,4 +501,19 @@ For indirect injection testing, embed variants of the above in:
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [AI Engineer — LLM Security Talks](https://www.youtube.com/@aiaboratories) — conference talks on prompt injection, red-teaming, and guardrail architecture
+- [Yannic Kilcher — Security Papers](https://www.youtube.com/@YannicKilcher) — paper reviews on adversarial attacks, jailbreaks, and alignment failures
+- [DeepLearning.AI — Red Teaming LLMs](https://www.youtube.com/@Deeplearningai) — short courses on threat modeling, prompt injection defence, and output validation
+- [Sam Witteveen — LLM Safety](https://www.youtube.com/@samwitteveen) — practical guides on content filtering, guardrails, and safe deployment patterns
+
+**Official docs & blogs:**
+- [OWASP Top 10 for LLM Applications](https://owasp.org/www-project-top-10-for-large-language-model-applications/) — the authoritative threat taxonomy for LLM-based systems
+- [Simon Willison's Blog — Prompt Injection](https://simonwillison.net/) — the most thorough ongoing coverage of prompt injection attacks, mitigations, and real-world exploits
+- [Anthropic Research — Safety](https://www.anthropic.com/research) — constitutional AI, alignment techniques, and the safety engineering behind Claude
+
+---
+
 **The mantra:** the LLM is not your trust boundary — your application layer is.

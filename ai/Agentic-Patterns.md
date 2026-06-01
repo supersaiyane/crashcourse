@@ -451,6 +451,22 @@ Worker    Worker      Worker
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [DeepLearning.AI — Building Agentic AI](https://www.youtube.com/@Deeplearningai) — Andrew Ng's courses on agent design patterns: ReAct, planning, multi-agent, and tool use
+- [AI Jason — Agent Tutorials](https://www.youtube.com/@AIJasonZ) — practical agent implementations with tool calling, memory, and multi-step reasoning
+- [Sam Witteveen — Agent Patterns](https://www.youtube.com/@samwitteveen) — weekly coverage of agent architectures, orchestration patterns, and real-world agent builds
+- [AI Engineer — Agent Architecture Talks](https://www.youtube.com/@aiaboratories) — conference talks on production agent systems, evaluation, and failure modes
+- [Andrej Karpathy — LLM Agents](https://www.youtube.com/@AndrejKarpathy) — foundational thinking on why agents work, tool use mechanics, and the ReAct loop
+
+**Official docs & blogs:**
+- [Anthropic Documentation — Tool Use & Agents](https://docs.anthropic.com/en/docs/build-with-claude/tool-use) — Claude's tool calling API, agent patterns, and multi-turn agent design
+- [LangGraph Documentation](https://langchain-ai.github.io/langgraph/) — the primary framework for implementing stateful agent patterns with graphs
+- [Simon Willison's Blog](https://simonwillison.net/) — practical analysis of agent capabilities, limitations, and real-world agentic system design
+
+---
+
 ## The Mantra
 
 > One prompt, one answer — that is a calculator.

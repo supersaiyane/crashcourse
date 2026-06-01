@@ -451,4 +451,19 @@ Create standalone alert ──▶ Assemble LLM context ──▶ Generate summar
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [DeepLearning.AI — AI for Operations](https://www.youtube.com/@Deeplearningai) — short courses on applying ML and LLMs to operational workflows, anomaly detection, and automated remediation
+- [AI Engineer — AIOps Talks](https://www.youtube.com/@aiaboratories) — conference talks on integrating LLMs into incident management, log analysis, and alert correlation
+- [Sam Witteveen — AI Agents for SRE](https://www.youtube.com/@samwitteveen) — agent patterns applied to operational use cases: RCA, runbook execution, and metric correlation
+- [Yannic Kilcher — Anomaly Detection Papers](https://www.youtube.com/@YannicKilcher) — research reviews on time-series anomaly detection and log analysis with transformers
+
+**Official docs & blogs:**
+- [OpenTelemetry GenAI Semantic Conventions](https://opentelemetry.io/docs/specs/semconv/gen-ai/) — the standard for instrumenting AI systems with traces, metrics, and logs
+- [Anthropic Cookbook](https://github.com/anthropics/anthropic-cookbook) — patterns for building LLM-powered tools relevant to operational workflows
+- [Chip Huyen — MLOps & Operations](https://huyenchip.com/blog/) — practical writing on deploying ML systems reliably, applicable to AIOps pipelines
+
+---
+
 **The mantra:** Machines watch the firehose so humans can focus on the fire.

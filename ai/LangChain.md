@@ -624,6 +624,21 @@ add_routes(app, chain, path="/my-chain")
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [Sam Witteveen — LangChain Tutorials](https://www.youtube.com/@samwitteveen) — the most comprehensive LangChain video series: LCEL, chains, agents, tools, and weekly updates on new features
+- [AI Jason — LangChain Practical Guides](https://www.youtube.com/@AIJasonZ) — hands-on LangChain projects with RAG, agents, and structured output
+- [DeepLearning.AI — LangChain Short Courses](https://www.youtube.com/@Deeplearningai) — Andrew Ng's courses on LangChain fundamentals, LCEL, and agent development
+- [James Briggs — LangChain & Vector DBs](https://www.youtube.com/@jamesbriggs) — LangChain integrated with Pinecone, embeddings, and retrieval pipelines
+
+**Official docs & blogs:**
+- [LangChain Python Documentation](https://python.langchain.com/docs/) — LCEL reference, module guides, integration docs, and migration notes
+- [LangChain Blog](https://blog.langchain.dev/) — architecture decisions, new features, and production patterns from the LangChain team
+- [LangSmith Documentation](https://docs.smith.langchain.com/) — tracing, evaluation, and debugging for LangChain applications
+
+---
+
 ## The Mantra
 
 > Build the simplest chain that works. Add an agent only when you need a decision loop. Add memory only when context must persist. Reach for LangGraph only when the graph is real.

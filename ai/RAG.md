@@ -577,4 +577,20 @@ print(scores)
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [James Briggs — RAG & Vector Databases](https://www.youtube.com/@jamesbriggs) — detailed walkthroughs of chunking strategies, Pinecone, embedding models, and re-ranking pipelines
+- [AI Jason — RAG Tutorials](https://www.youtube.com/@AIJasonZ) — practical RAG implementations, hybrid search, and evaluation patterns
+- [Sam Witteveen — RAG Deep Dives](https://www.youtube.com/@samwitteveen) — advanced RAG techniques including parent-child chunking, metadata filtering, and multi-query retrieval
+- [DeepLearning.AI — Building RAG Applications](https://www.youtube.com/@Deeplearningai) — short courses on RAG architecture, evaluation, and production deployment
+- [Yannic Kilcher — Retrieval Papers](https://www.youtube.com/@YannicKilcher) — academic research on dense retrieval, re-ranking, and embedding model training
+
+**Official docs & blogs:**
+- [LangChain RAG Documentation](https://python.langchain.com/docs/tutorials/rag/) — end-to-end RAG tutorials with retrievers, splitters, and chain patterns
+- [Pinecone Learning Centre](https://www.pinecone.io/learn/) — vector database concepts, embedding model comparisons, and retrieval architecture guides
+- [Chip Huyen — Building RAG Systems](https://huyenchip.com/blog/) — evaluation strategies, chunking tradeoffs, and production RAG patterns
+
+---
+
 **The mantra:** Garbage in, garbage out — if your retriever surfaces the wrong chunks, no LLM in the world will save the answer.

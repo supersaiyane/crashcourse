@@ -592,6 +592,21 @@ avg_over_time(llm_evaluation_score{eval_name="answer_relevance"}[1h]) < 0.75
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [DeepLearning.AI — LLM Evaluation & Monitoring](https://www.youtube.com/@Deeplearningai) — short courses on building evaluation pipelines and monitoring LLM quality in production
+- [AI Engineer — Observability Talks](https://www.youtube.com/@aiaboratories) — conference talks on tracing LLM calls, cost dashboards, and quality scoring at scale
+- [Sam Witteveen — LLM Monitoring](https://www.youtube.com/@samwitteveen) — practical guides on LangSmith tracing, evaluation metrics, and drift detection
+- [Yannic Kilcher — Evaluation Papers](https://www.youtube.com/@YannicKilcher) — research on LLM evaluation benchmarks, automated scoring, and quality measurement
+
+**Official docs & blogs:**
+- [OpenTelemetry GenAI Semantic Conventions](https://opentelemetry.io/docs/specs/semconv/gen-ai/) — the standard for instrumenting LLM calls with traces, metrics, and token-level spans
+- [LangSmith Documentation](https://docs.smith.langchain.com/) — tracing, evaluation datasets, online scoring, and production monitoring for LLM applications
+- [Anthropic Documentation — Usage & Monitoring](https://docs.anthropic.com) — rate limits, token counting, streaming, and API observability patterns
+
+---
+
 ## The Mantra
 
 You ship a model. It answers confidently. Users are happy — until they're not. The difference between finding out in a Slack message from a frustrated user and finding out in your dashboard before it reaches most users is instrumentation. Trace every call. Score every response. Watch the scores over time. When they drift, investigate before users complain. LLM observability is not a nice-to-have — it's how you run an AI product with any degree of confidence.

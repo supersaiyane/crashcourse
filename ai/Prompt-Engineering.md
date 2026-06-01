@@ -611,4 +611,20 @@ Once you can reliably build and test prompts, the next layer is how you deploy t
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [DeepLearning.AI — ChatGPT Prompt Engineering for Developers](https://www.youtube.com/@Deeplearningai) — Andrew Ng and Isa Fulford's foundational course on systematic prompt design
+- [Anthropic Official — Prompt Engineering Guide](https://www.youtube.com/@AnthropicAI) — Claude-specific prompt techniques, system prompts, and structured output patterns
+- [AI Jason — Prompt Engineering Tutorials](https://www.youtube.com/@AIJasonZ) — practical walkthroughs of chain-of-thought, few-shot, and production prompt patterns
+- [Sam Witteveen — Prompt Techniques](https://www.youtube.com/@samwitteveen) — weekly coverage of new prompting techniques, tool use, and structured output
+- [Yannic Kilcher — Prompting Papers](https://www.youtube.com/@YannicKilcher) — academic prompt engineering research reviewed with practical takeaways
+
+**Official docs & blogs:**
+- [Anthropic Prompt Engineering Guide](https://docs.anthropic.com/en/docs/build-with-claude/prompt-engineering/overview) — Claude-specific best practices for system prompts, few-shot, and chain-of-thought
+- [OpenAI Prompt Engineering Guide](https://platform.openai.com/docs/guides/prompt-engineering) — model-agnostic techniques with concrete examples
+- [Simon Willison's Blog](https://simonwillison.net/) — practical prompt engineering, prompt injection analysis, and real-world LLM tooling patterns
+
+---
+
 **The mantra:** A prompt is a program — write it with the same precision you'd demand from any code that runs in production.

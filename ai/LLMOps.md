@@ -521,4 +521,19 @@ Span kind: `CLIENT` for all LLM API calls.
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [DeepLearning.AI — LLMOps Short Courses](https://www.youtube.com/@Deeplearningai) — Andrew Ng's courses on evaluation pipelines, model deployment, and A/B testing for LLMs
+- [AI Engineer — Production LLM Talks](https://www.youtube.com/@aiaboratories) — conference talks on LLM serving infrastructure, cost management, and operational patterns
+- [Sam Witteveen — LLM Deployment](https://www.youtube.com/@samwitteveen) — practical guides on model versioning, prompt management, and production monitoring
+- [Yannic Kilcher — MLOps & LLMOps](https://www.youtube.com/@YannicKilcher) — research-informed takes on evaluation, fine-tuning pipelines, and model lifecycle management
+
+**Official docs & blogs:**
+- [LangSmith Documentation](https://docs.smith.langchain.com/) — tracing, evaluation, prompt versioning, and production monitoring for LLM applications
+- [Chip Huyen — LLMOps](https://huyenchip.com/blog/) — comprehensive writing on evaluation strategies, model serving, cost optimization, and the LLMOps lifecycle
+- [Anthropic Cookbook](https://github.com/anthropics/anthropic-cookbook) — production patterns for Claude: batching, streaming, error handling, and evaluation
+
+---
+
 **The mantra:** Treat every prompt as a deployment — version it, test it, monitor it, and roll it back when it breaks.

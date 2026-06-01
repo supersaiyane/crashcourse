@@ -744,6 +744,21 @@ BFSI non-negotiables:
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [DeepLearning.AI — Building Safe AI Systems](https://www.youtube.com/@Deeplearningai) — short courses on content filtering, output validation, and guardrail architecture for LLMs
+- [AI Engineer — Guardrail Architecture Talks](https://www.youtube.com/@aiaboratories) — conference talks on input/output validation, policy enforcement, and safety layers
+- [Anthropic Official — Safe AI Deployment](https://www.youtube.com/@AnthropicAI) — Claude's built-in safety features, usage policies, and content filtering patterns
+- [Sam Witteveen — LLM Guardrails](https://www.youtube.com/@samwitteveen) — practical implementations of input validators, topic classifiers, and output filters
+
+**Official docs & blogs:**
+- [Guardrails AI Documentation](https://www.guardrailsai.com/docs) — the open-source guardrails framework: validators, structured output enforcement, and retry logic
+- [OWASP Top 10 for LLM Applications](https://owasp.org/www-project-top-10-for-large-language-model-applications/) — threat taxonomy that guardrails are designed to mitigate
+- [Anthropic Documentation — Safety Best Practices](https://docs.anthropic.com) — Claude-specific guidance on content policies, system prompts for safety, and usage limits
+
+---
+
 ## The Mantra
 
 > Guardrails are not a constraint on your LLM — they are the contract between your LLM and your users. Build them first, not last.

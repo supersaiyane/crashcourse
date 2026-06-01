@@ -688,4 +688,19 @@ await server.connect(new StdioServerTransport());
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [Anthropic Official — MCP Tutorials](https://www.youtube.com/@AnthropicAI) — official walkthroughs of Model Context Protocol: server building, tool design, and client integration
+- [AI Jason — MCP Practical Guides](https://www.youtube.com/@AIJasonZ) — hands-on MCP server implementations with real-world tool integrations
+- [Sam Witteveen — MCP & Tool Use](https://www.youtube.com/@samwitteveen) — building MCP servers, connecting to agents, and protocol design patterns
+- [AI Engineer — MCP Architecture Talks](https://www.youtube.com/@aiaboratories) — conference talks on tool integration standards and the MCP ecosystem
+
+**Official docs & blogs:**
+- [Model Context Protocol Specification](https://modelcontextprotocol.io) — the authoritative protocol spec: transport, message format, tool/resource/prompt primitives
+- [MCP Servers Repository](https://github.com/modelcontextprotocol/servers) — community and reference server implementations to learn from before building your own
+- [Anthropic Documentation — Tool Use](https://docs.anthropic.com/en/docs/build-with-claude/tool-use) — Claude's tool use patterns, which MCP standardises across clients
+
+---
+
 **The mantra:** One protocol, any tool — build the server once, let every AI host use it forever.

@@ -573,4 +573,20 @@ Build a golden dataset of 50-200 real input/expected-output pairs covering happy
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [Andrej Karpathy — Intro to Large Language Models](https://www.youtube.com/@AndrejKarpathy) — the single best one-hour overview of how LLMs work, from tokenization to RLHF
+- [3Blue1Brown — Neural Networks](https://www.youtube.com/@3blue1brown) — visual, intuition-first explanations of neural networks, attention, and transformers
+- [Yannic Kilcher — Paper Reviews](https://www.youtube.com/@YannicKilcher) — deep dives into transformer architecture papers (GPT, LLaMA, Mistral) with practical commentary
+- [DeepLearning.AI — Short Courses](https://www.youtube.com/@Deeplearningai) — Andrew Ng's short courses on LLM fundamentals, tokenization, and how models generate text
+- [AI Engineer — Summit Talks](https://www.youtube.com/@aiaboratories) — conference talks on LLM internals, scaling laws, and inference optimization
+
+**Official docs & blogs:**
+- [Anthropic Documentation](https://docs.anthropic.com) — Claude model cards, context window specs, and API usage patterns
+- [Hugging Face Blog](https://huggingface.co/blog) — model architecture deep dives, tokenizer internals, and open-source model releases
+- [Chip Huyen — Building LLM Applications](https://huyenchip.com/blog/) — practical writing on evaluation, latency, cost management, and production LLM patterns
+
+---
+
 **The mantra:** Understand the token, respect the window, measure before you ship.

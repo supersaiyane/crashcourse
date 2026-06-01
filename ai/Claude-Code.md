@@ -548,6 +548,21 @@ These files build on what you learned here:
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [Anthropic Official — Claude Code Guides](https://www.youtube.com/@AnthropicAI) — official tutorials on Claude Code setup, CLAUDE.md configuration, slash commands, and MCP integration
+- [AI Engineer — Claude Code Talks](https://www.youtube.com/@aiaboratories) — conference talks on agentic coding tools, Claude Code architecture, and production workflows
+- [DeepLearning.AI — AI Coding Assistants](https://www.youtube.com/@Deeplearningai) — short courses on working effectively with AI coding tools and prompt-driven development
+- [Sam Witteveen — Claude & Anthropic Tools](https://www.youtube.com/@samwitteveen) — practical guides on Claude's tool use, context management, and agent capabilities
+
+**Official docs & blogs:**
+- [Claude Code Documentation](https://docs.anthropic.com/en/docs/claude-code) — installation, configuration, CLAUDE.md reference, hooks, MCP servers, and best practices
+- [Anthropic Cookbook](https://github.com/anthropics/anthropic-cookbook) — example patterns for Claude: tool use, structured output, and multi-turn agent workflows
+- [Anthropic Blog](https://www.anthropic.com/blog) — product updates, Claude capabilities, and engineering insights from the Anthropic team
+
+---
+
 ## The Mantra
 
 > Describe the outcome, not the steps. Provide context, not instructions. Review the output, not the process. Trust the tool to execute — trust yourself to judge.

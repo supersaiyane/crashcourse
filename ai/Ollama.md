@@ -599,4 +599,19 @@ CUDA_VISIBLE_DEVICES=0                     # restrict to specific GPU(s)
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [Matt Williams — Ollama Tutorials](https://www.youtube.com/@technovangelist) — the definitive Ollama tutorial series: installation, model management, Modelfiles, and API usage
+- [AI Jason — Local LLM Guides](https://www.youtube.com/@AIJasonZ) — practical tutorials on running open-source models locally, comparing quantization levels, and building local pipelines
+- [Sam Witteveen — Open Source LLMs](https://www.youtube.com/@samwitteveen) — weekly coverage of new open-source model releases, benchmarks, and local deployment patterns
+- [Andrej Karpathy — llama.cpp & Local Inference](https://www.youtube.com/@AndrejKarpathy) — deep understanding of the inference runtime that Ollama wraps
+- [Yannic Kilcher — Open Source Model Reviews](https://www.youtube.com/@YannicKilcher) — architecture reviews of LLaMA, Mistral, Qwen, and other models you run in Ollama
+
+**Official docs & blogs:**
+- [Ollama Documentation](https://github.com/ollama/ollama) — model library, Modelfile reference, API spec, and GPU configuration
+- [Hugging Face Model Hub](https://huggingface.co/models) — model cards, quantization options, and benchmark comparisons for models available in Ollama
+
+---
+
 **The mantra:** Local inference means you own the inference — pick the right model, quantize to fit your hardware, and build pipelines that never need to ask permission.

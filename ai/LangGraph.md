@@ -451,6 +451,20 @@ async def stream_tokens(graph, input, config):
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [Sam Witteveen — LangGraph Tutorials](https://www.youtube.com/@samwitteveen) — the most thorough LangGraph video series: state graphs, checkpointing, human-in-the-loop, and multi-agent patterns
+- [AI Jason — LangGraph Agent Builds](https://www.youtube.com/@AIJasonZ) — practical agent implementations using LangGraph with tool calling and conditional edges
+- [DeepLearning.AI — AI Agents with LangGraph](https://www.youtube.com/@Deeplearningai) — short courses on building stateful agents, persistence, and streaming with LangGraph
+- [AI Engineer — Agent Architecture Talks](https://www.youtube.com/@aiaboratories) — conference talks on graph-based agent design and multi-agent orchestration
+
+**Official docs & blogs:**
+- [LangGraph Documentation](https://langchain-ai.github.io/langgraph/) — state graph API, checkpointers, human-in-the-loop patterns, and deployment guides
+- [LangChain Blog — LangGraph Posts](https://blog.langchain.dev/) — design philosophy, architecture patterns, and production deployment guides for LangGraph
+
+---
+
 ## Next Steps
 
 - `LLM-Fundamentals.md` — revisit if nodes that call models feel opaque

@@ -452,6 +452,21 @@ python -m vllm.entrypoints.openai.run_benchmark \
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [AI Engineer — vLLM & Inference Talks](https://www.youtube.com/@aiaboratories) — conference talks on PagedAttention, continuous batching, and production LLM serving
+- [Yannic Kilcher — Inference Optimization Papers](https://www.youtube.com/@YannicKilcher) — paper reviews covering KV cache management, speculative decoding, and serving architectures
+- [Sam Witteveen — LLM Serving](https://www.youtube.com/@samwitteveen) — practical comparisons of vLLM, TGI, and Ollama for different deployment scenarios
+- [DeepLearning.AI — Model Deployment](https://www.youtube.com/@Deeplearningai) — short courses covering inference optimization and GPU resource management
+
+**Official docs & blogs:**
+- [vLLM Documentation](https://docs.vllm.ai) — installation, model support matrix, engine arguments, and deployment guides
+- [vLLM GitHub](https://github.com/vllm-project/vllm) — source, benchmarks, and community-contributed model integrations
+- [Hugging Face Blog — Inference](https://huggingface.co/blog) — quantization techniques, model serving benchmarks, and inference optimization guides
+
+---
+
 ## The Mantra
 
 > Ollama gets the model running. vLLM gets the model serving.
