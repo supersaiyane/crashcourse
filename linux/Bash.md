@@ -443,6 +443,20 @@ Run it with `bash -x script.sh` to trace every command as it executes, showing v
 - Know when to graduate to **Python** — for anything with real data structures, APIs, or >100
   lines of logic.
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [NetworkChuck — Bash Scripting for Beginners](https://www.youtube.com/@NetworkChuck) — approachable intro to writing your first scripts and automating tasks
+- [LearnLinuxTV — Bash Scripting Tutorial Series](https://www.youtube.com/@LearnLinuxTV) — structured walkthrough from variables to functions to real automation
+- [Fireship — Bash in 100 Seconds](https://www.youtube.com/@Fireship) — quick mental model of what Bash is and why it matters
+- [The Urban Penguin — Advanced Bash Scripting](https://www.youtube.com/@TheUrbanPenguin) — deeper topics: arrays, traps, getopts, process substitution
+- [Luke Smith — Shell Scripting Tutorials](https://www.youtube.com/@LukeSmithxyz) — minimalist, practical shell scripting and Unix philosophy
+
+**Official docs & blogs:**
+- [GNU Bash Reference Manual](https://www.gnu.org/software/bash/manual/bash.html) — the authoritative reference for syntax, builtins, and expansion rules
+- [ShellCheck](https://www.shellcheck.net/) — paste any script here to catch quoting bugs, syntax issues, and bad patterns instantly
+- [Julia Evans — Bash quirks](https://jvns.ca/) — visual, memorable guides to the parts of Bash that trip everyone up
+
 **The mantra:** `set -euo pipefail` at the top, quote every variable, check exit codes, clean up
 with `trap`, validate inputs, and run shellcheck. Bash is glue for commands — keep it small and
 make it fail safely.

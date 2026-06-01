@@ -739,4 +739,18 @@ Keep it minimal: `set nocompatible`, `set backspace=indent,eol,start`, `set numb
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [ThePrimeagen — Vim As Your Editor](https://www.youtube.com/@ThePrimeagen) — high-energy series on Vim motions, macros, and making Vim your daily driver
+- [Luke Smith — Vim Tutorials](https://www.youtube.com/@LukeSmithxyz) — practical Vim usage, plugin setup, and the Unix-native editing workflow
+- [Fireship — Vim in 100 Seconds](https://www.youtube.com/@Fireship) — fast overview that sets the mental model before you start practising
+- [DistroTube — Vim/Neovim Configuration](https://www.youtube.com/@DistroTube) — walkthroughs of vimrc and init.lua setups for productive editing
+- [TJ DeVries — Neovim Core and Kickstart](https://www.youtube.com/@teaborgs) — Neovim core contributor explaining LSP, Telescope, and modern Vim workflows
+
+**Official docs & blogs:**
+- [Vim Help (vimhelp.org)](https://vimhelp.org/) — the built-in `:help` system rendered as a searchable website
+- [Vim Tips Wiki](https://vim.fandom.com/wiki/Vim_Tips_Wiki) — community-curated tips and recipes for common editing tasks
+- [OpenVim Interactive Tutorial](https://www.openvim.com/) — browser-based practice environment for learning motions and commands
+
 **The mantra:** Every edit is a sentence — operator, motion, object — speak it clearly and Vim executes it exactly.

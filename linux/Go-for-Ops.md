@@ -785,6 +785,21 @@ For deeper Go: the official tour at `tour.golang.org`, the standard library docs
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [ThePrimeagen — Go and Systems Programming](https://www.youtube.com/@ThePrimeagen) — fast-paced exploration of Go's concurrency model, performance, and terminal tooling
+- [Fireship — Go in 100 Seconds](https://www.youtube.com/@Fireship) — rapid mental model of why Go exists and what makes it different
+- [Jon Gjengset — Systems Programming Concepts](https://www.youtube.com/@jonhoo) — deep systems thinking (Rust-focused but the concurrency and networking concepts transfer directly to Go)
+- [NetworkChuck — Go Programming for Beginners](https://www.youtube.com/@NetworkChuck) — approachable introduction to Go with hands-on projects
+- [TechWorld with Nana — Golang Tutorial for Beginners](https://www.youtube.com/@TechWorldwithNana) — structured walkthrough aimed at DevOps engineers picking up Go
+
+**Official docs & blogs:**
+- [A Tour of Go (tour.golang.org)](https://go.dev/tour/) — the official interactive tutorial covering every language feature you need
+- [Go Standard Library Documentation (pkg.go.dev)](https://pkg.go.dev/std) — searchable reference for the standard library, which is where most ops Go code lives
+
+---
+
 ## The Mantra
 
 > Read the error. Wrap it with context. Return it to the caller. The language forces the conversation that other languages let you skip.

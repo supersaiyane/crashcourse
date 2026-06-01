@@ -724,4 +724,18 @@ Alias=                # alternative names for this unit
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [LearnLinuxTV — systemd Deep Dive](https://www.youtube.com/@LearnLinuxTV) — structured series covering units, targets, timers, and journal from basics to production
+- [The Urban Penguin — systemd Administration](https://www.youtube.com/@TheUrbanPenguin) — detailed tutorials on service files, socket activation, and cgroup resource controls
+- [NetworkChuck — systemd for Beginners](https://www.youtube.com/@NetworkChuck) — approachable first look at managing services on modern Linux
+- [tutoriaLinux — systemd Services and Timers](https://www.youtube.com/@tutoriaLinux) — practical systemd usage for ops engineers building reliable service management
+- [Fireship — systemd Explained](https://www.youtube.com/@Fireship) — fast overview of what systemd replaced and why it matters
+
+**Official docs & blogs:**
+- [systemd Official Documentation (systemd.io)](https://systemd.io/) — the upstream project site with links to man pages, design docs, and FAQs
+- [Lennart Poettering's systemd Blog Series](http://0pointer.de/blog/projects/systemd.html) — the original design rationale from systemd's creator, still the best "why" explanation
+- [Arch Wiki — systemd](https://wiki.archlinux.org/title/Systemd) — community-maintained, comprehensive, and practical reference for all systemd components
+
 **The mantra:** If you don't know what's wrong, `systemctl status` and `journalctl -fu` — everything else follows from there.

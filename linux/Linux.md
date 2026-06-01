@@ -383,6 +383,19 @@ The shell reads the input, parses it, and performs expansions (variables, globs,
 - Deeper: SSH keys & config, cron/systemd timers, file descriptors, signals, and security
   hardening.
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [NetworkChuck — Linux for Hackers](https://www.youtube.com/@NetworkChuck) — beginner-friendly walkthroughs of Linux basics, commands, and networking
+- [LearnLinuxTV — Linux Essentials Series](https://www.youtube.com/@LearnLinuxTV) — structured, methodical Linux admin tutorials from install to daily use
+- [The Urban Penguin — Linux System Administration](https://www.youtube.com/@TheUrbanPenguin) — deep sysadmin topics: permissions, processes, filesystems, networking
+- [Fireship — Linux in 100 Seconds](https://www.youtube.com/@Fireship) — fast-paced explainer that sets the mental model before you dive deeper
+- [tutoriaLinux — Linux for DevOps](https://www.youtube.com/@tutoriaLinux) — practical Linux skills aimed at ops and DevOps engineers
+
+**Official docs & blogs:**
+- [The Linux Documentation Project (TLDP)](https://tldp.org/) — comprehensive guides and HOWTOs covering every core Linux concept
+- [Julia Evans — Linux debugging and networking zines](https://jvns.ca/) — short, visual, deeply practical posts on Linux internals, networking, and command-line tools
+
 **The mantra:** everything is a file; compose small tools with pipes. To operate a box: navigate,
 inspect state (files, processes, resources, logs), then change it carefully. When something
 breaks: `df -h`, `free -h`, `top`, and read the logs.

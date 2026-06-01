@@ -492,6 +492,22 @@ Once regex is solid, these files extend the same skill into adjacent tools:
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [Fireship — Regular Expressions in 100 Seconds](https://www.youtube.com/@Fireship) — fast mental model of what regex is and the core syntax you need
+- [Corey Schafer — Python Regular Expressions](https://www.youtube.com/@coreyms) — thorough walkthrough of regex in Python with real examples
+- [The Coding Train — Regular Expressions](https://www.youtube.com/@TheCodingTrain) — visual, step-by-step regex tutorials that make complex patterns intuitive
+- [NetworkChuck — Regex for Beginners](https://www.youtube.com/@NetworkChuck) — approachable introduction to regex with grep and practical log-parsing examples
+- [LearnLinuxTV — grep and Regex](https://www.youtube.com/@LearnLinuxTV) — regex in the context of grep, sed, and everyday Linux text processing
+
+**Official docs & blogs:**
+- [regex101.com](https://regex101.com/) — interactive regex tester with real-time explanation, debugger, and flavour switching (PCRE, Python, Go RE2, JavaScript)
+- [Regular-Expressions.info](https://www.regular-expressions.info/) — the most comprehensive regex reference on the web, covering every flavour and feature
+- [GNU grep Manual — Regular Expressions](https://www.gnu.org/software/grep/manual/grep.html) — the reference for BRE and ERE syntax used in grep, sed, and awk
+
+---
+
 ## The Mantra
 
 Write the pattern, test it against real data, name your groups, compile once, reuse everywhere.

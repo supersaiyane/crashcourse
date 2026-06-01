@@ -454,6 +454,21 @@ Run `make help` and get a formatted table of every target. Run `make build IMAGE
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [LearnLinuxTV — Makefile Tutorial](https://www.youtube.com/@LearnLinuxTV) — structured walkthrough of targets, variables, and phony rules for beginners
+- [Fireship — Makefile in 100 Seconds](https://www.youtube.com/@Fireship) — rapid overview of what Make does and why projects still use it
+- [ThePrimeagen — Build Systems and Makefiles](https://www.youtube.com/@ThePrimeagen) — practical take on Makefiles in modern development workflows
+- [tutoriaLinux — Makefiles for DevOps](https://www.youtube.com/@tutoriaLinux) — ops-focused examples wrapping Docker, Kubernetes, and CI commands in Make targets
+
+**Official docs & blogs:**
+- [GNU Make Manual](https://www.gnu.org/software/make/manual/make.html) — the authoritative reference for rules, variables, functions, and pattern matching
+- [Clark Grubb — Makefile Style Guide](https://clarkgrubb.com/makefile-style-guide) — practical conventions for writing clean, maintainable Makefiles
+- [Julia Evans — Makefiles explained](https://jvns.ca/) — short, clear posts that demystify how Make actually works under the hood
+
+---
+
 ## The Mantra
 
 > One file. Zero dependencies. Every command the project needs — discoverable, reproducible, and runnable the same way on your laptop and in CI. That is the Makefile promise. Keep it simple and keep it honest.

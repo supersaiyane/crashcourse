@@ -729,6 +729,21 @@ with open("/tmp/output.json", "w") as f:
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [Corey Schafer — Python Tutorials](https://www.youtube.com/@coreyms) — clear, thorough Python tutorials covering modules, virtualenvs, requests, logging, and testing
+- [Fireship — Python in 100 Seconds](https://www.youtube.com/@Fireship) — quick framing of Python's strengths and where it fits in the toolchain
+- [NetworkChuck — Python for Network Engineers](https://www.youtube.com/@NetworkChuck) — beginner-friendly Python automation for infrastructure and networking tasks
+- [TechWorld with Nana — Python for DevOps](https://www.youtube.com/@TechWorldwithNana) — practical Python projects aimed at ops engineers (boto3, API calls, scripting)
+- [ArjanCodes — Python Best Practices](https://www.youtube.com/@ArjanCodes) — clean code patterns, testing, and project structure for production Python
+
+**Official docs & blogs:**
+- [Python Official Documentation (docs.python.org)](https://docs.python.org/3/) — the definitive reference for the standard library, builtins, and language syntax
+- [Real Python — Tutorials and Guides](https://realpython.com/) — high-quality, in-depth tutorials on every Python topic from basics to advanced automation
+
+---
+
 ## The Mantra
 
 **Write it in Bash until it breaks, then write it in Python until it scales, then write it in Go when it ships.**

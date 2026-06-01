@@ -346,6 +346,19 @@ Add `set -g history-limit 50000` to `~/.tmux.conf`. The default is 2000 lines, w
 - Compare with **GNU screen** (older alternative) — you'll meet it on legacy boxes; same idea,
   different keys.
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [LearnLinuxTV — tmux Crash Course](https://www.youtube.com/@LearnLinuxTV) — clear, structured introduction to sessions, windows, and panes
+- [NetworkChuck — tmux for Beginners](https://www.youtube.com/@NetworkChuck) — beginner-friendly demo of why tmux matters for remote work
+- [ThePrimeagen — tmux and Terminal Workflow](https://www.youtube.com/@ThePrimeagen) — how to build a fast dev workflow with tmux and Vim together
+- [Dreams of Code — tmux Setup Guide](https://www.youtube.com/@dreamsofcode) — modern tmux configuration, plugins, and status bar customisation
+- [Luke Smith — Terminal Multiplexers](https://www.youtube.com/@LukeSmithxyz) — minimalist approach to tmux and why it replaces tabbed terminals
+
+**Official docs & blogs:**
+- [tmux GitHub Wiki](https://github.com/tmux/tmux/wiki) — official documentation, FAQ, and getting-started guide
+- [tmux Cheat Sheet (tmuxcheatsheet.com)](https://tmuxcheatsheet.com/) — printable quick reference for keybindings and commands
+
 **The mantra:** start long remote work inside a named tmux session, detach with `C-b d`, reattach
 with `tmux attach`. Every shortcut is prefix-then-key. Turn the mouse on, and never lose a
 long-running job to a dropped connection again.

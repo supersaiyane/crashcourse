@@ -595,6 +595,22 @@ tracepoint:syscalls:sys_exit_openat /(@start[tid])/ {
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [Brendan Gregg — Performance Analysis and BPF](https://www.youtube.com/@brendangregg) — the definitive source on Linux performance methodology, flame graphs, and eBPF tracing
+- [LearnLinuxTV — Linux Troubleshooting](https://www.youtube.com/@LearnLinuxTV) — structured walkthroughs of diagnosing CPU, memory, disk, and network issues
+- [NetworkChuck — Linux Debugging](https://www.youtube.com/@NetworkChuck) — beginner-friendly approach to reading logs, checking processes, and fixing common problems
+- [The Urban Penguin — Linux Performance Tuning](https://www.youtube.com/@TheUrbanPenguin) — detailed tutorials on strace, lsof, sar, and kernel-level diagnostics
+- [Fireship — Linux Process Management](https://www.youtube.com/@Fireship) — quick explainers on processes, signals, and the tools that inspect them
+
+**Official docs & blogs:**
+- [Brendan Gregg's Blog and USE Method](https://www.brendangregg.com/usemethod.html) — the USE method checklist, Linux performance tools map, and flame graph methodology
+- [Julia Evans — Debugging and Profiling Zines](https://jvns.ca/) — visual, practical guides to strace, perf, and thinking about Linux internals
+- [Linux Performance (brendangregg.com/linuxperf.html)](https://www.brendangregg.com/linuxperf.html) — the comprehensive Linux performance tools diagram and tool-by-tool reference
+
+---
+
 ## The Mantra
 
 **Measure, don't guess. One variable at a time. Rule out before you rule in.**

@@ -502,4 +502,17 @@ awk -v t="$threshold" '$3 > t { print }' data.txt
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [LearnLinuxTV — awk Tutorial Series](https://www.youtube.com/@LearnLinuxTV) — methodical walkthrough from basic field splitting to real log-processing examples
+- [The Urban Penguin — awk Deep Dive](https://www.youtube.com/@TheUrbanPenguin) — detailed coverage of patterns, actions, arrays, and built-in variables
+- [Fireship — awk in 100 Seconds](https://www.youtube.com/@Fireship) — rapid mental model of what awk is and where it fits in the Unix pipeline
+- [Luke Smith — Text Processing with awk](https://www.youtube.com/@LukeSmithxyz) — practical examples of awk for everyday command-line tasks
+- [tutoriaLinux — awk for System Administrators](https://www.youtube.com/@tutoriaLinux) — ops-focused awk usage for parsing logs and system output
+
+**Official docs & blogs:**
+- [GNU Awk User's Guide (gawk manual)](https://www.gnu.org/software/gawk/manual/gawk.html) — the definitive reference for syntax, built-in functions, and advanced features
+- [The AWK Programming Language — Aho, Weinberger, Kernighan](https://archive.org/details/pdfy-MgN0H1joIoDVoIC7) — the original book by awk's creators, still the best tutorial
+
 **The mantra:** if you can describe what you want in terms of "when this column matches this condition, compute that" — awk does it in one line, right now, with no dependencies.

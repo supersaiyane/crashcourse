@@ -482,4 +482,17 @@ sed -f transform.sed input.txt
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [LearnLinuxTV — sed Tutorial Series](https://www.youtube.com/@LearnLinuxTV) — structured introduction from basic substitutions to multi-line editing
+- [The Urban Penguin — sed Mastery](https://www.youtube.com/@TheUrbanPenguin) — deep dive into addresses, hold space, and advanced sed scripts
+- [Luke Smith — sed and Stream Editing](https://www.youtube.com/@LukeSmithxyz) — practical, no-nonsense examples of sed for daily text manipulation
+- [tutoriaLinux — sed for DevOps](https://www.youtube.com/@tutoriaLinux) — ops-focused sed usage for config file management and log processing
+- [Fireship — sed in 100 Seconds](https://www.youtube.com/@Fireship) — quick overview that frames sed in the Unix pipeline mental model
+
+**Official docs & blogs:**
+- [GNU sed Manual](https://www.gnu.org/software/sed/manual/sed.html) — the authoritative reference for addresses, commands, and regular expression syntax
+- [sed one-liners explained (catonmat.net)](https://catonmat.net/sed-one-liners-explained-part-one) — Peteris Krumins' annotated collection of the most useful sed patterns
+
 **The mantra:** sed is a scalpel — know the one line you need, run it, trust the output, move on.
