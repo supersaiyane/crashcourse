@@ -344,6 +344,19 @@ Set budget alerts per project immediately. Use Committed Use Discounts (CUDs) fo
 - **Anthos / GKE** deeper for multi-cluster, and **Cloud Armor** for WAF.
 - Map this back to AWS/Azure — the primitives are the same; only names and a few defaults differ.
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [Google Cloud Tech — Getting Started Series](https://www.youtube.com/@googlecloudtech) — official tutorials covering every GCP service with clear diagrams
+- [Google Cloud Next Conferences](https://www.youtube.com/@googlecloudtech/playlists) — deep technical talks from Google engineers on production patterns
+- [Adrian Cantrill — GCP Networking and Architecture](https://www.youtube.com/@adriancantrill) — thorough visual explanations of GCP's global networking model
+- [Fireship — GCP in 100 Seconds](https://www.youtube.com/@Fireship) — quick orientation videos to build mental models before diving deep
+- [A Cloud Guru — Google Cloud Fundamentals](https://www.youtube.com/@ACloudGuru) — structured learning paths for GCP certification and practical use
+
+**Official docs & blogs:**
+- [Google Cloud Documentation](https://cloud.google.com/docs) — well-structured reference with architecture guides and quickstarts per service
+- [Google Cloud Blog](https://cloud.google.com/blog/) — engineering deep dives, case studies, and new feature announcements
+
 **The mantra:** everything lives in a Project, enable the API before you use the service, run
 workloads as service accounts (not key files), and remember VPC and load balancing are global.
 Check your active project before every command.

@@ -349,6 +349,19 @@ Define your RTO and RPO first — they determine the DR tier. Azure Site Recover
 - **KQL** for querying logs in Log Analytics — a genuinely useful skill.
 - Map back to AWS/GCP: VMs/Blob/AKS/Functions are EC2/S3/EKS/Lambda by another name.
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [Azure Friday — Scott Hanselman & Friends](https://www.youtube.com/@AzureFriday) — short, focused deep dives on individual Azure services with the teams that built them
+- [Microsoft Developer — Azure Architecture](https://www.youtube.com/@MicrosoftDeveloper) — end-to-end architecture walkthroughs and best practices
+- [John Savill — Azure Master Class](https://www.youtube.com/@NTFAQGuy) — comprehensive, whiteboard-style explanations of Azure networking, identity, and governance
+- [Adrian Cantrill — Cloud Architecture](https://www.youtube.com/@adriancantrill) — cross-cloud architecture patterns that map cleanly to Azure concepts
+- [A Cloud Guru — Azure Fundamentals](https://www.youtube.com/@ACloudGuru) — structured learning paths for AZ-900 through AZ-305
+
+**Official docs & blogs:**
+- [Microsoft Learn — Azure Documentation](https://learn.microsoft.com/en-us/azure/) — the canonical reference with learning paths, quickstarts, and architecture guides
+- [Azure Blog](https://azure.microsoft.com/en-us/blog/) — engineering updates, case studies, and new service announcements
+
 **The mantra:** resources live in Resource Groups (delete the group to clean up) under a
 Subscription; identity flows through Entra ID; workloads authenticate via managed identities +
 Key Vault; codify with Bicep or Terraform. Check the active subscription before every command.

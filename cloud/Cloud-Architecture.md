@@ -508,6 +508,22 @@ Cross-reference: `Cloud-Networking.md`, `Cloud-Security.md`, `AWS.md`, `GCP.md`,
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [Adrian Cantrill — Cloud Architecture & Well-Architected Framework](https://www.youtube.com/@adriancantrill) — the best visual walkthroughs of multi-account patterns, landing zones, and DR tiers
+- [AWS re:Invent — Architecture Track](https://www.youtube.com/@AWSEventsChannel) — principal-engineer-level talks on real-world architecture decisions at scale
+- [Google Cloud Tech — Architecture Center Walkthroughs](https://www.youtube.com/@googlecloudtech) — GCP-specific patterns with cross-cloud applicability
+- [Stephane Maarek — AWS Solutions Architect](https://www.youtube.com/@StephaneMaarek) — practical architecture patterns mapped to certification topics
+- [A Cloud Guru — Cloud Architecture Fundamentals](https://www.youtube.com/@ACloudGuru) — structured courses covering multi-cloud architecture and design principles
+
+**Official docs & blogs:**
+- [AWS Well-Architected Framework](https://docs.aws.amazon.com/wellarchitected/latest/framework/welcome.html) — the six-pillar design review checklist every cloud architect should internalise
+- [Google Cloud Architecture Center](https://cloud.google.com/architecture) — reference architectures, best practices, and design patterns
+- [Azure Architecture Center](https://learn.microsoft.com/en-us/azure/architecture/) — cloud design patterns, reference architectures, and landing zone guides
+
+---
+
 ## The Mantra
 
 > Design for failure. Automate everything. Tag from day one. Separate accounts before you need to. Know your RTO before you pick your DR tier. Security is not a layer on top — it is the foundation. The bill is a report card.

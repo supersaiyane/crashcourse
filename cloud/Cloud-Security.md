@@ -590,6 +590,22 @@ Work through these files after this one:
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [Adrian Cantrill — AWS Security & IAM Deep Dive](https://www.youtube.com/@adriancantrill) — thorough visual walkthroughs of IAM policies, SCPs, and cross-account trust
+- [AWS re:Invent — Security Track](https://www.youtube.com/@AWSEventsChannel) — talks from AWS security engineers on GuardDuty, Security Hub, and zero-trust patterns
+- [John Savill — Azure Security Master Class](https://www.youtube.com/@NTFAQGuy) — Entra ID, Defender for Cloud, and Azure security architecture in whiteboard format
+- [Google Cloud Tech — Security Best Practices](https://www.youtube.com/@googlecloudtech) — VPC Service Controls, IAM, and Cloud Armor explained by the product team
+- [Fireship — Cloud Security in 100 Seconds](https://www.youtube.com/@Fireship) — rapid mental-model videos covering IAM, encryption, and zero-trust basics
+
+**Official docs & blogs:**
+- [AWS Security Documentation](https://docs.aws.amazon.com/security/) — IAM, KMS, GuardDuty, Security Hub, and the Shared Responsibility Model
+- [Google Cloud Security Best Practices](https://cloud.google.com/security/best-practices) — organisation policies, VPC-SC, and workload identity federation
+- [Microsoft Security Documentation](https://learn.microsoft.com/en-us/security/) — Entra ID, Defender, Sentinel, and Azure security baselines
+
+---
+
 ## The Mantra
 
 > Identity first. Encrypt everything. Log everything. Trust nothing. Verify continuously.

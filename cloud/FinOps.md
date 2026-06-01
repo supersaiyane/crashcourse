@@ -406,6 +406,22 @@ The files below are the natural companions to this crash course. After you have 
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [FinOps Foundation — Conference Talks](https://www.youtube.com/@FinOpsFoundation) — practitioner talks on building FinOps practices, tooling, and org culture
+- [The Duckbill Group — AWS Cost Optimization](https://www.youtube.com/@TheDuckbillGroup) — Corey Quinn's sharp, practical takes on cloud billing traps and savings strategies
+- [Adrian Cantrill — AWS Pricing & Cost Management](https://www.youtube.com/@adriancantrill) — visual breakdowns of EC2 pricing models, Savings Plans, and Reserved Instances
+- [A Cloud Guru — Cloud Cost Management](https://www.youtube.com/@ACloudGuru) — structured courses on AWS, GCP, and Azure cost tools
+- [Stephane Maarek — AWS Cost Explorer & Budgets](https://www.youtube.com/@StephaneMaarek) — hands-on tutorials for setting up cost visibility in AWS
+
+**Official docs & blogs:**
+- [FinOps Foundation — Framework & Playbooks](https://www.finops.org/framework/) — the definitive FinOps framework, maturity model, and capability definitions
+- [Last Week in AWS — Corey Quinn](https://www.lastweekinaws.com/) — weekly newsletter and blog covering AWS cost surprises, billing quirks, and optimization tactics
+- [The Duckbill Group Blog](https://www.duckbillgroup.com/blog/) — deep dives on cloud cost architecture and negotiation strategies
+
+---
+
 ## The Mantra
 
 **Visibility before optimization. Optimization before commitment. Culture before tooling.**

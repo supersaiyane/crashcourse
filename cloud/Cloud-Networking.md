@@ -577,3 +577,19 @@ Work through these in order:
 - `WireGuard.md` — lightweight VPN for site-to-site or peer access without Direct Connect costs
 
 Cross-reference: `AWS.md`, `GCP.md`, `Azure.md`, `DNS-curl-dig.md`, `WireGuard.md`, `Kubernetes.md` (CNI networking — how the concepts here map to pod networking, services, and network policies inside a cluster).
+
+---
+
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [Adrian Cantrill — VPC Deep Dive & Cloud Networking](https://www.youtube.com/@adriancantrill) — the clearest visual explanations of VPCs, subnets, route tables, and Transit Gateway
+- [Google Cloud Tech — Cloud Networking Series](https://www.youtube.com/@googlecloudtech) — GCP's global VPC model, Cloud NAT, and Private Service Connect explained by the product team
+- [John Savill — Azure Networking Master Class](https://www.youtube.com/@NTFAQGuy) — comprehensive whiteboard sessions on VNets, NSGs, ExpressRoute, and Azure Firewall
+- [NetworkChuck — Cloud Networking for Beginners](https://www.youtube.com/@NetworkChuck) — hands-on, beginner-friendly labs covering VPCs, subnets, and security groups
+- [AWS re:Invent — Networking Track](https://www.youtube.com/@AWSEventsChannel) — deep dives on Transit Gateway, PrivateLink, and VPC design at scale
+
+**Official docs & blogs:**
+- [AWS VPC Documentation](https://docs.aws.amazon.com/vpc/latest/userguide/what-is-amazon-vpc.html) — the canonical reference for subnets, route tables, security groups, and NACLs
+- [Google Cloud Networking Documentation](https://cloud.google.com/vpc/docs) — VPC, firewall rules, Cloud NAT, and Private Service Connect
+- [Azure Virtual Network Documentation](https://learn.microsoft.com/en-us/azure/virtual-network/) — VNets, NSGs, peering, and Private Endpoints

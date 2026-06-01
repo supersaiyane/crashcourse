@@ -360,6 +360,19 @@ An ALB operates at Layer 7 (HTTP/HTTPS). It uses listener rules to route request
 - Compare the equivalents on **GCP** and **Azure** (see those cheatsheets) — the primitives map
   almost 1:1.
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [Adrian Cantrill — AWS Solutions Architect Course](https://www.youtube.com/@adriancantrill) — deep, visual walkthroughs of every AWS service and architecture pattern
+- [Stephane Maarek — Ultimate AWS Certified Solutions Architect](https://www.youtube.com/@StephaneMaarek) — practical, exam-aligned tutorials that double as production knowledge
+- [AWS re:Invent — Architecture Track](https://www.youtube.com/@AWSEventsChannel) — annual deep dives from AWS principal engineers on real-world patterns
+- [AWS Online Tech Talks](https://www.youtube.com/@AWSOnlineTechTalks) — focused 30-minute sessions on individual services and best practices
+- [Fireship — AWS in 100 Seconds](https://www.youtube.com/@Fireship) — rapid mental-model videos when you need a quick orientation on a service
+
+**Official docs & blogs:**
+- [AWS Documentation](https://docs.aws.amazon.com/) — the canonical reference; start with the "Getting Started" guide for each service
+- [AWS Architecture Blog](https://aws.amazon.com/blogs/architecture/) — real-world architecture patterns, Well-Architected case studies, and reference diagrams
+
 **The mantra:** five primitives (compute, storage, network, database, identity), in a region
 across AZs, gated by least-privilege IAM, defined as code. Check `sts get-caller-identity` and
 your region before you do anything.

@@ -567,6 +567,20 @@ Static frontend on Pages (deployed from Git, CDN-backed). API layer as Workers w
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [Cloudflare TV](https://www.youtube.com/@cloudflare) — product deep dives, architecture talks, and security walkthroughs from Cloudflare engineers
+- [Fireship — Cloudflare Workers in 100 Seconds](https://www.youtube.com/@Fireship) — rapid orientation on the Workers edge compute model
+- [NetworkChuck — Cloudflare Tunnel & Zero Trust](https://www.youtube.com/@NetworkChuck) — hands-on setup guides for tunnels, WARP, and Zero Trust access
+- [Hussein Nasser — Cloudflare Networking Deep Dives](https://www.youtube.com/@haborovkov) — protocol-level explanations of how Cloudflare's CDN, Argo, and routing work
+
+**Official docs & blogs:**
+- [Cloudflare Developers Documentation](https://developers.cloudflare.com/) — comprehensive reference for Workers, Pages, R2, D1, and all developer products
+- [Cloudflare Blog](https://blog.cloudflare.com/) — detailed engineering posts on how their network works, new product launches, and internet security insights
+
+---
+
 ## The Mantra
 
 > Put Cloudflare in front of everything public. Your origin should only ever see traffic that has passed through the force field — cached, filtered, authenticated, and rate-limited before it arrives. If a request reaches your server, it earned it.
