@@ -855,4 +855,18 @@ Each Envoy sidecar consumes roughly 50MB RAM and a small CPU slice. At 500 pods,
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [TechWorld with Nana — Istio Service Mesh](https://www.youtube.com/@TechWorldwithNana) — clear introduction to sidecars, traffic management, and observability with Istio
+- [CNCF — KubeCon Service Mesh Talks](https://www.youtube.com/@cncf) — deep dives on Istio ambient mode, Envoy internals, and mesh adoption patterns from maintainers
+- [Rawkode Live — CNCF Ecosystem](https://www.youtube.com/@rawkode) — hands-on walkthroughs of Istio alongside other CNCF networking tools
+- [Viktor Farcic (DevOps Toolkit)](https://www.youtube.com/@DevOpsToolkit) — Istio vs Linkerd vs Cilium comparisons grounded in production experience
+- [That DevOps Guy (Marcel Dempers)](https://www.youtube.com/@introsession) — production-focused Istio setup including mTLS, canary deployments, and gateway configuration
+
+**Official docs & blogs:**
+- [Istio Official Documentation](https://istio.io/latest/docs/) — the reference for traffic management, security policies, and observability configuration
+- [Istio Blog](https://istio.io/latest/blog/) — release notes, ambient mesh updates, and architecture evolution posts
+- [The New Stack — Service Mesh Articles](https://thenewstack.io/category/service-mesh/) — cloud native news covering mesh adoption patterns and comparisons
+
 **The mantra:** The network is the policy — declare what traffic should do, and Envoy enforces it everywhere, invisibly.

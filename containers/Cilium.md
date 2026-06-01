@@ -566,6 +566,21 @@ kubectl exec -n kube-system ds/cilium -- cilium monitor --type drop
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [CNCF — KubeCon eBPF & Cilium Talks](https://www.youtube.com/@cncf) — conference sessions from Cilium maintainers on eBPF datapath, ClusterMesh, and network policy design
+- [Rawkode Live — Cilium & eBPF](https://www.youtube.com/@rawkode) — hands-on CNCF ecosystem walkthroughs including Cilium installation, Hubble, and service mesh capabilities
+- [Viktor Farcic (DevOps Toolkit)](https://www.youtube.com/@DevOpsToolkit) — Cilium vs Calico vs Flannel comparisons with production tradeoff analysis
+- [That DevOps Guy (Marcel Dempers)](https://www.youtube.com/@introsession) — practical Kubernetes networking deep dives covering CNI selection and network policy enforcement
+- [KodeKloud — Kubernetes Networking](https://www.youtube.com/@KodeKloud) — foundational networking concepts that make Cilium's eBPF approach easier to understand
+
+**Official docs & blogs:**
+- [Cilium Official Documentation](https://docs.cilium.io/) — the reference for installation, network policies, ClusterMesh, and Hubble observability
+- [Isovalent Blog](https://isovalent.com/blog/) — deep technical posts from the team behind Cilium on eBPF, network security, and cloud native networking
+
+---
+
 ## The Mantra
 
 > The network is the security boundary. eBPF makes that boundary programmable, observable, and fast enough to actually enforce at scale. Cilium is what happens when you stop treating networking as a solved problem and start treating it as a first-class engineering concern.

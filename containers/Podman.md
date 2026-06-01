@@ -751,4 +751,16 @@ docker run -v /run/docker.sock (socket)     No equivalent — no daemon socket
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [TechWorld with Nana — Podman vs Docker](https://www.youtube.com/@TechWorldwithNana) — clear comparison explaining when and why to choose Podman over Docker
+- [Bret Fisher — Rootless Containers](https://www.youtube.com/@BretFisher) — container security best practices that apply directly to Podman's rootless model
+- [CNCF — Container Runtime Talks](https://www.youtube.com/@cncf) — KubeCon sessions on OCI runtimes, rootless containers, and Podman in enterprise environments
+- [That DevOps Guy (Marcel Dempers)](https://www.youtube.com/@introsession) — practical Podman usage in CI/CD, including Buildah and Skopeo integration
+
+**Official docs & blogs:**
+- [Podman Official Documentation](https://podman.io/docs) — the reference for CLI commands, rootless setup, and pod management
+- [Red Hat — Container Tools Guide](https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/9/html/building_running_and_managing_containers/) — enterprise perspective on Podman, Buildah, and Skopeo workflows
+
 **The mantra:** If it runs as root when it doesn't need to, you've already lost — Podman gives you the containers without the gamble.

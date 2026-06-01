@@ -605,6 +605,20 @@ helm upgrade harbor harbor/harbor -n harbor -f values.yaml
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [CNCF — KubeCon Harbor & Registry Talks](https://www.youtube.com/@cncf) — conference sessions on Harbor architecture, multi-tenant registry design, and supply chain security
+- [That DevOps Guy (Marcel Dempers)](https://www.youtube.com/@introsession) — production container registry setup including Harbor deployment, scanning, and CI/CD integration
+- [Viktor Farcic (DevOps Toolkit)](https://www.youtube.com/@DevOpsToolkit) — container registry comparisons and supply chain security tooling evaluations
+- [Rawkode Live — CNCF Projects](https://www.youtube.com/@rawkode) — hands-on walkthroughs of Harbor alongside Cosign, Trivy, and other CNCF security tools
+
+**Official docs & blogs:**
+- [Harbor Official Documentation](https://goharbor.io/docs/) — the reference for installation, RBAC, replication, vulnerability scanning, and API usage
+- [CNCF Blog — Harbor Posts](https://www.cncf.io/blog/) — graduation announcements, roadmap updates, and enterprise adoption case studies
+
+---
+
 ## The Mantra
 
 > Own your registry. Scan before deploy. Sign what you ship. Block what fails. Rotate secrets. Schedule GC. Know your CVE db age. A registry without policy is just expensive storage.

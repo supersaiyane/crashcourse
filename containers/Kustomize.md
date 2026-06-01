@@ -791,4 +791,16 @@ Patches that reference a resource name not in the build output are silently igno
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [TechWorld with Nana — Kustomize Tutorial](https://www.youtube.com/@TechWorldwithNana) — structured walkthrough of bases, overlays, and patch strategies
+- [That DevOps Guy (Marcel Dempers)](https://www.youtube.com/@introsession) — real-world Kustomize usage in GitOps pipelines with ArgoCD
+- [Viktor Farcic (DevOps Toolkit)](https://www.youtube.com/@DevOpsToolkit) — Kustomize vs Helm head-to-head comparisons with honest tradeoff analysis
+- [KodeKloud — Kustomize for Kubernetes](https://www.youtube.com/@KodeKloud) — hands-on labs covering generators, transformers, and multi-environment setups
+
+**Official docs & blogs:**
+- [Kustomize Official Documentation](https://kubectl.docs.kubernetes.io/references/kustomize/) — the reference for kustomization.yaml fields, built-in transformers, and plugins
+- [Kubernetes SIG CLI — Kustomize GitHub](https://github.com/kubernetes-sigs/kustomize) — examples, release notes, and the canonical source for feature support
+
 **The mantra:** One clean base, one small patch per environment — the diff tells the whole story.

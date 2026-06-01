@@ -338,5 +338,17 @@ Dependencies let you compose charts — your application chart can declare that 
 - **helm-diff** plugin to preview upgrades; **helmfile** to manage many releases declaratively.
 - Render Helm via **Argo CD** for GitOps-driven Helm deployments.
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [TechWorld with Nana — Helm Tutorial](https://www.youtube.com/@TechWorldwithNana) — beginner-friendly walkthrough of charts, values, and templating
+- [KodeKloud — Helm for Beginners](https://www.youtube.com/@KodeKloud) — hands-on labs covering chart creation, dependencies, and upgrades
+- [That DevOps Guy (Marcel Dempers)](https://www.youtube.com/@introsession) — production Helm patterns including library charts, umbrella charts, and CI/CD integration
+- [Viktor Farcic (DevOps Toolkit)](https://www.youtube.com/@DevOpsToolkit) — honest comparisons of Helm vs Kustomize vs raw manifests with real tradeoffs
+
+**Official docs & blogs:**
+- [Helm Official Documentation](https://helm.sh/docs/) — the canonical reference for chart structure, templating functions, and CLI commands
+- [Artifact Hub](https://artifacthub.io/) — the central registry for discovering and evaluating community Helm charts
+
 **The mantra:** chart = blueprint, values = knobs, release = an installed, versioned instance.
 Override values per environment, `upgrade -i` in CI, and `rollback` when it goes wrong.

@@ -450,6 +450,20 @@ velero restore create NAME --from-backup B --selector "app=my-api"
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [That DevOps Guy (Marcel Dempers)](https://www.youtube.com/@introsession) — production backup and disaster recovery workflows with Velero including CSI snapshots and restore drills
+- [CNCF — KubeCon Backup & DR Talks](https://www.youtube.com/@cncf) — conference sessions on Kubernetes data protection, Velero architecture, and disaster recovery strategies
+- [KodeKloud — Kubernetes Backup with Velero](https://www.youtube.com/@KodeKloud) — hands-on labs covering backup schedules, restores, and migration scenarios
+- [Viktor Farcic (DevOps Toolkit)](https://www.youtube.com/@DevOpsToolkit) — Kubernetes backup tool comparisons and GitOps-integrated disaster recovery patterns
+
+**Official docs & blogs:**
+- [Velero Official Documentation](https://velero.io/docs/) — the reference for installation, backup/restore configuration, plugins, and CSI integration
+- [The New Stack — Kubernetes Backup Articles](https://thenewstack.io/) — cloud native news covering backup strategies, DR planning, and data protection patterns
+
+---
+
 ## The Mantra
 
 > You do not have backups until you have tested restores.

@@ -404,6 +404,19 @@ Native Kubernetes Secrets are only base64-encoded, not encrypted at rest by defa
 - **RBAC**, **NetworkPolicies**, and **GitOps** with Argo CD (see `ArgoCD.md`).
 - `kubectl krew` plugins: `ctx`, `ns`, `stern` (multi-pod log tailing).
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [TechWorld with Nana — Kubernetes Tutorial for Beginners](https://www.youtube.com/@TechWorldwithNana) — the best structured beginner series; takes you from zero to deploying real apps
+- [KodeKloud — CKA/CKAD Courses](https://www.youtube.com/@KodeKloud) — hands-on labs with built-in practice environments; ideal for certification prep after Day 2
+- [That DevOps Guy (Marcel Dempers)](https://www.youtube.com/@introsession) — production-focused deep dives on ingress, storage, networking, and real-world cluster operations
+- [CNCF — KubeCon Talks](https://www.youtube.com/@cncf) — conference recordings from the people building Kubernetes; invaluable for understanding design decisions
+- [Viktor Farcic (DevOps Toolkit)](https://www.youtube.com/@DevOpsToolkit) — opinionated comparisons of K8s tools and honest production tradeoff discussions
+
+**Official docs & blogs:**
+- [Kubernetes Official Documentation](https://kubernetes.io/docs/home/) — the canonical reference; start with Concepts, then Tasks
+- [Learnk8s Blog](https://learnk8s.io/blog) — excellent architecture deep dives on networking, scaling, and cluster design
+
 **The mantra:** declare desired state, let the reconciliation loop maintain it. Deployment +
 Service for almost everything. When stuck: get → describe (Events) → logs --previous. Always
 check your context first.

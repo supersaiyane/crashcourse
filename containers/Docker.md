@@ -367,5 +367,17 @@ The `latest` tag is mutable — it points to whatever was most recently pushed. 
 - Understand how this maps to Kubernetes — a Pod runs your container image; everything you
   learned about images carries straight over. (See `Kubernetes.md`.)
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [TechWorld with Nana — Docker Tutorial for Beginners](https://www.youtube.com/@TechWorldwithNana) — clear, structured walkthrough from install to multi-container apps
+- [Bret Fisher — Docker Captain](https://www.youtube.com/@BretFisher) — Docker best practices, Compose patterns, and production container workflows from a Docker Captain
+- [KodeKloud — Docker for Beginners](https://www.youtube.com/@KodeKloud) — hands-on labs that build muscle memory for image builds and container management
+- [That DevOps Guy (Marcel Dempers)](https://www.youtube.com/@introsession) — real-world Docker usage in CI/CD, multi-stage builds, and security hardening
+
+**Official docs & blogs:**
+- [Docker Official Documentation](https://docs.docker.com/) — the reference for Dockerfile syntax, CLI commands, and Compose specification
+- [Docker Blog](https://www.docker.com/blog/) — release announcements, best practices, and security advisories
+
 **The mantra:** Dockerfile → image → container. One process per container. Order layers for
 cache. Persist data in volumes, pass secrets at runtime, pin your tags.
