@@ -317,6 +317,20 @@ LGTM stands for Loki (logs), Grafana (visualization), Tempo (traces), and Mimir 
 - Templating dashboards with **Grafonnet/Jsonnet** or shipping them via the
   kube-prometheus-stack.
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [Grafana Labs — Official Tutorials](https://www.youtube.com/@GrafanaLabs) — dashboard building, data source configuration, and GrafanaCon / ObservabilityCON talks
+- [TechWorld with Nana — Grafana for Beginners](https://www.youtube.com/@TechWorldwithNana) — beginner-friendly walkthrough of panels, variables, and alerting
+- [DevOps Toolkit (Viktor Farcic) — Grafana Stack](https://www.youtube.com/@DevOpsToolkit) — real-world dashboard design and LGTM stack comparisons
+- [CNCF — KubeCon Observability Track](https://www.youtube.com/@caborstudio) — conference talks on Grafana dashboards at scale and best practices
+- [Honeycomb (Charity Majors) — Observability Philosophy](https://www.youtube.com/@honeycombio) — why dashboards alone are not enough and how to think about observability
+
+**Official docs & blogs:**
+- [Grafana Official Documentation](https://grafana.com/docs/grafana/latest/)
+- [Grafana Labs Blog](https://grafana.com/blog/) — deep technical posts on dashboard design, Explore mode, and plugin development
+- [Grafana Play — Public Demo Dashboards](https://play.grafana.org/) — explore real dashboards without installing anything
+
 **The mantra:** Grafana frames the picture — connect data sources, query them, arrange panels,
 use variables to make dashboards reusable, set units/thresholds for instant reads, correlate
 metrics with logs, and keep dashboards in Git.

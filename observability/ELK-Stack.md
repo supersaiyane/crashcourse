@@ -596,6 +596,20 @@ You have a working ELK stack. The natural places to go next:
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [Elastic Official — ELK Stack Tutorials](https://www.youtube.com/@Elastic) — official Elasticsearch, Logstash, Kibana walkthroughs and Elastic{ON} conference recordings
+- [TechWorld with Nana — ELK Stack for Beginners](https://www.youtube.com/@TechWorldwithNana) — beginner-friendly setup of Elasticsearch, Filebeat, and Kibana dashboards
+- [DevOps Toolkit (Viktor Farcic) — ELK vs Loki](https://www.youtube.com/@DevOpsToolkit) — practical comparison of log aggregation stacks and when each fits
+- [CNCF — KubeCon Observability Track](https://www.youtube.com/@caborstudio) — conference talks on centralised logging, EFK variants, and log pipeline design
+- [Grafana Labs — Loki as ELK Alternative](https://www.youtube.com/@GrafanaLabs) — understanding where Loki complements or replaces ELK in your stack
+
+**Official docs & blogs:**
+- [Elasticsearch Official Documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/index.html)
+- [Kibana Official Documentation](https://www.elastic.co/guide/en/kibana/current/index.html)
+- [Elastic Blog](https://www.elastic.co/blog) — deep technical posts on index lifecycle management, mapping strategies, and cluster tuning
+
 ## The Mantra
 
 Logs without search are archaeology. Search without structure is guessing. Structure without retention is amnesia.

@@ -436,6 +436,20 @@ docker run -d \
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [CNCF — KubeCon Distributed Tracing Track](https://www.youtube.com/@caborstudio) — conference talks on Jaeger architecture, sampling strategies, and production deployments
+- [Grafana Labs — Tracing with Jaeger & Tempo](https://www.youtube.com/@GrafanaLabs) — comparing tracing backends and integrating Jaeger as a Grafana datasource
+- [OpenTelemetry Official — Instrumentation for Jaeger](https://www.youtube.com/@oaborstudio) — OTel SDK and Collector talks that apply directly to Jaeger ingestion
+- [DevOps Toolkit (Viktor Farcic) — Jaeger vs Tempo](https://www.youtube.com/@DevOpsToolkit) — practical tracing tool comparisons with real-world Kubernetes setups
+- [TechWorld with Nana — Distributed Tracing Explained](https://www.youtube.com/@TechWorldwithNana) — beginner-friendly introduction to tracing concepts and Jaeger setup
+
+**Official docs & blogs:**
+- [Jaeger Official Documentation](https://www.jaegertracing.io/docs/)
+- [Jaeger GitHub — Architecture & Deployment](https://github.com/jaegertracing/jaeger) — source code, deployment guides, and issue discussions
+- [OpenTelemetry Documentation — Traces](https://opentelemetry.io/docs/concepts/signals/traces/) — the instrumentation standard that feeds Jaeger
+
 ## The Mantra
 
 A trace is a story. Every span is a sentence. If you cannot read the story of a single request end-to-end, you are not debugging — you are guessing.

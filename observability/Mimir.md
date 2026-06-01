@@ -432,6 +432,20 @@ Useful flags:
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [Grafana Labs — Mimir Deep Dives](https://www.youtube.com/@GrafanaLabs) — official architecture walkthroughs, migration guides, and GrafanaCon talks on running Mimir at scale
+- [PromLabs (Julius Volz) — Long-Term Metrics Storage](https://www.youtube.com/@PromLabs) — Prometheus co-founder discusses remote write, federation, and why external storage matters
+- [CNCF — KubeCon Observability Track](https://www.youtube.com/@caborstudio) — conference talks on multi-tenant metrics, horizontal scaling, and Mimir vs Thanos
+- [DevOps Toolkit (Viktor Farcic) — Mimir vs Thanos](https://www.youtube.com/@DevOpsToolkit) — practical comparison of long-term Prometheus storage backends
+- [TechWorld with Nana — Prometheus Remote Write](https://www.youtube.com/@TechWorldwithNana) — beginner-friendly explanation of remote write pipelines and why they exist
+
+**Official docs & blogs:**
+- [Mimir Official Documentation](https://grafana.com/docs/mimir/latest/)
+- [Grafana Labs Blog — Mimir Category](https://grafana.com/blog/) — deep posts on cardinality management, compactor tuning, and multi-tenant architecture
+- [Robust Perception Blog (Brian Brazil)](https://www.robustperception.io/blog/) — Prometheus storage internals that underpin how Mimir works
+
 ## The Mantra
 
 Prometheus owns the scrape. Mimir owns the history. Grafana owns the view. They compose — do not conflate them.

@@ -323,5 +323,19 @@ Loki mirrors Prometheus intentionally. Both use the same `{label="value"}` selec
 - Tune **retention, limits, and compaction**; run Loki in scalable/microservices mode.
 - Derive metrics and SLOs from logs when apps don't expose Prometheus metrics.
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [Grafana Labs — Loki Tutorials](https://www.youtube.com/@GrafanaLabs) — official LogQL walkthroughs, architecture deep dives, and ObservabilityCON talks on Loki at scale
+- [TechWorld with Nana — Loki & Promtail Setup](https://www.youtube.com/@TechWorldwithNana) — beginner-friendly guide to deploying Loki with Kubernetes
+- [DevOps Toolkit (Viktor Farcic) — Loki vs ELK](https://www.youtube.com/@DevOpsToolkit) — practical comparison of log aggregation tools and when to pick Loki
+- [CNCF — KubeCon Observability Track](https://www.youtube.com/@caborstudio) — conference talks on running Loki in production and label strategy
+- [PromLabs (Julius Volz) — Metrics from Logs](https://www.youtube.com/@PromLabs) — deriving Prometheus metrics from log streams
+
+**Official docs & blogs:**
+- [Loki Official Documentation](https://grafana.com/docs/loki/latest/)
+- [Grafana Labs Blog — Loki Category](https://grafana.com/blog/) — deep posts on LogQL patterns, label best practices, and scaling microservices mode
+- [LogQL Documentation](https://grafana.com/docs/loki/latest/query/) — complete query language reference with examples
+
 **The mantra:** index labels, store raw lines cheaply. Select streams by low-cardinality labels
 first, then grep/parse the text. Keep high-cardinality data in the log body, not in labels.

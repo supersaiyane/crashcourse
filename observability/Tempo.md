@@ -448,6 +448,20 @@ curl http://localhost:3200/api/overrides
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [Grafana Labs — Tempo Tutorials](https://www.youtube.com/@GrafanaLabs) — official deep dives on TraceQL, metrics-generator, and Tempo architecture at ObservabilityCON
+- [OpenTelemetry Official — Tracing & Collector Pipelines](https://www.youtube.com/@oaborstudio) — OTel community talks on trace instrumentation that feeds Tempo
+- [CNCF — KubeCon Observability Track](https://www.youtube.com/@caborstudio) — conference talks on distributed tracing at scale, sampling strategies, and trace correlation
+- [DevOps Toolkit (Viktor Farcic) — Tempo vs Jaeger](https://www.youtube.com/@DevOpsToolkit) — practical comparison of tracing backends and LGTM stack integration
+- [Honeycomb (Charity Majors) — Debugging with Traces](https://www.youtube.com/@honeycombio) — observability philosophy applied to trace-driven debugging
+
+**Official docs & blogs:**
+- [Tempo Official Documentation](https://grafana.com/docs/tempo/latest/)
+- [Grafana Labs Blog — Tempo Category](https://grafana.com/blog/) — deep posts on TraceQL, metrics-generator, and scaling Tempo in microservices mode
+- [TraceQL Documentation](https://grafana.com/docs/tempo/latest/traceql/) — complete query language reference with pipeline and aggregation examples
+
 ## The Mantra
 
 **Find it by ID. Understand it by context. Fix it once.**

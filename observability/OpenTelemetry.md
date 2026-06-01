@@ -363,6 +363,21 @@ The `gen_ai.*` semantic conventions are emerging standards for tracing LLM calls
 - The **GenAI semantic conventions** (`gen_ai.*`) for tracing LLM calls — directly applicable to
   instrumenting AI-in-SRE tooling and token/cost observability.
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [OpenTelemetry Official — Community Talks & Demos](https://www.youtube.com/@oaborstudio) — OTel maintainers walk through SDKs, Collector pipelines, and semantic conventions
+- [Grafana Labs — OpenTelemetry Integration](https://www.youtube.com/@GrafanaLabs) — using OTel with the LGTM stack, Collector configuration, and trace correlation
+- [Honeycomb (Charity Majors) — Practical Observability](https://www.youtube.com/@honeycombio) — why instrumentation matters more than tooling, and how to debug with traces
+- [CNCF — KubeCon OTel Track](https://www.youtube.com/@caborstudio) — conference talks on OTel adoption, auto-instrumentation, and the Collector at scale
+- [DevOps Toolkit (Viktor Farcic) — OTel Real-World Setups](https://www.youtube.com/@DevOpsToolkit) — end-to-end OTel pipelines with Kubernetes and cloud backends
+- [TechWorld with Nana — Tracing & OTel Basics](https://www.youtube.com/@TechWorldwithNana) — beginner-friendly introduction to distributed tracing concepts
+
+**Official docs & blogs:**
+- [OpenTelemetry Official Documentation](https://opentelemetry.io/docs/)
+- [OpenTelemetry Specification & Semantic Conventions](https://opentelemetry.io/docs/specs/) — the authoritative reference for attribute naming, including GenAI conventions
+- [Grafana Labs Blog — OTel Category](https://grafana.com/blog/) — practical posts on Collector deployment, tail sampling, and OTLP integration
+
 **The mantra:** instrument once against OTel, route anywhere via the Collector
 (receivers → processors → exporters). Traces show *where* in a distributed system the time and
 errors live; propagate context, sample sensibly, and use standard attribute names.

@@ -377,5 +377,19 @@ Start at the source: check **Status > Targets** in Prometheus UI — is the targ
 - Long-term/HA storage: **Thanos** or **Mimir** (ties to your migration ADR work).
 - Multi-window **burn-rate alerting** for SLOs, and the **PromQL** functions you didn't cover.
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [PromLabs (Julius Volz) — PromQL Deep Dives](https://www.youtube.com/@PromLabs) — Prometheus co-founder walks through query patterns, recording rules, and common mistakes
+- [Grafana Labs — Prometheus Tutorials](https://www.youtube.com/@GrafanaLabs) — official walkthroughs on scraping, remote write, and Grafana integration
+- [TechWorld with Nana — Prometheus Monitoring](https://www.youtube.com/@TechWorldwithNana) — beginner-friendly setup and concepts for Kubernetes monitoring
+- [CNCF — KubeCon Observability Track](https://www.youtube.com/@caborstudio) — conference talks on Prometheus at scale, federation, and HA patterns
+- [DevOps Toolkit (Viktor Farcic) — Monitoring Comparisons](https://www.youtube.com/@DevOpsToolkit) — real-world Prometheus setups and tool comparisons
+
+**Official docs & blogs:**
+- [Prometheus Official Documentation](https://prometheus.io/docs/introduction/overview/)
+- [Robust Perception Blog (Brian Brazil)](https://www.robustperception.io/blog/) — deep posts on Prometheus internals, cardinality, and best practices
+- [Grafana Labs Blog — Prometheus Category](https://grafana.com/blog/) — remote write tuning, Mimir integration, and operational guides
+
 **The mantra:** services expose `/metrics`, Prometheus scrapes them, you `rate()` counters and
 `sum by (label)` to answer questions, keep label cardinality low, and alert on symptoms.

@@ -453,6 +453,20 @@ Labels job=fluentbit, namespace=$kubernetes['namespace_name'], app=$kubernetes['
 
 ---
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [CNCF — KubeCon Logging & Fluent Ecosystem Track](https://www.youtube.com/@caborstudio) — conference talks on Fluent Bit in Kubernetes, DaemonSet patterns, and log pipeline design
+- [Grafana Labs — Fluent Bit to Loki Pipeline](https://www.youtube.com/@GrafanaLabs) — official tutorials on shipping logs from Fluent Bit into Loki and building dashboards
+- [TechWorld with Nana — Kubernetes Logging](https://www.youtube.com/@TechWorldwithNana) — beginner-friendly walkthrough of log collection in Kubernetes with Fluent Bit
+- [DevOps Toolkit (Viktor Farcic) — Log Aggregation Compared](https://www.youtube.com/@DevOpsToolkit) — practical comparison of Fluent Bit, Fluentd, Logstash, and Promtail
+- [Elastic Official — Fluentd & Filebeat Alternatives](https://www.youtube.com/@Elastic) — understanding how Fluentd fits alongside or replaces Filebeat in ELK pipelines
+
+**Official docs & blogs:**
+- [Fluent Bit Official Documentation](https://docs.fluentbit.io/)
+- [Fluentd Official Documentation](https://docs.fluentd.org/)
+- [Grafana Labs Blog — Log Shipping](https://grafana.com/blog/) — posts on Fluent Bit configuration patterns, Loki output tuning, and Alloy migration
+
 ## The Mantra
 
 > You are not logging until logs survive a node restart, a backend outage, and a 10x traffic spike without loss. Fluent Bit gives you the agent. Buffer gives you the resilience. Structured labels give you the queryability. All three, or you are just hoping.

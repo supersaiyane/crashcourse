@@ -278,6 +278,20 @@ curl localhost:9093/-/reload                   # hot-reload config
 - Loki's ruler and OTel-derived alerts can also feed Alertmanager — one routing layer for
   everything.
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [PromLabs (Julius Volz) — Alerting Best Practices](https://www.youtube.com/@PromLabs) — Prometheus co-founder covers alert rule design, grouping, and inhibition patterns
+- [Grafana Labs — Alertmanager & Unified Alerting](https://www.youtube.com/@GrafanaLabs) — official tutorials on routing trees, notification channels, and Grafana's built-in alerting
+- [TechWorld with Nana — Prometheus Alerting Setup](https://www.youtube.com/@TechWorldwithNana) — beginner-friendly end-to-end alerting pipeline walkthrough
+- [CNCF — KubeCon Observability Track](https://www.youtube.com/@caborstudio) — conference talks on on-call practices, SLO-based alerting, and multi-tenant routing
+- [DevOps Toolkit (Viktor Farcic) — Alerting Strategies](https://www.youtube.com/@DevOpsToolkit) — real-world alert fatigue reduction and routing configurations
+
+**Official docs & blogs:**
+- [Alertmanager Official Documentation](https://prometheus.io/docs/alerting/latest/alertmanager/)
+- [Robust Perception Blog (Brian Brazil)](https://www.robustperception.io/blog/) — posts on alert design philosophy, grouping strategy, and avoiding alert fatigue
+- [Grafana Labs Blog — Alerting Category](https://grafana.com/blog/) — unified alerting, Mimir ruler integration, and notification pipeline design
+
 **The mantra:** Prometheus decides *when*; Alertmanager decides *what to do* — group related
 alerts into one notification, route by label to the right team, inhibit symptoms under causes,
 silence planned work, and make every page actionable with a runbook link.
