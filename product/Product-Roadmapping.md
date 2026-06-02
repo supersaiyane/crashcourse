@@ -470,4 +470,15 @@ Best practices that go beyond documentation: lessons learned from production inc
 - [Mind the Product](https://www.mindtheproduct.com/) — articles on roadmap communication and stakeholder management
 - [Silicon Valley Product Group (svpg.com)](https://www.svpg.com/articles/) — outcome-based roadmaps, product vision
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [Productboard](https://www.youtube.com/@productboard) — roadmap prioritisation, stakeholder alignment, and outcome-driven roadmapping
+- [Mind the Product](https://www.youtube.com/@mindtheproduct) — ProductTank talks on roadmapping strategies, NOW/NEXT/LATER frameworks, and product leadership
+- [Lenny Rachitsky](https://www.youtube.com/@LennyRachitsky) — how top PMs build and communicate roadmaps at scale
+
+**Books & articles:**
+- [Product Roadmaps Relaunched — C. Todd Lombardo et al.](https://www.goodreads.com/book/show/36507075-product-roadmaps-relaunched) — modern roadmapping: themes over features, outcomes over outputs
+- [Intercom on Product Management](https://www.intercom.com/books/product-management) — free guide covering roadmapping, prioritisation, and saying no
+
 **The mantra:** A roadmap is a plan, not a promise — organise it by outcomes, score it with data, communicate it with honesty, and update it as you learn.

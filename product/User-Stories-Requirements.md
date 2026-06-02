@@ -454,4 +454,14 @@ Best practices that go beyond documentation: lessons learned from production inc
 - [Atlassian — User Stories Guide](https://www.atlassian.com/agile/project-management/user-stories) — practical guide with examples
 - [Agile Manifesto](https://agilemanifesto.org/) — the foundational principles behind story-driven development
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [Mountain Goat Software — Mike Cohn](https://www.youtube.com/@MountainGoatSoftware) — the definitive user story educator; INVEST criteria, story splitting, and acceptance criteria patterns
+- [Atlassian Agile Coach](https://www.youtube.com/@Atlassian) — user story writing workshops, Jira story templates, and requirement hierarchy guides
+
+**Books & articles:**
+- [User Stories Applied — Mike Cohn](https://www.mountaingoatsoftware.com/books/user-stories-applied) — the original user stories book; writing, estimating, and planning with stories
+- [Writing Effective User Stories — Stoica](https://www.goodreads.com/book/show/36564812-writing-effective-user-stories) — practical patterns and anti-patterns for requirement writing
+
 **The mantra:** Write stories from the user's perspective, attach testable acceptance criteria, split until they fit in a sprint, and remember — the story is a placeholder for a conversation, not a specification.

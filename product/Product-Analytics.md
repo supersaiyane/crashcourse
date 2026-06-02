@@ -516,4 +516,15 @@ Analytics tells you what is happening; it cannot tell you why. When you see a dr
 - [Mind the Product](https://www.mindtheproduct.com/) — articles on data-informed product management
 - [Reforge Blog](https://www.reforge.com/blog) — deep dives on retention, engagement, and growth metrics
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [Amplitude](https://www.youtube.com/@Amplitude) — product analytics tutorials, cohort analysis, retention curves, and event tracking best practices
+- [Mixpanel](https://www.youtube.com/@mixpanel) — funnel analysis, A/B testing, and data-informed product decisions
+- [Dan Olsen — Lean Product](https://www.youtube.com/@danolsen) — product-market fit metrics, the lean analytics cycle, and growth measurement
+
+**Books & articles:**
+- [Lean Analytics — Alistair Croll & Benjamin Yoskovitz](https://leananalyticsbook.com/) — one metric that matters, analytics stages by business model, and data-driven pivots
+- [Amplitude Analytics Playbook](https://amplitude.com/blog/product-analytics) — free guides on event taxonomies, user segmentation, and retention analysis
+
 **The mantra:** Measure what users do, not what they say — use funnels to find the drop-off, cohorts to track improvement, and experiments to prove causation, but never forget that data shows the what, not the why.

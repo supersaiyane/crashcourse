@@ -512,4 +512,14 @@ Best practices that go beyond documentation: lessons learned from production inc
 - [Martin Fowler — Feature Toggles](https://martinfowler.com/articles/feature-toggles.html) — the canonical article on feature flag patterns and categories
 - [DORA Metrics (dora.dev)](https://dora.dev/) — the four key metrics for measuring delivery performance (deployment frequency, lead time, change failure rate, recovery time)
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [Dave Farley — Continuous Delivery](https://www.youtube.com/@ContinuousDelivery) — delivery performance, deployment pipelines, and DORA metrics in practice
+- [Atlassian Agile Coach](https://www.youtube.com/@Atlassian) — sprint execution, burndown interpretation, and delivery cadence optimisation
+
+**Books & articles:**
+- [Accelerate — Forsgren, Humble, Kim](https://itrevolution.com/product/accelerate/) — the research behind DORA metrics and what drives software delivery performance
+- [The Phoenix Project — Gene Kim et al.](https://itrevolution.com/product/the-phoenix-project/) — DevOps novel illustrating delivery bottlenecks and the Three Ways
+
 **The mantra:** Deploy small, release gradually, watch the dashboards, and always have a tested path back — releasing should be boring, not brave.

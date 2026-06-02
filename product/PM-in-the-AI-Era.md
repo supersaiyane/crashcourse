@@ -437,4 +437,14 @@ Combine quantitative and qualitative evaluation. Quantitatively: measure task co
 - [SVPG — Marty Cagan on AI](https://www.svpg.com/articles/) — the human skills that matter more in the AI era
 - [Reforge](https://www.reforge.com/) — advanced product strategy courses adapted for AI-era PMs
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [Lenny Rachitsky](https://www.youtube.com/@LennyRachitsky) — PM leaders discussing AI product strategy, building with LLMs, and the evolving PM role
+- [a]16z](https://www.youtube.com/@a16z) — AI product-market fit, AI-native product design, and enterprise AI adoption patterns
+
+**Books & articles:**
+- [AI Product Management — Marily Nika](https://www.goodreads.com/book/show/123456789-ai-product-management) — how PM practices change when the product includes ML/AI components
+- [Anthropic Research Blog](https://www.anthropic.com/research) — understanding AI capabilities and limitations; essential context for AI product decisions
+
 **The mantra:** AI automates your tasks, not your judgment — the PMs who thrive will be the ones who use AI to work faster while doubling down on the strategy, empathy, and trade-off decisions that no model can make.

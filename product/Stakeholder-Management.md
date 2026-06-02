@@ -466,4 +466,14 @@ Best practices that go beyond documentation: lessons learned from production inc
 - [Mind the Product](https://www.mindtheproduct.com/) — community articles on PM soft skills including stakeholder alignment
 - [Atlassian — RACI Guide](https://www.atlassian.com/team-playbook/plays/roles-and-responsibilities) — practical RACI templates and guidance
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [Mind the Product](https://www.youtube.com/@mindtheproduct) — PM talks on managing up, stakeholder alignment, and navigating organisational politics
+- [Harvard Business Review](https://www.youtube.com/@harabordbusinessreview) — communication frameworks, influence without authority, and executive stakeholder management
+
+**Books & articles:**
+- [Crucial Conversations](https://www.goodreads.com/book/show/15014.Crucial_Conversations) — tools for handling high-stakes disagreements with stakeholders
+- [SVPG Blog — Marty Cagan](https://www.svpg.com/articles/) — essays on stakeholder management, empowered teams, and the PM-leadership relationship
+
 **The mantra:** Alignment is not agreement — keep stakeholders informed, say no with data, document every decision, and never let anyone be surprised.

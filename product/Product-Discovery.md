@@ -465,4 +465,15 @@ Include the tech lead in one customer interview per week — it takes 30 minutes
 - [Mind the Product](https://www.mindtheproduct.com/) — articles and talks on user research and discovery practices
 - [Lenny's Newsletter](https://www.lennysnewsletter.com/) — frameworks and case studies on discovery
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [Teresa Torres — Product Talk](https://www.youtube.com/@ProductTalk) — continuous discovery habits, opportunity solution trees, and interview techniques
+- [IDEO U](https://www.youtube.com/@ideou) — design thinking, user research methods, and rapid prototyping from the pioneers
+- [Lenny Rachitsky](https://www.youtube.com/@LennyRachitsky) — discovery practices from top PM teams at Airbnb, Figma, and Linear
+
+**Books & articles:**
+- [Continuous Discovery Habits — Teresa Torres](https://www.producttalk.org/continuous-discovery-habits/) — the modern playbook for weekly discovery cadences and opportunity mapping
+- [The Mom Test — Rob Fitzpatrick](https://www.momtestbook.com/) — how to talk to customers without leading them; essential for user interviews
+
 **The mantra:** Talk to users every week, test your riskiest assumptions before building, and remember that the most expensive feature is the one nobody needed.

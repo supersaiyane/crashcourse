@@ -534,4 +534,15 @@ Activation rate (are signups reaching the aha moment?), free-to-paid conversion 
 - [Reforge Blog](https://www.reforge.com/blog) — growth loops, engagement frameworks, monetisation strategy
 - [Mind the Product](https://www.mindtheproduct.com/) — articles on PLG, self-serve design, and product-led sales
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [OpenView Partners — PLG](https://www.youtube.com/@OpenViewVenture) — PLG benchmarks, product-led sales, and enterprise PLG strategies from the investors who coined the term
+- [Wes Bush — ProductLed](https://www.youtube.com/@ProductLed) — the PLG flywheel, freemium vs free trial, and self-serve onboarding optimisation
+- [Elena Verna](https://www.youtube.com/@elenaverna) — growth advisor talks on PLG + sales-assist models, expansion revenue, and activation metrics
+
+**Books & articles:**
+- [Product-Led Growth — Wes Bush](https://productled.com/book) — the foundational PLG playbook: time-to-value, bowling alley framework, and self-serve funnels
+- [OpenView PLG Index](https://openviewpartners.com/product-led-growth-index/) — annual benchmarks for PLG SaaS companies on conversion, retention, and expansion
+
 **The mantra:** Let the product do the selling — get users to value fast, make sharing natural, monetise the engagement you have earned, and never forget that a signup without activation is just a row in a database.

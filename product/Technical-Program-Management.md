@@ -482,4 +482,14 @@ Best practices that go beyond documentation: lessons learned from production inc
 - [Scrum.org — Nexus Guide](https://www.scrum.org/resources/nexus-guide) — scaling Scrum across multiple teams
 - [Atlassian — Program Management](https://www.atlassian.com/agile/project-management/program-management) — practical guide to managing programs with agile tools
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [Gergely Orosz — The Pragmatic Engineer](https://www.youtube.com/@mrgergelyorosz) — TPM role deep dives, big tech program management, and cross-functional coordination
+- [Will Larson](https://www.youtube.com/@WillLarson) — staff engineering and TPM perspectives on technical strategy, migrations, and platform work
+
+**Books & articles:**
+- [An Elegant Puzzle — Will Larson](https://lethain.com/elegant-puzzle/) — engineering management and program management for scaling organisations
+- [Staff Engineer — Will Larson](https://staffeng.com/book) — technical leadership patterns that TPMs need to understand and support
+
 **The mantra:** See the whole board, not just one team's lane — surface dependencies early, drive decisions before they become crises, and never launch without a tested rollback plan.

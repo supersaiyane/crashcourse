@@ -437,4 +437,14 @@ Best practices that go beyond documentation: lessons learned from production inc
 - [Mountain Goat Software — Estimation](https://www.mountaingoatsoftware.com/agile/planning-poker) — Mike Cohn's planning poker guide and reference stories
 - [Atlassian Agile Coach — Estimation](https://www.atlassian.com/agile/project-management/estimation) — practical guide to story points and velocity
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [Mountain Goat Software](https://www.youtube.com/@MountainGoatSoftware) — story points, planning poker, velocity tracking, and the #NoEstimates debate
+- [Scrum.org](https://www.youtube.com/@Scrumorg) — sprint planning workshops, definition of done, and capacity planning guides
+
+**Books & articles:**
+- [Agile Estimating and Planning — Mike Cohn](https://www.mountaingoatsoftware.com/books/agile-estimating-and-planning) — the definitive estimation guide; story points, ideal days, and release planning
+- [Software Estimation Without Guessing — George Dinwiddie](https://www.goodreads.com/book/show/52284984-software-estimation-without-guessing) — modern probabilistic estimation approaches
+
 **The mantra:** Estimate to have the conversation, not to predict the future — then use velocity as a mirror, not a whip.

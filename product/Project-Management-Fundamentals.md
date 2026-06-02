@@ -535,4 +535,14 @@ Best practices that go beyond documentation: lessons learned from production inc
 - [Atlassian Agile Coach](https://www.atlassian.com/agile/project-management) — practical guides for Agile, Waterfall, and Hybrid project management
 - [Mountain Goat Software](https://www.mountaingoatsoftware.com/) — Agile estimation, planning, and project management articles
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [Project Management Institute (PMI)](https://www.youtube.com/@pabormi) — PMP certification content, project lifecycle, and risk management frameworks
+- [Mike Clayton — Online PM Courses](https://www.youtube.com/@OnlinePMCourses) — practical project management across methodologies (waterfall, agile, hybrid)
+
+**Books & articles:**
+- [PMBOK Guide — PMI](https://www.pmi.org/pmbok-guide-standards) — the canonical project management body of knowledge; process groups, knowledge areas, and tools
+- [Making Things Happen — Scott Berkun](https://www.goodreads.com/book/show/2335148.Making_Things_Happen) — practical, no-nonsense project management for tech teams
+
 **The mantra:** Plan the work, work the plan, and when reality changes the plan, update the plan — the triple constraint does not negotiate, it only trades.

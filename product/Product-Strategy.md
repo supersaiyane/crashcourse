@@ -426,4 +426,15 @@ Best practices that go beyond documentation: lessons learned from production inc
 - [Itamar Gilad (itamargilad.com)](https://itamargilad.com/) — the GIST framework, confidence-driven planning
 - [Roger Martin's "Playing to Win"](https://rogerlmartin.com/lets-read/playing-to-win) — the foundational strategy framework
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [Lenny Rachitsky — Lenny's Podcast](https://www.youtube.com/@LennyRachitsky) — deep dives on product strategy with leaders from Notion, Linear, Figma, and Ramp
+- [Gibson Biddle](https://www.youtube.com/@gibsonbiddle) — former Netflix VP Product on DHM model, strategy frameworks, and product leadership
+- [Reforge](https://www.youtube.com/@Reforge) — advanced product strategy, growth models, and retention frameworks from practitioners
+
+**Books & articles:**
+- [Good Strategy Bad Strategy — Richard Rumelt](https://www.goodreads.com/book/show/11721966-good-strategy-bad-strategy) — the definitive book on strategy; diagnosis, guiding policy, coherent actions
+- [Escaping the Build Trap — Melissa Perri](https://melissaperri.com/book) — how to shift from output-focused to outcome-focused product management
+
 **The mantra:** Strategy is the art of choosing what not to do — pick your segment, name your advantage, measure one North Star, and say no to everything that does not point toward it.

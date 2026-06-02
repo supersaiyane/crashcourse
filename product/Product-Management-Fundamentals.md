@@ -383,4 +383,15 @@ Best practices that go beyond documentation: lessons learned from production inc
 - [Lenny's Newsletter](https://www.lennysnewsletter.com/) — the most-read PM newsletter with frameworks and benchmarks
 - [Mind the Product](https://www.mindtheproduct.com/) — articles, conference talks, and community for product managers
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [Lenny Rachitsky — Lenny's Podcast](https://www.youtube.com/@LennyRachitsky) — interviews with top PMs from Airbnb, Stripe, Figma; real product strategy and career advice
+- [Product School](https://www.youtube.com/@productschool) — PM certification prep, product sense exercises, and tech company PM frameworks
+- [Shreyas Doshi](https://www.youtube.com/@shreyasd) — former Stripe/Twitter PM on high-agency product management, prioritisation, and IC PM growth
+
+**Books & articles:**
+- [Inspired — Marty Cagan](https://www.svpg.com/inspired-how-to-create-tech-products-customers-love/) — the PM bible; product discovery, empowered teams, and what separates great product companies
+- [The Product Book — Product School](https://productschool.com/the-product-book) — free foundational PM textbook covering the full product lifecycle
+
 **The mantra:** Decide what to build by understanding what users need, what the business requires, and what is feasible — then say no to everything else.

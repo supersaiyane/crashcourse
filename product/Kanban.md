@@ -503,4 +503,15 @@ Start by adding WIP limits to the existing Scrum board while keeping sprint cere
 - [Kanban University](https://kanban.university/) — official resources from the Kanban method community
 - [Mountain Goat Software — Kanban](https://www.mountaingoatsoftware.com/agile/kanban) — Mike Cohn's practical comparison of Kanban and Scrum
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [Kanbanize — Kanban University](https://www.youtube.com/@Kanbanize) — Kanban method deep dives, flow metrics, and case studies from enterprise adoptions
+- [Atlassian Agile Coach](https://www.youtube.com/@Atlassian) — visual Kanban board tutorials, WIP limit guides, and Jira Kanban configuration
+- [Henrik Kniberg](https://www.youtube.com/@HenrikKniberg1) — Kanban vs Scrum comparisons, lean thinking, and practical board design
+
+**Books & articles:**
+- [Kanban — David J. Anderson](https://www.kanbanuniversity.com/) — the original Kanban method book; essential for understanding pull systems and flow management
+- [Atlassian Kanban Guide](https://www.atlassian.com/agile/kanban) — free visual guide to Kanban boards, WIP limits, and metrics
+
 **The mantra:** Stop starting, start finishing — limit work in progress, pull based on capacity, measure flow, and fix the bottleneck that the board reveals.

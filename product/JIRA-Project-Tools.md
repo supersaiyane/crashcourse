@@ -478,4 +478,14 @@ Use issue links (blocks/is blocked by) to make dependencies visible between proj
 - [JQL Reference (Atlassian)](https://support.atlassian.com/jira-service-management-cloud/docs/use-advanced-search-with-jira-query-language-jql/) — full JQL syntax and function reference
 - [Atlassian Agile Coach](https://www.atlassian.com/agile) — guides on Scrum boards, Kanban boards, and agile project management
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [Atlassian](https://www.youtube.com/@Atlassian) — official Jira tutorials, automation recipes, board configuration, and admin guides
+- [Jira School](https://www.youtube.com/@JiraSchool) — Jira administration, custom workflows, dashboards, and JQL query mastery
+
+**Books & articles:**
+- [Atlassian Documentation](https://support.atlassian.com/jira-software-cloud/) — official Jira Cloud docs covering every feature, workflow, and integration
+- [Atlassian Community](https://community.atlassian.com/) — real-world Jira configuration patterns, automation templates, and admin best practices
+
 **The mantra:** Make work visible — if it is not on the board with a clear status, it does not exist for planning purposes.

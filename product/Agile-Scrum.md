@@ -502,4 +502,17 @@ Best practices that go beyond documentation: lessons learned from production inc
 - [Atlassian — Scrum Guide](https://www.atlassian.com/agile/scrum) — practical articles on every ceremony, role, and artefact
 - [Mountain Goat Software Blog](https://www.mountaingoatsoftware.com/blog) — Mike Cohn's articles on story points, velocity, and sprint planning
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [Mountain Goat Software — Mike Cohn](https://www.youtube.com/@MountainGoatSoftware) — the original Scrum estimator; practical advice on sprint planning, user stories, and agile estimation
+- [Scrum.org — Professional Scrum](https://www.youtube.com/@Scrumorg) — official Scrum Guide walkthroughs, PSM certification prep, and real-world Scrum case studies
+- [Atlassian Agile Coach](https://www.youtube.com/@Atlassian) — visual guides to Scrum ceremonies, Jira workflows, and scaling agile in enterprise teams
+- [Dave Farley — Continuous Delivery](https://www.youtube.com/@ContinuousDelivery) — engineering-focused perspective on how agile practices connect to software delivery performance
+
+**Books & articles:**
+- [Scrum Guide (official)](https://scrumguides.org/) — the canonical 13-page definition; read it yearly
+- [Agile Estimating and Planning — Mike Cohn](https://www.mountaingoatsoftware.com/books/agile-estimating-and-planning) — the definitive guide to story points, velocity, and release planning
+- [Atlassian Agile Coach](https://www.atlassian.com/agile) — free online guides covering every Scrum concept with visual examples
+
 **The mantra:** Plan in short cycles, demo working software every sprint, inspect what happened, adapt how you work — and remember that the retrospective is the ceremony that makes all other ceremonies better.

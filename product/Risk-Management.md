@@ -553,4 +553,14 @@ Best practices that go beyond documentation: lessons learned from production inc
 - [Scrum.org — Risk Management on Agile Projects](https://www.scrum.org/resources) — how Scrum ceremonies naturally surface and manage risk
 - [Mountain Goat Software Blog](https://www.mountaingoatsoftware.com/blog) — articles on estimation risk, velocity-based forecasting, and managing uncertainty
 
+## Recommended learning resources
+
+**YouTube channels & playlists:**
+- [Project Management Institute](https://www.youtube.com/@pabormi) — risk identification, qualitative and quantitative analysis, and risk response strategies
+- [Ricardo Vargas](https://www.youtube.com/@rvaborgas) — practical risk management, Monte Carlo simulation, and schedule risk analysis for project managers
+
+**Books & articles:**
+- [Waltzing with Bears — DeMarco & Lister](https://www.goodreads.com/book/show/665153.Waltzing_with_Bears) — managing risk in software projects; the classic text on why ignoring risk kills projects
+- [The Failure of Risk Management — Douglas Hubbard](https://www.goodreads.com/book/show/6516525-the-failure-of-risk-management) — quantitative risk analysis and why risk matrices are broken
+
 **The mantra:** Identify what could go wrong before it does, score it honestly, assign an owner, prepare a contingency, and review weekly — because the risk you manage is the crisis you prevent.
