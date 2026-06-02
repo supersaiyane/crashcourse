@@ -396,13 +396,17 @@ async function renderReader(catId, filename) {
       try { window.mermaid.run({ nodes: out.querySelectorAll('.mermaid') }); } catch {}
     }
 
-    // Trigger terminal typing animation when scrolled into view
-    out.querySelectorAll('.terminal-demo[data-term-parsed]').forEach((term) => {
+    // Trigger terminal animation when scrolled into view
+    out.querySelectorAll('.terminal-demo').forEach((term) => {
       const obs = new IntersectionObserver((entries) => {
         entries.forEach((e) => {
           if (e.isIntersecting) {
             obs.disconnect();
-            termTyping(term);
+            if (term._termLines) {
+              termTyping(term);
+            } else {
+              term.classList.add('term-animate');
+            }
           }
         });
       }, { threshold: 0.15 });
