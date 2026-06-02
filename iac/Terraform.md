@@ -251,6 +251,62 @@ or separate backends per environment for stronger isolation. Either is fine; be 
 
 ---
 
+
+## Terminal Demo
+
+```terminal-demo
+# terraform@infra ~ %
+
+$ terraform version
+Terraform v1.7.5
+
+$ terraform init
+Initializing the backend...
+Initializing provider plugins...
+- Using previously-installed hashicorp/aws v5.40.0
+Terraform has been successfully initialized!
+
+$ terraform plan -out=tfplan
+aws_vpc.main: Refreshing state... [id=vpc-abc123]
+aws_subnet.private: Refreshing state... [id=subnet-def456]
+aws_eks_cluster.prod: Refreshing state... [id=prod-cluster]
+
+Plan: 2 to add, 1 to change, 0 to destroy.
+
+$ terraform apply tfplan
+aws_security_group.api: Creating...
+aws_security_group.api: Creation complete after 3s [id=sg-ghi789]
+aws_instance.api: Creating...
+aws_instance.api: Still creating... [10s elapsed]
+aws_instance.api: Creation complete after 45s [id=i-jkl012]
+aws_eks_node_group.prod: Modifying... [id=prod-cluster:prod-nodes]
+aws_eks_node_group.prod: Modifications complete after 2m [id=prod-cluster:prod-nodes]
+
+Apply complete! Resources: 2 added, 1 changed, 0 destroyed.
+
+$ terraform state list | head -8
+aws_vpc.main
+aws_subnet.private[0]
+aws_subnet.private[1]
+aws_eks_cluster.prod
+aws_eks_node_group.prod
+aws_rds_instance.prod
+aws_s3_bucket.data_lake
+aws_iam_role.eks_node
+
+$ terraform output -json | jq '{cluster_endpoint,db_endpoint,vpc_id}'
+{
+  "cluster_endpoint": "https://ABC123.gr7.ap-south-1.eks.amazonaws.com",
+  "db_endpoint": "prod-db.abc123.ap-south-1.rds.amazonaws.com:5432",
+  "vpc_id": "vpc-abc123"
+}
+
+$ terraform validate
+Success! The configuration is valid.
+```
+
+---
+
 ## Common pitfalls
 - **Local state in a team.** Guarantees corruption/conflicts. Use a remote backend with locking
   from day one. Never commit `*.tfstate`.

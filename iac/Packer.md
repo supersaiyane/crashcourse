@@ -223,6 +223,53 @@ Because the image is immutable and reused, do security and cleanup in the build:
 
 ---
 
+
+## Terminal Demo
+
+```terminal-demo
+# packer@images ~ %
+
+$ packer version
+Packer v1.10.2
+
+$ packer validate .
+The configuration is valid.
+
+$ packer build -var 'version=v2.1.0' ami.pkr.hcl
+amazon-ebs.api: output will be in this color.
+
+==> amazon-ebs.api: Creating temporary security group...
+==> amazon-ebs.api: Launching a source AWS instance...
+    amazon-ebs.api: Instance ID: i-0a1b2c3d4e
+==> amazon-ebs.api: Waiting for instance to become ready...
+==> amazon-ebs.api: Provisioning with shell script...
+    amazon-ebs.api: Installing dependencies...
+    amazon-ebs.api: Configuring application...
+    amazon-ebs.api: Running security hardening...
+==> amazon-ebs.api: Provisioning with Ansible...
+    amazon-ebs.api: PLAY RECAP: ok=12 changed=8 failed=0
+==> amazon-ebs.api: Stopping the source instance...
+==> amazon-ebs.api: Creating AMI: api-v2.1.0-20260602
+    amazon-ebs.api: AMI: ami-0abc123def456
+==> amazon-ebs.api: Terminating the source AWS instance...
+Build 'amazon-ebs.api' finished after 4m 32s.
+
+==> Builds finished. The artifacts of successful builds are:
+--> amazon-ebs.api: AMIs were created:
+    ap-south-1: ami-0abc123def456
+
+$ aws ec2 describe-images --owners self --query 'Images | sort_by(@, &CreationDate) | [-3:].[Name,ImageId,CreationDate]' --output table
+-------------------------------------------------------
+|                  DescribeImages                     |
++---------------------+------------------+------------+
+|  api-v2.1.0-20260602| ami-0abc123def   | 2026-06-02 |
+|  api-v2.0.0-20260530| ami-0def456ghi   | 2026-05-30 |
+|  api-v1.9.5-20260525| ami-0ghi789jkl   | 2026-05-25 |
++---------------------+------------------+------------+
+```
+
+---
+
 ## Common pitfalls
 - **Treating Packer as a deploy tool.** It only *builds images*. Deploying/launching them is
   Terraform's / the ASG's job. Don't conflate the two.

@@ -509,6 +509,64 @@ For cross-account DNS or shared services, add a `dependency` that points to a pa
 
 ---
 
+
+## Terminal Demo
+
+```terminal-demo
+# terragrunt@infra ~ %
+
+$ terragrunt --version
+terragrunt version v0.55.13
+
+$ tree environments/ -L 2
+environments/
+├── terragrunt.hcl          (root config: provider, backend)
+├── production/
+│   ├── vpc/terragrunt.hcl
+│   ├── eks/terragrunt.hcl
+│   ├── rds/terragrunt.hcl
+│   └── redis/terragrunt.hcl
+└── staging/
+    ├── vpc/terragrunt.hcl
+    ├── eks/terragrunt.hcl
+    └── rds/terragrunt.hcl
+
+$ cd environments/production && terragrunt run-all plan
+INFO  Running command: terraform plan (vpc)
+INFO  Running command: terraform plan (eks)
+INFO  Running command: terraform plan (rds)
+INFO  Running command: terraform plan (redis)
+
+Group 1: vpc    — Plan: 0 to add, 0 to change, 0 to destroy.
+Group 2: eks    — Plan: 0 to add, 1 to change, 0 to destroy.
+Group 2: rds    — Plan: 0 to add, 0 to change, 0 to destroy.
+Group 3: redis  — Plan: 1 to add, 0 to change, 0 to destroy.
+
+$ terragrunt run-all apply --terragrunt-non-interactive
+Group 1: vpc    — Apply complete! Resources: 0 added, 0 changed, 0 destroyed.
+Group 2: eks    — Apply complete! Resources: 0 added, 1 changed, 0 destroyed.
+Group 2: rds    — Apply complete! Resources: 0 added, 0 changed, 0 destroyed.
+Group 3: redis  — Apply complete! Resources: 1 added, 0 changed, 0 destroyed.
+
+$ cat environments/production/eks/terragrunt.hcl
+include "root" {
+  path = find_in_parent_folders()
+}
+
+dependency "vpc" {
+  config_path = "../vpc"
+}
+
+inputs = {
+  vpc_id     = dependency.vpc.outputs.vpc_id
+  subnet_ids = dependency.vpc.outputs.private_subnet_ids
+  cluster_version = "1.29"
+  node_count = 5
+}
+```
+
+---
+
 ## Common pitfalls
 
 - **`.terragrunt-cache` in version control.** It's large, regenerated on every run, and will cause merge conflicts. Add it to `.gitignore` globally.

@@ -612,6 +612,67 @@ environments (dev, staging, prod). Here's how to structure and execute it end-to
 
 ---
 
+
+## Terminal Demo
+
+```terminal-demo
+# ansible@control-node ~ %
+
+$ ansible --version
+ansible [core 2.16.4]
+  python version = 3.11.8
+
+$ ansible-inventory --list --yaml | head -15
+all:
+  children:
+    webservers:
+      hosts:
+        web-01: {ansible_host: 10.0.1.42}
+        web-02: {ansible_host: 10.0.2.18}
+    databases:
+      hosts:
+        db-01: {ansible_host: 10.0.10.5}
+
+$ ansible all -m ping
+web-01 | SUCCESS => {"ping": "pong"}
+web-02 | SUCCESS => {"ping": "pong"}
+db-01  | SUCCESS => {"ping": "pong"}
+
+$ ansible-playbook deploy.yml --check --diff
+PLAY [Deploy API to webservers] ***
+TASK [Gathering Facts] ***
+ok: [web-01]
+ok: [web-02]
+TASK [Pull latest image] ***
+changed: [web-01] => (diff: image myregistry/api:v2.0.0 -> v2.1.0)
+changed: [web-02] => (diff: image myregistry/api:v2.0.0 -> v2.1.0)
+TASK [Restart service] ***
+changed: [web-01]
+changed: [web-02]
+PLAY RECAP ***
+web-01: ok=3  changed=2  unreachable=0  failed=0
+web-02: ok=3  changed=2  unreachable=0  failed=0
+
+$ ansible-playbook deploy.yml
+PLAY RECAP ***
+web-01: ok=5  changed=2  unreachable=0  failed=0
+web-02: ok=5  changed=2  unreachable=0  failed=0
+
+$ ansible webservers -m shell -a "systemctl status api | head -3"
+web-01 | CHANGED =>
+  ● api.service - API Server
+    Loaded: loaded (/etc/systemd/system/api.service; enabled)
+    Active: active (running) since Mon 2026-06-02 10:15:00 UTC
+web-02 | CHANGED =>
+  ● api.service - API Server
+    Active: active (running) since Mon 2026-06-02 10:15:02 UTC
+
+$ ansible-vault encrypt secrets.yml
+Encryption successful
+```
+
+---
+
 ## Common pitfalls
 
 - **Writing non-idempotent tasks.** Using `shell:` to append a line to a file on every run,

@@ -217,6 +217,58 @@ Because it's real code, you can unit-test infrastructure with your normal test f
 
 ---
 
+
+## Terminal Demo
+
+```terminal-demo
+# pulumi@infra ~ %
+
+$ pulumi version
+v3.108.1
+
+$ pulumi stack ls
+NAME        LAST UPDATE    RESOURCE COUNT  URL
+production  2h ago         45              app.pulumi.com/supersaiyane/infra/production
+staging     5h ago         38              app.pulumi.com/supersaiyane/infra/staging
+dev         1d ago         32              app.pulumi.com/supersaiyane/infra/dev
+
+$ pulumi preview
+Previewing update (production):
+  + aws:ec2:Instance         api-server-3     create
+  ~ aws:eks:NodeGroup        prod-nodes       update [diff: desiredSize 3->5]
+  
+Resources:
+    + 1 to create
+    ~ 1 to update
+    43 unchanged
+
+$ pulumi up --yes
+Updating (production):
+  + aws:ec2:Instance         api-server-3     created (45s)
+  ~ aws:eks:NodeGroup        prod-nodes       updated (2m)
+
+Resources:
+    + 1 created
+    ~ 1 updated
+    43 unchanged
+
+Duration: 2m52s
+
+$ pulumi stack output --json | jq '{cluster_endpoint,db_host}'
+{
+  "cluster_endpoint": "https://ABC123.eks.amazonaws.com",
+  "db_host": "prod-db.abc123.rds.amazonaws.com"
+}
+
+$ pulumi config set --secret dbPassword
+value: ********
+
+$ pulumi stack export | jq '.deployment.resources | length'
+45
+```
+
+---
+
 ## Common pitfalls
 - **Treating it as a script.** It's declarative. Don't expect line-by-line API calls; you're
   *building a resource graph* that the engine reconciles. Side-effecting code at the top level

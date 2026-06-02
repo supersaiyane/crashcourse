@@ -690,6 +690,54 @@ cookstyle .          # RuboCop with Chef-aware cops
 
 
 
+
+## Terminal Demo
+
+```terminal-demo
+# chef@workstation ~ %
+
+$ chef --version
+Chef Workstation: 24.2.1058
+Chef Infra Client: 18.4.2
+Test Kitchen: 3.6.0
+
+$ knife node list
+prod-web-01
+prod-web-02
+prod-db-01
+prod-worker-01
+
+$ knife node show prod-web-01 -a run_list -a platform
+prod-web-01:
+  platform: ubuntu
+  run_list:
+    role[webserver]
+    recipe[nginx]
+    recipe[app-deploy]
+
+$ kitchen test
+-----> Starting Kitchen
+-----> Creating <default-ubuntu-2204>...
+       Finished creating <default-ubuntu-2204> (0m32.45s)
+-----> Converging <default-ubuntu-2204>...
+       Recipe: nginx::default - Installing nginx
+       Recipe: app-deploy::default - Deploying v2.1.0
+       Finished converging (1m12.34s)
+-----> Verifying <default-ubuntu-2204>...
+       System Package nginx should be installed
+       Service nginx should be running
+       Port 80 should be listening
+       15 examples, 0 failures
+-----> Destroying <default-ubuntu-2204>...
+       Finished (0m15.23s)
+
+$ knife cookbook upload app-deploy --freeze
+Uploading app-deploy [2.1.0]
+Uploaded 1 cookbook.
+```
+
+---
+
 ## Quick Quiz
 
 Test your understanding with these rapid-fire questions (answers hidden):

@@ -446,6 +446,58 @@ kubectl describe <constrainttype> <constraintname>
 
 
 
+
+## Terminal Demo
+
+```terminal-demo
+# opa@policy ~ %
+
+$ opa version
+Version: 0.62.1
+
+$ opa eval -d policy.rego -i input.json "data.authz.allow"
+{
+  "result": [{"expressions": [{"value": true}]}]
+}
+
+$ cat policy.rego | head -15
+package authz
+
+default allow := false
+
+allow if {
+    input.user.role == "admin"
+}
+
+allow if {
+    input.user.role == "developer"
+    input.action == "read"
+    startswith(input.resource, "projects/")
+}
+
+$ opa test . -v
+data.authz.test_admin_allowed: PASS (1.2ms)
+data.authz.test_dev_read_allowed: PASS (0.8ms)
+data.authz.test_dev_write_denied: PASS (0.9ms)
+data.authz.test_unknown_role_denied: PASS (0.7ms)
+4/4 tests passed
+
+$ conftest test tfplan.json -p policy/terraform/
+PASS - tfplan.json - All S3 buckets have encryption enabled
+PASS - tfplan.json - No public security group ingress rules
+FAIL - tfplan.json - RDS instance missing backup retention
+1 test failed out of 3
+
+$ kubectl get constrainttemplate
+NAME                          AGE
+k8srequiredlabels             30d
+k8scontainerlimits            30d
+k8sallowedregistries          25d
+k8sblockprivilegedcontainers  25d
+```
+
+---
+
 ## Quick Quiz
 
 Test your understanding with these rapid-fire questions (answers hidden):

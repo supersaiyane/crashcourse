@@ -681,6 +681,62 @@ salt-call --local state.apply nginx         # masterless mode
 
 
 
+
+## Terminal Demo
+
+```terminal-demo
+# salt@master ~ %
+
+$ salt --version
+salt 3007.0
+
+$ salt '*' test.ping
+prod-web-01: True
+prod-web-02: True
+prod-db-01:  True
+prod-worker-01: True
+
+$ salt '*' grains.item os osrelease
+prod-web-01:
+    os: Ubuntu
+    osrelease: 22.04
+prod-web-02:
+    os: Ubuntu
+    osrelease: 22.04
+prod-db-01:
+    os: Ubuntu
+    osrelease: 22.04
+
+$ salt 'prod-web-*' state.apply nginx
+prod-web-01:
+  ID: nginx
+  Function: pkg.installed
+  Result: True
+  Comment: Package nginx is already installed
+prod-web-02:
+  ID: nginx
+  Function: pkg.installed
+  Result: True
+
+$ salt 'prod-web-*' cmd.run 'systemctl status nginx | head -3'
+prod-web-01:
+    ● nginx.service - nginx
+      Active: active (running) since Mon 2026-06-02 08:00:00 UTC
+prod-web-02:
+    ● nginx.service - nginx
+      Active: active (running) since Mon 2026-06-02 08:00:05 UTC
+
+$ salt-run manage.status
+down:
+up:
+    - prod-web-01
+    - prod-web-02
+    - prod-db-01
+    - prod-worker-01
+```
+
+---
+
 ## Quick Quiz
 
 Test your understanding with these rapid-fire questions (answers hidden):

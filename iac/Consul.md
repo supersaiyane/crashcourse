@@ -660,6 +660,55 @@ consul snapshot restore backup.snap
 
 
 
+
+## Terminal Demo
+
+```terminal-demo
+# consul@production ~ %
+
+$ consul version
+Consul v1.18.1
+
+$ consul members
+Node          Address          Status  Type    Build   Protocol
+consul-01     10.0.1.10:8301   alive   server  1.18.1  2
+consul-02     10.0.1.11:8301   alive   server  1.18.1  2
+consul-03     10.0.1.12:8301   alive   server  1.18.1  2
+web-01        10.0.2.42:8301   alive   client  1.18.1  2
+api-01        10.0.2.55:8301   alive   client  1.18.1  2
+
+$ consul catalog services
+api
+consul
+db
+redis
+web
+
+$ consul catalog nodes -service=api
+Node    ID        Address     ServicePort
+api-01  abc123    10.0.2.55   8080
+api-02  def456    10.0.2.56   8080
+api-03  ghi789    10.0.2.57   8080
+
+$ dig @127.0.0.1 -p 8600 api.service.consul SRV +short
+1 1 8080 api-01.node.consul.
+1 1 8080 api-02.node.consul.
+1 1 8080 api-03.node.consul.
+
+$ consul kv get -recurse config/api/
+config/api/log_level:info
+config/api/rate_limit:1000
+config/api/db_pool_size:25
+
+$ consul intention check web api
+Allowed
+
+$ consul intention check web db
+Denied
+```
+
+---
+
 ## Quick Quiz
 
 Test your understanding with these rapid-fire questions (answers hidden):

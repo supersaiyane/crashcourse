@@ -446,6 +446,48 @@ kubectl get xr <name> -o yaml | grep -A 20 status
 
 
 
+
+## Terminal Demo
+
+```terminal-demo
+# crossplane@platform ~ %
+
+$ crossplane version
+Client Version: v1.15.0
+Server Version: v1.15.0
+
+$ kubectl get providers
+NAME                  INSTALLED   HEALTHY   PACKAGE                                AGE
+provider-aws          True        True      xpkg.upbound.io/upbound/provider-aws   30d
+provider-kubernetes   True        True      xpkg.upbound.io/crossplane/provider-k  30d
+
+$ kubectl get composite
+NAME                    SYNCED   READY   AGE
+database-prod-api       True     True    25d
+database-prod-analytics True     True    20d
+
+$ kubectl apply -f - <<EOF
+apiVersion: platform.example.com/v1alpha1
+kind: Database
+metadata:
+  name: new-service-db
+spec:
+  engine: postgresql
+  version: "15"
+  size: medium
+  region: ap-south-1
+EOF
+database.platform.example.com/new-service-db created
+
+$ kubectl get managed -l crossplane.io/composite=database-prod-api
+NAME                           READY   SYNCED   AGE
+rds-prod-api-abc123            True    True     25d
+subnet-group-prod-api-def456   True    True     25d
+security-group-prod-api-ghi    True    True     25d
+```
+
+---
+
 ## Quick Quiz
 
 Test your understanding with these rapid-fire questions (answers hidden):

@@ -593,6 +593,48 @@ The agent on `webserver01` compiles a catalog where `worker_processes` is `4` (f
 
 ---
 
+
+## Terminal Demo
+
+```terminal-demo
+# puppet@server ~ %
+
+$ puppet --version
+8.5.1
+
+$ puppet agent --test --noop
+Info: Using environment 'production'
+Info: Retrieving pluginfacts
+Info: Retrieving plugin
+Info: Caching catalog for prod-web-01
+Info: Applying configuration version '1717315200'
+Notice: /Stage[main]/Nginx/Package[nginx]/ensure: current_value absent, should be present (noop)
+Notice: /Stage[main]/App/File[/etc/app/config.yml]/content: content changed (noop)
+Notice: Applied catalog in 2.34 seconds (noop)
+
+$ puppet resource service nginx
+service { 'nginx':
+  ensure   => 'running',
+  enable   => 'true',
+  provider => 'systemd',
+}
+
+$ puppetdb query 'nodes[certname,report_timestamp,latest_report_status]{latest_report_status = "changed"}' | head -5
+[{"certname":"prod-web-01","report_timestamp":"2026-06-02T10:15:00Z","latest_report_status":"changed"},
+ {"certname":"prod-web-02","report_timestamp":"2026-06-02T10:15:30Z","latest_report_status":"changed"}]
+
+$ puppet module list --tree
+/etc/puppetlabs/code/modules
+├── puppetlabs-nginx (v4.4.0)
+├── puppetlabs-postgresql (v9.2.0)
+├── puppetlabs-firewall (v7.0.2)
+└── site-modules
+    ├── app_deploy (v2.1.0)
+    └── base_config (v1.5.0)
+```
+
+---
+
 ## Common pitfalls
 
 - **Duplicate resource declarations.** Puppet will hard-fail if two places in your catalog declare the same resource title. Use `ensure_packages()` from `stdlib` or `defined()` checks when modules share dependencies.

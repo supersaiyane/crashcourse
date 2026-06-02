@@ -595,6 +595,68 @@ The Vault Agent authenticates using the pod's ServiceAccount token, fetches data
 
 ---
 
+
+## Terminal Demo
+
+```terminal-demo
+# vault@secrets ~ %
+
+$ vault version
+Vault v1.15.6
+
+$ vault status
+Key             Value
+---             -----
+Seal Type       shamir
+Initialized     true
+Sealed          false
+HA Enabled      true
+HA Cluster      https://vault.internal:8201
+HA Mode         active
+
+$ vault secrets list
+Path          Type         Description
+----          ----         -----------
+cubbyhole/    cubbyhole    per-token private secret storage
+kv/           kv           key/value secret storage
+database/     database     database credentials engine
+pki/          pki          PKI certificate engine
+transit/      transit      encryption as a service
+
+$ vault kv get -format=json kv/production/api | jq '.data.data | keys'
+["DB_PASSWORD", "JWT_SECRET", "STRIPE_KEY"]
+
+$ vault kv put kv/production/api DB_PASSWORD="new-rotated-password"
+======= Secret Path =======
+kv/data/production/api
+======= Metadata =======
+Key                Value
+---                -----
+created_time       2026-06-02T10:15:00Z
+version            4
+
+$ vault read database/creds/readonly
+Key                Value
+---                -----
+lease_id           database/creds/readonly/abc123
+lease_duration     1h
+username           v-token-readonly-abc123
+password           A1B2C3D4E5-auto-generated
+
+$ vault audit list
+Path     Type    Description
+----     ----    -----------
+file/    file    /var/log/vault/audit.log
+
+$ vault policy list
+default
+admin
+app-readonly
+ci-deploy
+```
+
+---
+
 ## Common pitfalls
 
 - **Never store the root token anywhere persistent.** Generate it at init, use it to set up auth methods and policies, then revoke it. Use a dedicated admin token with a tight policy for ongoing operations. If you need it again, use `vault operator generate-root`.
