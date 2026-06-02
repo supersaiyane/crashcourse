@@ -396,6 +396,19 @@ async function renderReader(catId, filename) {
       try { window.mermaid.run({ nodes: out.querySelectorAll('.mermaid') }); } catch {}
     }
 
+    // Trigger terminal demo animation when scrolled into view
+    out.querySelectorAll('.terminal-demo').forEach((term) => {
+      const obs = new IntersectionObserver((entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) {
+            term.classList.add('term-animate');
+            obs.disconnect();
+          }
+        });
+      }, { threshold: 0.15 });
+      obs.observe(term);
+    });
+
     // Record reading history
     const courseKey = `${catId}/${filename}`;
     recordHistory(courseKey);

@@ -1130,6 +1130,8 @@ code, pre { font-family: var(--font-mono); }
 .terminal-demo .term-line {
   white-space: pre;
   opacity: 0;
+}
+.terminal-demo.term-animate .term-line {
   animation: termFadeIn 0.3s ease forwards;
 }
 .terminal-demo .term-prompt {
@@ -1162,6 +1164,9 @@ code, pre { font-family: var(--font-mono); }
   background: #28c840;
   border-radius: 50%;
   margin-left: 6px;
+  opacity: 0;
+}
+.terminal-demo.term-animate .term-cursor {
   animation: termBlink 1.2s ease-in-out infinite;
 }
 @keyframes termFadeIn {
