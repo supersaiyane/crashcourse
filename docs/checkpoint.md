@@ -65,6 +65,8 @@
   - 2 guided scenarios: "Debug CrashLoopBackOff" (8 steps) + "Deploy, Scale, Update" (7 steps)
   - Free-play mode, tab autocomplete, command history
   - Loader in app.js fetches cli-{catId}.json — add more courses by creating cli-{category}.json files
+  - Split view: terminal (left) + command reference panel (right, 7 groups, 33 clickable commands)
+  - Click any command in reference panel → auto-types into terminal
   - To add next: create cli-iac.json (terraform), cli-data.json (psql/redis), etc.
 - PWA fixes: SW v2 bypasses external origins (fixes refresh 404), cache bust v3
 - Wave 3 (CLI playground, project walkthroughs) not started
