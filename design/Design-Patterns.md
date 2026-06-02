@@ -636,6 +636,53 @@ Over-engineering is introducing a pattern where the complexity it solves does no
 
 
 
+
+## Terminal Demo
+
+```terminal-demo
+# patterns@implementation ~ %
+
+$ echo "Strategy Pattern — Payment Processing"
+interface PaymentStrategy { charge(amount: Money): PaymentResult }
+class CreditCardPayment implements PaymentStrategy { ... }
+class UPIPayment implements PaymentStrategy { ... }
+class WalletPayment implements PaymentStrategy { ... }
+// Add new payment method = new class, no existing code changes
+
+$ echo "Observer Pattern — Event System"
+orderService.on('orderCreated', notificationHandler)
+orderService.on('orderCreated', analyticsHandler)
+orderService.on('orderCreated', inventoryHandler)
+// Publishers don't know about subscribers
+
+$ echo "Decorator Pattern — Middleware Stack"
+const handler = new LoggingHandler(
+  new AuthHandler(
+    new RateLimitHandler(
+      new CacheHandler(
+        new ApiHandler()
+      )
+    )
+  )
+);
+// Each layer adds behavior, same interface throughout
+
+$ echo "Circuit Breaker — External Service Calls"
+const breaker = new CircuitBreaker({ threshold: 5, timeout: 30000 });
+const result = await breaker.execute(() => paymentGateway.charge(amount));
+// States: CLOSED (normal) -> OPEN (failing) -> HALF_OPEN (testing)
+
+$ echo "Repository Pattern — Data Access"
+interface UserRepository {
+  findById(id: string): Promise<User | null>
+  save(user: User): Promise<void>
+}
+// Business logic depends on interface, not database
+// Test with InMemoryUserRepository, prod with PostgresUserRepository
+```
+
+---
+
 ## Quick Quiz
 
 Test your understanding with these rapid-fire questions (answers hidden):

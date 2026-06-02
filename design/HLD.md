@@ -526,6 +526,52 @@ Over-specifying: if your HLD has database schema columns or function signatures,
 
 
 
+
+## Terminal Demo
+
+```terminal-demo
+# architect@hld ~ %
+
+$ echo "=== E-Commerce Platform HLD ==="
+
+$ echo "1. Requirements"
+Functional: browse products, place orders, process payments, track delivery
+Non-functional: 50K concurrent users, 99.95% uptime, <500ms response
+
+$ echo "2. Architecture Overview"
+┌─────────┐     ┌──────────┐     ┌─────────────┐
+│  Client  │────>│ CDN/Edge │────>│ API Gateway  │
+└─────────┘     └──────────┘     └──────┬──────┘
+                                        │
+                    ┌───────────────────┼───────────────────┐
+                    │                   │                   │
+              ┌─────┴─────┐     ┌──────┴──────┐    ┌──────┴──────┐
+              │  Product   │     │   Order     │    │  Payment    │
+              │  Service   │     │   Service   │    │  Service    │
+              └─────┬─────┘     └──────┬──────┘    └──────┬──────┘
+                    │                   │                   │
+              ┌─────┴─────┐     ┌──────┴──────┐    ┌──────┴──────┐
+              │  Postgres  │     │  Postgres   │    │  Stripe API │
+              └───────────┘     └─────────────┘    └─────────────┘
+
+$ echo "3. Technology Choices"
+API Gateway:     Kong (rate limiting, auth, routing)
+Compute:         EKS (Kubernetes on AWS)
+Database:        PostgreSQL 15 (ACID for orders)
+Cache:           Redis Cluster (product catalog, sessions)
+Queue:           Kafka (order events, async processing)
+CDN:             CloudFront (static assets, edge caching)
+Monitoring:      Prometheus + Grafana + Loki
+
+$ echo "4. Scaling Strategy"
+Product reads:   Redis cache (TTL 5min) + read replicas
+Order writes:    Kafka queue absorbs spikes, workers process async
+Search:          Elasticsearch (full-text product search)
+Static assets:   CDN with 24h cache, cache-bust on deploy
+```
+
+---
+
 ## Quick Quiz
 
 Test your understanding with these rapid-fire questions (answers hidden):

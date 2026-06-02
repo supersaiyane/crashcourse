@@ -746,6 +746,57 @@ HATEOAS (Hypermedia As The Engine Of Application State) means API responses incl
 
 
 
+
+## Terminal Demo
+
+```terminal-demo
+# api-designer@dev ~ %
+
+$ curl -s localhost:8080/api/v1/users/42 | jq
+{
+  "data": {
+    "id": "42",
+    "name": "Gurpreet Singh",
+    "email": "gurpreet@example.com",
+    "role": "admin"
+  },
+  "meta": { "requestId": "req-abc123" }
+}
+
+$ curl -s -X POST localhost:8080/api/v1/orders -H "Content-Type: application/json" -d '{"userId":"42","items":[{"productId":"p-1","qty":2}]}' | jq
+{
+  "data": { "orderId": "ord-789", "status": "created", "total": 199.98 },
+  "meta": { "requestId": "req-def456" }
+}
+
+$ curl -s localhost:8080/api/v1/products?page=1&limit=3 | jq
+{
+  "data": [
+    { "id": "p-1", "name": "Widget", "price": 99.99 },
+    { "id": "p-2", "name": "Gadget", "price": 149.99 },
+    { "id": "p-3", "name": "Gizmo", "price": 79.99 }
+  ],
+  "meta": { "total": 156, "page": 1, "limit": 3, "hasMore": true }
+}
+
+$ curl -s -I localhost:8080/api/v1/users/42
+HTTP/1.1 200 OK
+Content-Type: application/json
+X-RateLimit-Limit: 1000
+X-RateLimit-Remaining: 997
+X-RateLimit-Reset: 1717315260
+ETag: "abc123"
+Cache-Control: private, max-age=60
+
+$ curl -s localhost:8080/api/v1/users/999 | jq
+{
+  "error": { "code": "NOT_FOUND", "message": "User 999 not found" },
+  "meta": { "requestId": "req-ghi789" }
+}
+```
+
+---
+
 ## Quick Quiz
 
 Test your understanding with these rapid-fire questions (answers hidden):

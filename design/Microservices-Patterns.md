@@ -440,6 +440,53 @@ Event Sourcing stores state as an immutable log of events rather than current va
 
 
 
+
+## Terminal Demo
+
+```terminal-demo
+# architect@microservices ~ %
+
+$ kubectl get services -n production
+NAME              TYPE           CLUSTER-IP      PORT(S)
+api-gateway       LoadBalancer   172.20.10.1     443/TCP
+product-service   ClusterIP      172.20.10.10    8080/TCP
+order-service     ClusterIP      172.20.10.20    8080/TCP
+payment-service   ClusterIP      172.20.10.30    8080/TCP
+user-service      ClusterIP      172.20.10.40    8080/TCP
+notification-svc  ClusterIP      172.20.10.50    8080/TCP
+
+$ echo "Saga: Order Creation Flow"
+1. order-service:    CREATE order (status=PENDING)
+2. payment-service:  CHARGE payment
+   -> if fails:      order-service COMPENSATE (status=CANCELLED)
+3. inventory-service: RESERVE stock
+   -> if fails:      payment-service REFUND, order-service COMPENSATE
+4. order-service:    CONFIRM order (status=CONFIRMED)
+5. notification-svc: SEND confirmation email
+
+$ echo "Circuit Breaker: Payment Service"
+State: CLOSED (healthy)
+  Requests: 1000/1000 succeeded
+  Failure rate: 0%
+
+State: OPEN (failing - after 5 consecutive failures)
+  Fallback: queue payment for retry
+  Timeout: 30 seconds before HALF_OPEN
+
+State: HALF_OPEN (testing)
+  Allow 1 request through
+  Success -> CLOSED
+  Failure -> OPEN again
+
+$ echo "Event-Driven Communication"
+order-service --[OrderCreated]--> Kafka --> inventory-service
+order-service --[OrderCreated]--> Kafka --> notification-service
+order-service --[OrderCreated]--> Kafka --> analytics-service
+// Each consumer independent, no coupling between services
+```
+
+---
+
 ## Quick Quiz
 
 Test your understanding with these rapid-fire questions (answers hidden):

@@ -287,6 +287,68 @@ This structure lets the Orders team and the Fulfillment team deploy independentl
 
 
 
+
+## Terminal Demo
+
+```terminal-demo
+# domain-expert@bounded-context ~ %
+
+$ tree src/contexts/ -L 2
+src/contexts/
+├── orders/
+│   ├── domain/
+│   ├── application/
+│   └── infrastructure/
+├── inventory/
+│   ├── domain/
+│   ├── application/
+│   └── infrastructure/
+└── billing/
+    ├── domain/
+    ├── application/
+    └── infrastructure/
+
+$ cat src/contexts/orders/domain/Order.ts | head -20
+export class Order extends AggregateRoot {
+  private constructor(
+    readonly id: OrderId,
+    readonly customerId: CustomerId,
+    private items: OrderLine[],
+    private status: OrderStatus
+  ) { super(); }
+
+  static create(customerId: CustomerId, items: OrderLine[]): Order {
+    if (items.length === 0) throw new EmptyOrderError();
+    const order = new Order(OrderId.generate(), customerId, items, OrderStatus.CREATED);
+    order.addDomainEvent(new OrderCreated(order.id, customerId));
+    return order;
+  }
+
+  addItem(product: ProductId, quantity: Quantity, price: Money): void {
+    if (this.status !== OrderStatus.CREATED) throw new OrderAlreadySubmittedError();
+    this.items.push(OrderLine.create(product, quantity, price));
+  }
+
+$ cat src/contexts/orders/domain/events/OrderCreated.ts
+export class OrderCreated extends DomainEvent {
+  constructor(
+    readonly orderId: OrderId,
+    readonly customerId: CustomerId,
+    readonly occurredOn: Date = new Date()
+  ) { super('order.created'); }
+}
+
+$ npm test -- src/contexts/orders/
+PASS  domain/Order.test.ts (15 tests)
+  ✓ creates order with valid items
+  ✓ rejects empty order
+  ✓ prevents adding items to submitted order
+  ✓ publishes OrderCreated event on creation
+  ✓ calculates total from order lines
+```
+
+---
+
 ## Quick Quiz
 
 Test your understanding with these rapid-fire questions (answers hidden):

@@ -466,6 +466,64 @@ Hexagonal Architecture (Alistair Cockburn), Onion Architecture (Jeffrey Palermo)
 
 
 
+
+## Terminal Demo
+
+```terminal-demo
+# architect@clean-arch ~ %
+
+$ tree src/ -L 2
+src/
+├── domain/
+│   ├── entities/
+│   ├── repositories/    (interfaces only)
+│   └── value-objects/
+├── application/
+│   ├── use-cases/
+│   └── dto/
+├── infrastructure/
+│   ├── persistence/     (repository implementations)
+│   ├── http/            (controllers)
+│   └── messaging/       (queue adapters)
+└── main/
+    ├── config/
+    └── di/              (dependency injection)
+
+$ cat src/domain/repositories/OrderRepository.ts
+export interface OrderRepository {
+  findById(id: string): Promise<Order | null>;
+  save(order: Order): Promise<void>;
+  findByUserId(userId: string): Promise<Order[]>;
+}
+
+$ cat src/application/use-cases/CreateOrder.ts | head -15
+export class CreateOrder {
+  constructor(
+    private orderRepo: OrderRepository,
+    private inventoryService: InventoryService,
+    private eventBus: EventBus
+  ) {}
+
+  async execute(input: CreateOrderDTO): Promise<Order> {
+    const order = Order.create(input.userId, input.items);
+    await this.inventoryService.reserve(order.items);
+    await this.orderRepo.save(order);
+    await this.eventBus.publish(new OrderCreated(order));
+    return order;
+  }
+}
+
+$ npm test -- --coverage
+PASS  src/domain/entities/Order.test.ts (12 tests)
+PASS  src/application/use-cases/CreateOrder.test.ts (8 tests)
+PASS  src/infrastructure/persistence/PostgresOrderRepo.test.ts (5 tests)
+Test Suites: 15 passed, 15 total
+Tests:       87 passed, 87 total
+Coverage:    92.3%
+```
+
+---
+
 ## Quick Quiz
 
 Test your understanding with these rapid-fire questions (answers hidden):

@@ -370,6 +370,47 @@ Writes are 1% of traffic. No special optimization needed at baseline.
 
 ---
 
+
+## Terminal Demo
+
+```terminal-demo
+# architect@whiteboard ~ %
+
+$ echo "Step 1: Requirements"
+Functional: user registration, product search, order placement, payment
+Non-functional: 10K RPS, 99.99% availability, <200ms p99 latency
+
+$ echo "Step 2: Capacity Estimation"
+DAU: 10M users, 3 actions/user = 30M requests/day
+Peak QPS: 30M / 86400 * 3 (peak factor) = ~1000 QPS
+Storage: 500 bytes/order * 100K orders/day * 365 = ~18 GB/year
+
+$ echo "Step 3: API Design"
+POST /api/v1/orders  { userId, items[], paymentMethod }
+GET  /api/v1/orders/:id
+GET  /api/v1/products?q=search&page=1&limit=20
+
+$ echo "Step 4: High-Level Architecture"
+Client -> CDN -> Load Balancer -> API Gateway
+API Gateway -> Auth Service, Product Service, Order Service
+Order Service -> PostgreSQL (writes), Redis (cache), Kafka (events)
+Kafka -> Notification Service, Analytics Service
+
+$ echo "Step 5: Database Schema"
+users: id, email, name, created_at
+products: id, name, price, inventory_count
+orders: id, user_id, total, status, created_at
+order_items: id, order_id, product_id, quantity, price
+
+$ echo "Step 6: Scaling Decisions"
+Read replicas for product queries (read-heavy)
+Redis cache for product catalog (TTL: 5min)
+Kafka for async order processing (decouple payment)
+CDN for static assets (images, JS, CSS)
+```
+
+---
+
 ## Common Pitfalls
 
 **No single point of failure analysis.** Draw your architecture. Circle every component. Ask: what happens if this one dies? If the answer is "the whole system goes down," that is a SPOF to eliminate.

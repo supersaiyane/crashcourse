@@ -735,6 +735,50 @@ Never present one solution as "the answer." Present options with tradeoffs, then
 
 
 
+
+## Terminal Demo
+
+```terminal-demo
+# engineer@lld ~ %
+
+$ echo "=== Order Service — Low-Level Design ==="
+
+$ echo "1. Class Diagram"
+Order { id, userId, items[], status, total, createdAt }
+OrderLine { productId, quantity, unitPrice }
+OrderStatus: CREATED | CONFIRMED | SHIPPED | DELIVERED | CANCELLED
+OrderService { createOrder(), confirmOrder(), cancelOrder() }
+OrderRepository { findById(), save(), findByUserId() }
+
+$ echo "2. API Endpoints"
+POST   /orders              CreateOrderRequest  -> OrderResponse  (201)
+GET    /orders/:id          -                   -> OrderResponse  (200)
+GET    /orders?userId=X     -                   -> OrderResponse[] (200)
+PATCH  /orders/:id/confirm  -                   -> OrderResponse  (200)
+DELETE /orders/:id          -                   -> void            (204)
+
+$ echo "3. Database Schema"
+CREATE TABLE orders (
+    id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id     UUID NOT NULL REFERENCES users(id),
+    status      VARCHAR(20) NOT NULL DEFAULT 'CREATED',
+    total       DECIMAL(12,2) NOT NULL,
+    created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX idx_orders_user_id ON orders(user_id);
+CREATE INDEX idx_orders_status_created ON orders(status, created_at DESC);
+
+$ echo "4. Sequence: Create Order"
+Client -> Controller: POST /orders {userId, items}
+Controller -> CreateOrderUseCase: execute(dto)
+CreateOrderUseCase -> InventoryService: reserve(items)
+CreateOrderUseCase -> OrderRepository: save(order)
+CreateOrderUseCase -> EventBus: publish(OrderCreated)
+Controller -> Client: 201 {orderId, status, total}
+```
+
+---
+
 ## Quick Quiz
 
 Test your understanding with these rapid-fire questions (answers hidden):

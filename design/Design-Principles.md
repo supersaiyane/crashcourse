@@ -531,6 +531,53 @@ Name the principle when you leave feedback — it makes comments actionable and 
 
 
 
+
+## Terminal Demo
+
+```terminal-demo
+# principles@refactoring ~ %
+
+$ echo "SRP Violation Detection"
+class UserService {
+  authenticate() {}    // auth responsibility
+  sendEmail() {}       // email responsibility  
+  updateProfile() {}   // profile responsibility
+  generateReport() {}  // reporting responsibility
+}
+// Fix: Split into AuthService, EmailService, ProfileService, ReportService
+
+$ echo "OCP — Adding new behavior without modification"
+// BEFORE: modify existing code for each new discount type
+function calculateDiscount(type, amount) {
+  if (type === 'seasonal') return amount * 0.1;
+  if (type === 'loyalty') return amount * 0.15;
+  // Must modify this function for every new type
+}
+// AFTER: open for extension
+interface DiscountStrategy { calculate(amount): number }
+class SeasonalDiscount implements DiscountStrategy { ... }
+class LoyaltyDiscount implements DiscountStrategy { ... }
+// New discount = new class, existing code unchanged
+
+$ echo "DIP — Depend on abstractions"
+// WRONG: high-level depends on low-level
+class OrderService {
+  private db = new PostgresDB();  // concrete dependency
+}
+// RIGHT: both depend on abstraction
+class OrderService {
+  constructor(private repo: OrderRepository) {}  // interface dependency
+}
+
+$ echo "YAGNI Check"
+// Asked: "Add user registration"
+// Built: User registration + OAuth + SAML + LDAP + magic links + 2FA
+// Needed: User registration + email/password
+// Wasted: 3 weeks on auth methods nobody requested
+```
+
+---
+
 ## Quick Quiz
 
 Test your understanding with these rapid-fire questions (answers hidden):
