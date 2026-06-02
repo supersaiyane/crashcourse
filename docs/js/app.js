@@ -347,42 +347,27 @@ async function renderReader(catId, filename) {
           title = lines[0].slice(2).trim();
           startIdx = 1;
         }
+        const parsed = [];
+        for (let i = startIdx; i < lines.length; i++) {
+          const line = lines[i];
+          if (line.trim() === '') { parsed.push({ type: 'blank' }); continue; }
+          if (line.startsWith('$ ')) { parsed.push({ type: 'cmd', text: line.slice(2) }); }
+          else if (line.includes('success') || line.includes('created') || line.includes('configured') || line.includes('scaled') || line.includes('rolled out') || line.includes('Complete') || line.includes('complete')) { parsed.push({ type: 'success', text: line }); }
+          else if (line.includes('warning') || line.includes('Warning')) { parsed.push({ type: 'warn', text: line }); }
+          else { parsed.push({ type: 'output', text: line }); }
+        }
         let html = `<div class="terminal-demo">`;
         html += `<div class="terminal-titlebar">`;
         html += `<span class="terminal-dot red"></span>`;
         html += `<span class="terminal-dot yellow"></span>`;
         html += `<span class="terminal-dot green"></span>`;
         html += `<span class="terminal-title">${esc(title)}</span>`;
-        html += `</div><div class="terminal-body">`;
-        let delay = 0;
-        for (let i = startIdx; i < lines.length; i++) {
-          const line = lines[i];
-          if (line.trim() === '') { html += `<div class="term-line" style="animation-delay:${delay}ms">&nbsp;</div>`; delay += 80; continue; }
-          if (line.startsWith('$ ')) {
-            html += `<div class="term-line" style="animation-delay:${delay}ms"><span class="term-prompt">$  </span><span class="term-cmd">${esc(line.slice(2))}</span></div>`;
-            delay += 200;
-          } else if (line.startsWith('# ')) {
-            html += `<div class="term-line" style="animation-delay:${delay}ms"><span class="term-output">${esc(line)}</span></div>`;
-            delay += 100;
-          } else if (line.includes('success') || line.includes('created') || line.includes('configured') || line.includes('scaled') || line.includes('rolled out') || line.includes('Complete') || line.includes('complete') || line.startsWith('✓')) {
-            html += `<div class="term-line" style="animation-delay:${delay}ms"><span class="term-success">    ${esc(line)}</span></div>`;
-            delay += 150;
-          } else if (line.includes('warning') || line.includes('Warning') || line.startsWith('⚠')) {
-            html += `<div class="term-line" style="animation-delay:${delay}ms"><span class="term-warn">    ${esc(line)}</span></div>`;
-            delay += 150;
-          } else if (line.startsWith('→ ') || line.startsWith('=> ')) {
-            html += `<div class="term-line" style="animation-delay:${delay}ms"><span class="term-highlight">    ${esc(line)}</span></div>`;
-            delay += 150;
-          } else {
-            html += `<div class="term-line" style="animation-delay:${delay}ms"><span class="term-output">    ${esc(line)}</span></div>`;
-            delay += 100;
-          }
-        }
-        html += `<div class="term-line" style="animation-delay:${delay}ms"><span class="term-prompt">$  </span><span class="term-cursor"></span></div>`;
-        html += `</div></div>`;
+        html += `</div><div class="terminal-body"></div></div>`;
         const wrap = document.createElement('div');
         wrap.innerHTML = html;
-        block.parentElement.replaceWith(wrap.firstElementChild);
+        const termEl = wrap.firstElementChild;
+        termEl._termLines = parsed;
+        block.parentElement.replaceWith(termEl);
         return;
       }
       block.parentElement.setAttribute('data-lang', lang);
@@ -396,17 +381,13 @@ async function renderReader(catId, filename) {
       try { window.mermaid.run({ nodes: out.querySelectorAll('.mermaid') }); } catch {}
     }
 
-    // Trigger terminal animation when scrolled into view
+    // Trigger terminal typing animation when scrolled into view
     out.querySelectorAll('.terminal-demo').forEach((term) => {
       const obs = new IntersectionObserver((entries) => {
         entries.forEach((e) => {
           if (e.isIntersecting) {
             obs.disconnect();
-            if (term._termLines) {
-              termTyping(term);
-            } else {
-              term.classList.add('term-animate');
-            }
+            termTyping(term);
           }
         });
       }, { threshold: 0.15 });
