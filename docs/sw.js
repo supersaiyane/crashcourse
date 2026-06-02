@@ -1,4 +1,4 @@
-const CACHE_NAME = 'crashcourse-v1';
+const CACHE_NAME = 'crashcourse-v2';
 
 const APP_SHELL = [
   './',
@@ -41,7 +41,12 @@ self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // Markdown files — network-first (offline fallback after first visit)
+  // External requests (raw.githubusercontent.com etc.) — bypass SW entirely
+  if (url.origin !== location.origin) {
+    return;
+  }
+
+  // Markdown files on our origin — network-first (offline fallback)
   if (url.pathname.endsWith('.md')) {
     event.respondWith(networkFirst(request));
     return;
