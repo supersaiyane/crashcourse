@@ -84,6 +84,38 @@ Read it top-to-bottom to **learn**. Bookmark it and `Ctrl+F` to **reference**. F
 
 ---
 
+## What's inside every course
+
+Each of the 153 courses packs **10 interactive sections** designed to take you from zero to interview-ready:
+
+| Section | What it gives you |
+|---------|------------------|
+| **Why it exists + Mental model** | The "aha" moment — understand the problem before the tool |
+| **Vocabulary table** | The 6-10 terms you need before reading any docs |
+| **Day 1 & Day 2 walkthroughs** | Hands-on path from first install to production patterns |
+| **Architecture diagram** | Mermaid-rendered visual of how the tool works internally |
+| **Terminal demo** | Animated terminal showing real production commands typing out as you scroll |
+| **Interview questions** | 10 collapsible Q&A that senior engineers actually ask |
+| **Quick quiz** | 5 rapid-fire self-test questions with hidden answers |
+| **Comparison matrix** | Side-by-side table vs the 2 closest alternatives |
+| **Learning resources** | Curated YouTube channels, books, and docs for going deeper |
+| **Quick command reference** | The dense cheatsheet you'll Ctrl+F forever |
+
+## Interactive features on the [website](https://supersaiyane.github.io/crashcourse/)
+
+The PWA at [supersaiyane.github.io/crashcourse](https://supersaiyane.github.io/crashcourse/) adds features you can't get from raw markdown:
+
+- **Progress tracker** — mark courses as read, see your completion percentage across all 153 courses
+- **Bookmarks** — star courses to build your personal study list
+- **Continue where you left off** — the site remembers your last-read course
+- **Highlight & annotate** — select any text and add inline annotations visible to everyone (powered by [Hypothes.is](https://hypothes.is))
+- **Discussion per course** — every course has a GitHub Discussions-backed comment section at the bottom (powered by [Giscus](https://giscus.app)) — ask questions, share tips, help others
+- **Dark / light theme** — toggle with one click, saved across sessions
+- **Offline support** — service worker caches courses for reading without internet
+- **Search** — instant fuzzy search across all 153 courses and tags
+
+---
+
 ## Index
 
 ### Containers & Orchestration
