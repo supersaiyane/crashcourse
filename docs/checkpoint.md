@@ -38,10 +38,13 @@
 | 2026-06-02 08:30 | Bulk Interview Q&A + Mermaid diagrams | Done | All 153 courses: 117 IQ added, 128 mermaid added. Verified 153/153. | All 20 category dirs |
 | 2026-06-02 10:00 | Learning resources for 17 product/ courses | Done | Recommended learning resources added to all 17 product/ courses. Wave 1 fully complete — all 4 features at 100%. | product/*.md |
 | 2026-06-02 10:30 | Wave 2: Quiz & Flashcards + Comparison Matrices | Done | 153/153 Quick Quiz (5 self-test Q&A each), 153/153 Comparison Matrix (tool vs 2 alternatives). Verified 0 missing. | All 20 category dirs |
+| 2026-06-02 12:15 | Terminal Demo widget + Kubernetes 18 commands | Done | Typed char-by-char renderer, IntersectionObserver, SW refresh fix | docs/js/app.js:341-372, containers/Kubernetes.md:270 |
+| 2026-06-02 12:30 | Terminal demos — containers/ batch | Done | All 9 containers/ courses with 8-15 production commands each | containers/*.md |
+| 2026-06-02 12:45 | Hypothes.is + Giscus integration | Done | Inline highlights + GitHub Discussions comments per course. Discussions enabled on repo. | docs/index.html:224,255, docs/js/app.js:397-430 |
 
 ## Next Session Resume Vector
 
-- 153 courses across 20 categories — Wave 1 + Wave 2 #4/#5 complete
+- 153 courses across 20 categories — Wave 1 complete, Wave 2 #4/#5/#7/#8 complete
 - Wave 1 completed features (all 100%):
   - Progress Tracker & Bookmarks: DONE (153/153)
   - Recommended Learning Resources: DONE (153/153)
@@ -50,7 +53,11 @@
 - Wave 2 completed features:
   - Quiz & Flashcards: DONE (153/153)
   - Comparison Matrices: DONE (153/153)
-- Wave 2 remaining: #6 Video/GIF Demos (asciinema) — not started
+  - Terminal Demo: 9/153 (containers/ batch done). Typed char-by-char, IntersectionObserver. 144 courses remaining.
+  - Inline Highlights (Hypothes.is): DONE — embedded via script tag
+  - Comments (Giscus): DONE — GitHub Discussions per course. Need to install Giscus app at github.com/apps/giscus
+- Wave 2 remaining: terminal demos for 144 more courses
+- PWA fixes: SW v2 bypasses external origins (fixes refresh 404), cache bust v3
 - Wave 3 (CLI playground, project walkthroughs) not started
 - TODO.txt has 48 project walkthroughs (33 + 15 industry case studies)
 - dsa.txt has full plan for separate DSA repo (25 courses, Python, FAANG-focused)
