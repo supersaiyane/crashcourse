@@ -25,7 +25,8 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
 
   <!-- App CSS -->
-  <link rel="stylesheet" href="css/style.css?v=5" />
+  <link rel="stylesheet" href="css/style.css?v=6" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xterm/xterm@5.5.0/css/xterm.min.css" />
 </head>
 <body>
 
@@ -234,6 +235,18 @@
         <h2 style="margin-bottom:16px;">Discussion</h2>
         <div class="giscus"></div>
       </div>
+      <div id="cli-playground-section" class="hidden">
+        <hr style="margin:40px 0 30px;border-color:var(--border);" />
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+          <h2 style="margin:0;">CLI Playground</h2>
+          <div style="display:flex;gap:8px;">
+            <button id="cli-scenario-btn" class="hero-cta" style="font-size:0.8rem;padding:6px 14px;background:transparent;border:1.5px solid var(--accent-1);color:var(--accent-1);">Scenarios</button>
+            <button id="cli-clear-btn" class="hero-cta" style="font-size:0.8rem;padding:6px 14px;background:transparent;border:1.5px solid var(--border);color:var(--text-2);">Clear</button>
+          </div>
+        </div>
+        <p style="color:var(--text-2);font-size:0.85rem;margin-bottom:12px;">Type real commands in the simulated terminal below. Try <code>help</code> for commands or <code>scenario</code> for guided labs.</p>
+        <div id="cli-terminal" style="height:420px;border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,0.06);"></div>
+      </div>
     </div>
   </div>
 
@@ -266,7 +279,10 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
 <script async src="https://hypothes.is/embed.js"></script>
-<script src="js/app.js?v=5"></script>
+<script src="https://cdn.jsdelivr.net/npm/@xterm/xterm@5.5.0/lib/xterm.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@xterm/addon-fit@0.10.0/lib/addon-fit.min.js"></script>
+<script src="js/cli-engine.js"></script>
+<script src="js/app.js?v=6"></script>
 
 </body>
 </html>

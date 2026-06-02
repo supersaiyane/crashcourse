@@ -1182,6 +1182,23 @@ code, pre { font-family: var(--font-mono); }
 }
 
 
+
+/* ══════════════════ CLI PLAYGROUND ══════════════════ */
+#cli-playground-section {
+  margin-top: 40px;
+}
+#cli-playground-section h2 {
+  font-size: 1.3rem;
+  color: var(--text-1);
+}
+#cli-terminal {
+  background: #1a1b2e;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.05);
+}
+#cli-terminal .xterm {
+  padding: 12px;
+}
+
 /* ══════════════════ GISCUS COMMENTS ══════════════════ */
 #giscus-container {
   margin-top: 40px;

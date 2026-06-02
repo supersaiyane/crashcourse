@@ -396,6 +396,9 @@ async function renderReader(catId, filename) {
     // Load Giscus comments for this course
     loadGiscus(catId, filename);
 
+    // Load CLI playground if available for this course
+    loadCLIPlayground(catId);
+
     // Record reading history
     const courseKey = `${catId}/${filename}`;
     recordHistory(courseKey);
@@ -826,6 +829,67 @@ async function renderHowToUse() {
     out.classList.remove('hidden');
     out.innerHTML = `<h2>Page not found</h2><p>Could not load how-to-use.md</p>`;
   }
+}
+
+// ── CLI Playground loader ───────────────────────────────────────────────────
+let activePlayground = null;
+
+function loadCLIPlayground(catId) {
+  const section = $id('cli-playground-section');
+  const termDiv = $id('cli-terminal');
+  if (!section || !termDiv) return;
+
+  // Destroy previous playground
+  if (activePlayground) {
+    activePlayground.destroy();
+    activePlayground = null;
+    termDiv.innerHTML = '';
+  }
+
+  // Check if CLI data exists for this category
+  const cliFile = `./data/cli-${catId}.json`;
+  fetch(cliFile).then(res => {
+    if (!res.ok) {
+      section.classList.add('hidden');
+      return;
+    }
+    return res.json();
+  }).then(data => {
+    if (!data) return;
+    section.classList.remove('hidden');
+
+    // Small delay to ensure container is visible before xterm measures
+    setTimeout(() => {
+      if (typeof Terminal === 'undefined' || typeof FitAddon === 'undefined') {
+        section.classList.add('hidden');
+        return;
+      }
+      activePlayground = new CLIPlayground(termDiv, data);
+
+      // Wire up buttons
+      const scenarioBtn = $id('cli-scenario-btn');
+      const clearBtn = $id('cli-clear-btn');
+      if (scenarioBtn) {
+        const newBtn = scenarioBtn.cloneNode(true);
+        scenarioBtn.replaceWith(newBtn);
+        newBtn.addEventListener('click', () => {
+          if (activePlayground) activePlayground.showScenarios();
+        });
+      }
+      if (clearBtn) {
+        const newBtn = clearBtn.cloneNode(true);
+        clearBtn.replaceWith(newBtn);
+        newBtn.addEventListener('click', () => {
+          if (activePlayground) {
+            activePlayground.term.clear();
+            activePlayground.writePrompt();
+          }
+        });
+      }
+    }, 200);
+  }).catch(() => {
+    section.classList.add('hidden');
+  });
 }
 
 // ── Terminal typing engine ──────────────────────────────────────────────────
