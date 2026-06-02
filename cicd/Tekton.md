@@ -648,6 +648,55 @@ Choose Tekton when you need full control over the execution environment, Kuberne
 
 
 
+
+## Terminal Demo
+
+```terminal-demo
+# tkn@production ~ %
+
+$ tkn version
+Client version: 0.35.1
+Pipeline version: v0.56.0
+Triggers version: v0.26.0
+
+$ tkn pipeline list -n production
+NAME             AGE    LAST RUN                    STARTED        DURATION   STATUS
+api-pipeline     30d    api-pipeline-run-x7k9n      2 hours ago    4m 12s     Succeeded
+web-pipeline     30d    web-pipeline-run-m3p2q      5 hours ago    3m 45s     Succeeded
+security-scan    25d    security-scan-run-a1b2c     1 hour ago     2m 30s     Succeeded
+
+$ tkn pipeline start api-pipeline -n production --param git-revision=main --showlog
+PipelineRun started: api-pipeline-run-f4h7k
+Waiting for logs to be available...
+[clone] Cloning into '/workspace/source'...
+[lint] Running ESLint... ✓ No errors
+[test] Running 142 tests... ✓ All passing
+[build] Building image myregistry/api:v2.1.0... ✓ Built
+[deploy] Applying manifests to production... ✓ Deployed
+
+$ tkn pipelinerun list -n production --limit=5
+NAME                          STARTED       DURATION   STATUS
+api-pipeline-run-f4h7k        1 minute ago  4m 12s     Succeeded
+api-pipeline-run-x7k9n        2 hours ago   4m 08s     Succeeded
+web-pipeline-run-m3p2q        5 hours ago   3m 45s     Succeeded
+security-scan-run-a1b2c       1 hour ago    2m 30s     Succeeded
+
+$ tkn task list -n production
+NAME              AGE
+git-clone         30d
+npm-lint          30d
+npm-test          30d
+kaniko-build      30d
+kubectl-deploy    30d
+
+$ tkn pipelinerun logs api-pipeline-run-f4h7k -n production --last
+[deploy] deployment.apps/api configured
+[deploy] service/api unchanged
+[deploy] ✓ Rollout complete
+```
+
+---
+
 ## Quick Quiz
 
 Test your understanding with these rapid-fire questions (answers hidden):

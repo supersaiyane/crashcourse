@@ -691,6 +691,56 @@ The Rollout spec mirrors a Deployment exactly — same `template`, `selector`, a
 
 
 
+
+## Terminal Demo
+
+```terminal-demo
+# kubectl-argo-rollouts@production ~ %
+
+$ kubectl argo rollouts version
+kubectl-argo-rollouts: v1.6.6
+
+$ kubectl argo rollouts list rollouts -n production
+NAME   STRATEGY   STATUS        STEP  SET-WEIGHT  READY  DESIRED  UP-TO-DATE
+api    Canary     Healthy       8/8   100         5/5    5        5
+web    BlueGreen  Healthy       -     -           3/3    3        3
+
+$ kubectl argo rollouts set image api api=myregistry/api:v2.2.0 -n production
+rollout "api" image updated
+
+$ kubectl argo rollouts get rollout api -n production --watch
+Name:            api
+Namespace:       production
+Status:          ◌ Progressing
+Strategy:        Canary
+  Step:          2/8 (setWeight: 20%)
+  ActualWeight:  20
+  
+Images:
+  myregistry/api:v2.1.0  (stable)
+  myregistry/api:v2.2.0  (canary)
+
+NAME                        KIND        STATUS     AGE
+⟳ api                       Rollout     ◌ Progressing  30d
+├──# revision:3
+│  └──⧫ api-6f8b9c4d7      ReplicaSet  ✔ Healthy      10s (canary)
+│     └──□ api-6f8b9c4d7-x  Pod         ✔ Running      10s
+└──# revision:2
+   └──⧫ api-7d4b8c6f5      ReplicaSet  ✔ Healthy      3d (stable)
+      ├──□ api-7d4b8c6f5-a  Pod         ✔ Running      3d
+      ├──□ api-7d4b8c6f5-b  Pod         ✔ Running      3d
+      ├──□ api-7d4b8c6f5-c  Pod         ✔ Running      3d
+      └──□ api-7d4b8c6f5-d  Pod         ✔ Running      3d
+
+$ kubectl argo rollouts promote api -n production
+rollout 'api' promoted
+
+$ kubectl argo rollouts status api -n production
+Healthy
+```
+
+---
+
 ## Quick Quiz
 
 Test your understanding with these rapid-fire questions (answers hidden):

@@ -270,6 +270,65 @@ pipeline {
 
 ---
 
+
+## Terminal Demo
+
+```terminal-demo
+# jenkins@controller ~ %
+
+$ java -jar jenkins-cli.jar -s http://localhost:8080 version
+2.440.3
+
+$ java -jar jenkins-cli.jar -s http://localhost:8080 list-jobs
+api-pipeline
+web-pipeline
+infra-terraform
+nightly-security-scan
+release-pipeline
+
+$ java -jar jenkins-cli.jar -s http://localhost:8080 build api-pipeline -p BRANCH=main -w
+Started api-pipeline #142
+Completed api-pipeline #142 : SUCCESS
+
+$ curl -s localhost:8080/job/api-pipeline/142/api/json | jq '{result,duration,timestamp}'
+{
+  "result": "SUCCESS",
+  "duration": 245000,
+  "timestamp": 1717315200000
+}
+
+$ cat Jenkinsfile | head -20
+pipeline {
+    agent { docker { image 'node:20-alpine' } }
+    environment {
+        REGISTRY = credentials('docker-registry')
+    }
+    stages {
+        stage('Lint') {
+            steps { sh 'npm run lint' }
+        }
+        stage('Test') {
+            steps { sh 'npm test -- --coverage' }
+        }
+        stage('Build') {
+            steps { sh 'docker build -t $REGISTRY/api:$BUILD_NUMBER .' }
+        }
+    }
+}
+
+$ curl -s localhost:8080/queue/api/json | jq '.items | length'
+0
+
+$ java -jar jenkins-cli.jar -s http://localhost:8080 list-plugins | head -5
+git                      5.2.1
+pipeline-model-definition 2.2175
+docker-workflow          572.v950f58993843
+kubernetes               4054.v2da1a5a92710
+credentials-binding      677.vdc9c38cb_15e0
+```
+
+---
+
 ## Common pitfalls
 - **Freestyle/click-configured jobs.** Unversioned, unreviewable, un-reproducible. Use a
   `Jenkinsfile` (Declarative) in the repo.

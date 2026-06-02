@@ -479,6 +479,67 @@ If health goes `Degraded`, the sync hooks and notifications you configured in Da
 
 ---
 
+
+## Terminal Demo
+
+```terminal-demo
+# argocd@production ~ %
+
+$ argocd version --short
+argocd: v2.10.5
+argocd-server: v2.10.5
+
+$ argocd app list
+NAME        CLUSTER                         NAMESPACE    STATUS   HEALTH   SYNCPOLICY
+api         https://kubernetes.default.svc  production   Synced   Healthy  Auto-Prune
+web         https://kubernetes.default.svc  production   Synced   Healthy  Auto-Prune
+monitoring  https://kubernetes.default.svc  monitoring   Synced   Healthy  Manual
+
+$ argocd app get api
+Name:               api
+Project:            production
+Server:             https://kubernetes.default.svc
+Namespace:          production
+URL:                https://argocd.example.com/applications/api
+Repo:               https://github.com/supersaiyane/k8s-manifests
+Target Revision:    main
+Path:               apps/api/overlays/production
+Sync Status:        Synced
+Health Status:      Healthy
+
+$ argocd app sync api
+TIMESTAMP                  GROUP        KIND         NAMESPACE    NAME   STATUS   HEALTH
+2026-06-02T10:15:32+0000   apps         Deployment   production   api    Synced   Healthy
+2026-06-02T10:15:32+0000                Service      production   api    Synced   Healthy
+2026-06-02T10:15:33+0000                ConfigMap    production   api    Synced   Healthy
+Message: successfully synced (all tasks run)
+
+$ argocd app history api --output wide | head -5
+ID   DATE                    REVISION                                   
+3    2026-06-01T14:00:00Z    abc1234 feat: update API rate limits       
+4    2026-06-02T10:15:00Z    def5678 fix: connection pool timeout
+
+$ argocd app diff api
+===== apps/Deployment production/api ======
+ spec:
+   replicas: 5
+-  image: myregistry/api:v2.0.0
++  image: myregistry/api:v2.1.0
+
+$ argocd app rollback api 3
+Application 'api' rolled back to revision 3
+
+$ argocd proj list
+NAME         DESCRIPTION                  DESTINATIONS           SOURCES
+production   Production workloads         in-cluster,production  https://github.com/supersaiyane/*
+staging      Staging environment          in-cluster,staging     https://github.com/supersaiyane/*
+
+$ argocd app set api --sync-policy automated --auto-prune --self-heal
+Application 'api' updated successfully
+```
+
+---
+
 ## Common pitfalls
 
 - **Committing secrets in plaintext.** Argo CD faithfully syncs whatever is in Git. If you put a `Secret` manifest with real data in your repo, it's now in your Git history. Use Sealed Secrets or External Secrets Operator from day one.

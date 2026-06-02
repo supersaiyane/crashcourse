@@ -243,6 +243,61 @@ if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
 
 ---
 
+
+## Terminal Demo
+
+```terminal-demo
+# gh@actions ~ %
+
+$ gh workflow list
+NAME                    STATE    ID
+CI Pipeline             active   12345678
+Deploy Production       active   12345679
+Security Scan           active   12345680
+Release                 active   12345681
+
+$ gh run list --workflow=ci-pipeline.yml --limit=5
+STATUS  TITLE                    BRANCH   EVENT        ID          ELAPSED
+✓       feat: add rate limiting  main     push         9876543210  3m45s
+✓       fix: db connection pool  main     push         9876543209  2m12s
+✗       chore: update deps      deps     pull_request 9876543208  1m33s
+✓       feat: add health check  main     push         9876543207  4m01s
+
+$ gh run view 9876543210
+✓ feat: add rate limiting · 9876543210
+Triggered via push about 10 minutes ago
+
+JOBS
+✓ lint           in 22s
+✓ test           in 1m45s
+✓ build          in 58s
+✓ security-scan  in 1m12s
+✓ deploy-staging in 45s
+
+$ gh run view 9876543208 --log-failed | tail -10
+test (ubuntu-latest) 2026-06-02T10:12:33Z FAIL src/db.test.ts
+  ● connection pool › should handle timeout
+    Expected: 5000
+    Received: 0
+    Timed out waiting for connection
+
+$ gh secret list
+NAME                   UPDATED
+AWS_ACCESS_KEY_ID      2026-05-15
+AWS_SECRET_ACCESS_KEY  2026-05-15
+DOCKER_TOKEN           2026-05-20
+SLACK_WEBHOOK          2026-04-01
+
+$ gh api repos/supersaiyane/crashcourse/actions/cache/usage
+{
+  "full_name": "supersaiyane/crashcourse",
+  "active_caches_size_in_bytes": 524288000,
+  "active_caches_count": 12
+}
+```
+
+---
+
 ## Common pitfalls
 - **Forgetting `actions/checkout`.** The runner has no code until you check it out — "file not
   found" on step one.

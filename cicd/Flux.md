@@ -603,6 +603,65 @@ This gives you: fully automated development, one-click promotion to staging, man
 
 ---
 
+
+## Terminal Demo
+
+```terminal-demo
+# flux@production ~ %
+
+$ flux version
+flux: v2.2.3
+helm-controller: v0.37.4
+kustomize-controller: v1.2.2
+notification-controller: v1.2.4
+source-controller: v1.2.4
+
+$ flux get all -n flux-system
+NAME                        REVISION     SUSPENDED  READY  MESSAGE
+gitrepository/flux-system   main@sha1:abc1234   False  True   stored artifact
+
+NAME                              REVISION     SUSPENDED  READY  MESSAGE
+kustomization/flux-system         main@sha1:abc1234   False  True   Applied revision: main@sha1:abc1234
+kustomization/production-apps     main@sha1:abc1234   False  True   Applied revision: main@sha1:abc1234
+kustomization/monitoring          main@sha1:abc1234   False  True   Applied revision: main@sha1:abc1234
+
+$ flux get kustomizations
+NAME              AGE   READY  STATUS
+flux-system       30d   True   Applied revision: main@sha1:abc1234
+production-apps   25d   True   Applied revision: main@sha1:abc1234
+monitoring        20d   True   Applied revision: main@sha1:abc1234
+
+$ flux reconcile kustomization production-apps --with-source
+► annotating GitRepository flux-system
+✔ GitRepository annotated
+◎ waiting for GitRepository reconciliation
+✔ fetched revision main@sha1:def5678
+► annotating Kustomization production-apps
+✔ Kustomization annotated
+◎ waiting for Kustomization reconciliation
+✔ applied revision main@sha1:def5678
+
+$ flux logs --kind=Kustomization --name=production-apps --tail=5
+2026-06-02T10:15:32Z info Reconciliation finished in 3.2s
+2026-06-02T10:15:32Z info server-side apply completed
+2026-06-02T10:15:30Z info artifact up-to-date with remote revision
+
+$ flux get helmreleases -n production
+NAME    REVISION  SUSPENDED  READY  MESSAGE
+nginx   15.14.0   False      True   Helm install succeeded
+redis   18.6.1    False      True   Helm upgrade succeeded
+
+$ flux suspend kustomization production-apps
+► suspending kustomization production-apps
+✔ kustomization suspended
+
+$ flux resume kustomization production-apps
+► resuming kustomization production-apps
+✔ kustomization resumed
+```
+
+---
+
 ## Common pitfalls
 
 - **Confusing Flux Kustomization with Kustomize kustomization.yaml.** They are different objects. A Flux `Kustomization` CRD has `kind: Kustomization` in `kustomize.toolkit.fluxcd.io/v1`. A Kustomize `kustomization.yaml` is a plain file in your directory. Flux uses both — the CRD tells it what to do, the file tells Kustomize how to build it.

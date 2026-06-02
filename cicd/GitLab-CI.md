@@ -233,6 +233,65 @@ deploy:
 
 ---
 
+
+## Terminal Demo
+
+```terminal-demo
+# gitlab-runner@ci ~ %
+
+$ gitlab-runner --version
+Version: 16.9.1
+Git revision: 782c6ecb
+
+$ gitlab-runner list
+Listing configured runners:
+prod-runner-01   Executor=docker   Token=glrt-***   URL=https://gitlab.example.com
+prod-runner-02   Executor=docker   Token=glrt-***   URL=https://gitlab.example.com
+
+$ cat .gitlab-ci.yml | head -20
+stages:
+  - lint
+  - test
+  - build
+  - security
+  - deploy
+
+variables:
+  DOCKER_IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
+
+lint:
+  stage: lint
+  script:
+    - npm run lint
+  rules:
+    - if: $CI_MERGE_REQUEST_ID
+
+$ glab ci status
+Pipeline #45678 for branch main
+Status: passed
+Duration: 4m 32s
+
+$ glab ci list --status=failed | head -5
+#45670  fix: timeout   main   failed   2m ago
+#45665  chore: deps    deps   failed   1h ago
+
+$ glab ci view 45678
+Stage: lint     ✓ lint-job          22s
+Stage: test     ✓ unit-tests        1m45s
+                ✓ integration-tests 2m12s
+Stage: build    ✓ docker-build      58s
+Stage: security ✓ trivy-scan        35s
+Stage: deploy   ✓ deploy-staging    45s
+
+$ glab ci trace 45678 --job=unit-tests | tail -5
+  142 passing (1m42s)
+  0 failing
+Coverage: 87.3%
+Job succeeded
+```
+
+---
+
 ## Common pitfalls
 - **Expecting jobs to share a filesystem.** Each job is a fresh container. Pass data with
   `artifacts:`; speed up with `cache:` — and don't confuse the two.
