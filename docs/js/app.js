@@ -394,6 +394,9 @@ async function renderReader(catId, filename) {
       obs.observe(term);
     });
 
+    // Load Giscus comments for this course
+    loadGiscus(catId, filename);
+
     // Record reading history
     const courseKey = `${catId}/${filename}`;
     recordHistory(courseKey);
@@ -741,6 +744,41 @@ function initMermaid() {
   if (!parseRoute().cat) setTimeout(animateCounters, 250);
 })();
 
+
+
+// ── Giscus comments loader ──────────────────────────────────────────────────
+function loadGiscus(catId, filename) {
+  const container = $id('giscus-container');
+  const giscusDiv = container.querySelector('.giscus');
+  if (!container || !giscusDiv) return;
+
+  // Clear previous comments
+  giscusDiv.innerHTML = '';
+  container.classList.remove('hidden');
+
+  // Build a unique term for this course page
+  const term = `${catId}/${filename}`;
+
+  const script = document.createElement('script');
+  script.src = 'https://giscus.app/client.js';
+  script.setAttribute('data-repo', 'supersaiyane/crashcourse');
+  script.setAttribute('data-repo-id', 'R_kgDOSsj29g');
+  script.setAttribute('data-category', 'General');
+  script.setAttribute('data-category-id', 'DIC_kwDOSsj29s4C-WbV');
+  script.setAttribute('data-mapping', 'specific');
+  script.setAttribute('data-term', term);
+  script.setAttribute('data-strict', '0');
+  script.setAttribute('data-reactions-enabled', '1');
+  script.setAttribute('data-emit-metadata', '0');
+  script.setAttribute('data-input-position', 'top');
+  script.setAttribute('data-theme', document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark_dimmed' : 'light');
+  script.setAttribute('data-lang', 'en');
+  script.setAttribute('data-loading', 'lazy');
+  script.setAttribute('crossorigin', 'anonymous');
+  script.async = true;
+
+  giscusDiv.appendChild(script);
+}
 
 // ── Terminal typing engine ──────────────────────────────────────────────────
 function termTyping(termEl) {

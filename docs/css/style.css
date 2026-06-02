@@ -1181,6 +1181,21 @@ code, pre { font-family: var(--font-mono); }
   50%      { opacity: 0.2; }
 }
 
+
+/* ══════════════════ GISCUS COMMENTS ══════════════════ */
+#giscus-container {
+  margin-top: 40px;
+  padding: 0 4px;
+}
+#giscus-container h2 {
+  font-size: 1.3rem;
+  color: var(--text-1);
+}
+.giscus-frame {
+  width: 100% !important;
+  border: none;
+}
+
 /* ══════════════════ UTILITIES ══════════════════ */
 .hidden { display: none !important; }
 mark {

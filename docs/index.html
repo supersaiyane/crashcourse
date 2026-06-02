@@ -25,7 +25,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
 
   <!-- App CSS -->
-  <link rel="stylesheet" href="css/style.css?v=3" />
+  <link rel="stylesheet" href="css/style.css?v=4" />
 </head>
 <body>
 
@@ -221,6 +221,11 @@
         Loading course...
       </div>
       <div id="md-out" class="hidden"></div>
+      <div id="giscus-container" class="hidden">
+        <hr style="margin:40px 0 30px;border-color:var(--border);" />
+        <h2 style="margin-bottom:16px;">Discussion</h2>
+        <div class="giscus"></div>
+      </div>
     </div>
   </div>
 
@@ -252,7 +257,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
-<script src="js/app.js?v=3"></script>
+<script async src="https://hypothes.is/embed.js"></script>
+<script src="js/app.js?v=4"></script>
 
 </body>
 </html>
