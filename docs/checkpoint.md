@@ -60,6 +60,12 @@
 - How to Use page: docs/how-to-use.md (route: #/how-to-use)
 - Private repo support: entire repo deployed to Pages, relative MD_BASE, root redirect
 - README: features section added between "Why this exists" and "Index"
+- CLI Playground: Wave 3 #9 prototype on containers/ courses
+  - xterm.js terminal with 40+ kubectl commands
+  - 2 guided scenarios: "Debug CrashLoopBackOff" (8 steps) + "Deploy, Scale, Update" (7 steps)
+  - Free-play mode, tab autocomplete, command history
+  - Loader in app.js fetches cli-{catId}.json — add more courses by creating cli-{category}.json files
+  - To add next: create cli-iac.json (terraform), cli-data.json (psql/redis), etc.
 - PWA fixes: SW v2 bypasses external origins (fixes refresh 404), cache bust v3
 - Wave 3 (CLI playground, project walkthroughs) not started
 - TODO.txt has 48 project walkthroughs (33 + 15 industry case studies)
