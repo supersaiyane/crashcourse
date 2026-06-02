@@ -7,32 +7,92 @@
       "id": "debug-crashloop",
       "title": "Debug a CrashLoopBackOff Pod",
       "steps": [
-        {"instruction": "First, list all pods in the production namespace to find the problem.", "expect": "kubectl get pods -n production", "hint": "Try: kubectl get pods -n production"},
-        {"instruction": "Pod 'web-5f8b9c4d7-m3p2q' is in CrashLoopBackOff. Check its logs.", "expect": "kubectl logs web-5f8b9c4d7-m3p2q -n production", "hint": "Try: kubectl logs web-5f8b9c4d7-m3p2q -n production"},
-        {"instruction": "The logs show a database connection error. Describe the pod to see events.", "expect": "kubectl describe pod web-5f8b9c4d7-m3p2q -n production", "hint": "Try: kubectl describe pod web-5f8b9c4d7-m3p2q -n production"},
-        {"instruction": "The DB service might be down. Check services in production.", "expect": "kubectl get svc -n production", "hint": "Try: kubectl get svc -n production"},
-        {"instruction": "Check if the database pod is running.", "expect": "kubectl get pods -n production -l app=db", "hint": "Try: kubectl get pods -n production -l app=db"},
-        {"instruction": "The DB pod is in Pending state. Describe it to find why.", "expect": "kubectl describe pod db-8a7b6c5d4-pending -n production", "hint": "Try: kubectl describe pod db-8a7b6c5d4-pending -n production"},
-        {"instruction": "Not enough memory! Let's check node resources.", "expect": "kubectl top nodes", "hint": "Try: kubectl top nodes"},
-        {"instruction": "Node 3 is at 95% memory. Let's scale the node group or delete unnecessary pods. For now, restart the DB with lower limits.", "expect": "kubectl rollout restart deployment/db -n production", "hint": "Try: kubectl rollout restart deployment/db -n production"}
+        {
+          "instruction": "First, list all pods in the production namespace to find the problem.",
+          "expect": "kubectl get pods -n production",
+          "hint": "Try: kubectl get pods -n production"
+        },
+        {
+          "instruction": "Pod 'web-5f8b9c4d7-m3p2q' is in CrashLoopBackOff. Check its logs.",
+          "expect": "kubectl logs web-5f8b9c4d7-m3p2q -n production",
+          "hint": "Try: kubectl logs web-5f8b9c4d7-m3p2q -n production"
+        },
+        {
+          "instruction": "The logs show a database connection error. Describe the pod to see events.",
+          "expect": "kubectl describe pod web-5f8b9c4d7-m3p2q -n production",
+          "hint": "Try: kubectl describe pod web-5f8b9c4d7-m3p2q -n production"
+        },
+        {
+          "instruction": "The DB service might be down. Check services in production.",
+          "expect": "kubectl get svc -n production",
+          "hint": "Try: kubectl get svc -n production"
+        },
+        {
+          "instruction": "Check if the database pod is running.",
+          "expect": "kubectl get pods -n production -l app=db",
+          "hint": "Try: kubectl get pods -n production -l app=db"
+        },
+        {
+          "instruction": "The DB pod is in Pending state. Describe it to find why.",
+          "expect": "kubectl describe pod db-8a7b6c5d4-pending -n production",
+          "hint": "Try: kubectl describe pod db-8a7b6c5d4-pending -n production"
+        },
+        {
+          "instruction": "Not enough memory! Let's check node resources.",
+          "expect": "kubectl top nodes",
+          "hint": "Try: kubectl top nodes"
+        },
+        {
+          "instruction": "Node 3 is at 95% memory. Let's scale the node group or delete unnecessary pods. For now, restart the DB with lower limits.",
+          "expect": "kubectl rollout restart deployment/db -n production",
+          "hint": "Try: kubectl rollout restart deployment/db -n production"
+        }
       ]
     },
     {
       "id": "deploy-and-scale",
       "title": "Deploy, Scale, and Update an Application",
       "steps": [
-        {"instruction": "Check what's currently running in production.", "expect": "kubectl get deployments -n production", "hint": "Try: kubectl get deployments -n production"},
-        {"instruction": "Scale the API deployment to 5 replicas to handle more traffic.", "expect": "kubectl scale deployment api -n production --replicas=5", "hint": "Try: kubectl scale deployment api -n production --replicas=5"},
-        {"instruction": "Check the rollout status.", "expect": "kubectl rollout status deployment/api -n production", "hint": "Try: kubectl rollout status deployment/api -n production"},
-        {"instruction": "Now update the API to a new image version v2.2.0.", "expect": "kubectl set image deployment/api api=myregistry/api:v2.2.0 -n production", "hint": "Try: kubectl set image deployment/api api=myregistry/api:v2.2.0 -n production"},
-        {"instruction": "Watch the rolling update progress.", "expect": "kubectl rollout status deployment/api -n production", "hint": "Try: kubectl rollout status deployment/api -n production"},
-        {"instruction": "Something went wrong! Error rate is spiking. Roll back immediately.", "expect": "kubectl rollout undo deployment/api -n production", "hint": "Try: kubectl rollout undo deployment/api -n production"},
-        {"instruction": "Verify the rollback completed and pods are healthy.", "expect": "kubectl get pods -n production -l app=api", "hint": "Try: kubectl get pods -n production -l app=api"}
+        {
+          "instruction": "Check what's currently running in production.",
+          "expect": "kubectl get deployments -n production",
+          "hint": "Try: kubectl get deployments -n production"
+        },
+        {
+          "instruction": "Scale the API deployment to 5 replicas to handle more traffic.",
+          "expect": "kubectl scale deployment api -n production --replicas=5",
+          "hint": "Try: kubectl scale deployment api -n production --replicas=5"
+        },
+        {
+          "instruction": "Check the rollout status.",
+          "expect": "kubectl rollout status deployment/api -n production",
+          "hint": "Try: kubectl rollout status deployment/api -n production"
+        },
+        {
+          "instruction": "Now update the API to a new image version v2.2.0.",
+          "expect": "kubectl set image deployment/api api=myregistry/api:v2.2.0 -n production",
+          "hint": "Try: kubectl set image deployment/api api=myregistry/api:v2.2.0 -n production"
+        },
+        {
+          "instruction": "Watch the rolling update progress.",
+          "expect": "kubectl rollout status deployment/api -n production",
+          "hint": "Try: kubectl rollout status deployment/api -n production"
+        },
+        {
+          "instruction": "Something went wrong! Error rate is spiking. Roll back immediately.",
+          "expect": "kubectl rollout undo deployment/api -n production",
+          "hint": "Try: kubectl rollout undo deployment/api -n production"
+        },
+        {
+          "instruction": "Verify the rollback completed and pods are healthy.",
+          "expect": "kubectl get pods -n production -l app=api",
+          "hint": "Try: kubectl get pods -n production -l app=api"
+        }
       ]
     }
   ],
   "commands": {
-    "help": "Available commands:\n  kubectl get [resource]         — List resources (pods, svc, deploy, ns, nodes, ingress, hpa, events, pdb, configmap, secret)\n  kubectl describe [resource]    — Show detailed info\n  kubectl logs [pod]             — View pod logs\n  kubectl top [nodes|pods]       — Show resource usage\n  kubectl scale                  — Scale a deployment\n  kubectl set image              — Update container image\n  kubectl rollout                — Manage rollouts (status, history, undo, restart)\n  kubectl exec                   — Execute command in container\n  kubectl apply                  — Apply configuration\n  kubectl delete                 — Delete resources\n  kubectl config                 — View cluster config\n  kubectl port-forward           — Forward ports\n\n  scenario                       — Start a guided lab\n  clear                          — Clear the terminal\n  help                           — Show this help",
+    "help": "Available commands:\n  kubectl get [resource]         \u2014 List resources (pods, svc, deploy, ns, nodes, ingress, hpa, events, pdb, configmap, secret)\n  kubectl describe [resource]    \u2014 Show detailed info\n  kubectl logs [pod]             \u2014 View pod logs\n  kubectl top [nodes|pods]       \u2014 Show resource usage\n  kubectl scale                  \u2014 Scale a deployment\n  kubectl set image              \u2014 Update container image\n  kubectl rollout                \u2014 Manage rollouts (status, history, undo, restart)\n  kubectl exec                   \u2014 Execute command in container\n  kubectl apply                  \u2014 Apply configuration\n  kubectl delete                 \u2014 Delete resources\n  kubectl config                 \u2014 View cluster config\n  kubectl port-forward           \u2014 Forward ports\n\n  scenario                       \u2014 Start a guided lab\n  clear                          \u2014 Clear the terminal\n  help                           \u2014 Show this help",
     "kubectl version": "Client Version: v1.29.3\nServer Version: v1.29.3",
     "kubectl version --short": "Client Version: v1.29.3\nServer Version: v1.29.3",
     "kubectl cluster-info": "Kubernetes control plane is running at https://ABC123.gr7.ap-south-1.eks.amazonaws.com\nCoreDNS is running at https://ABC123.gr7.ap-south-1.eks.amazonaws.com/api/v1/namespaces/kube-system/services/kube-dns:dns/proxy",
@@ -83,5 +143,174 @@
     "kubectl apply -f service.yaml": "service/api configured",
     "kubectl delete pod web-5f8b9c4d7-m3p2q -n production": "pod \"web-5f8b9c4d7-m3p2q\" deleted",
     "kubectl get all -n production": "NAME                            READY   STATUS             RESTARTS      AGE\npod/api-7d4b8c6f5-x2k9n        1/1     Running            0             3d\npod/api-7d4b8c6f5-p8m3w        1/1     Running            0             3d\npod/web-5f8b9c4d7-m3p2q        0/1     CrashLoopBackOff   5 (2m ago)    1d\npod/web-5f8b9c4d7-k7j4r        1/1     Running            0             5d\npod/worker-6c9a8b3d2-n5v1x     1/1     Running            0             2d\npod/db-8a7b6c5d4-pending        0/1     Pending            0             10m\n\nNAME          TYPE           CLUSTER-IP      PORT(S)\nsvc/api       ClusterIP      172.20.45.12    8080/TCP\nsvc/web       LoadBalancer   172.20.67.89    443:31234/TCP\nsvc/db        ClusterIP      172.20.12.34    5432/TCP\n\nNAME                     READY   UP-TO-DATE   AVAILABLE   AGE\ndeployment.apps/api      2/2     2            2           30d\ndeployment.apps/web      1/2     2            1           30d\ndeployment.apps/worker   1/1     1            1           25d\ndeployment.apps/db       0/1     1            0           30d"
-  }
+  },
+  "reference": [
+    {
+      "group": "Cluster Info",
+      "commands": [
+        {
+          "cmd": "kubectl cluster-info",
+          "desc": "control plane URL"
+        },
+        {
+          "cmd": "kubectl config current-context",
+          "desc": "active cluster"
+        },
+        {
+          "cmd": "kubectl get nodes",
+          "desc": "list nodes"
+        },
+        {
+          "cmd": "kubectl top nodes",
+          "desc": "node CPU/memory"
+        }
+      ]
+    },
+    {
+      "group": "Pods",
+      "commands": [
+        {
+          "cmd": "kubectl get pods -n production",
+          "desc": "list pods"
+        },
+        {
+          "cmd": "kubectl get pods -n production -l app=api",
+          "desc": "filter by label"
+        },
+        {
+          "cmd": "kubectl top pods -n production",
+          "desc": "pod resources"
+        },
+        {
+          "cmd": "kubectl describe pod web-5f8b9c4d7-m3p2q -n production",
+          "desc": "pod details"
+        },
+        {
+          "cmd": "kubectl logs web-5f8b9c4d7-m3p2q -n production",
+          "desc": "pod logs"
+        },
+        {
+          "cmd": "kubectl logs api-7d4b8c6f5-x2k9n -n production --tail=5",
+          "desc": "last 5 lines"
+        },
+        {
+          "cmd": "kubectl delete pod web-5f8b9c4d7-m3p2q -n production",
+          "desc": "delete pod"
+        }
+      ]
+    },
+    {
+      "group": "Deployments",
+      "commands": [
+        {
+          "cmd": "kubectl get deployments -n production",
+          "desc": "list deploys"
+        },
+        {
+          "cmd": "kubectl describe deployment api -n production",
+          "desc": "deploy details"
+        },
+        {
+          "cmd": "kubectl scale deployment api -n production --replicas=5",
+          "desc": "scale up"
+        },
+        {
+          "cmd": "kubectl set image deployment/api api=myregistry/api:v2.2.0 -n production",
+          "desc": "update image"
+        },
+        {
+          "cmd": "kubectl rollout status deployment/api -n production",
+          "desc": "rollout status"
+        },
+        {
+          "cmd": "kubectl rollout history deployment/api -n production",
+          "desc": "revision history"
+        },
+        {
+          "cmd": "kubectl rollout undo deployment/api -n production",
+          "desc": "rollback"
+        },
+        {
+          "cmd": "kubectl rollout restart deployment/api -n production",
+          "desc": "restart"
+        }
+      ]
+    },
+    {
+      "group": "Services & Networking",
+      "commands": [
+        {
+          "cmd": "kubectl get svc -n production",
+          "desc": "list services"
+        },
+        {
+          "cmd": "kubectl get ingress -n production",
+          "desc": "ingress rules"
+        },
+        {
+          "cmd": "kubectl get hpa -n production",
+          "desc": "autoscalers"
+        },
+        {
+          "cmd": "kubectl port-forward svc/api 8080:8080 -n production",
+          "desc": "port forward"
+        }
+      ]
+    },
+    {
+      "group": "Config & Secrets",
+      "commands": [
+        {
+          "cmd": "kubectl get namespaces",
+          "desc": "list namespaces"
+        },
+        {
+          "cmd": "kubectl get configmap -n production",
+          "desc": "config maps"
+        },
+        {
+          "cmd": "kubectl get secret -n production",
+          "desc": "secrets"
+        },
+        {
+          "cmd": "kubectl get events -n production",
+          "desc": "cluster events"
+        },
+        {
+          "cmd": "kubectl get pdb -n production",
+          "desc": "disruption budgets"
+        }
+      ]
+    },
+    {
+      "group": "Debug",
+      "commands": [
+        {
+          "cmd": "kubectl get all -n production",
+          "desc": "everything"
+        },
+        {
+          "cmd": "kubectl get pods -n kube-system",
+          "desc": "system pods"
+        },
+        {
+          "cmd": "kubectl exec -it api-7d4b8c6f5-x2k9n -n production -- sh -c \"wget -qO- localhost:8080/healthz\"",
+          "desc": "health check"
+        }
+      ]
+    },
+    {
+      "group": "Scenarios",
+      "commands": [
+        {
+          "cmd": "scenario debug-crashloop",
+          "desc": "debug failing pod"
+        },
+        {
+          "cmd": "scenario deploy-and-scale",
+          "desc": "deploy + rollback"
+        }
+      ]
+    }
+  ]
 }

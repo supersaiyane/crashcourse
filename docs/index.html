@@ -244,8 +244,16 @@
             <button id="cli-clear-btn" class="hero-cta" style="font-size:0.8rem;padding:6px 14px;background:transparent;border:1.5px solid var(--border);color:var(--text-2);">Clear</button>
           </div>
         </div>
-        <p style="color:var(--text-2);font-size:0.85rem;margin-bottom:12px;">Type real commands in the simulated terminal below. Try <code>help</code> for commands or <code>scenario</code> for guided labs.</p>
-        <div id="cli-terminal" style="height:420px;border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,0.06);"></div>
+        <p style="color:var(--text-2);font-size:0.85rem;margin-bottom:12px;">Type commands or click any command from the reference panel. Try <code>scenario</code> for guided labs.</p>
+        <div class="cli-split">
+          <div class="cli-split-terminal">
+            <div id="cli-terminal"></div>
+          </div>
+          <div class="cli-split-reference" id="cli-reference">
+            <div class="cli-ref-header">Command Reference</div>
+            <div class="cli-ref-body" id="cli-ref-body"></div>
+          </div>
+        </div>
       </div>
     </div>
   </div>

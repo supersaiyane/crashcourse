@@ -866,6 +866,37 @@ function loadCLIPlayground(catId) {
       }
       activePlayground = new CLIPlayground(termDiv, data);
 
+      // Populate reference panel
+      const refBody = $id('cli-ref-body');
+      if (refBody && data.reference) {
+        refBody.innerHTML = '';
+        data.reference.forEach(group => {
+          const groupEl = document.createElement('div');
+          groupEl.className = 'cli-ref-group';
+          groupEl.innerHTML = `<div class="cli-ref-group-title">${group.group}</div>`;
+          group.commands.forEach(c => {
+            const btn = document.createElement('button');
+            btn.className = 'cli-ref-cmd';
+            btn.title = c.cmd;
+            btn.innerHTML = c.cmd.length > 38 
+              ? c.cmd.substring(0, 38) + '...' 
+              : c.cmd;
+            if (c.desc) {
+              btn.innerHTML += ` <span class="cli-ref-desc">${c.desc}</span>`;
+            }
+            btn.addEventListener('click', () => {
+              if (activePlayground) {
+                // Clear current line and type the command
+                activePlayground.replaceLine(c.cmd);
+                activePlayground.term.focus();
+              }
+            });
+            groupEl.appendChild(btn);
+          });
+          refBody.appendChild(groupEl);
+        });
+      }
+
       // Wire up buttons
       const scenarioBtn = $id('cli-scenario-btn');
       const clearBtn = $id('cli-clear-btn');
