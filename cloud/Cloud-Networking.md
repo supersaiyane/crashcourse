@@ -396,6 +396,59 @@ App servers → internet (software updates, third-party APIs)
 
 ---
 
+
+## Terminal Demo
+
+```terminal-demo
+# neteng@production ~ %
+
+$ aws ec2 describe-vpcs --query 'Vpcs[].{ID:VpcId,CIDR:CidrBlock,Name:Tags[?Key==`Name`].Value|[0]}' --output table
+--------------------------------------------
+|              DescribeVpcs                |
++----------+---------------+--------------+
+|   CIDR   |      ID       |    Name      |
++----------+---------------+--------------+
+| 10.0.0.0/16| vpc-abc123  | prod-vpc     |
+| 10.1.0.0/16| vpc-def456  | staging-vpc  |
++----------+---------------+--------------+
+
+$ aws ec2 describe-subnets --filters "Name=vpc-id,Values=vpc-abc123" --query 'Subnets[].{AZ:AvailabilityZone,CIDR:CidrBlock,Type:Tags[?Key==`Type`].Value|[0],Available:AvailableIpAddressCount}' --output table
+--------------------------------------------------
+|                DescribeSubnets                 |
++----------------+--------------+--------+-------+
+|       AZ       |    CIDR      | Type   |Avail  |
++----------------+--------------+--------+-------+
+| ap-south-1a    | 10.0.1.0/24  | public |  245  |
+| ap-south-1b    | 10.0.2.0/24  | public |  248  |
+| ap-south-1a    | 10.0.10.0/24 | private|  250  |
+| ap-south-1b    | 10.0.20.0/24 | private|  251  |
++----------------+--------------+--------+-------+
+
+$ aws ec2 describe-security-groups --filters "Name=group-name,Values=prod-*" --query 'SecurityGroups[].{Name:GroupName,ID:GroupId,Rules:length(IpPermissions)}' --output table
+-----------------------------------------
+|        DescribeSecurityGroups         |
++---------+------------------+----------+
+|  Name   |       ID         |  Rules   |
++---------+------------------+----------+
+| prod-alb| sg-abc123        |    5     |
+| prod-app| sg-def456        |    3     |
+| prod-db | sg-ghi789        |    2     |
++---------+------------------+----------+
+
+$ dig app.example.com +short
+52.66.123.45
+52.66.123.46
+
+$ traceroute -m 10 app.example.com | head -5
+ 1  gateway (10.0.0.1)  0.5 ms
+ 2  isp-router (203.0.113.1)  2.1 ms
+ 3  * * *
+ 4  aws-edge (52.95.64.1)  15.2 ms
+ 5  prod-alb (52.66.123.45)  18.7 ms
+```
+
+---
+
 ## Common Pitfalls
 
 **1. Overlapping CIDRs — the #1 mistake.** You create VPC-A (`10.0.0.0/16`) and VPC-B (`10.0.0.0/16`) and then try to peer them. The peer creation fails or, worse, succeeds but routing breaks. Plan your IP space before you create anything. Use AWS IPAM or a central spreadsheet.

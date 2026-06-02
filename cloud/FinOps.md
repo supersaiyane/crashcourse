@@ -403,6 +403,41 @@ Three things make FinOps stick: weekly 30-minute cost reviews with engineering, 
 
 
 
+
+## Terminal Demo
+
+```terminal-demo
+# finops@cost-mgmt ~ %
+
+$ aws ce get-cost-and-usage --time-period Start=2026-05-01,End=2026-06-01 --granularity MONTHLY --metrics BlendedCost --group-by Type=DIMENSION,Key=SERVICE | jq '.ResultsByTime[0].Groups | sort_by(.Metrics.BlendedCost.Amount | tonumber) | reverse | .[:5][] | {Service:.Keys[0],Cost:.Metrics.BlendedCost.Amount}'
+{"Service": "Amazon Elastic Kubernetes Service", "Cost": "4523.45"}
+{"Service": "Amazon RDS", "Cost": "2345.67"}
+{"Service": "Amazon EC2", "Cost": "1876.23"}
+{"Service": "Amazon S3", "Cost": "456.78"}
+{"Service": "AWS Lambda", "Cost": "123.45"}
+
+$ aws ce get-cost-forecast --time-period Start=2026-06-02,End=2026-07-01 --metric BLENDED_COST --granularity MONTHLY
+{
+    "Total": {"Amount": "9850.00", "Unit": "USD"},
+    "ForecastResultsByTime": [
+        {"MeanValue": "9850.00", "PredictionIntervalLowerBound": "8900.00", "PredictionIntervalUpperBound": "10800.00"}
+    ]
+}
+
+$ aws ce get-rightsizing-recommendation --service AmazonEC2 | jq '.RightsizingRecommendations[:3][] | {Instance:.CurrentInstance.ResourceId,Current:.CurrentInstance.InstanceType,Recommended:.RightsizingRecommendation.TargetInstances[0].InstanceType,Savings:.RightsizingRecommendation.TargetInstances[0].EstimatedMonthlySavings.Value}'
+{"Instance":"i-0a1b2c","Current":"m5.2xlarge","Recommended":"m5.xlarge","Savings":"156.00"}
+{"Instance":"i-0b2c3d","Current":"r5.xlarge","Recommended":"r5.large","Savings":"89.50"}
+{"Instance":"i-0c3d4e","Current":"c5.4xlarge","Recommended":"c5.2xlarge","Savings":"234.00"}
+
+$ kubectl top nodes --sort-by=cpu
+NAME           CPU(cores)   CPU%   MEMORY(bytes)   MEMORY%
+node-01        1200m        30%    8192Mi          50%
+node-02        800m         20%    6144Mi          37%
+node-03        400m         10%    4096Mi          25%
+```
+
+---
+
 ## Quick Quiz
 
 Test your understanding with these rapid-fire questions (answers hidden):

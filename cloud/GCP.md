@@ -224,6 +224,48 @@ The console/CLI are for inspection and quick tasks; production infra is code.
 
 ---
 
+
+## Terminal Demo
+
+```terminal-demo
+# gcloud@production ~ %
+
+$ gcloud config get-value project
+prod-project-123456
+
+$ gcloud compute instances list --filter="labels.env=production" --format="table(name,zone,machineType.basename(),status,networkInterfaces[0].networkIP)"
+NAME          ZONE             MACHINE_TYPE   STATUS   INTERNAL_IP
+prod-web-01   asia-south1-a    e2-standard-4  RUNNING  10.0.1.42
+prod-web-02   asia-south1-b    e2-standard-4  RUNNING  10.0.2.18
+prod-api-01   asia-south1-a    e2-standard-8  RUNNING  10.0.1.55
+
+$ gcloud container clusters describe prod-cluster --zone asia-south1-a --format="value(currentNodeCount,currentMasterVersion)"
+6	1.29.3-gke.1093000
+
+$ gcloud sql instances list
+NAME       DATABASE_VERSION  LOCATION       TIER              STATUS
+prod-db    POSTGRES_15       asia-south1-a  db-custom-4-15360 RUNNING
+prod-db-r  POSTGRES_15       asia-south1-b  db-custom-4-15360 RUNNING
+
+$ gcloud run services list --platform managed --format="table(name,region,status)"
+NAME      REGION         STATUS
+api       asia-south1    Ready
+webhook   asia-south1    Ready
+
+$ bq query --use_legacy_sql=false 'SELECT COUNT(*) as total_events FROM analytics.events WHERE DATE(timestamp) = CURRENT_DATE()'
++---------------+
+| total_events  |
++---------------+
+|     2345678   |
++---------------+
+
+$ gcloud logging read 'resource.type="gke_cluster" severity>=WARNING' --limit=3 --format=json | jq '.[].textPayload'
+"Node pool scale-up: 4 -> 6 nodes"
+"Pod evicted due to node pressure: monitoring/prometheus-0"
+```
+
+---
+
 ## Common pitfalls
 - **Forgetting which project is active.** `gcloud` acts on the configured project — the GCP
   version of the wrong-account/region accident. `gcloud config list` before acting.

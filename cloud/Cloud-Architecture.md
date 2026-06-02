@@ -369,6 +369,48 @@ Failover drills are run quarterly and documented in the runbook.
 
 ---
 
+
+## Terminal Demo
+
+```terminal-demo
+# architect@design ~ %
+
+$ aws elbv2 describe-load-balancers --query 'LoadBalancers[].{Name:LoadBalancerName,Type:Type,State:State.Code,DNS:DNSName}' --output table
+----------------------------------------------------------------------
+|                     DescribeLoadBalancers                          |
++---------+-------------+--------+-----------------------------------+
+|  Name   |    Type     | State  | DNS                               |
++---------+-------------+--------+-----------------------------------+
+|  prod-alb| application| active | prod-alb-123.ap-south-1.elb.aws  |
+|  internal| application| active | internal-456.ap-south-1.elb.aws  |
++---------+-------------+--------+-----------------------------------+
+
+$ aws elasticache describe-cache-clusters --query 'CacheClusters[].{ID:CacheClusterId,Engine:Engine,Status:CacheClusterStatus,Type:CacheNodeType}' --output table
+------------------------------------------------------
+|              DescribeCacheClusters                 |
++-----------+--------+-----------+------------------+
+|  Engine   |   ID   |  Status   |      Type        |
++-----------+--------+-----------+------------------+
+|  redis    | prod-c | available | cache.r6g.large  |
++-----------+--------+-----------+------------------+
+
+$ aws sqs list-queues --queue-name-prefix prod --output text
+https://sqs.ap-south-1.amazonaws.com/123456789012/prod-orders
+https://sqs.ap-south-1.amazonaws.com/123456789012/prod-notifications
+https://sqs.ap-south-1.amazonaws.com/123456789012/prod-dlq
+
+$ aws cloudfront list-distributions --query 'DistributionList.Items[].{ID:Id,Domain:DomainName,Status:Status}' --output table
+--------------------------------------------------
+|             ListDistributions                  |
++----------------+------------------+------------+
+|       ID       |     Domain       |  Status    |
++----------------+------------------+------------+
+|  E1ABC2DEF3GH  | d1abc.cloudfront | Deployed   |
++----------------+------------------+------------+
+```
+
+---
+
 ## Common Pitfalls
 
 **Single-account everything.** Starting in one account is understandable; staying there is an architecture debt that compounds. Security blast radius is unconstrained, cost attribution is impossible, and environment separation is a naming convention (prod-my-bucket) rather than a guardrail. Migrate to multi-account early — it is significantly harder to do after teams are embedded in workflows.

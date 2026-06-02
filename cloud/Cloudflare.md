@@ -568,6 +568,49 @@ Static frontend on Pages (deployed from Git, CDN-backed). API layer as Workers w
 
 
 
+
+## Terminal Demo
+
+```terminal-demo
+# wrangler@production ~ %
+
+$ wrangler whoami
+Getting User settings...
+You are logged in with an API Token, associated with the email gurpreet@example.com
+
+$ curl -s -H "Authorization: Bearer $CF_API_TOKEN" "https://api.cloudflare.com/client/v4/zones?name=example.com" | jq '.result[0] | {name,status,plan:.plan.name}'
+{
+  "name": "example.com",
+  "status": "active",
+  "plan": "Business"
+}
+
+$ wrangler deploy
+Uploading worker...
+Published worker (2.1s)
+  https://api-worker.supersaiyane.workers.dev
+Current Version ID: abc123def456
+
+$ curl -s "https://api.cloudflare.com/client/v4/zones/$ZONE_ID/analytics/dashboard?since=-1440" -H "Authorization: Bearer $CF_API_TOKEN" | jq '.result.totals | {requests:.requests.all, bandwidth:.bandwidth.all, threats:.threats.all}'
+{
+  "requests": 4567890,
+  "bandwidth": 12345678901,
+  "threats": 234
+}
+
+$ wrangler kv:namespace list | jq '.[].title'
+"CACHE"
+"SESSIONS"
+"RATE_LIMITS"
+
+$ wrangler r2 object list prod-assets --prefix="uploads/" | head -5
+uploads/2026-06-01/report.pdf    2.3 MB    2026-06-01T14:00:00Z
+uploads/2026-06-01/data.csv      890 KB    2026-06-01T15:30:00Z
+uploads/2026-06-02/export.json   1.1 MB    2026-06-02T09:00:00Z
+```
+
+---
+
 ## Quick Quiz
 
 Test your understanding with these rapid-fire questions (answers hidden):

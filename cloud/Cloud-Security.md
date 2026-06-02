@@ -404,6 +404,48 @@ Result: a documented, auditable baseline that satisfies RBI IT Framework require
 
 ---
 
+
+## Terminal Demo
+
+```terminal-demo
+# secops@production ~ %
+
+$ aws iam get-account-summary | jq '{Users:.SummaryMap.Users,Roles:.SummaryMap.Roles,MFADevices:.SummaryMap.MFADevicesInUse,Policies:.SummaryMap.Policies}'
+{
+  "Users": 25,
+  "Roles": 42,
+  "MFADevices": 25,
+  "Policies": 38
+}
+
+$ aws guardduty list-findings --detector-id abc123 --finding-criteria '{"Severity":{"Gte":7}}' | jq '.FindingIds | length'
+3
+
+$ aws securityhub get-findings --filters '{"SeverityLabel":[{"Value":"CRITICAL","Comparison":"EQUALS"}]}' --query 'Findings[:3].[Title,Severity.Label]' --output table
+-----------------------------------------------------
+|                    GetFindings                    |
++-------------------------------------------+-------+
+| Missing MFA on root account               | CRIT  |
+| S3 bucket public access enabled           | CRIT  |
+| Security group allows 0.0.0.0/0 on SSH    | CRIT  |
++-------------------------------------------+-------+
+
+$ aws kms list-keys --query 'Keys[:5].KeyId' --output text
+abc123-def456   ghi789-jkl012   mno345-pqr678
+
+$ aws cloudtrail lookup-events --lookup-attributes AttributeKey=EventName,AttributeValue=ConsoleLogin --max-results 3 --query 'Events[].{User:Username,Time:EventTime,IP:CloudTrailEvent}' --output table | head -5
+2026-06-02T09:00:00Z  admin@example.com   52.66.123.45
+2026-06-02T08:45:00Z  dev@example.com     203.0.113.10
+
+$ trivy config --severity HIGH,CRITICAL ./terraform/
+2026-06-02T10:00:00Z INFO  Detected config files: 12
+Failures: 2 (HIGH: 1, CRITICAL: 1)
+CRITICAL: S3 bucket encryption not enabled (main.tf:45)
+HIGH: RDS instance not in private subnet (rds.tf:12)
+```
+
+---
+
 ## Common Pitfalls
 
 **Over-permissioned roles** — The most common issue. An EC2 instance profile or Lambda role with `AdministratorAccess` because "it was the quickest way to get it working." Audit all roles quarterly. IAM Access Analyzer will surface the ones with public trust policies or excessive permissions.

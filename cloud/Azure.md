@@ -227,6 +227,43 @@ az deployment group create --resource-group rg-demo --template-file main.bicep
 
 ---
 
+
+## Terminal Demo
+
+```terminal-demo
+# az@production ~ %
+
+$ az account show --query "{Name:name,ID:id,State:state}" -o table
+Name              ID                                    State
+prod-subscription a1b2c3d4-e5f6-7890-abcd-ef1234567890  Enabled
+
+$ az aks list -o table
+Name          Location       ResourceGroup    KubernetesVersion    ProvisioningState
+prod-cluster  centralindia   prod-rg          1.29.3               Succeeded
+
+$ az vm list -g prod-rg -o table --query "[].{Name:name,Size:hardwareProfile.vmSize,Status:powerState}"
+Name          Size              Status
+prod-web-01   Standard_D4s_v3   VM running
+prod-web-02   Standard_D4s_v3   VM running
+
+$ az postgres flexible-server list -o table
+Name       ResourceGroup  Location      Version  State
+prod-db    prod-rg        centralindia  15       Ready
+
+$ az monitor metrics list --resource /subscriptions/.../prod-db --metric-names cpu_percent --interval PT5M --output table | tail -3
+2026-06-02T09:45:00Z  Average  32.5
+2026-06-02T09:50:00Z  Average  35.1
+2026-06-02T09:55:00Z  Average  28.7
+
+$ az keyvault secret list --vault-name prod-vault -o table
+Name              ContentType    Enabled
+db-password       text/plain     true
+api-key           text/plain     true
+jwt-secret        text/plain     true
+```
+
+---
+
 ## Common pitfalls
 - **Forgetting which subscription is active.** `az` acts on the current subscription — the Azure
   version of the wrong-account accident. `az account show` first.

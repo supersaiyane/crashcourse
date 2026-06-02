@@ -227,6 +227,69 @@ quick actions; production infrastructure should be code.
 
 ---
 
+
+## Terminal Demo
+
+```terminal-demo
+# aws@production ~ %
+
+$ aws sts get-caller-identity
+{
+    "UserId": "AROA3XFRBF23ZZEXAMPLE",
+    "Account": "123456789012",
+    "Arn": "arn:aws:iam::123456789012:role/sre-admin"
+}
+
+$ aws ec2 describe-instances --filters "Name=tag:env,Values=production" --query 'Reservations[].Instances[].{ID:InstanceId,Type:InstanceType,State:State.Name,IP:PrivateIpAddress}' --output table
+---------------------------------------------------------
+|                    DescribeInstances                   |
++---------------------+----------+---------+------------+
+|         ID          |    IP    | State   |   Type     |
++---------------------+----------+---------+------------+
+|  i-0a1b2c3d4e5f6789 | 10.0.1.42| running | m6i.xlarge |
+|  i-0b2c3d4e5f678901 | 10.0.2.18| running | m6i.xlarge |
++---------------------+----------+---------+------------+
+
+$ aws s3 ls s3://prod-data-lake/ --summarize --human-readable
+                           PRE raw/
+                           PRE processed/
+                           PRE archive/
+Total Objects: 1,245,678
+   Total Size: 2.3 TiB
+
+$ aws eks describe-cluster --name prod-cluster --query 'cluster.{Status:status,Version:version,Endpoint:endpoint}' --output table
+-------------------------------------------------------------
+|                     DescribeCluster                       |
++-----------+-------+---------------------------------------+
+|  Status   |Version| Endpoint                              |
++-----------+-------+---------------------------------------+
+|  ACTIVE   | 1.29  | https://ABC123.gr7.ap-south-1.eks.aws |
++-----------+-------+---------------------------------------+
+
+$ aws rds describe-db-instances --query 'DBInstances[].{ID:DBInstanceIdentifier,Engine:Engine,Status:DBInstanceStatus,Class:DBInstanceClass}' --output table
+------------------------------------------------------
+|               DescribeDBInstances                  |
++-----------+----------+----------+------------------+
+|  Engine   |    ID    | Status   |     Class        |
++-----------+----------+----------+------------------+
+| postgres  | prod-db  | available| db.r6g.xlarge    |
+| postgres  | prod-db-r| available| db.r6g.xlarge    |
++-----------+----------+----------+------------------+
+
+$ aws cloudwatch get-metric-statistics --namespace AWS/ELB --metric-name RequestCount --period 300 --statistics Sum --start-time 2026-06-02T09:00:00Z --end-time 2026-06-02T10:00:00Z
+{
+    "Datapoints": [
+        {"Timestamp": "2026-06-02T09:30:00Z", "Sum": 45678.0, "Unit": "Count"},
+        {"Timestamp": "2026-06-02T09:45:00Z", "Sum": 52341.0, "Unit": "Count"}
+    ]
+}
+
+$ aws iam list-roles --query 'Roles[?starts_with(RoleName,`prod-`)].RoleName' --output text
+prod-api-task-role   prod-eks-node-role   prod-lambda-exec
+```
+
+---
+
 ## Common pitfalls
 - **Long-lived IAM user keys.** They leak and they're forever. Use SSO + roles + temporary
   creds. Never commit keys to Git.
