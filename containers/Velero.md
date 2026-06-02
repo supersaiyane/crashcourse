@@ -457,6 +457,54 @@ velero restore create NAME --from-backup B --selector "app=my-api"
 
 
 
+
+## Terminal Demo
+
+```terminal-demo
+# velero@production ~ %
+
+$ velero version
+Client: v1.13.0
+Server: v1.13.0
+
+$ velero backup-location get
+NAME      PROVIDER   BUCKET/PREFIX         PHASE       LAST VALIDATED   ACCESS MODE
+default   aws        prod-backups/velero   Available   2m ago           ReadWrite
+
+$ velero backup create pre-upgrade --include-namespaces production
+Backup request "pre-upgrade" submitted successfully.
+
+$ velero backup describe pre-upgrade
+Name:         pre-upgrade
+Namespace:    velero
+Phase:        Completed
+Namespaces:   Included: production
+Items backed up: 145
+Total bytes:  12.4 MB
+
+$ velero schedule get
+NAME               STATUS    SCHEDULE       LAST BACKUP   TTL
+daily-production   Enabled   0 2 * * *      6h ago        720h0m0s
+hourly-critical    Enabled   0 * * * *      45m ago       168h0m0s
+
+$ velero backup get --output=wide | head -5
+NAME                     STATUS      ERRORS   WARNINGS   CREATED                EXPIRES
+hourly-critical-202606   Completed   0        0          2026-06-02 09:00:00    6d
+daily-production-20260   Completed   0        0          2026-06-02 02:00:00    29d
+pre-upgrade              Completed   0        0          2026-06-02 10:15:00    29d
+
+$ velero restore create --from-backup pre-upgrade --namespace-mappings production:staging
+Restore request "pre-upgrade-20260602101600" submitted successfully.
+
+$ velero restore describe pre-upgrade-20260602101600
+Phase:  Completed
+Items restored: 145
+Warnings: 0
+Errors: 0
+```
+
+---
+
 ## Quick Quiz
 
 Test your understanding with these rapid-fire questions (answers hidden):

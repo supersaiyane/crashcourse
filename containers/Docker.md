@@ -235,6 +235,84 @@ docker push ghcr.io/org/myapp:1.0
 
 ---
 
+
+## Terminal Demo
+
+```terminal-demo
+# docker@dev ~ %
+
+$ docker version --format '{{.Server.Version}}'
+24.0.7
+
+$ docker pull nginx:alpine
+alpine: Pulling from library/nginx
+Digest: sha256:a8b1c5e3f...
+Status: Downloaded newer image for nginx:alpine
+
+$ docker run -d --name web -p 8080:80 nginx:alpine
+f3a8b2c1d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9
+
+$ docker ps
+CONTAINER ID   IMAGE          COMMAND                  STATUS          PORTS                  NAMES
+f3a8b2c1d4e5   nginx:alpine   "/docker-entrypoint.…"   Up 5 seconds    0.0.0.0:8080->80/tcp   web
+
+$ docker logs web --tail=3
+172.17.0.1 - - [02/Jun/2026:10:00:01 +0000] "GET / HTTP/1.1" 200 615
+172.17.0.1 - - [02/Jun/2026:10:00:02 +0000] "GET /favicon.ico HTTP/1.1" 404 153
+2026/06/02 10:00:01 [notice] 1#1: start worker process 30
+
+$ docker stats --no-stream
+CONTAINER ID   NAME   CPU %   MEM USAGE / LIMIT     MEM %   NET I/O          BLOCK I/O
+f3a8b2c1d4e5   web    0.02%   4.5MiB / 7.77GiB      0.06%   1.2kB / 648B     0B / 12.3kB
+
+$ docker exec -it web sh -c "nginx -t"
+nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
+nginx: configuration file /etc/nginx/nginx.conf test is successful
+
+$ docker build -t myapp:v1.0 .
+[+] Building 12.3s (10/10) FINISHED
+ => [1/5] FROM node:20-alpine
+ => [2/5] WORKDIR /app
+ => [3/5] COPY package*.json ./
+ => [4/5] RUN npm ci --production
+ => [5/5] COPY . .
+ => exporting to image
+ => naming to docker.io/library/myapp:v1.0
+
+$ docker images --format "table {{.Repository}}\t{{.Tag}}\t{{.Size}}"
+REPOSITORY   TAG       SIZE
+myapp        v1.0      145MB
+nginx        alpine    42.5MB
+
+$ docker network ls
+NETWORK ID     NAME      DRIVER    SCOPE
+a1b2c3d4e5f6   bridge    bridge    local
+b2c3d4e5f6a7   host      host      local
+c3d4e5f6a7b8   none      null      local
+d4e5f6a7b8c9   app-net   bridge    local
+
+$ docker compose up -d
+[+] Running 3/3
+ ✔ Network app_default    Created
+ ✔ Container app-db-1     Started
+ ✔ Container app-api-1    Started
+
+$ docker system df
+TYPE            TOTAL   ACTIVE   SIZE      RECLAIMABLE
+Images          12      4        2.1GB     1.4GB (66%)
+Containers      5       3        25.6MB    12.3MB (48%)
+Local Volumes   8       3        890MB     540MB (60%)
+Build Cache     15      0        1.2GB     1.2GB
+
+$ docker system prune -f
+Deleted Containers: 2
+Deleted Networks: 1
+Deleted Images: 3
+Total reclaimed space: 1.8GB
+```
+
+---
+
 ## Common pitfalls
 - **Thinking a container is a VM.** It's one process. No init system, no SSH by default. Don't
   try to run multiple services in one container — one concern per container.

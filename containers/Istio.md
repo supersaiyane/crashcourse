@@ -607,6 +607,54 @@ Once v2 is stable at 100%, delete the v1 Deployment and remove the now-redundant
 
 ---
 
+
+## Terminal Demo
+
+```terminal-demo
+# istioctl@production ~ %
+
+$ istioctl version
+client version: 1.21.0
+control plane version: 1.21.0
+data plane version: 1.21.0 (15 proxies)
+
+$ kubectl get pods -n istio-system
+NAME                                   READY   STATUS    RESTARTS   AGE
+istiod-7f8b9c4d5-x2k9n                1/1     Running   0          30d
+istio-ingressgateway-6c9a8b3d2-m3p2q   1/1     Running   0          30d
+
+$ istioctl analyze -n production
+✔ No validation issues found when analyzing namespace: production.
+
+$ kubectl get virtualservice -n production
+NAME         GATEWAYS             HOSTS              AGE
+api-vs       [prod-gateway]       [api.example.com]  25d
+web-vs       [prod-gateway]       [app.example.com]  25d
+
+$ kubectl get destinationrule -n production
+NAME       HOST    AGE
+api-dr     api     25d
+
+$ istioctl proxy-status
+NAME                                 CDS    LDS    EDS    RDS    ECDS   ISTIOD
+api-7d4b8c6f5-x2k9n.production      SYNCED SYNCED SYNCED SYNCED        istiod-7f8b9c4d5-x2k9n
+api-7d4b8c6f5-p8m3w.production      SYNCED SYNCED SYNCED SYNCED        istiod-7f8b9c4d5-x2k9n
+web-5f8b9c4d7-m3p2q.production      SYNCED SYNCED SYNCED SYNCED        istiod-7f8b9c4d5-x2k9n
+
+$ istioctl dashboard kiali
+http://localhost:20001/kiali
+
+$ kubectl get peerauthentication -n production
+NAME         MODE     AGE
+default      STRICT   30d
+
+$ istioctl proxy-config routes api-7d4b8c6f5-x2k9n.production | head -5
+NAME           DOMAINS              MATCH     VIRTUAL SERVICE
+8080           api.example.com      /*        api-vs.production
+```
+
+---
+
 ## Common pitfalls
 
 - **Sidecar not injected.** The namespace label is set but existing pods were not restarted. Injection happens at pod creation — `kubectl rollout restart deployment` to pick it up.

@@ -632,6 +632,55 @@ environment-appropriate replicas, resource limits, and config, all derived from 
 
 ---
 
+
+## Terminal Demo
+
+```terminal-demo
+# kustomize@dev ~ %
+
+$ kustomize version
+v5.3.0
+
+$ ls base/
+deployment.yaml  kustomization.yaml  service.yaml
+
+$ cat base/kustomization.yaml
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - deployment.yaml
+  - service.yaml
+
+$ ls overlays/production/
+kustomization.yaml  replica-patch.yaml  resource-limits.yaml
+
+$ kustomize build overlays/production/ | head -15
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api
+  namespace: production
+  labels:
+    env: production
+spec:
+  replicas: 5
+
+$ kubectl apply -k overlays/production/
+deployment.apps/api configured
+service/api configured
+configmap/api-config-m2k5d8h created
+
+$ kubectl apply -k overlays/staging/ --dry-run=server
+deployment.apps/api created (server dry run)
+service/api created (server dry run)
+
+$ kustomize build overlays/production/ | kubectl diff -f -
+- replicas: 3
++ replicas: 5
+```
+
+---
+
 ## Common pitfalls
 
 - **`commonLabels` modifies selectors.** Once a Deployment is created with a selector, you

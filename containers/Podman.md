@@ -636,6 +636,57 @@ journalctl --user -u webapp-frontend -f
 
 ---
 
+
+## Terminal Demo
+
+```terminal-demo
+# podman@dev ~ %
+
+$ podman version
+Client:  Version: 4.9.3
+Server:  Version: 4.9.3
+
+$ podman run -d --name web -p 8080:80 docker.io/nginx:alpine
+a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4
+
+$ podman ps
+CONTAINER ID  IMAGE                          COMMAND               STATUS         PORTS                 NAMES
+a1b2c3d4e5f6  docker.io/library/nginx:alpine /docker-entrypoint.…  Up 5 seconds   0.0.0.0:8080->80/tcp  web
+
+$ podman logs web --tail=3
+2026/06/02 10:00:01 [notice] 1#1: start worker processes
+2026/06/02 10:00:01 [notice] 1#1: start worker process 30
+172.17.0.1 - - [02/Jun/2026:10:00:02 +0000] "GET / HTTP/1.1" 200
+
+$ podman build -t myapp:v1.0 -f Containerfile .
+STEP 1/5: FROM node:20-alpine
+STEP 2/5: WORKDIR /app
+STEP 3/5: COPY package*.json ./
+STEP 4/5: RUN npm ci --production
+STEP 5/5: COPY . .
+Successfully tagged localhost/myapp:v1.0
+
+$ podman generate systemd --new --name web > ~/.config/systemd/user/container-web.service
+$ systemctl --user enable --now container-web.service
+
+$ podman pod create --name app-pod -p 8080:80 -p 5432:5432
+e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6
+
+$ podman generate kube app-pod > app-pod.yaml
+
+$ podman images --format "table {{.Repository}} {{.Tag}} {{.Size}}"
+REPOSITORY            TAG      SIZE
+localhost/myapp       v1.0     145 MB
+docker.io/nginx       alpine   42.5 MB
+
+$ podman system prune -f
+Deleted Containers: 2
+Deleted Images: 3
+Reclaimed space: 890 MB
+```
+
+---
+
 ## Common pitfalls
 
 - **Rootless networking port limits.** Non-root users cannot bind to ports below 1024 by default. Use ports 1024+ in your container mapping (e.g., `8080:80`) or lower the limit: `sudo sysctl -w net.ipv4.ip_unprivileged_port_start=80`. For a permanent change, add it to `/etc/sysctl.d/`. See `Linux.md` for sysctl management.

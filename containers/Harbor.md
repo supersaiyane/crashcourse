@@ -611,6 +611,43 @@ helm upgrade harbor harbor/harbor -n harbor -f values.yaml
 
 
 
+
+## Terminal Demo
+
+```terminal-demo
+# harbor@registry ~ %
+
+$ docker login harbor.internal.example.com
+Username: deploy-bot
+Password: ********
+Login Succeeded
+
+$ docker tag myapp:v2.1.0 harbor.internal.example.com/production/myapp:v2.1.0
+$ docker push harbor.internal.example.com/production/myapp:v2.1.0
+v2.1.0: digest: sha256:a1b2c3d4e5... size: 1576
+Pushed successfully
+
+$ curl -s harbor.internal.example.com/api/v2.0/projects/production/repositories | jq '.[].name'
+"production/myapp"
+"production/web"
+"production/worker"
+
+$ curl -s harbor.internal.example.com/api/v2.0/projects/production/repositories/myapp/artifacts?page_size=3 | jq '.[].tags[].name'
+"v2.1.0"
+"v2.0.0"
+"v1.9.5"
+
+$ trivy image harbor.internal.example.com/production/myapp:v2.1.0
+2026-06-02T10:15:00 INFO  Vulnerability scanning...
+harbor.internal.example.com/production/myapp:v2.1.0
+Total: 0 (HIGH: 0, CRITICAL: 0)
+
+$ curl -s harbor.internal.example.com/api/v2.0/projects/production/repositories/myapp/artifacts/sha256:a1b2c3d4e5/scan | jq '.severity'
+"None"
+```
+
+---
+
 ## Quick Quiz
 
 Test your understanding with these rapid-fire questions (answers hidden):

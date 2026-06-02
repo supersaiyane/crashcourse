@@ -209,6 +209,76 @@ pairs naturally with GitOps (Argo CD can render Helm charts directly — see `Ar
 
 ---
 
+
+## Terminal Demo
+
+```terminal-demo
+# helm@production ~ %
+
+$ helm version --short
+v3.14.2+g7a15128
+
+$ helm repo add bitnami https://charts.bitnami.com/bitnami
+"bitnami" has been added to your repositories
+
+$ helm repo update
+Hang tight while we grab the latest from your chart repositories...
+...Successfully got an update from the "bitnami" chart repository
+Update Complete. ⎈Happy Helming!⎈
+
+$ helm search repo nginx --versions | head -5
+NAME                  CHART VERSION   APP VERSION   DESCRIPTION
+bitnami/nginx         15.14.0         1.25.4        NGINX Open Source for Kubernetes
+bitnami/nginx         15.13.2         1.25.4        NGINX Open Source for Kubernetes
+
+$ helm install web bitnami/nginx -n production --set replicaCount=3
+NAME: web
+NAMESPACE: production
+STATUS: deployed
+REVISION: 1
+
+$ helm list -n production
+NAME   NAMESPACE    REVISION   STATUS     CHART          APP VERSION
+web    production   1          deployed   nginx-15.14.0  1.25.4
+api    production   4          deployed   api-2.1.0      2.1.0
+
+$ helm get values api -n production
+replicaCount: 5
+image:
+  repository: myregistry/api
+  tag: v2.1.0
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+$ helm upgrade api ./charts/api -n production -f values-prod.yaml
+Release "api" has been upgraded. Happy Helming!
+REVISION: 5
+
+$ helm history api -n production
+REVISION   STATUS       CHART       DESCRIPTION
+3          superseded   api-2.0.0   Upgrade complete
+4          superseded   api-2.1.0   Upgrade complete
+5          deployed     api-2.1.0   Upgrade complete
+
+$ helm rollback api 4 -n production
+Rollback was a success! Happy Helming!
+
+$ helm template api ./charts/api -f values-prod.yaml | head -10
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api
+  namespace: production
+  labels:
+    app.kubernetes.io/name: api
+    app.kubernetes.io/version: "2.1.0"
+```
+
+---
+
 ## Common pitfalls
 - **Whitespace/indentation in templates.** YAML is indentation-sensitive and Go templates
   emit text blindly. Use `{{-`/`-}}` to trim and `nindent` for blocks. `helm template` to debug.

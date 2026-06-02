@@ -572,6 +572,54 @@ kubectl exec -n kube-system ds/cilium -- cilium monitor --type drop
 
 
 
+
+## Terminal Demo
+
+```terminal-demo
+# cilium@production ~ %
+
+$ cilium version
+cilium-cli: v0.16.4
+cilium:     v1.15.3
+
+$ cilium status
+    /¯¯\
+ /¯¯\__/¯¯\    Cilium:          OK
+ \__/¯¯\__/    Operator:        OK
+ /¯¯\__/¯¯\    Hubble Relay:    OK
+ \__/¯¯\__/    ClusterMesh:     disabled
+    \__/
+Cluster Pods:       152/152 managed by Cilium
+Helm chart version: 1.15.3
+
+$ cilium connectivity test
+✅ All 42 tests (294 actions) successful, 0 tests skipped.
+
+$ kubectl get ciliumnetworkpolicy -n production
+NAME                AGE
+allow-api-to-db     30d
+allow-web-to-api    30d
+deny-default        30d
+
+$ hubble observe -n production --last 10
+Jun 02 10:15:32 production/api-x2k9n:8080 -> production/db-m3p2q:5432 FORWARDED (TCP Flags: SYN)
+Jun 02 10:15:32 production/web-k7j4r:80   -> production/api-x2k9n:8080 FORWARDED (TCP Flags: SYN)
+Jun 02 10:15:33 production/api-p8m3w:8080 -> production/db-m3p2q:5432 FORWARDED (TCP Flags: ACK)
+Jun 02 10:15:34 default/test-pod:80       -> production/db-m3p2q:5432 DROPPED (Policy denied)
+
+$ hubble observe -n production --verdict DROPPED --last 5
+Jun 02 10:15:34 default/test-pod -> production/db-m3p2q:5432 DROPPED (Policy denied)
+Jun 02 10:14:12 default/scan-pod -> production/api-x2k9n:8080 DROPPED (Policy denied)
+
+$ cilium endpoint list | head -5
+ENDPOINT   POLICY (ingress)   POLICY (egress)   IDENTITY   LABELS
+1492       Enabled            Enabled           48312      k8s:app=api
+1587       Enabled            Enabled           48313      k8s:app=web
+1623       Enabled            Enabled           48315      k8s:app=db
+```
+
+---
+
 ## Quick Quiz
 
 Test your understanding with these rapid-fire questions (answers hidden):
