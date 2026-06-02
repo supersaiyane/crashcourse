@@ -550,6 +550,53 @@ The buffer pool (`shared_buffers`) is PostgreSQL's in-memory cache for pages. Wh
 
 
 
+
+## Terminal Demo
+
+```terminal-demo
+# dba@internals ~ %
+
+$ psql -c "SELECT relname, indexrelname, idx_scan, idx_tup_read, idx_tup_fetch FROM pg_stat_user_indexes ORDER BY idx_scan DESC LIMIT 5;"
+  relname  |      indexrelname       | idx_scan  | idx_tup_read | idx_tup_fetch
+-----------+-------------------------+-----------+--------------+--------------
+ orders    | idx_orders_user_id      | 12345678  |   45678901   |   45678901
+ users     | users_pkey              |  5678901  |    5678901   |    5678901
+ events    | idx_events_timestamp    |  2345678  |   89012345   |   12345678
+ products  | products_pkey           |  1234567  |    1234567   |    1234567
+ sessions  | idx_sessions_token      |   987654  |     987654   |     987654
+
+$ psql -c "SELECT pg_size_pretty(pg_total_relation_size('orders')) AS total, pg_size_pretty(pg_relation_size('orders')) AS table, pg_size_pretty(pg_indexes_size('orders')) AS indexes;"
+  total   |  table  | indexes
+----------+---------+---------
+ 12 GB    |  8 GB   |  4 GB
+
+$ psql -c "EXPLAIN (ANALYZE, BUFFERS, FORMAT TEXT) SELECT * FROM orders WHERE created_at > '2026-01-01' ORDER BY created_at DESC LIMIT 100;"
+Limit  (cost=0.43..24.56 rows=100 width=156) (actual time=0.032..0.234 rows=100 loops=1)
+  Buffers: shared hit=105
+  ->  Index Scan Backward using idx_orders_created on orders
+        Index Cond: (created_at > '2026-01-01')
+        Buffers: shared hit=105
+Planning Time: 0.089 ms
+Execution Time: 0.267 ms
+
+$ psql -c "SELECT name, setting, unit FROM pg_settings WHERE name IN ('shared_buffers','work_mem','effective_cache_size','max_connections');"
+       name          | setting  | unit
+---------------------+----------+------
+ effective_cache_size | 12582912 | 8kB
+ max_connections      | 200      |
+ shared_buffers       | 2097152  | 8kB
+ work_mem             | 65536    | kB
+
+$ psql -c "SELECT wait_event_type, wait_event, count(*) FROM pg_stat_activity WHERE state='active' GROUP BY 1,2 ORDER BY 3 DESC LIMIT 5;"
+ wait_event_type |  wait_event   | count
+-----------------+---------------+-------
+ IO              | DataFileRead  |     3
+ LWLock          | BufferMapping |     1
+ Client          | ClientRead    |     8
+```
+
+---
+
 ## Quick Quiz
 
 Test your understanding with these rapid-fire questions (answers hidden):

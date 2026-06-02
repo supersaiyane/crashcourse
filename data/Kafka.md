@@ -395,6 +395,47 @@ When `validation-service` catches a processing error it cannot recover from (mal
 
 ---
 
+
+## Terminal Demo
+
+```terminal-demo
+# kafka@production ~ %
+
+$ kafka-broker-api-versions.sh --bootstrap-server prod-kafka:9092 | head -3
+prod-kafka:9092 (id: 0 rack: ap-south-1a) -> (
+  ApiVersion(0, Produce, 0 to 10),
+  ApiVersion(1, Fetch, 0 to 16),
+
+$ kafka-topics.sh --bootstrap-server prod-kafka:9092 --list
+orders
+payments
+notifications
+user-events
+dead-letter
+
+$ kafka-topics.sh --bootstrap-server prod-kafka:9092 --describe --topic orders
+Topic: orders   PartitionCount: 12   ReplicationFactor: 3
+  Partition: 0   Leader: 1   Replicas: 1,2,3   Isr: 1,2,3
+  Partition: 1   Leader: 2   Replicas: 2,3,1   Isr: 2,3,1
+  Partition: 2   Leader: 3   Replicas: 3,1,2   Isr: 3,1,2
+
+$ kafka-consumer-groups.sh --bootstrap-server prod-kafka:9092 --describe --group order-processor
+GROUP             TOPIC    PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG
+order-processor   orders   0          4567890         4567892         2
+order-processor   orders   1          3456789         3456789         0
+order-processor   orders   2          5678901         5678905         4
+
+$ kafka-console-consumer.sh --bootstrap-server prod-kafka:9092 --topic orders --from-latest --max-messages 2
+{"orderId":"ord-123","userId":"u-42","amount":99.99,"currency":"INR","timestamp":"2026-06-02T10:15:32Z"}
+{"orderId":"ord-124","userId":"u-55","amount":149.50,"currency":"INR","timestamp":"2026-06-02T10:15:33Z"}
+Processed a total of 2 messages
+
+$ kafka-log-dirs.sh --bootstrap-server prod-kafka:9092 --describe | jq '.brokers[0] | {broker:.broker, logDirs:.logDirs[0].partitions | length, totalSize: (.logDirs[0].partitions | map(.size) | add)}'
+{"broker": 0, "logDirs": 24, "totalSize": 12345678901}
+```
+
+---
+
 ## Common pitfalls
 
 - **Too few partitions at topic creation.** You can increase partitions later, but this changes the key-to-partition mapping — records with the same key may land on a different partition. Any system relying on per-key ordering across time breaks silently. Start with more partitions than you think you need; 12 is a reasonable default for production topics.

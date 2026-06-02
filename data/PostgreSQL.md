@@ -607,6 +607,56 @@ After the original primary is restored, it cannot simply rejoin as a standby —
 
 ---
 
+
+## Terminal Demo
+
+```terminal-demo
+# psql@production ~ %
+
+$ psql -h prod-db.internal -U app_user -d production -c "SELECT version();"
+PostgreSQL 15.6 on x86_64-pc-linux-gnu, compiled by gcc 12.3.0
+
+$ psql -c "SELECT datname, pg_size_pretty(pg_database_size(datname)) AS size FROM pg_database ORDER BY pg_database_size(datname) DESC;"
+  datname    |  size
+-------------+---------
+ production  | 45 GB
+ analytics   | 12 GB
+ template1   | 8 MB
+
+$ psql -c "SELECT schemaname, relname, n_live_tup, n_dead_tup, last_autovacuum FROM pg_stat_user_tables ORDER BY n_dead_tup DESC LIMIT 5;"
+ schemaname |  relname   | n_live_tup | n_dead_tup |     last_autovacuum
+------------+------------+------------+------------+-------------------------
+ public     | events     |  12345678  |    45678   | 2026-06-02 09:30:00+00
+ public     | orders     |   2345678  |    12345   | 2026-06-02 09:45:00+00
+ public     | users      |    567890  |     1234   | 2026-06-02 10:00:00+00
+
+$ psql -c "SELECT pid, state, query_start, left(query, 60) AS query FROM pg_stat_activity WHERE state = 'active' AND pid != pg_backend_pid();"
+  pid  | state  |      query_start       |          query
+-------+--------+------------------------+-----------------------------
+ 12345 | active | 2026-06-02 10:15:00+00 | SELECT o.* FROM orders o JOIN users u ON o.user_id
+ 12346 | active | 2026-06-02 10:15:01+00 | INSERT INTO events (type, payload) VALUES ($1, $2)
+
+$ psql -c "EXPLAIN ANALYZE SELECT * FROM orders WHERE user_id = 42 AND created_at > '2026-01-01';"
+Index Scan using idx_orders_user_created on orders  (cost=0.43..12.45 rows=23 width=156) (actual time=0.023..0.089 rows=18 loops=1)
+  Index Cond: ((user_id = 42) AND (created_at > '2026-01-01'))
+Planning Time: 0.124 ms
+Execution Time: 0.112 ms
+
+$ psql -c "SELECT * FROM pg_stat_replication;"
+  pid  | state     | sent_lsn    | write_lsn   | flush_lsn   | replay_lsn  | sync_state
+-------+-----------+-------------+-------------+-------------+-------------+-----------
+ 23456 | streaming | 4/A1B2C3D4  | 4/A1B2C3D4  | 4/A1B2C3D4  | 4/A1B2C3D0  | async
+
+$ pg_dump -Fc production | pg_restore --list | head -5
+; Archive created at 2026-06-02 10:15:00 UTC
+;     dbname: production
+;     TOC Entries: 245
+;     Compression: -1
+;     Dump Version: 15.6
+```
+
+---
+
 ## Common pitfalls
 
 - **Bloated tables from skipped VACUUM.** MVCC dead rows never disappear on their own. If autovacuum is disabled or misconfigured on high-write tables, tables grow without bound and query plans degrade. Check `n_dead_tup` in `pg_stat_user_tables` weekly.

@@ -468,6 +468,65 @@ In production, instrument the 0 returns with a counter metric — see `Prometheu
 
 ---
 
+
+## Terminal Demo
+
+```terminal-demo
+# redis-cli@production ~ %
+
+$ redis-cli -h prod-redis.internal INFO server | head -5
+redis_version:7.2.4
+redis_mode:standalone
+os:Linux 5.15.0-1049-aws x86_64
+tcp_port:6379
+uptime_in_days:90
+
+$ redis-cli INFO memory | grep -E "used_memory_human|maxmemory_human|mem_fragmentation"
+used_memory_human:2.45G
+maxmemory_human:4.00G
+mem_fragmentation_ratio:1.12
+
+$ redis-cli INFO keyspace
+db0:keys=1234567,expires=987654,avg_ttl=3600000
+
+$ redis-cli --latency-history -i 5
+min: 0, max: 1, avg: 0.23 (502 samples) -- 5.00 seconds range
+min: 0, max: 2, avg: 0.25 (498 samples) -- 5.00 seconds range
+
+$ redis-cli INFO stats | grep -E "keyspace_hits|keyspace_misses|evicted"
+keyspace_hits:45678901
+keyspace_misses:1234567
+evicted_keys:0
+
+$ redis-cli SET session:user:42 '{"token":"abc","role":"admin"}' EX 3600
+OK
+
+$ redis-cli GET session:user:42
+{"token":"abc","role":"admin"}
+
+$ redis-cli SLOWLOG GET 3
+1) (integer) 142
+   (integer) 1717315200
+   (integer) 15234
+   1) "KEYS"
+   2) "session:*"
+2) (integer) 141
+   (integer) 1717315100
+   (integer) 8901
+   1) "ZRANGEBYSCORE"
+   2) "leaderboard"
+
+$ redis-cli DBSIZE
+(integer) 1234567
+
+$ redis-cli MONITOR | head -5
+1717315200.123456 [0 10.0.1.42:45678] "GET" "cache:user:42"
+1717315200.123789 [0 10.0.1.42:45679] "SET" "cache:product:99" "..." "EX" "300"
+1717315200.124012 [0 10.0.2.18:45680] "INCR" "rate:api:10.0.1.42"
+```
+
+---
+
 ## Common pitfalls
 
 - **No `maxmemory` set.** Redis will consume all available RAM and start competing with the OS. Always configure `maxmemory` and an eviction policy before deploying.

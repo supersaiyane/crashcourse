@@ -629,6 +629,59 @@ amqps://username:password@host:5671/vhost
 
 
 
+
+## Terminal Demo
+
+```terminal-demo
+# rabbitmqctl@production ~ %
+
+$ rabbitmqctl cluster_status --formatter json | jq '{nodes:.nodes.disc,running:.running_nodes,alarms:.alarms}'
+{
+  "nodes": ["rabbit@prod-rmq-01", "rabbit@prod-rmq-02", "rabbit@prod-rmq-03"],
+  "running": ["rabbit@prod-rmq-01", "rabbit@prod-rmq-02", "rabbit@prod-rmq-03"],
+  "alarms": []
+}
+
+$ rabbitmqctl list_queues name messages consumers state --formatter table
+name              messages  consumers  state
+orders            45        3          running
+notifications     12        2          running
+dead-letter       3         1          running
+email-queue       0         2          running
+
+$ rabbitmqctl list_exchanges name type --formatter table | head -8
+name                type
+                    direct
+amq.direct          direct
+amq.fanout          fanout
+amq.headers         headers
+amq.topic           topic
+orders.exchange     topic
+events.fanout       fanout
+
+$ rabbitmqctl list_connections user peer_host state --formatter table | head -5
+user       peer_host    state
+app_user   10.0.1.42    running
+app_user   10.0.2.18    running
+worker     10.0.3.55    running
+
+$ rabbitmqadmin get queue=orders count=2
++----------+----------+---------------+---------------------------------------------+
+| routing  | exchange | message_count | payload                                     |
++----------+----------+---------------+---------------------------------------------+
+| orders   | orders   | 45            | {"orderId":"ord-123","amount":99.99}        |
+| orders   | orders   | 44            | {"orderId":"ord-124","amount":149.50}       |
++----------+----------+---------------+---------------------------------------------+
+
+$ rabbitmqctl list_queues name messages_ready messages_unacknowledged --formatter table
+name              messages_ready  messages_unacknowledged
+orders            42              3
+notifications     10              2
+dead-letter       3               0
+```
+
+---
+
 ## Quick Quiz
 
 Test your understanding with these rapid-fire questions (answers hidden):

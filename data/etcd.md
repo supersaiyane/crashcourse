@@ -451,6 +451,61 @@ etcdctl auth enable
 
 
 
+
+## Terminal Demo
+
+```terminal-demo
+# etcdctl@control-plane ~ %
+
+$ etcdctl version
+etcdctl version: 3.5.12
+API version: 3.5
+
+$ etcdctl endpoint status --cluster -w table
++---------------------------+------------------+---------+---------+-----------+
+|         ENDPOINT          |        ID        | VERSION | DB SIZE | IS LEADER |
++---------------------------+------------------+---------+---------+-----------+
+| https://10.0.1.10:2379    | 8e9e05c52164694d | 3.5.12  |  245 MB |     true  |
+| https://10.0.1.11:2379    | 4aef52c8b2e3a1f0 | 3.5.12  |  245 MB |    false  |
+| https://10.0.1.12:2379    | 92d5c2a7f1b8e4d3 | 3.5.12  |  244 MB |    false  |
++---------------------------+------------------+---------+---------+-----------+
+
+$ etcdctl endpoint health --cluster -w table
++---------------------------+--------+------------+-------+
+|         ENDPOINT          | HEALTH |    TOOK    | ERROR |
++---------------------------+--------+------------+-------+
+| https://10.0.1.10:2379    |   true |  2.1234ms  |       |
+| https://10.0.1.11:2379    |   true |  2.4567ms  |       |
+| https://10.0.1.12:2379    |   true |  3.1234ms  |       |
++---------------------------+--------+------------+-------+
+
+$ etcdctl get /registry/namespaces --prefix --keys-only | head -5
+/registry/namespaces/default
+/registry/namespaces/kube-system
+/registry/namespaces/production
+/registry/namespaces/monitoring
+
+$ etcdctl snapshot save /backup/etcd-snapshot-20260602.db
+Snapshot saved at /backup/etcd-snapshot-20260602.db
+
+$ etcdctl snapshot status /backup/etcd-snapshot-20260602.db -w table
++---------+----------+------------+------------+
+|  HASH   | REVISION | TOTAL KEYS | TOTAL SIZE |
++---------+----------+------------+------------+
+| a1b2c3d |  4567890 |      12345 |     245 MB |
++---------+----------+------------+------------+
+
+$ etcdctl compact 4567800
+compacted revision 4567800
+
+$ etcdctl defrag --cluster
+Finished defragmenting etcd member[https://10.0.1.10:2379]
+Finished defragmenting etcd member[https://10.0.1.11:2379]
+Finished defragmenting etcd member[https://10.0.1.12:2379]
+```
+
+---
+
 ## Quick Quiz
 
 Test your understanding with these rapid-fire questions (answers hidden):
