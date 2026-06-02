@@ -622,6 +622,42 @@ Best practices that go beyond documentation: lessons learned from production inc
 
 
 
+
+## Terminal Demo
+
+```terminal-demo
+# checkov@policy ~ %
+
+$ checkov --version
+3.2.38
+
+$ checkov -d terraform/ --framework terraform
+Passed checks: 45  Failed checks: 3  Skipped: 2
+
+Check: CKV_AWS_145: "Ensure S3 bucket encryption is enabled"
+  PASSED for: aws_s3_bucket.data_lake
+
+Check: CKV_AWS_18: "Ensure AWS access logging is enabled on S3"
+  FAILED for: aws_s3_bucket.logs
+  File: /s3.tf:12-18
+  Guide: https://docs.bridgecrew.io/docs/s3-13-enable-logging
+
+Check: CKV_AWS_23: "Ensure every security group has a description"
+  FAILED for: aws_security_group.api
+  File: /sg.tf:1-8
+
+$ checkov -f Dockerfile
+Passed: 5  Failed: 1
+FAILED: CKV_DOCKER_3 "Ensure USER instruction exists"
+
+$ checkov -d kubernetes/ --framework kubernetes
+Passed: 23  Failed: 2
+FAILED: CKV_K8S_20 "Containers should not run with allowPrivilegeEscalation"
+FAILED: CKV_K8S_28 "Ensure resource limits are set"
+```
+
+---
+
 ## Quick Quiz
 
 Test your understanding with these rapid-fire questions (answers hidden):

@@ -520,6 +520,34 @@ Best practices that go beyond documentation: lessons learned from production inc
 
 
 
+
+## Terminal Demo
+
+```terminal-demo
+# cosign@supply-chain ~ %
+
+$ cosign version
+cosign v2.2.3
+
+$ cosign sign --key cosign.key myregistry/api:v2.1.0
+Pushing signature to: myregistry/api:sha256-abc123.sig
+
+$ cosign verify --key cosign.pub myregistry/api:v2.1.0
+Verification for myregistry/api:v2.1.0 --
+The following checks were performed:
+- The cosign claims were validated
+- The signatures were verified against the specified public key
+
+$ cosign sign-blob --key cosign.key --bundle bundle.json sbom.json
+Using payload from: sbom.json
+Signature written to bundle.json
+
+$ cosign verify-attestation --key cosign.pub --type vuln myregistry/api:v2.1.0 | jq ".payload" | base64 -d | jq ".predicate.scanner"
+{"uri":"pkg:trivy","version":"0.50.1","result":"PASS"}
+```
+
+---
+
 ## Quick Quiz
 
 Test your understanding with these rapid-fire questions (answers hidden):

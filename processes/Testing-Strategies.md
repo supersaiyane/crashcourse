@@ -486,6 +486,36 @@ Best practices that go beyond documentation: lessons learned from production inc
 
 
 
+
+## Terminal Demo
+
+```terminal-demo
+# qa@testing ~ %
+
+$ echo "Test Pyramid Summary"
+Unit tests:        4,567 (avg 0.02s each) — total 1m 32s
+Integration tests:   234 (avg 0.5s each)  — total 1m 57s
+E2E tests:            45 (avg 8s each)    — total 6m 00s
+Total:             4,846 tests — 9m 29s
+
+$ npm test -- --coverage
+Test Suites: 87 passed, 87 total
+Tests:       4567 passed, 4567 total
+Coverage:    87.3% statements, 82.1% branches
+
+$ npx playwright test --reporter=list | tail -5
+  ✓ [chromium] orders.spec.ts:12 — create order flow (4.2s)
+  ✓ [chromium] orders.spec.ts:34 — cancel order flow (3.8s)
+  ✓ [chromium] auth.spec.ts:8 — login flow (2.1s)
+  45 passed (6m 00s)
+
+$ echo "Contract Tests"
+$ pact-broker can-i-deploy --pacticipant=api --version=v2.1.0 --to-environment=production
+Computer says yes \o/
+```
+
+---
+
 ## Quick Quiz
 
 Test your understanding with these rapid-fire questions (answers hidden):

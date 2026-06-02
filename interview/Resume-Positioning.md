@@ -521,6 +521,29 @@ Best practices that go beyond documentation: lessons learned from production inc
 
 
 
+
+## Terminal Demo
+
+```terminal-demo
+# resume@positioning ~ %
+
+$ echo "Impact-First Format"
+BAD:  "Responsible for managing Kubernetes clusters"
+GOOD: "Managed 50-node K8s cluster serving 10M daily requests at 99.99% uptime"
+
+$ echo "Quantify Everything"
+BAD:  "Improved system reliability"
+GOOD: "Reduced P1 incidents by 73% (from 11/quarter to 3) by implementing
+       SLO-based alerting and automated canary deployments"
+
+$ echo "Technical Keywords (ATS-friendly)"
+Kubernetes, Terraform, AWS, GCP, CI/CD, Prometheus, Grafana,
+Python, Go, PostgreSQL, Redis, Kafka, Docker, GitOps, SRE,
+incident management, capacity planning, chaos engineering
+```
+
+---
+
 ## Quick Quiz
 
 Test your understanding with these rapid-fire questions (answers hidden):

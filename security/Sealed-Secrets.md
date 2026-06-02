@@ -685,6 +685,41 @@ Best practices that go beyond documentation: lessons learned from production inc
 
 
 
+
+## Terminal Demo
+
+```terminal-demo
+# kubeseal@secrets ~ %
+
+$ kubeseal --version
+kubeseal version: 0.26.1
+
+$ kubectl get pods -n kube-system -l name=sealed-secrets-controller
+NAME                                     READY   STATUS
+sealed-secrets-controller-7d4b8c6f5-x2   1/1     Running
+
+$ echo -n "super-secret-password" | kubectl create secret generic db-creds --from-file=password=/dev/stdin --dry-run=client -o yaml | kubeseal -o yaml > sealed-db-creds.yaml
+
+$ cat sealed-db-creds.yaml | head -8
+apiVersion: bitnami.com/v1alpha1
+kind: SealedSecret
+metadata:
+  name: db-creds
+  namespace: production
+spec:
+  encryptedData:
+    password: AgBy3i4OJSWK+PiTySYZZA...
+
+$ kubectl apply -f sealed-db-creds.yaml
+sealedsecret.bitnami.com/db-creds created
+
+$ kubectl get secret db-creds -n production
+NAME       TYPE     DATA   AGE
+db-creds   Opaque   1      5s
+```
+
+---
+
 ## Quick Quiz
 
 Test your understanding with these rapid-fire questions (answers hidden):

@@ -541,6 +541,41 @@ The ordering is intentional: scan before push. An image with a CRITICAL CVE neve
 
 ---
 
+
+## Terminal Demo
+
+```terminal-demo
+# trivy@scanning ~ %
+
+$ trivy --version
+Version: 0.50.1
+
+$ trivy image myregistry/api:v2.1.0
+myregistry/api:v2.1.0 (alpine 3.19.1)
+Total: 0 (HIGH: 0, CRITICAL: 0)
+
+$ trivy image --severity HIGH,CRITICAL myregistry/web:v1.5.0
+myregistry/web:v1.5.0 (debian 12.5)
+Total: 3 (HIGH: 2, CRITICAL: 1)
+
+CRITICAL: CVE-2024-1234 libssl3 (3.0.13-1 -> 3.0.13-2)
+HIGH:     CVE-2024-5678 curl (7.88.1-10 -> 7.88.1-11)
+HIGH:     CVE-2024-9012 zlib (1.2.13-1 -> 1.2.13-2)
+
+$ trivy fs --scanners vuln,secret,misconfig .
+Secrets: 0 found
+Misconfigs: 2 found
+  MEDIUM: Dockerfile — USER not set (running as root)
+  LOW: Dockerfile — HEALTHCHECK not defined
+
+$ trivy k8s --report summary cluster
+Namespace    Resource     Critical  High  Medium  Low
+production   Deployment   0         2     5       12
+monitoring   DaemonSet    0         0     1       3
+```
+
+---
+
 ## Common pitfalls
 
 - **Ignoring unfixed CVEs silently.** `--ignore-unfixed` is a legitimate filter in CI, but if you never check unfixed findings, you won't know when a fix ships. Run a separate weekly scan without `--ignore-unfixed` and route its output to a Slack channel or issue tracker.

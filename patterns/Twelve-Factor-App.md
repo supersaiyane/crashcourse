@@ -523,6 +523,35 @@ Best practices that go beyond documentation: lessons learned from production inc
 
 
 
+
+## Terminal Demo
+
+```terminal-demo
+# twelve-factor@validation ~ %
+
+$ echo "Factor 3: Config — Environment Check"
+$ env | grep -E "^(DB_|REDIS_|API_|LOG_)" | sort
+API_PORT=8080
+API_RATE_LIMIT=1000
+DB_HOST=prod-db.internal
+DB_POOL_SIZE=25
+LOG_LEVEL=info
+REDIS_URL=redis://prod-redis.internal:6379
+
+$ echo "Factor 11: Logs — Stdout Check"
+$ docker logs api --tail=3
+{"level":"info","ts":"2026-06-02T10:15:32Z","msg":"request","path":"/healthz","status":200}
+{"level":"info","ts":"2026-06-02T10:15:33Z","msg":"request","path":"/api/v1/orders","status":201}
+{"level":"warn","ts":"2026-06-02T10:15:35Z","msg":"slow query","duration":"890ms"}
+
+$ echo "Factor 9: Disposability — Startup Time"
+$ time docker run --rm myregistry/api:v2.1.0 --dry-run
+Server ready in 1.2s
+real    0m1.45s
+```
+
+---
+
 ## Quick Quiz
 
 Test your understanding with these rapid-fire questions (answers hidden):

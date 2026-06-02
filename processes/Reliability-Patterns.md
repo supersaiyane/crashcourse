@@ -688,6 +688,39 @@ Best practices that go beyond documentation: lessons learned from production inc
 
 
 
+
+## Terminal Demo
+
+```terminal-demo
+# reliability@patterns ~ %
+
+$ echo "Circuit Breaker Status"
+Service: payment-gateway
+State: CLOSED (healthy)
+Failure count: 0/5
+Success rate: 99.8%
+
+$ echo "Retry Policy"
+Service: order-service -> inventory-service
+Max retries: 3
+Backoff: exponential (100ms, 200ms, 400ms)
+Jitter: +/- 50ms
+Timeout per attempt: 2s
+
+$ echo "Bulkhead Configuration"
+Thread pool: order-processing (max: 50, queue: 100)
+Thread pool: notification (max: 20, queue: 50)
+Isolation: failure in notifications cannot exhaust order-processing threads
+
+$ echo "Rate Limiter"
+Endpoint: /api/v1/orders
+Limit: 1000 req/min per API key
+Algorithm: sliding window
+Response on limit: 429 + Retry-After header
+```
+
+---
+
 ## Quick Quiz
 
 Test your understanding with these rapid-fire questions (answers hidden):

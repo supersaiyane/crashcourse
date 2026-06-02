@@ -391,6 +391,34 @@ You cannot directly ask someone to sponsor you — sponsorship is earned through
 
 
 
+
+## Terminal Demo
+
+```terminal-demo
+# career@transition ~ %
+
+$ echo "Transition Assessment"
+Current: Senior Backend Engineer (4 years)
+Target:  SRE / Platform Engineer
+
+$ echo "Skill Gap Analysis"
+Strong:  coding, system design, databases, CI/CD
+Partial: Kubernetes (have used, not operated), monitoring
+Gap:     incident management, SLO/SLI, chaos engineering
+
+$ echo "90-Day Plan"
+Month 1: CKA certification + home lab K8s cluster
+Month 2: Contribute to on-call rotation (shadow first)
+Month 3: Lead one incident response + write postmortem
+
+$ echo "Interview Prep"
+Reframe experience: "I built systems that needed to be reliable"
+Fill gaps: "I am pursuing CKA and shadowing on-call"
+Show initiative: "I proposed SLOs for our API last quarter"
+```
+
+---
+
 ## Quick Quiz
 
 Test your understanding with these rapid-fire questions (answers hidden):

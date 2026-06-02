@@ -407,6 +407,33 @@ Best practices that go beyond documentation: lessons learned from production inc
 
 
 
+
+## Terminal Demo
+
+```terminal-demo
+# dr@recovery ~ %
+
+$ echo "DR Status"
+RTO Target: 30 minutes
+RPO Target: 5 minutes
+Last DR Test: 2026-05-15 (passed)
+
+$ echo "Backup Status"
+PostgreSQL: WAL shipping to S3 (continuous, RPO < 1 min)
+K8s state: Velero daily backup (RPO < 24h)
+etcd: snapshot every 6h to cross-region S3
+Redis: AOF + RDB to S3 (RPO < 1 min)
+
+$ echo "Failover Drill"
+Step 1: Promote RDS read replica in DR region (ETA: 5 min)
+Step 2: Update DNS to DR region load balancer (ETA: 2 min)
+Step 3: Scale up DR EKS cluster from 0 to 6 nodes (ETA: 8 min)
+Step 4: Verify health checks passing (ETA: 3 min)
+Total estimated RTO: 18 minutes (within 30 min target)
+```
+
+---
+
 ## Quick Quiz
 
 Test your understanding with these rapid-fire questions (answers hidden):

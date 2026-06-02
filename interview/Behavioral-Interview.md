@@ -376,6 +376,29 @@ Best practices that go beyond documentation: lessons learned from production inc
 
 
 
+
+## Terminal Demo
+
+```terminal-demo
+# interview@behavioral ~ %
+
+$ echo "STAR Method"
+S — Situation: set the scene (team, project, timeline)
+T — Task: what was YOUR specific responsibility
+A — Action: what YOU did (not the team — use I, not we)
+R — Result: measurable outcome (numbers, impact)
+
+$ echo "Example Response"
+S: Our payment service had 3 outages in 2 months affecting 50K users
+T: I was asked to lead the reliability improvement initiative
+A: I implemented circuit breakers, added retry logic with backoff,
+   set up alerting on error budgets, and ran chaos experiments
+R: Zero payment outages in the next 6 months,
+   error budget consumption dropped from 180% to 12%
+```
+
+---
+
 ## Quick Quiz
 
 Test your understanding with these rapid-fire questions (answers hidden):

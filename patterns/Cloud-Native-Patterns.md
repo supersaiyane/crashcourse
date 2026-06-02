@@ -621,6 +621,30 @@ Best practices that go beyond documentation: lessons learned from production inc
 
 
 
+
+## Terminal Demo
+
+```terminal-demo
+# patterns@cloud-native ~ %
+
+$ echo "12-Factor Compliance Check"
+1. Codebase:     ✓ Single repo, multiple deploys
+2. Dependencies:  ✓ package.json + lockfile
+3. Config:        ✓ Environment variables
+4. Backing svcs:  ✓ Attached via URLs
+5. Build/run:     ✓ Docker build + K8s deploy
+6. Processes:     ✓ Stateless, shared-nothing
+7. Port binding:  ✓ Self-contained HTTP server
+8. Concurrency:   ✓ HPA scales processes
+9. Disposability: ✓ Graceful shutdown, fast startup
+10. Dev/prod:     ✓ Same Docker image everywhere
+11. Logs:         ✓ stdout → Fluent Bit → Loki
+12. Admin:        ✓ One-off tasks as K8s Jobs
+Score: 12/12 ✓
+```
+
+---
+
 ## Quick Quiz
 
 Test your understanding with these rapid-fire questions (answers hidden):

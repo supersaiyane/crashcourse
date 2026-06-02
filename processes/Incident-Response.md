@@ -189,6 +189,39 @@ The first time you run the process should not be during a real SEV1.
 
 ---
 
+
+## Terminal Demo
+
+```terminal-demo
+# ic@incident ~ %
+
+$ echo "INCIDENT DECLARED"
+Severity: SEV1
+Impact: API returning 503 for 40% of requests
+IC: Gurpreet Singh
+Comms: #incident-20260602 (Slack)
+Started: 2026-06-02 10:15 UTC
+
+$ kubectl get pods -n production | grep -v Running
+NAME                    READY   STATUS             RESTARTS
+api-7d4b8c6f5-a9c2d    0/1     CrashLoopBackOff   5
+api-7d4b8c6f5-f4h7k    0/1     CrashLoopBackOff   5
+
+$ kubectl logs api-7d4b8c6f5-a9c2d -n production --tail=5
+FATAL: Unable to connect to database
+Error: connection refused to prod-db.internal:5432
+
+$ kubectl rollback deployment/api -n production
+deployment.apps/api rolled back
+
+$ echo "INCIDENT RESOLVED"
+Duration: 18 minutes
+Root cause: DB connection pool exhausted after config change
+Action items: 3 filed in JIRA
+```
+
+---
+
 ## Common pitfalls
 - **No IC / everyone fixing.** Chaos, duplicated work, conflicting changes. Name an IC immediately.
 - **Diagnosing before mitigating.** Customers keep hurting while you chase root cause. Stop the

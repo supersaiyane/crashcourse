@@ -389,6 +389,33 @@ review habit produces nothing. Intent is not a system. Systems run without willp
 
 ---
 
+
+## Terminal Demo
+
+```terminal-demo
+# learning@growth ~ %
+
+$ echo "Learning Stack"
+Daily (30 min):   Read HN/Reddit/Twitter — stay current
+Weekly (2 hrs):   Deep dive one topic (RFC, paper, blog post)
+Monthly (8 hrs):  Build something (side project, POC)
+Quarterly:        Complete one course or certification
+Yearly:           Attend 1-2 conferences (virtual counts)
+
+$ echo "Current Learning Queue"
+1. [IN PROGRESS] CKA certification — 60% complete
+2. [QUEUED] Rust systems programming
+3. [QUEUED] LLM fine-tuning (Hugging Face course)
+4. [DONE] Terraform Associate — passed 2026-04-15
+
+$ echo "Knowledge Sharing"
+Blog posts written: 12 (Medium)
+Internal tech talks: 4 this year
+Mentoring: 2 mentees (weekly 1:1s)
+```
+
+---
+
 ## Quick reference
 
 ### Learning plan template

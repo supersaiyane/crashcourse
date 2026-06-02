@@ -649,6 +649,45 @@ Best practices that go beyond documentation: lessons learned from production inc
 
 
 
+
+## Terminal Demo
+
+```terminal-demo
+# ssh@access ~ %
+
+$ ssh -V
+OpenSSH_9.6p1 Ubuntu-3ubuntu13
+
+$ ssh-keygen -t ed25519 -C "sre@production" -f ~/.ssh/prod_ed25519
+Generating public/private ed25519 key pair.
+Your identification has been saved in /home/sre/.ssh/prod_ed25519
+Your public key has been saved in /home/sre/.ssh/prod_ed25519.pub
+
+$ cat ~/.ssh/config | head -10
+Host prod-*
+  User sre
+  IdentityFile ~/.ssh/prod_ed25519
+  ForwardAgent no
+  StrictHostKeyChecking yes
+  ServerAliveInterval 60
+
+Host prod-bastion
+  HostName bastion.example.com
+  Port 2222
+
+$ ssh -J prod-bastion prod-web-01
+Last login: Mon Jun 2 08:00:00 2026 from 10.0.0.5
+sre@prod-web-01:~$
+
+$ ssh-audit prod-bastion:2222 | tail -5
+(key) ssh-ed25519 -- [info] available since OpenSSH 6.5
+(enc) chacha20-poly1305@openssh.com -- [info] available since OpenSSH 6.5
+(mac) hmac-sha2-256-etm@openssh.com -- [info] available since OpenSSH 6.2
+Overall rating: A+
+```
+
+---
+
 ## Quick Quiz
 
 Test your understanding with these rapid-fire questions (answers hidden):

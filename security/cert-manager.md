@@ -617,6 +617,39 @@ Best practices that go beyond documentation: lessons learned from production inc
 
 
 
+
+## Terminal Demo
+
+```terminal-demo
+# cert-manager@tls ~ %
+
+$ kubectl get pods -n cert-manager
+NAME                                      READY   STATUS
+cert-manager-7d4b8c6f5-x2k9n              1/1     Running
+cert-manager-cainjector-5f8b9c4d7-m3p2q   1/1     Running
+cert-manager-webhook-6c9a8b3d2-n5v1x      1/1     Running
+
+$ kubectl get certificates -n production
+NAME          READY   SECRET            AGE    EXPIRY
+api-tls       True    api-tls-secret    25d    2026-08-31
+web-tls       True    web-tls-secret    25d    2026-08-31
+
+$ kubectl get clusterissuer
+NAME              READY   AGE
+letsencrypt-prod  True    30d
+letsencrypt-stg   True    30d
+
+$ kubectl describe certificate api-tls -n production | grep -A3 "Status"
+Status:
+  Conditions:
+    Type:   Ready
+    Status: True
+    Message: Certificate is up to date and has not expired
+  Renewal Time: 2026-08-01T00:00:00Z
+```
+
+---
+
 ## Quick Quiz
 
 Test your understanding with these rapid-fire questions (answers hidden):

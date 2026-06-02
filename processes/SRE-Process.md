@@ -440,6 +440,35 @@ degradation. Link every alert to the runbook (see `Runbook-template.md`).
 
 ---
 
+
+## Terminal Demo
+
+```terminal-demo
+# sre@reliability ~ %
+
+$ echo "Error Budget Status"
+Service: api
+SLO: 99.95% availability (30d rolling)
+Actual: 99.97%
+Budget remaining: 0.02% (8.6 minutes)
+Burn rate: 0.4x (healthy)
+
+$ echo "Incident Count (last 30d)"
+SEV1: 0
+SEV2: 2
+SEV3: 5
+MTTD avg: 3.2 min
+MTTR avg: 23 min
+
+$ echo "Toil Tracking"
+On-call tickets this week: 12
+Automatable: 8 (67%)
+Automated this sprint: 3
+Toil budget: < 50% of eng time
+```
+
+---
+
 ## Common pitfalls
 
 - **SLOs set too high from day one.** Starting at 99.99% when your service runs at 99.95%

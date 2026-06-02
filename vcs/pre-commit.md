@@ -536,6 +536,45 @@ Best practices that go beyond documentation: lessons learned from production inc
 
 
 
+
+## Terminal Demo
+
+```terminal-demo
+# pre-commit@hooks ~ %
+
+$ pre-commit --version
+pre-commit 3.7.0
+
+$ cat .pre-commit-config.yaml | head -15
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: detect-private-key
+  - repo: https://github.com/psf/black
+    rev: 24.3.0
+    hooks:
+      - id: black
+
+$ pre-commit run --all-files
+Trailing whitespace...........................Passed
+Fix end of files.............................Passed
+Check yaml...................................Passed
+Detect private key...........................Passed
+black........................................Failed
+- hook id: black
+- files were modified by this hook
+  src/config.py  reformatted
+
+$ pre-commit install
+pre-commit installed at .git/hooks/pre-commit
+```
+
+---
+
 ## Quick Quiz
 
 Test your understanding with these rapid-fire questions (answers hidden):

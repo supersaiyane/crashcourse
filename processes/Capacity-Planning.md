@@ -195,6 +195,32 @@ autoscaling can't solve. Alert on *trends approaching limits*, not just on alrea
 
 ---
 
+
+## Terminal Demo
+
+```terminal-demo
+# capacity@planning ~ %
+
+$ echo "Current Utilization (production)"
+CPU: 45% avg, 78% peak (month-end)
+Memory: 62% avg, 85% peak
+Disk: 73% (growing 2% per month)
+Network: 30% avg, 55% peak
+
+$ echo "Growth Forecast (next 6 months)"
+Users: 10M -> 15M (+50%)
+RPS: 1000 -> 1500 (+50%)
+Storage: 2TB -> 3.5TB (+75%)
+
+$ echo "Capacity Actions"
+1. EKS nodes: scale from 6 to 9 before month-end
+2. RDS: upgrade from db.r6g.xlarge to db.r6g.2xlarge in Q3
+3. Redis: add read replicas before Black Friday
+4. S3 lifecycle: archive data > 90 days to Glacier
+```
+
+---
+
 ## Common pitfalls
 - **Planning to 100%.** Latency spikes sharply near saturation; run to a target with headroom.
   "It's only at 90%" is often already in the danger zone.

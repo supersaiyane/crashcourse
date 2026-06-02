@@ -443,6 +443,34 @@ Best practices that go beyond documentation: lessons learned from production inc
 
 
 
+
+## Terminal Demo
+
+```terminal-demo
+# dsa@practice ~ %
+
+$ echo "Time Complexity Cheat Sheet"
+Array access:     O(1)
+HashMap get/set:  O(1) average
+Binary Search:    O(log n)
+Sorting:          O(n log n)
+BFS/DFS:          O(V + E)
+Two Pointers:     O(n)
+Sliding Window:   O(n)
+DP (tabulation):  O(n * m)
+
+$ echo "When to Use What"
+Duplicates/counting?    → HashMap
+Sorted array search?    → Binary Search
+Subarray/substring?     → Sliding Window
+Linked list cycle?      → Two Pointers (fast/slow)
+Shortest path?          → BFS
+All paths/permutations? → DFS/Backtracking
+Optimal substructure?   → Dynamic Programming
+```
+
+---
+
 ## Quick Quiz
 
 Test your understanding with these rapid-fire questions (answers hidden):

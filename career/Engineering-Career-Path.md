@@ -378,6 +378,34 @@ Almost always one of three things: no clear picture of what the next level looks
 
 
 
+
+## Terminal Demo
+
+```terminal-demo
+# career@growth ~ %
+
+$ echo "IC Track"
+Junior (L1-L2):  Execute tasks, learn the codebase
+Mid (L3):        Own features end-to-end, mentor juniors
+Senior (L4):     Technical leadership, system design, cross-team impact
+Staff (L5):      Org-wide technical strategy, multiplier effect
+Principal (L6):  Company-wide impact, industry influence
+
+$ echo "Management Track"
+Tech Lead:       IC + people leadership for 1 team
+Engineering Mgr: People management, hiring, team delivery
+Senior EM:       Multiple teams, org design, strategy
+Director:        Department-level, business alignment
+VP:              Company-level, executive leadership
+
+$ echo "Key Differentiator at Each Level"
+Junior → Mid:    Independence (stop needing hand-holding)
+Mid → Senior:    Scope (own systems, not just features)
+Senior → Staff:  Influence (multiply team output, not just your own)
+```
+
+---
+
 ## Quick Quiz
 
 Test your understanding with these rapid-fire questions (answers hidden):

@@ -245,6 +245,43 @@ __pycache__/
 
 ---
 
+
+## Terminal Demo
+
+```terminal-demo
+# git@development ~ %
+
+$ git log --oneline --graph -10
+* abc1234 (HEAD -> main) feat: add rate limiting
+* def5678 fix: connection pool timeout
+* ghi9012 refactor: extract auth middleware
+|\  
+| * jkl3456 feat: add health endpoint
+|/  
+* mno7890 chore: update dependencies
+
+$ git diff --stat HEAD~3
+ src/middleware/auth.ts  | 45 +++---
+ src/routes/api.ts      | 12 ++
+ src/config/limits.ts   | 23 +++
+ tests/rate-limit.test.ts | 67 +++++++
+ 4 files changed, 112 insertions(+), 35 deletions(-)
+
+$ git stash list
+stash@{0}: WIP on main: abc1234 feat: add rate limiting
+stash@{1}: WIP on fix/pool: experimental pool config
+
+$ git bisect start HEAD HEAD~20
+Bisecting: 10 revisions left to test
+
+$ git reflog | head -5
+abc1234 HEAD@{0}: commit: feat: add rate limiting
+def5678 HEAD@{1}: commit: fix: connection pool timeout
+a1b2c3d HEAD@{2}: rebase: checkout main
+```
+
+---
+
 ## Common pitfalls
 - **Not running `git status`.** It answers "what state am I in?" 90% of confusion dissolves once
   you check status (and `git log --oneline --graph`).

@@ -458,6 +458,36 @@ kubectl get pods -n database -w
 
 ---
 
+
+## Terminal Demo
+
+```terminal-demo
+# chaos@gameday ~ %
+
+$ litmus experiment list
+NAME                    TYPE          LAST RUN     RESULT
+pod-delete              pod           2h ago       Pass
+node-drain              node          1d ago       Pass
+network-latency         network       3d ago       Fail
+disk-fill               disk          7d ago       Pass
+
+$ litmus run pod-delete --namespace=production --label=app=api --count=2
+Experiment: pod-delete
+Target: 2 pods in production/api
+Steady state: API responding 200 on /healthz
+Chaos injected: deleted api-x2k9n, api-p8m3w
+Observation: 2 new pods scheduled in 4s, 0 failed requests
+Result: PASS — self-healing works correctly
+
+$ litmus run network-latency --target=production/api --latency=500ms --duration=60s
+Experiment: network-latency
+Injecting 500ms latency to api pods for 60s
+Observation: p99 latency increased to 650ms, circuit breaker opened at 30s
+Result: FAIL — circuit breaker threshold needs tuning (opens too late)
+```
+
+---
+
 ## Common pitfalls
 
 - **No steady state defined before the experiment.** You have nothing to compare against. You cannot tell whether the system is degraded unless you know what normal looks like. Define and document steady state before you touch anything.

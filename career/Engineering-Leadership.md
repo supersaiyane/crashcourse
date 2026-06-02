@@ -461,6 +461,36 @@ Create a sustainable ratio — roughly 20% of sprint capacity — dedicated to d
 
 
 
+
+## Terminal Demo
+
+```terminal-demo
+# leader@engineering ~ %
+
+$ echo "Leadership Principles"
+1. Serve the team (remove blockers, not add process)
+2. Set context, not control (why > what > how)
+3. Hire for strengths, not absence of weakness
+4. Make decisions reversible where possible
+5. Prioritize ruthlessly (say no to 90% of things)
+
+$ echo "1:1 Template"
+Opening: How are you doing? (genuinely)
+Their agenda: What do you want to discuss?
+Growth: What skill are you developing this quarter?
+Feedback: Here is what I have observed...
+Action items: Who does what by when?
+
+$ echo "Team Health Metrics"
+Deployment frequency:  Daily
+Lead time for changes: < 1 day
+Change failure rate:   < 5%
+MTTR:                  < 1 hour
+Team satisfaction:     4.2/5 (quarterly survey)
+```
+
+---
+
 ## Quick Quiz
 
 Test your understanding with these rapid-fire questions (answers hidden):

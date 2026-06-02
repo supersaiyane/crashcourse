@@ -409,6 +409,36 @@ Best practices that go beyond documentation: lessons learned from production inc
 
 
 
+
+## Terminal Demo
+
+```terminal-demo
+# flags@feature-management ~ %
+
+$ curl -s localhost:4242/api/admin/features | jq ".features[:3][] | {name,enabled,strategies:.strategies[0].name}"
+{"name":"new-checkout-flow","enabled":true,"strategies":"gradualRolloutUserId"}
+{"name":"dark-mode","enabled":true,"strategies":"default"}
+{"name":"ai-recommendations","enabled":false,"strategies":"userWithId"}
+
+$ echo "Gradual Rollout Status"
+Feature: new-checkout-flow
+Strategy: gradualRolloutUserId
+Percentage: 25%
+Stickiness: userId
+Variants: control (75%), treatment (25%)
+
+$ curl -s -X POST localhost:4242/api/admin/features/ai-recommendations/toggle/on
+{"name":"ai-recommendations","enabled":true}
+
+$ echo "Metrics (last 24h)"
+new-checkout-flow:
+  Control:   conversion 3.2%, avg order $45.50
+  Treatment: conversion 3.8%, avg order $48.20 (+18.7% lift)
+  Statistical significance: 94% (need 95% to declare winner)
+```
+
+---
+
 ## Quick Quiz
 
 Test your understanding with these rapid-fire questions (answers hidden):

@@ -407,6 +407,34 @@ Best practices that go beyond documentation: lessons learned from production inc
 
 
 
+
+## Terminal Demo
+
+```terminal-demo
+# negotiation@offer ~ %
+
+$ echo "Research Phase"
+Levels.fyi:    Senior SRE @ Target Company = 35-55 LPA
+Glassdoor:     Avg 42 LPA (base) + 8 LPA (bonus) + RSUs
+Blind:         Recent offers in range 40-50 LPA total comp
+
+$ echo "Counter-Offer Framework"
+1. Express enthusiasm (never negotiate from a position of disinterest)
+2. Anchor high: "Based on my research and experience, I was expecting
+   total comp in the range of 50-55 LPA"
+3. Justify: "I bring 8 years of SRE experience, led reliability for
+   a system handling 10M daily transactions in BFSI"
+4. Be specific: negotiate base, bonus, RSUs, and signing separately
+5. Get it in writing before accepting
+
+$ echo "Never Say"
+"What is the budget for this role?" — lets them anchor low
+"I currently make X" — irrelevant to your market value
+"I will accept anything" — removes all leverage
+```
+
+---
+
 ## Quick Quiz
 
 Test your understanding with these rapid-fire questions (answers hidden):

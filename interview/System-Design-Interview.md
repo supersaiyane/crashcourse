@@ -543,6 +543,32 @@ Best practices that go beyond documentation: lessons learned from production inc
 
 
 
+
+## Terminal Demo
+
+```terminal-demo
+# interview@system-design ~ %
+
+$ echo "Framework: RESHADED"
+R — Requirements (functional + non-functional)
+E — Estimation (users, QPS, storage, bandwidth)
+S — Storage (database choice, schema)
+H — High-level design (components, data flow)
+A — API design (endpoints, contracts)
+D — Detailed design (deep dive on 1-2 components)
+E — Evaluation (tradeoffs, bottlenecks)
+D — Discussion (scaling, failure modes)
+
+$ echo "Time Management (45 min interview)"
+0-5 min:   Requirements clarification
+5-10 min:  Capacity estimation
+10-25 min: High-level design + API
+25-40 min: Deep dive (chosen component)
+40-45 min: Wrap up, tradeoffs, extensions
+```
+
+---
+
 ## Quick Quiz
 
 Test your understanding with these rapid-fire questions (answers hidden):

@@ -403,6 +403,34 @@ This is the scenario Falco is designed for. Without it, the attacker's actions a
 
 ---
 
+
+## Terminal Demo
+
+```terminal-demo
+# falco@runtime ~ %
+
+$ falco --version
+Falco version: 0.37.1
+
+$ kubectl get pods -n falco
+NAME          READY   STATUS    RESTARTS   AGE
+falco-x7k9n   2/2     Running   0          30d
+falco-m3p2q   2/2     Running   0          30d
+falco-n5v1x   2/2     Running   0          30d
+
+$ kubectl logs -n falco ds/falco --tail=5 -c falco
+10:15:32 Warning Terminal shell in container (user=root container=api-x2k9n)
+10:15:33 Notice Sensitive file opened for reading (file=/etc/shadow container=api-x2k9n)
+10:14:12 Warning Package management process launched (command=apt-get install container=web-m3p2q)
+
+$ falcoctl artifact list | head -5
+falco-rules     0.7.0    Default Falco ruleset
+k8s-rules       0.7.0    Kubernetes audit rules
+application-rules 0.2.0  Application-specific rules
+```
+
+---
+
 ## Common pitfalls
 
 - **Running in alert-only mode forever.** Falco only alerts — it doesn't block. If you don't have a process for acting on alerts, you get alert fatigue fast. Build the routing and response workflow before going to production.

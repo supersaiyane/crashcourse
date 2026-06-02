@@ -217,6 +217,36 @@ Lessons: schema and code changes must be ordered and gated; canaries limit blast
 
 ---
 
+
+## Terminal Demo
+
+```terminal-demo
+# postmortem@review ~ %
+
+$ echo "Incident Timeline"
+10:15 — Alert: API error rate > 5%
+10:17 — IC assigned: Gurpreet
+10:18 — Investigation: pods in CrashLoopBackOff
+10:22 — Root cause: DB pool config set to 1 (should be 25)
+10:25 — Fix: reverted config change
+10:28 — Monitoring: error rate back to baseline
+10:33 — All-clear declared
+
+$ echo "5 Whys"
+1. Why did the API fail? Pods crashed on startup.
+2. Why did pods crash? Could not connect to database.
+3. Why no DB connection? Connection pool size set to 1.
+4. Why was pool size 1? Config change deployed without review.
+5. Why no review? No CI check for config value ranges.
+
+$ echo "Action Items"
+P0: Add config validation in CI pipeline — owner: platform team
+P1: Add DB connection pool alert < 5 — owner: SRE
+P2: Require 2 approvers for production config changes — owner: eng-mgr
+```
+
+---
+
 ## Common pitfalls
 - **Blame.** Naming-and-shaming kills candor and hides the real (systemic) causes. Stay blameless,
   always — it's a discipline, not a slogan.

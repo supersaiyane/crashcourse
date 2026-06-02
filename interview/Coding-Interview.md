@@ -526,6 +526,33 @@ Best practices that go beyond documentation: lessons learned from production inc
 
 
 
+
+## Terminal Demo
+
+```terminal-demo
+# interview@coding ~ %
+
+$ echo "Problem-Solving Framework"
+1. Clarify: inputs, outputs, constraints, edge cases
+2. Examples: work through 2-3 examples by hand
+3. Brute force: state the obvious O(n^2) approach
+4. Optimize: identify the pattern (hashmap, two pointers, sliding window)
+5. Code: clean, readable, with variable names that make sense
+6. Test: trace through examples, edge cases
+
+$ echo "Top Patterns by Frequency"
+Arrays + HashMap:     35% of problems
+Two Pointers:         15%
+Sliding Window:       10%
+BFS/DFS:              12%
+Dynamic Programming:  10%
+Binary Search:         8%
+Stack/Queue:           5%
+Other:                 5%
+```
+
+---
+
 ## Quick Quiz
 
 Test your understanding with these rapid-fire questions (answers hidden):

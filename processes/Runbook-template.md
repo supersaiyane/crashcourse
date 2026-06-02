@@ -255,6 +255,42 @@ Not recovered in 20 min → page payments-lead. DB-rooted → page #db-oncall im
 
 ---
 
+
+## Terminal Demo
+
+```terminal-demo
+# oncall@runbook ~ %
+
+$ echo "ALERT: HighAPILatency triggered"
+Service: api
+Metric: http_request_duration_seconds p99 > 500ms
+Current: 890ms
+Dashboard: https://grafana.internal/d/api-latency
+
+$ echo "Step 1: Check pod health"
+$ kubectl get pods -n production -l app=api
+All 5/5 Running, 0 restarts
+
+$ echo "Step 2: Check recent deployments"
+$ kubectl rollout history deployment/api -n production | tail -3
+3  2026-06-01 kubectl set image api=v2.0.0
+4  2026-06-02 kubectl set image api=v2.1.0  <-- 2h ago
+
+$ echo "Step 3: Check downstream dependencies"
+$ curl -s localhost:8080/healthz | jq
+{"status":"degraded","db":"slow","redis":"ok","kafka":"ok"}
+
+$ echo "Step 4: DB is slow — check connections"
+$ kubectl exec -it api-x2k9n -- sh -c "curl -s localhost:8080/metrics | grep db_pool"
+db_pool_active: 25
+db_pool_max: 25
+db_pool_waiting: 12
+
+$ echo "ROOT CAUSE: DB connection pool exhausted. Scaling pool to 50."
+```
+
+---
+
 ## Common pitfalls
 - **Vague instructions.** "Investigate the issue" / "check the logs" — useless at 3am. Give exact,
   copy-pasteable commands.

@@ -610,6 +610,44 @@ Best practices that go beyond documentation: lessons learned from production inc
 
 
 
+
+## Terminal Demo
+
+```terminal-demo
+# backstage@platform ~ %
+
+$ npx @backstage/create-app@latest
+? Enter a name for the app: developer-portal
+Creating the app...
+Installing dependencies...
+App created successfully!
+
+$ yarn dev
+Starting Backstage backend...
+Backend: http://localhost:7007
+Starting Backstage frontend...
+Frontend: http://localhost:3000
+
+$ curl -s localhost:7007/api/catalog/entities?filter=kind=component | jq ".[:3][] | {name:.metadata.name,type:.spec.type,owner:.spec.owner}"
+{"name":"api-service","type":"service","owner":"platform-team"}
+{"name":"web-app","type":"website","owner":"frontend-team"}
+{"name":"order-processor","type":"service","owner":"backend-team"}
+
+$ cat catalog-info.yaml | head -10
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: api-service
+  description: Production API
+  annotations:
+    github.com/project-slug: supersaiyane/api
+spec:
+  type: service
+  owner: platform-team
+```
+
+---
+
 ## Quick Quiz
 
 Test your understanding with these rapid-fire questions (answers hidden):

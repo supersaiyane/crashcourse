@@ -437,6 +437,35 @@ Best practices that go beyond documentation: lessons learned from production inc
 
 
 
+
+## Terminal Demo
+
+```terminal-demo
+# mentor@growth ~ %
+
+$ echo "Mentoring Framework"
+1. Set goals: What does the mentee want to achieve in 3 months?
+2. Assess: Where are they now? What are the gaps?
+3. Plan: Concrete actions (not vague advice)
+4. Check in: Weekly 30-min 1:1
+5. Reflect: Monthly review of progress
+
+$ echo "Good Mentor Behaviors"
+- Ask questions before giving answers
+- Share failures, not just successes
+- Connect them to people and opportunities
+- Push them slightly beyond comfort zone
+- Celebrate their wins publicly
+
+$ echo "Anti-patterns"
+- Solving their problems for them
+- Only meeting when they have a crisis
+- Giving advice based on your path, not theirs
+- Not following up on commitments
+```
+
+---
+
 ## Quick Quiz
 
 Test your understanding with these rapid-fire questions (answers hidden):
