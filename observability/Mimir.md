@@ -510,6 +510,44 @@ Best practices that go beyond documentation: lessons learned from production inc
 
 
 
+
+## Terminal Demo
+
+```terminal-demo
+# mimirtool@metrics ~ %
+
+$ mimirtool version
+mimirtool, version 2.12.0
+
+$ mimirtool rules list --address=http://mimir:8080 --id=production
+Namespace: production-alerts
+  Group: api-alerts
+    - HighLatencyP99 (for: 5m)
+    - ErrorRateHigh (for: 2m)
+  Group: infra-alerts
+    - NodeDiskFull (for: 10m)
+    - PodOOMKilled (for: 1m)
+
+$ mimirtool analyze prometheus --address=http://mimir:8080
+Active series: 2,345,678
+Ingestion rate: 45,000 samples/sec
+Total storage: 890 GB
+Tenants: 3
+
+$ curl -s -H "X-Scope-OrgID: production" mimir:8080/api/v1/query?query=up | jq '.data.result | length'
+156
+
+$ mimirtool rules check rules.yml
+SUCCESS: 12 rules checked, 0 errors found
+
+$ curl -s mimir:8080/distributor/all_user_stats | jq '.[:3][] | {tenant:.userID,series:.numSeries,rate:.ingestionRate}'
+{"tenant":"production","series":1234567,"rate":25000}
+{"tenant":"staging","series":567890,"rate":12000}
+{"tenant":"monitoring","series":543210,"rate":8000}
+```
+
+---
+
 ## Quick Quiz
 
 Test your understanding with these rapid-fire questions (answers hidden):

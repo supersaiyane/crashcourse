@@ -674,6 +674,40 @@ Best practices that go beyond documentation: lessons learned from production inc
 
 
 
+
+## Terminal Demo
+
+```terminal-demo
+# elastic@monitoring ~ %
+
+$ curl -s localhost:9200/_cluster/health | jq '{status,number_of_nodes,active_shards}'
+{"status":"green","number_of_nodes":3,"active_shards":156}
+
+$ curl -s localhost:9200/_cat/indices?v | head -8
+health status index                      pri rep docs.count store.size
+green  open   logs-production-2026.06.02   3   1   4567890     12.3gb
+green  open   logs-production-2026.06.01   3   1   8901234     23.4gb
+green  open   logs-staging-2026.06.02      1   1    234567      1.2gb
+green  open   metrics-production           3   1  12345678     34.5gb
+
+$ curl -s -X GET 'localhost:9200/logs-production-2026.06.02/_search' -H 'Content-Type: application/json' -d '{"query":{"bool":{"must":[{"match":{"level":"ERROR"}},{"range":{"@timestamp":{"gte":"now-1h"}}}]}},"size":3}' | jq '.hits.hits[]._source | {timestamp:.["@timestamp"],service,message}'
+{"timestamp":"2026-06-02T10:14:22Z","service":"api","message":"connection timeout to database"}
+{"timestamp":"2026-06-02T10:12:45Z","service":"worker","message":"failed to process message: timeout"}
+
+$ curl -s localhost:9200/_cat/nodes?v
+ip         name    heap.percent ram.percent cpu load_1m role
+10.0.1.10  es-01          45          72  12    1.2   data,master
+10.0.1.11  es-02          38          68   8    0.9   data,master
+10.0.1.12  es-03          42          70  10    1.1   data,master
+
+$ curl -s 'localhost:5601/api/saved_objects/_find?type=dashboard' -H 'kbn-xsrf: true' | jq '.saved_objects[:3][].attributes.title'
+"API Overview"
+"Error Analysis"
+"Infrastructure Health"
+```
+
+---
+
 ## Quick Quiz
 
 Test your understanding with these rapid-fire questions (answers hidden):

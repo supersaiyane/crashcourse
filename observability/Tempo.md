@@ -527,6 +527,34 @@ Best practices that go beyond documentation: lessons learned from production inc
 
 
 
+
+## Terminal Demo
+
+```terminal-demo
+# tempo@tracing ~ %
+
+$ curl -s localhost:3200/status | jq '{version,uptime:.uptime_seconds,ingesterState:.ingester.state}'
+{"version":"2.4.1","uptime":7776000,"ingesterState":"ACTIVE"}
+
+$ curl -s localhost:3200/api/search?q='{resource.service.name="api" && status=error}' | jq '.traces[:3][] | {traceID,rootServiceName,durationMs}'
+{"traceID":"abc123def456","rootServiceName":"api","durationMs":2345}
+{"traceID":"ghi789jkl012","rootServiceName":"api","durationMs":1890}
+{"traceID":"mno345pqr678","rootServiceName":"web","durationMs":5678}
+
+$ curl -s localhost:3200/api/traces/abc123def456 | jq '.batches[0].scopeSpans[0].spans[:3][] | {name,durationMs:(.endTimeUnixNano-.startTimeUnixNano)/1000000,status:.status.code}'
+{"name":"GET /api/v1/reports","durationMs":2345,"status":"ERROR"}
+{"name":"PostgreSQL query","durationMs":2100,"status":"OK"}
+{"name":"serialize response","durationMs":12,"status":"OK"}
+
+$ curl -s localhost:3200/api/search/tags | jq '.tagNames[:8]'
+["service.name","http.method","http.status_code","http.url","db.system","db.statement","span.kind","error"]
+
+$ curl -s localhost:3200/metrics | grep tempo_ingester_traces_created_total
+tempo_ingester_traces_created_total 4567890
+```
+
+---
+
 ## Quick Quiz
 
 Test your understanding with these rapid-fire questions (answers hidden):

@@ -515,6 +515,36 @@ Best practices that go beyond documentation: lessons learned from production inc
 
 
 
+
+## Terminal Demo
+
+```terminal-demo
+# jaeger@tracing ~ %
+
+$ curl -s localhost:16686/api/services | jq '.data'
+["api","web","order-service","payment-service","notification-service","postgresql"]
+
+$ curl -s 'localhost:16686/api/traces?service=api&operation=GET%20/api/v1/orders&limit=3' | jq '.data[:1][] | {traceID,spans:.spans|length,duration:.spans[0].duration}'
+{"traceID":"abc123def456","spans":8,"duration":45678}
+
+$ curl -s localhost:16686/api/traces/abc123def456 | jq '.data[0].spans[] | {service:.process.serviceName,operation:.operationName,duration:.duration}'
+{"service":"api","operation":"GET /api/v1/orders","duration":45678}
+{"service":"api","operation":"db.query","duration":12345}
+{"service":"postgresql","operation":"SELECT","duration":11234}
+{"service":"api","operation":"serialize","duration":1234}
+
+$ curl -s localhost:16686/api/dependencies?endTs=$(date +%s)000 | jq '.data[:5]'
+[{"parent":"web","child":"api","callCount":45678},
+ {"parent":"api","child":"order-service","callCount":23456},
+ {"parent":"api","child":"postgresql","callCount":56789},
+ {"parent":"order-service","child":"payment-service","callCount":12345}]
+
+$ curl -s localhost:14269/metrics | grep jaeger_collector_traces_received_total
+jaeger_collector_traces_received_total 2345678
+```
+
+---
+
 ## Quick Quiz
 
 Test your understanding with these rapid-fire questions (answers hidden):

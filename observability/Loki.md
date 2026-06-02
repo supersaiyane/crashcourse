@@ -191,6 +191,44 @@ groups:
 
 ---
 
+
+## Terminal Demo
+
+```terminal-demo
+# logcli@monitoring ~ %
+
+$ logcli --version
+logcli, version 2.9.5
+
+$ logcli labels
+__name__
+app
+container
+env
+namespace
+node
+pod
+
+$ logcli query '{namespace="production",app="api"}' --limit=5 --since=1h
+2026-06-02T10:15:38Z {app="api",pod="api-x2k9n"} level=INFO msg="request completed" method=GET path=/api/v1/users status=200 latency=12ms
+2026-06-02T10:15:37Z {app="api",pod="api-p8m3w"} level=INFO msg="request completed" method=POST path=/api/v1/orders status=201 latency=45ms
+2026-06-02T10:15:35Z {app="api",pod="api-x2k9n"} level=WARN msg="high latency" path=/api/v1/reports latency=890ms
+2026-06-02T10:15:33Z {app="api",pod="api-p8m3w"} level=INFO msg="request completed" method=GET path=/healthz status=200 latency=1ms
+
+$ logcli query 'rate({namespace="production",app="api"} |= "ERROR" [5m])' --since=1h
+2026-06-02T10:00:00Z  0.032
+2026-06-02T09:55:00Z  0.028
+2026-06-02T09:50:00Z  0.015
+
+$ logcli query '{namespace="production"} | json | status >= 500' --limit=3 --since=1h
+2026-06-02T10:14:22Z {app="api"} level=ERROR msg="internal server error" path=/api/v1/reports status=500 trace_id=abc123
+
+$ logcli series '{namespace="production"}' --since=1h | wc -l
+42
+```
+
+---
+
 ## Common pitfalls
 - **High-cardinality labels.** Putting `request_id`/`user_id`/`ip` in labels is the cardinal
   Loki sin — it explodes streams and wrecks performance. Keep those in the log body, extract at

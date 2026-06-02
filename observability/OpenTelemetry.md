@@ -231,6 +231,46 @@ observability" means.
 
 ---
 
+
+## Terminal Demo
+
+```terminal-demo
+# otel@instrumentation ~ %
+
+$ otelcol --version
+otelcol version 0.96.0
+
+$ otelcol validate --config /etc/otelcol/config.yaml
+Everything is valid.
+
+$ cat /etc/otelcol/config.yaml | head -20
+receivers:
+  otlp:
+    protocols:
+      grpc: { endpoint: 0.0.0.0:4317 }
+      http: { endpoint: 0.0.0.0:4318 }
+  prometheus:
+    config:
+      scrape_configs:
+        - job_name: 'otel-collector'
+          scrape_interval: 15s
+
+exporters:
+  prometheus: { endpoint: 0.0.0.0:8889 }
+  otlp/tempo: { endpoint: tempo:4317 }
+  loki: { endpoint: http://loki:3100/loki/api/v1/push }
+
+$ curl -s localhost:8888/metrics | grep otelcol_receiver_accepted | head -3
+otelcol_receiver_accepted_spans{receiver="otlp",transport="grpc"} 1234567
+otelcol_receiver_accepted_metric_points{receiver="prometheus"} 8901234
+otelcol_receiver_accepted_log_records{receiver="otlp",transport="http"} 567890
+
+$ curl -s localhost:13133/ | jq '.status'
+"Server available"
+```
+
+---
+
 ## Common pitfalls
 - **Skipping the Collector and exporting straight to a backend.** Works for a demo, but you lose
   the decoupling — every vendor change becomes a code change. Run a Collector.

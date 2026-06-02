@@ -239,6 +239,39 @@ clamp_max(x, 100)                  # cap values
 
 ---
 
+
+## Terminal Demo
+
+```terminal-demo
+# promql@monitoring ~ %
+
+$ curl -s localhost:9090/api/v1/status/runtimeinfo | jq '{storageRetention,goroutines:.goroutineCount,uptime:.CWD}'
+{"storageRetention":"30d","goroutines":85}
+
+$ curl -s localhost:9090/api/v1/targets | jq '.data.activeTargets | length'
+45
+
+$ promtool check config /etc/prometheus/prometheus.yml
+SUCCESS: /etc/prometheus/prometheus.yml is valid
+
+$ curl -s 'localhost:9090/api/v1/query?query=up' | jq '.data.result[:3][] | {job:.metric.job,instance:.metric.instance,up:.value[1]}'
+{"job":"api","instance":"10.0.1.42:8080","up":"1"}
+{"job":"api","instance":"10.0.2.18:8080","up":"1"}
+{"job":"node-exporter","instance":"10.0.1.42:9100","up":"1"}
+
+$ curl -s 'localhost:9090/api/v1/query?query=rate(http_requests_total{job="api"}[5m])' | jq '.data.result[:2][] | {method:.metric.method,status:.metric.status,rps:.value[1]}'
+{"method":"GET","status":"200","rps":"125.4"}
+{"method":"POST","status":"201","rps":"45.2"}
+
+$ curl -s 'localhost:9090/api/v1/query?query=histogram_quantile(0.99,rate(http_request_duration_seconds_bucket{job="api"}[5m]))' | jq '.data.result[0].value[1]'
+"0.245"
+
+$ promtool tsdb analyze /var/prometheus/data
+Block ID: 01HXYZ...  Duration: 2h  Series: 45,678  Samples: 12,345,678  Size: 234 MB
+```
+
+---
+
 ## Common pitfalls
 - **Not using `rate()` on counters.** The raw counter is a meaningless ever-growing number.
   Rate it first, every time.

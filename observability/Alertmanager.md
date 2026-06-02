@@ -234,6 +234,41 @@ your Prometheis at all Alertmanager instances.
 
 ---
 
+
+## Terminal Demo
+
+```terminal-demo
+# amtool@monitoring ~ %
+
+$ amtool --version
+amtool, version 0.27.0
+
+$ amtool check-config /etc/alertmanager/alertmanager.yml
+Checking '/etc/alertmanager/alertmanager.yml'  SUCCESS
+
+$ amtool alert query --alertmanager.url=http://localhost:9093
+Alertname        Instance       Severity  Status  StartsAt
+HighLatency      api:8080       critical  active  2026-06-02T10:10:00Z
+DiskSpaceLow     node-03:9100   warning   active  2026-06-02T09:45:00Z
+PodCrashLoop     worker-n5v1x   critical  active  2026-06-02T10:12:00Z
+
+$ amtool silence add alertname=HighLatency --duration=2h --comment="investigating - gurpreet"
+b1c2d3e4-f5a6-7890-abcd-ef1234567890
+
+$ amtool silence query
+ID                                    Matchers              Ends At               Created By
+b1c2d3e4-f5a6-7890-abcd-ef1234567890  alertname=HighLatency  2026-06-02T12:15:00Z  gurpreet
+
+$ amtool config routes show --alertmanager.url=http://localhost:9093
+Routing tree:
+└── default-route  receiver: slack-general
+    ├── {severity="critical"}  receiver: pagerduty-oncall
+    ├── {severity="warning"}   receiver: slack-warnings
+    └── {team="platform"}      receiver: slack-platform
+```
+
+---
+
 ## Common pitfalls
 - **No grouping (`group_by`).** You get one notification per alert instead of one per incident —
   a pager storm. Group by meaningful labels (cluster, alertname, service).

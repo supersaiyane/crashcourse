@@ -190,6 +190,47 @@ dashboards automatically.
 
 ---
 
+
+## Terminal Demo
+
+```terminal-demo
+# grafana-cli@monitoring ~ %
+
+$ grafana-cli --version
+Grafana CLI version 10.4.1
+
+$ grafana-cli plugins ls
+installed plugins:
+  - grafana-piechart-panel @ 1.6.4
+  - grafana-clock-panel @ 2.1.3
+  - grafana-polystat-panel @ 2.1.0
+
+$ curl -s -u admin:admin localhost:3000/api/datasources | jq '.[].name'
+"Prometheus"
+"Loki"
+"Tempo"
+"PostgreSQL"
+
+$ curl -s -u admin:admin localhost:3000/api/search?type=dash-db | jq '.[:5][] | {title,uid,url}'
+{"title":"API Overview","uid":"api-001","url":"/d/api-001"}
+{"title":"Kubernetes Cluster","uid":"k8s-001","url":"/d/k8s-001"}
+{"title":"Node Exporter","uid":"node-001","url":"/d/node-001"}
+{"title":"PostgreSQL","uid":"pg-001","url":"/d/pg-001"}
+
+$ curl -s -u admin:admin localhost:3000/api/alerts | jq '.[:3][] | {name,state,severity}'
+{"name":"High API Latency","state":"ok","severity":"critical"}
+{"name":"Low Disk Space","state":"ok","severity":"warning"}
+{"name":"Pod Restart Loop","state":"alerting","severity":"critical"}
+
+$ grafana-cli admin reset-admin-password newpassword
+Admin password changed successfully ✔
+
+$ curl -s -u admin:admin -X POST localhost:3000/api/dashboards/db -H "Content-Type: application/json" -d @dashboard.json | jq '{status,uid,url}'
+{"status":"success","uid":"new-001","url":"/d/new-001"}
+```
+
+---
+
 ## Common pitfalls
 - **Building dashboards from scratch.** Import community dashboards (by ID) and adapt — huge
   time saver.

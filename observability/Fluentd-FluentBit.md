@@ -532,6 +532,41 @@ Best practices that go beyond documentation: lessons learned from production inc
 
 
 
+
+## Terminal Demo
+
+```terminal-demo
+# fluent-bit@logging ~ %
+
+$ fluent-bit --version
+Fluent Bit v3.0.2
+
+$ fluent-bit -c /etc/fluent-bit/fluent-bit.conf --dry-run
+[2026/06/02 10:15:00] [ info] Configuration:
+   Flush time     : 5 seconds
+   Grace          : 5 seconds
+   Inputs         : 3 (tail, systemd, forward)
+   Filters        : 2 (kubernetes, modify)
+   Outputs        : 2 (loki, s3)
+Configuration test passed.
+
+$ curl -s localhost:2020/api/v1/metrics | jq '{input_records:.input["tail.0"].records,output_records:.output["loki.0"].records,output_errors:.output["loki.0"].errors}'
+{"input_records":4567890,"output_records":4567888,"output_errors":2}
+
+$ curl -s localhost:2020/api/v1/uptime | jq
+{"uptime_hr":"30d 5h 23m","uptime_sec":2613780}
+
+$ curl -s localhost:2020/api/v1/storage | jq '{total_chunks,mem_chunks,fs_chunks}'
+{"total_chunks":145,"mem_chunks":120,"fs_chunks":25}
+
+$ kubectl logs -n logging ds/fluent-bit --tail=5
+[2026/06/02 10:15:30] [ info] [output:loki:loki.0] loki.internal:3100, HTTP status=204
+[2026/06/02 10:15:30] [ info] [output:s3:s3.0] uploaded chunk to s3://logs-archive/2026/06/02/
+[2026/06/02 10:15:35] [ info] [input:tail:tail.0] inotify_fs_add(): /var/log/containers/*.log
+```
+
+---
+
 ## Quick Quiz
 
 Test your understanding with these rapid-fire questions (answers hidden):
