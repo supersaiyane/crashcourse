@@ -31,9 +31,7 @@ function esc(s) {
 }
 
 // Base URL for fetching markdown — works on GitHub Pages and locally
-const MD_BASE = location.hostname === 'localhost' || location.hostname === '127.0.0.1'
-  ? '../'
-  : 'https://raw.githubusercontent.com/supersaiyane/crashcourse/main/';
+const MD_BASE = '../';  // Works for both local dev and GitHub Pages (entire repo deployed)
 
 function hexRgba(hex, a) {
   const r = parseInt(hex.slice(1,3),16);
