@@ -782,8 +782,11 @@ function loadGiscus(catId, filename) {
 
 // ── How to Use page ─────────────────────────────────────────────────────────
 async function renderHowToUse() {
-  const bc = $id('breadcrumb');
-  if (bc) bc.innerHTML = '<a href="#/">Home</a> / <strong>How to Use</strong>';
+  // Fix breadcrumb for How to Use page
+  $id('bc-cat').textContent = 'How to Use';
+  $id('bc-title').textContent = '';
+  $id('bc-home').onclick = () => go('/');
+  $id('bc-cat').onclick = () => go('/how-to-use');
 
   const loader = $id('r-loader');
   const out    = $id('md-out');
