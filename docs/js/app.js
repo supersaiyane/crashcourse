@@ -396,13 +396,13 @@ async function renderReader(catId, filename) {
       try { window.mermaid.run({ nodes: out.querySelectorAll('.mermaid') }); } catch {}
     }
 
-    // Trigger terminal demo animation when scrolled into view
-    out.querySelectorAll('.terminal-demo').forEach((term) => {
+    // Trigger terminal typing animation when scrolled into view
+    out.querySelectorAll('.terminal-demo[data-term-parsed]').forEach((term) => {
       const obs = new IntersectionObserver((entries) => {
         entries.forEach((e) => {
           if (e.isIntersecting) {
-            term.classList.add('term-animate');
             obs.disconnect();
+            termTyping(term);
           }
         });
       }, { threshold: 0.15 });
@@ -755,3 +755,92 @@ function initMermaid() {
   route();
   if (!parseRoute().cat) setTimeout(animateCounters, 250);
 })();
+
+
+// ── Terminal typing engine ──────────────────────────────────────────────────
+function termTyping(termEl) {
+  const body = termEl.querySelector('.terminal-body');
+  const lines = termEl._termLines || [];
+  if (!lines.length) return;
+
+  let lineIdx = 0;
+
+  function classFor(type) {
+    if (type === 'cmd') return 'term-cmd';
+    if (type === 'success') return 'term-success';
+    if (type === 'warn') return 'term-warn';
+    return 'term-output';
+  }
+
+  function typeChars(el, text, speed, cb) {
+    let i = 0;
+    const iv = setInterval(() => {
+      if (i < text.length) {
+        el.textContent += text[i];
+        i++;
+      } else {
+        clearInterval(iv);
+        if (cb) cb();
+      }
+    }, speed);
+  }
+
+  function showNext() {
+    if (lineIdx >= lines.length) {
+      // Final blinking cursor
+      const cur = document.createElement('div');
+      cur.className = 'term-line';
+      cur.style.opacity = '1';
+      cur.innerHTML = '<span class="term-prompt">$  </span><span class="term-cursor"></span>';
+      body.appendChild(cur);
+      termEl.classList.add('term-animate');
+      return;
+    }
+
+    const item = lines[lineIdx];
+    lineIdx++;
+
+    if (item.type === 'blank') {
+      const div = document.createElement('div');
+      div.className = 'term-line';
+      div.style.opacity = '1';
+      div.innerHTML = '&nbsp;';
+      body.appendChild(div);
+      setTimeout(showNext, 60);
+      return;
+    }
+
+    if (item.type === 'cmd') {
+      const div = document.createElement('div');
+      div.className = 'term-line';
+      div.style.opacity = '1';
+      div.innerHTML = '<span class="term-prompt">$  </span><span class="term-cmd"></span>';
+      body.appendChild(div);
+      const cmdSpan = div.querySelector('.term-cmd');
+      // Type command characters one by one
+      typeChars(cmdSpan, item.text, 28, () => {
+        setTimeout(showNext, 250);
+      });
+      // Auto-scroll terminal body
+      body.scrollTop = body.scrollHeight;
+      return;
+    }
+
+    // Output / success / warn — appear instantly (like real terminal output)
+    const div = document.createElement('div');
+    div.className = 'term-line';
+    div.style.opacity = '0';
+    const cls = classFor(item.type);
+    div.innerHTML = `<span class="${cls}">    ${esc(item.text)}</span>`;
+    body.appendChild(div);
+    // Fade in
+    requestAnimationFrame(() => {
+      div.style.transition = 'opacity 0.2s ease';
+      div.style.opacity = '1';
+    });
+    body.scrollTop = body.scrollHeight;
+    setTimeout(showNext, item.type === 'success' ? 120 : 60);
+  }
+
+  showNext();
+}
