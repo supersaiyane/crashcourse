@@ -152,6 +152,7 @@ window.addEventListener('hashchange', route);
 async function route() {
   const { cat, file } = parseRoute();
   if (!cat) { showView('hero'); return; }
+  if (cat === 'how-to-use') { showView('reader'); await renderHowToUse(); return; }
   if (cat && !file) { showView('list'); await renderList(cat); return; }
   if (cat && file) { showView('reader'); await renderReader(cat, file); return; }
 }
@@ -608,6 +609,7 @@ $id('logo').addEventListener('keydown', (e) => { if(e.key==='Enter') go('/'); })
 $id('browse-btn').addEventListener('click', () => {
   $id('categories-section').scrollIntoView({ behavior: 'smooth' });
 });
+$id('howto-btn').addEventListener('click', () => go('/how-to-use'));
 
 // ── PWA ───────────────────────────────────────────────────────────────────────
 if ('serviceWorker' in navigator) {
@@ -778,6 +780,51 @@ function loadGiscus(catId, filename) {
   script.async = true;
 
   giscusDiv.appendChild(script);
+}
+
+// ── How to Use page ─────────────────────────────────────────────────────────
+async function renderHowToUse() {
+  const bc = $id('breadcrumb');
+  if (bc) bc.innerHTML = '<a href="#/">Home</a> / <strong>How to Use</strong>';
+
+  const loader = $id('r-loader');
+  const out    = $id('md-out');
+  loader.classList.remove('hidden');
+  out.classList.add('hidden');
+  out.innerHTML = '';
+
+  // Hide action buttons for this page
+  const actionBar = document.querySelector('.reader-actions');
+  if (actionBar) actionBar.style.display = 'none';
+
+  // Hide giscus for this page
+  const giscus = $id('giscus-container');
+  if (giscus) giscus.classList.add('hidden');
+
+  try {
+    const res = await fetch('./how-to-use.md');
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const md = await res.text();
+
+    marked.setOptions({
+      highlight: function(code, lang) {
+        if (window.hljs && lang && hljs.getLanguage(lang)) {
+          return hljs.highlight(code, { language: lang }).value;
+        }
+        return code;
+      },
+      breaks: true,
+      gfm: true,
+    });
+
+    loader.classList.add('hidden');
+    out.classList.remove('hidden');
+    out.innerHTML = marked.parse(md);
+  } catch (err) {
+    loader.classList.add('hidden');
+    out.classList.remove('hidden');
+    out.innerHTML = `<h2>Page not found</h2><p>Could not load how-to-use.md</p>`;
+  }
 }
 
 // ── Terminal typing engine ──────────────────────────────────────────────────
