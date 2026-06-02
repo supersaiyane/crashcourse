@@ -35,17 +35,17 @@
 | 2026-06-01 21:00 | 17 product/ courses written | Done | All 17: PM, Strategy, Discovery, Roadmapping, Analytics, PLG, User-Stories, Stakeholder, Agile-Scrum, Kanban, Risk, Sprint, JIRA, TPM, Delivery, Project-Mgmt, PM-AI-Era | product/Product-Management-Fundamentals.md:1 |
 | 2026-06-01 21:30 | Counts updated to 153/20 | Done | README, index.html, manifest.json, course-index.json, repo description all updated | README.md:10, docs/index.html:99, docs/data/course-index.json:2 |
 
-| 2026-06-02 08:30 | Bulk Interview Q&A + Mermaid diagrams | Done | All 153 courses now have both IQ (10 Q&A each) and mermaid diagrams. 117 IQ added, 128 mermaid added. | All 20 category dirs — verified 153/153 IQ, 153/153 mermaid |
+| 2026-06-02 08:30 | Bulk Interview Q&A + Mermaid diagrams | Done | All 153 courses: 117 IQ added, 128 mermaid added. Verified 153/153. | All 20 category dirs |
+| 2026-06-02 10:00 | Learning resources for 17 product/ courses | Done | Recommended learning resources added to all 17 product/ courses. Wave 1 fully complete — all 4 features at 100%. | product/*.md |
 
 ## Next Session Resume Vector
 
-- 153 courses across 20 categories — all have Interview Questions + Mermaid diagrams
-- Wave 1 completed features:
-  - Progress Tracker & Bookmarks: DONE (100%)
-  - Recommended Learning Resources: DONE (136/153 — 17 product/ courses need resources)
+- 153 courses across 20 categories — Wave 1 fully complete
+- Wave 1 completed features (all 100%):
+  - Progress Tracker & Bookmarks: DONE (153/153)
+  - Recommended Learning Resources: DONE (153/153)
   - Interview Questions: DONE (153/153)
   - Mermaid Architecture Diagrams: DONE (153/153)
-- Remaining: commit all changes, push, update TODO.txt counts
 - TODO.txt has 48 project walkthroughs (33 + 15 industry case studies)
 - dsa.txt has full plan for separate DSA repo (25 courses, Python, FAANG-focused)
 - Wave 2 (quiz, comparisons, GIFs) + Wave 3 (CLI playground) not started
