@@ -19,6 +19,16 @@ You should reach for WireGuard when:
 - You want a mesh network between nodes without a heavyweight control plane.
 - You are replacing an aging IPsec or OpenVPN setup.
 
+```mermaid
+graph LR
+    A[Client wg0 10.0.0.2] -->|Encrypted UDP :51820| B[Server wg0 10.0.0.1]
+    B -->|IP Forward + NAT| C[Cloud VPC 172.16.0.0/16]
+    A -.->|AllowedIPs routing| B
+    D[Key Pair: Private + Public] -->|Authenticate| A
+    D -->|Authenticate| B
+    E[PresharedKey] -.->|Post-quantum layer| A
+```
+
 ---
 
 ## Vocabulary
@@ -440,6 +450,80 @@ sudo sysctl --system
 | `AllowedIPs`          | Peer      | CIDRs routed to / accepted from this peer      |
 | `Endpoint`            | Peer      | Real IP:port of the remote peer                |
 | `PersistentKeepalive` | Peer      | Keepalive interval in seconds (25 for NAT)     |
+
+---
+
+## Top 10 Interview Questions
+
+<details>
+<summary><strong>Q: How does WireGuard differ from OpenVPN and IPsec architecturally?</strong></summary>
+
+WireGuard is approximately 4,000 lines of code built into the Linux kernel, uses a fixed modern cipher suite (Curve25519, ChaCha20-Poly1305, BLAKE2s), and does not negotiate cryptographic parameters. OpenVPN is approximately 100K lines running in userspace with configurable cipher suites. IPsec is a complex protocol suite with multiple negotiation phases (IKE). WireGuard's simplicity means a smaller attack surface, faster handshakes (milliseconds vs seconds), and near-line-rate throughput.
+
+</details>
+
+<details>
+<summary><strong>Q: What does AllowedIPs do, and how does it function as both an ACL and a routing table?</strong></summary>
+
+AllowedIPs serves a dual purpose: it defines which source IPs are accepted from a peer (incoming packets from IPs outside this range are silently dropped), and it defines which destination IPs are routed to that peer (outgoing packets matching these CIDRs go through the tunnel). `0.0.0.0/0` makes a peer the default gateway for all traffic. A narrow CIDR like `10.0.0.2/32` routes only that single IP through the tunnel.
+
+</details>
+
+<details>
+<summary><strong>Q: Why is PersistentKeepalive needed, and what value should you set?</strong></summary>
+
+NAT devices drop UDP mappings after a timeout (typically 30-120 seconds). If a WireGuard peer behind NAT stops sending traffic, the NAT mapping expires and the server can no longer reach it. PersistentKeepalive sends a packet every N seconds to keep the mapping alive. Set it to 25 seconds on the client side -- short enough to survive most NAT timeouts without generating excessive traffic.
+
+</details>
+
+<details>
+<summary><strong>Q: How does WireGuard handle roaming between networks?</strong></summary>
+
+WireGuard identifies peers by their public key, not their IP address. When a peer roams to a new network (e.g., switching from Wi-Fi to mobile), it sends a packet from its new IP. The receiving side updates the peer's endpoint to the new source address upon receiving a valid authenticated packet. The tunnel continues without renegotiation or reconnection -- this is why WireGuard handles laptop roaming and mobile network switches seamlessly.
+
+</details>
+
+<details>
+<summary><strong>Q: What is the purpose of the PresharedKey, and when should you use it?</strong></summary>
+
+PresharedKey adds a symmetric 32-byte key layered on top of the Curve25519 handshake, providing an additional layer of encryption. Its primary purpose is post-quantum resistance -- if a future quantum computer breaks Curve25519, the symmetric PSK still protects the tunnel. Use it for any long-lived production tunnel. Generate it with `wg genpsk` and distribute it securely to both peers.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you set up a site-to-site VPN between an office and a cloud VPC?</strong></summary>
+
+Generate key pairs and a PSK on both gateways. Configure each peer's AllowedIPs to include the other site's subnet. Enable IP forwarding on both gateways. Add iptables MASQUERADE rules for NAT if needed. Add static routes in the cloud VPC routing table pointing the office subnet to the WireGuard gateway's ENI. Disable source/destination checks on the cloud instance. Bring up `wg0` on both sides and verify with `wg show` and cross-subnet pings.
+
+</details>
+
+<details>
+<summary><strong>Q: What are the most common reasons a WireGuard handshake fails to complete?</strong></summary>
+
+Firewall blocking UDP on the listen port (51820) is the most common cause. Other reasons: mismatched public keys (you swapped them), clock skew beyond a few minutes (WireGuard handshakes include timestamps), the Endpoint is wrong or unreachable, or the peer's AllowedIPs do not include the source address of the initiator. Check with `sudo wg show` -- if "latest handshake" is absent, the handshake never completed.
+
+</details>
+
+<details>
+<summary><strong>Q: How does Tailscale build on WireGuard, and when would you choose it over raw WireGuard?</strong></summary>
+
+Tailscale provides a managed control plane that automates key distribution, peer discovery, NAT traversal (via DERP relay servers), and ACLs. Under the hood it creates standard WireGuard interfaces. Choose Tailscale when you have many peers and managing configs manually does not scale, or when peers are behind double NAT. Choose raw WireGuard when you need full control, self-host everything, or have a simple topology with few peers.
+
+</details>
+
+<details>
+<summary><strong>Q: Why is MTU configuration important for WireGuard, and what value should you use?</strong></summary>
+
+WireGuard adds approximately 60 bytes of overhead (40 bytes IP header + 8 bytes UDP + 12 bytes WireGuard header) to each packet. On a standard 1500-byte MTU link, packets exceeding 1440 bytes after encapsulation get fragmented, causing performance degradation and path MTU discovery issues. Set `MTU = 1420` on roaming clients as a safe default. For known networks, test with `ping -M do -s 1420` to find the exact value.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you monitor WireGuard tunnels in production?</strong></summary>
+
+Use `wg show` to check handshake age and byte counters per peer. A healthy peer shows a "latest handshake" under 3 minutes and non-zero transfer counters. For Prometheus-based monitoring, deploy `prometheus-wireguard-exporter` which scrapes `wg show` output and exposes metrics on port 9586. Alert on handshake age exceeding 5 minutes and zero-byte transfer counters, which indicate a broken tunnel.
+
+</details>
 
 ---
 

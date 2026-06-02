@@ -31,6 +31,16 @@ echo '{"a":{"b":5}}' | jq '.a.b'      ->  5
 **Mental model:** data flows through `.` and gets reshaped at each `|`. Read a jq program left to
 right as "take the input, do this, then this, then this."
 
+```mermaid
+graph LR
+    A[JSON Input] -->|dot| B[Identity / Current Value]
+    B -->|.field| C[Extract Field]
+    B -->|.items - iterate| D[Iterate Array]
+    D -->|select cond| E[Filter Matching]
+    E -->|pipe| F[Build New Object]
+    F -->|@tsv / -r| G[Shell-Friendly Output]
+```
+
 ---
 
 ## DAY 1 — Extract and filter
@@ -244,6 +254,80 @@ ltrimstr("p")   ltrimstr/rtrimstr   tostring  tonumber
 -n null input (build from scratch)   --arg name val (inject a string safely)
 --argjson name val (inject JSON)     -e exit code reflects output (for scripts)
 ```
+
+---
+
+## Top 10 Interview Questions
+
+<details>
+<summary><strong>Q: What is jq and why would you use it instead of grep or sed for JSON?</strong></summary>
+
+jq is a command-line JSON processor that understands JSON structure. grep and sed are line-oriented tools that treat input as flat text -- they break on multiline JSON, nested objects, and arrays. jq lets you navigate the JSON tree, filter by field values, and reshape output while handling edge cases like null fields and nested arrays correctly. It is the standard tool for parsing API responses and cloud CLI output in scripts.
+
+</details>
+
+<details>
+<summary><strong>Q: Explain the difference between `.[]` and `map()` in jq.</strong></summary>
+
+`.[]` iterates an array and emits each element as a separate value in a stream -- downstream filters run once per element. `map(f)` applies filter `f` to each element and collects results back into an array. Use `.[]` when you want a stream (e.g., for piping to `select`). Use `map()` when the downstream consumer expects an array (e.g., `length`, further array operations, or JSON output).
+
+</details>
+
+<details>
+<summary><strong>Q: How do you safely handle missing or null fields in jq?</strong></summary>
+
+Use the `?` operator (`.field?`) to suppress errors when a path does not exist, and the `//` operator (`.field // "default"`) to provide a fallback value when a field is null or absent. For example, `.items[] | .config.timeout // 30` returns 30 for any item missing the timeout field. Without these, jq errors out on inconsistent API responses.
+
+</details>
+
+<details>
+<summary><strong>Q: How would you extract a flat table of instance IDs, states, and IPs from AWS EC2 output?</strong></summary>
+
+Use `aws ec2 describe-instances | jq -r '.Reservations[].Instances[] | [.InstanceId, .State.Name, .PrivateIpAddress] | @tsv'`. This iterates all reservations and instances, builds an array of the three fields per instance, then formats as tab-separated values. The `-r` flag strips quotes for clean shell output. This is the standard pattern for turning nested cloud API responses into greppable or spreadsheet-friendly tables.
+
+</details>
+
+<details>
+<summary><strong>Q: What does `--arg` do and when should you use it?</strong></summary>
+
+`--arg name value` injects a shell variable into the jq program as a jq string variable `$name`. This avoids shell interpolation bugs and injection risks. For example: `jq --arg n "$NAME" '.[] | select(.name == $n)'`. Without `--arg`, you would need to interpolate `$NAME` inside single quotes, which does not work, or use double quotes, which breaks on special characters.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you count Kubernetes pods grouped by status phase using jq?</strong></summary>
+
+Use `kubectl get pods -o json | jq '[.items[] | .status.phase] | group_by(.) | map({phase: .[0], count: length})'`. This extracts all phases into an array, groups identical values, then maps each group to an object with the phase name and count. Alternatively, for a quick approach: `jq -r '.items[].status.phase' | sort | uniq -c` combines jq with shell tools.
+
+</details>
+
+<details>
+<summary><strong>Q: What is the purpose of `-s` (slurp) and when do you need it?</strong></summary>
+
+`-s` reads all JSON inputs into a single array before processing. Without it, jq processes each JSON document independently. You need slurp when merging multiple JSON files (`jq -s 'add' *.json`), when working with JSONL (newline-delimited JSON) that you want to treat as one array, or when your operation requires seeing all documents at once (e.g., sorting across files).
+
+</details>
+
+<details>
+<summary><strong>Q: How do you use `to_entries` and `from_entries` for transforming JSON objects?</strong></summary>
+
+`to_entries` converts an object `{"a":1,"b":2}` into an array of `[{"key":"a","value":1},{"key":"b","value":2}]`. This lets you iterate over key-value pairs, filter them, or transform them. `from_entries` reverses it. A common pattern is `to_entries | map(select(.value > 0)) | from_entries` to filter an object's keys by their values -- something impossible with direct field access.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you build a reusable jq pipeline for extracting auth tokens from API responses?</strong></summary>
+
+Use `TOKEN=$(curl -s -X POST https://auth/login -d "$CREDS" | jq -r '.access_token')`. The `-r` flag is critical -- without it, the token comes out with surrounding quotes that break the `Authorization: Bearer` header. For production scripts, also handle errors: check `$?` and validate the token is non-empty. Store reusable jq filters in `.jq` files for complex extractions shared across scripts.
+
+</details>
+
+<details>
+<summary><strong>Q: What is string interpolation in jq and when is it useful?</strong></summary>
+
+`"\(.expr)"` embeds the result of a jq expression inside a string. For example, `"\(.namespace)/\(.name)"` produces `"production/api-server"`. This is essential for formatting human-readable output, building custom log lines, or constructing URLs from JSON fields. Combine with `-r` and `@tsv` for shell-friendly output: `jq -r '.items[] | "\(.name)\t\(.status)"'`.
+
+</details>
 
 ---
 

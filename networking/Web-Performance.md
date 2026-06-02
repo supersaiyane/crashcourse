@@ -16,6 +16,21 @@ Performance is a feature. It is not polish you apply after shipping. A product t
 
 The good news: most sites are not optimized. A typical new project starts around Lighthouse 30–50. Getting to 90+ is straightforward once you know the levers.
 
+```mermaid
+graph TD
+    A[Browser Navigation] --> B[DNS + TCP + TLS]
+    B --> C[TTFB - Server Response]
+    C --> D[HTML Parse - DOM]
+    D --> E[CSS Parse - CSSOM]
+    D --> F[JS Download + Execute]
+    E --> G[Render Tree]
+    G --> H[Layout]
+    H --> I[FCP - First Paint]
+    I --> J[LCP - Largest Paint]
+    F -.->|Blocks| H
+    J --> K[INP - Interaction Ready]
+```
+
 ---
 
 ## Vocabulary
@@ -449,6 +464,80 @@ The gains came in this order: layout stability, server latency, image size, Java
 | Accessibility | ARIA, contrast, keyboard navigation |
 | Best Practices | HTTPS, deprecated APIs, console errors |
 | SEO | Meta tags, crawlability, mobile-friendliness |
+
+---
+
+## Top 10 Interview Questions
+
+<details>
+<summary><strong>Q: What are Core Web Vitals, and why do they matter for search ranking?</strong></summary>
+
+Core Web Vitals are three Google metrics: LCP (load speed -- largest element rendered under 2.5s), INP (interactivity -- input-to-paint under 200ms), and CLS (visual stability -- layout shift under 0.1). Since 2021, Google uses these as a direct ranking signal. Poor scores push pages down in search results, which makes performance a business concern beyond just user experience.
+
+</details>
+
+<details>
+<summary><strong>Q: What is the difference between synthetic monitoring and Real User Monitoring (RUM)?</strong></summary>
+
+Synthetic monitoring (Lighthouse, WebPageTest) runs controlled tests from known locations with throttled conditions -- results are reproducible but do not capture real-world diversity. RUM collects performance data from actual user sessions, capturing variations in device, network, browser extensions, and geographic latency. Use synthetic for development iteration and CI gating; use RUM to understand what real users actually experience in production.
+
+</details>
+
+<details>
+<summary><strong>Q: Why should you never lazy-load the LCP image?</strong></summary>
+
+The `loading="lazy"` attribute defers image fetching until the user scrolls near it. For the LCP element (typically the hero image), this delays the most important visual element, directly increasing the LCP metric. The browser would have discovered and fetched it early in the render pipeline, but lazy loading tells it to wait. Instead, preload the LCP image with `<link rel="preload">` to ensure the browser fetches it as early as possible.
+
+</details>
+
+<details>
+<summary><strong>Q: How does code splitting improve performance, and when can it backfire?</strong></summary>
+
+Code splitting breaks a monolithic JavaScript bundle into smaller chunks loaded on demand. Users on the homepage do not download checkout code. This reduces initial parse/execute time and improves INP. It can backfire if you split too aggressively -- many small chunks create waterfall chains of sequential requests, and each chunk has HTTP overhead. Find the balance: split by route or major feature, not by individual component.
+
+</details>
+
+<details>
+<summary><strong>Q: Explain the critical rendering path and how render-blocking resources affect it.</strong></summary>
+
+The browser parses HTML to build the DOM, parses CSS to build the CSSOM, combines them into a Render Tree, then performs Layout and Paint. CSS in `<head>` blocks rendering until downloaded and parsed. Synchronous `<script>` tags block HTML parsing entirely. These render-blocking resources delay FCP and LCP. Mitigations: inline critical CSS, use `defer` on scripts, and preload essential resources so the browser discovers them early.
+
+</details>
+
+<details>
+<summary><strong>Q: What is the benefit of content-hashed filenames for static assets?</strong></summary>
+
+Content hashes (e.g., `app.3f2a8b.js`) change when the file content changes. This allows you to set `Cache-Control: max-age=31536000, immutable` -- browsers cache the file indefinitely. When you deploy new code, the filename changes and the browser fetches the new version. Without content hashes, you must either use short cache TTLs (wasting bandwidth) or risk serving stale assets after deploys.
+
+</details>
+
+<details>
+<summary><strong>Q: How does `preconnect` differ from `preload`, and when would you use each?</strong></summary>
+
+`preconnect` establishes a connection (DNS + TCP + TLS) to a third-party origin before any request is made -- saving 100-300ms when the first actual request happens. `preload` fetches a specific resource immediately at high priority. Use `preconnect` for third-party origins you will request from (fonts API, CDN). Use `preload` for critical resources the browser discovers late in the parse (hero image, font file, above-fold CSS).
+
+</details>
+
+<details>
+<summary><strong>Q: Why is JavaScript the most expensive resource type per byte?</strong></summary>
+
+A 100KB image is decoded and painted. A 100KB JavaScript file must be downloaded, parsed into an AST, compiled to bytecode, and executed -- each step consuming main thread time. Execution can trigger layout recalculations, DOM mutations, and network requests. This is why a 500KB JS bundle has far more performance impact than a 500KB image, and why reducing JavaScript weight is the highest-leverage optimisation for INP.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you set up a performance budget in CI?</strong></summary>
+
+Use Lighthouse CI (`lhci`) in your GitHub Actions or GitLab CI pipeline. Define threshold assertions in a `lighthouserc.js` file -- e.g., LCP under 2500ms, CLS under 0.1. If a PR causes a regression that exceeds these thresholds, the CI job fails and blocks the merge. This prevents performance regressions from shipping without explicit review, making performance a first-class quality gate alongside tests.
+
+</details>
+
+<details>
+<summary><strong>Q: What order should you follow when optimising a slow page?</strong></summary>
+
+Start with Lighthouse and the Network waterfall to identify the biggest bottleneck. Fix CLS first (quickest -- add image dimensions, reserve space). Then reduce TTFB (CDN, edge caching, server optimisation). Then fix LCP (optimise hero image, preload it, remove lazy loading). Then reduce JavaScript (code split, tree shake, defer third-party scripts). Then add caching headers. This order -- stability, server, paint, JS, cache -- typically yields the fastest cumulative improvement.
+
+</details>
 
 ---
 

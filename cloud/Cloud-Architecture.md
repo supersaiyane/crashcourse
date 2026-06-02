@@ -44,6 +44,13 @@ This crash course gives you the frameworks and vocabulary to reason about archit
 
 ---
 
+
+```mermaid
+graph LR
+    Input[Input] --> CloudArchitecture[Cloud Architecture]
+    CloudArchitecture --> Output[Output]
+```
+
 ## DAY 1 — The Well-Architected Pillars
 
 Walk through each pillar as a checklist you apply to every workload you design or review.

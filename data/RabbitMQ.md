@@ -46,6 +46,13 @@ This is the core trade: you give up the simplicity of direct calls and gain resi
 
 ---
 
+
+```mermaid
+graph LR
+    Input[Input] --> RabbitMQ[RabbitMQ]
+    RabbitMQ --> Output[Output]
+```
+
 ## DAY 1 — Getting Up and Running
 
 ### Install with Docker
@@ -650,3 +657,78 @@ Once you are comfortable with RabbitMQ basics, the natural next topics are:
 ## The Mantra
 
 > Decouple first, optimize later. A queue between two services costs you a little complexity and buys you independent deployability, resilience under load, and the freedom to scale each side on its own terms. Most production incidents involving direct service calls would not have happened if there had been a queue in between.
+
+## Top 10 Interview Questions
+
+<details>
+<summary><strong>Q: What are the exchange types in RabbitMQ and when do you use each?</strong></summary>
+
+Direct (routes by exact routing key match — point-to-point messaging), Fanout (broadcasts to all bound queues — pub/sub, event notification), Topic (pattern matching with wildcards: * matches one word, # matches zero or more — flexible routing), and Headers (routes based on message headers — complex routing without routing keys). Most applications use Direct for task queues and Topic for event-driven architectures. Fanout for simple broadcast scenarios.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you ensure messages are not lost in RabbitMQ?</strong></summary>
+
+Three layers: publisher confirms (broker acknowledges receipt — enable confirm mode), durable queues and exchanges (survive broker restart — declare with durable=true), and persistent messages (written to disk — set delivery_mode=2). Additionally, use consumer acknowledgments (manual ack after processing, not auto-ack) and configure dead letter exchanges for failed messages. With all three layers, message loss requires simultaneous disk failure and memory loss — extremely unlikely.
+
+</details>
+
+<details>
+<summary><strong>Q: What is the difference between push and pull delivery in RabbitMQ?</strong></summary>
+
+Push (basic.consume) is the default — RabbitMQ pushes messages to consumers as they become available. Control throughput with prefetch count (basic.qos). Pull (basic.get) lets consumers poll for messages — simpler but much less efficient and higher latency. Always use push delivery in production. Set prefetch count to a value that balances throughput and memory (1 for slow consumers, 10-50 for fast consumers). Prefetch prevents one consumer from hogging all messages while others are idle.
+
+</details>
+
+<details>
+<summary><strong>Q: How does RabbitMQ clustering work and what are the limitations?</strong></summary>
+
+A RabbitMQ cluster shares users, vhosts, exchanges, and bindings across all nodes. Queues by default live on a single node — if that node fails, the queue is unavailable. Quorum queues (recommended) replicate queue data across multiple nodes using Raft consensus — surviving a node failure without message loss. Classic mirrored queues are deprecated. Limitation: all nodes must be in the same datacenter or low-latency network. For cross-DC replication, use Federation or the Shovel plugin.
+
+</details>
+
+<details>
+<summary><strong>Q: What are quorum queues and why should you use them over classic mirrored queues?</strong></summary>
+
+Quorum queues use the Raft consensus protocol for replication — a leader node and multiple followers. They provide stronger durability guarantees (data is written to a quorum before acknowledging), faster failure detection and leader election, and predictable performance under failure. Classic mirrored queues had synchronisation issues, split-brain risks, and unpredictable behaviour during node failures. All new production deployments should use quorum queues. They require Erlang 22+ and RabbitMQ 3.8+.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you implement the dead letter pattern in RabbitMQ?</strong></summary>
+
+Configure a dead letter exchange (DLX) on a queue — messages are routed to the DLX when: rejected by a consumer (basic.nack/reject with requeue=false), TTL expires, or queue max-length is exceeded. The DLX routes to a dead letter queue where failed messages can be inspected, retried, or alerted on. This prevents poison messages (messages that always fail processing) from blocking the queue. Implement retry logic with TTL-based delay queues: DLQ → delay queue (with TTL) → retry queue → original queue.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you scale RabbitMQ for high throughput?</strong></summary>
+
+Horizontal: add more nodes and distribute queues across them (different queues on different nodes). Vertical: increase prefetch count, use lazy queues (store messages on disk instead of memory) for large backlogs. Application-level: use multiple queues with consistent hashing for load distribution, enable publisher confirms in batches (not per-message), and use connection pooling. Avoid: single queue with millions of messages (memory pressure), too many connections (each uses resources), and synchronous RPC patterns at scale.
+
+</details>
+
+<details>
+<summary><strong>Q: How does RabbitMQ compare to Kafka for event-driven architectures?</strong></summary>
+
+RabbitMQ: traditional message broker, messages are consumed and deleted, supports complex routing (exchanges), better for task queues and request-reply. Kafka: distributed log, messages are persisted and replayable, better for event sourcing, stream processing, and high-throughput event streaming. Choose RabbitMQ when you need routing logic, message priorities, per-message TTL, or classic queue semantics. Choose Kafka when you need replay, high throughput, consumer groups, or event stream processing.
+
+</details>
+
+<details>
+<summary><strong>Q: What are virtual hosts (vhosts) and how do you use them for multi-tenancy?</strong></summary>
+
+Vhosts provide logical separation within a RabbitMQ instance — each vhost has its own exchanges, queues, bindings, users, and permissions. Like separate databases in PostgreSQL. Use vhosts to: isolate environments (dev, staging, prod on one cluster), separate teams or applications (each team gets its own vhost), and enforce security boundaries (a user in vhost-A cannot access queues in vhost-B). In BFSI, vhosts separate trading systems from notification systems on the same infrastructure.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you monitor RabbitMQ in production?</strong></summary>
+
+Key metrics: queue depth (messages ready + unacknowledged), consumer count per queue, publish/deliver rates, memory and disk usage, connection count, and channel count. Use the Management Plugin (web UI + HTTP API), Prometheus plugin for metrics export, and Grafana dashboards. Alert on: queue depth growing faster than it drains (consumer lag), memory alarm (RabbitMQ blocks publishers), disk alarm (running out of disk), and unacknowledged messages growing (stuck consumers). Check rabbitmqctl cluster_status for node health.
+
+</details>
+
+---
+

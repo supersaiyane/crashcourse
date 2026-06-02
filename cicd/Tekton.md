@@ -20,6 +20,20 @@ The tradeoff is verbosity. Tekton is more yaml than GitHub Actions. You accept t
 
 ---
 
+
+```mermaid
+graph LR
+    Trigger[Event / Webhook] --> EventListener[EventListener]
+    EventListener --> TriggerTemplate[TriggerTemplate]
+    TriggerTemplate --> PipelineRun[PipelineRun]
+    PipelineRun --> Task1[Task: Clone]
+    PipelineRun --> Task2[Task: Build]
+    PipelineRun --> Task3[Task: Deploy]
+    Task1 --> Workspace[(Workspace / PVC)]
+    Task2 --> Workspace
+    Task3 --> Workspace
+```
+
 ## Part 1 — Vocabulary
 
 Before you write anything, get the object model straight. Tekton has a small, composable set of resources. Learn these nine and you know the whole surface.

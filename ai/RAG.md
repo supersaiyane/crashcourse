@@ -22,6 +22,21 @@ RAG solves all three problems by moving knowledge out of the model's weights and
 
 ---
 
+
+```mermaid
+graph LR
+    Docs[Documents] --> Chunk[Chunking]
+    Chunk --> Embed[Embedding Model]
+    Embed --> VectorDB[(Vector Store)]
+    Query[User Query] --> QEmbed[Query Embedding]
+    QEmbed --> Retrieve[Similarity Search]
+    VectorDB --> Retrieve
+    Retrieve --> Context[Retrieved Context]
+    Context --> LLM[LLM Generation]
+    Query --> LLM
+    LLM --> Answer[Grounded Answer]
+```
+
 ## Part 1 — The vocabulary
 
 | Term | What it means |
@@ -564,6 +579,81 @@ dataset = Dataset.from_dict(eval_data)
 scores = evaluate(dataset, metrics=[faithfulness, answer_relevancy, context_recall])
 print(scores)
 ```
+
+---
+
+
+## Top 10 Interview Questions
+
+<details>
+<summary><strong>Q: What is the difference between naive RAG, advanced RAG, and modular RAG?</strong></summary>
+
+Naive RAG follows a simple retrieve-then-generate pipeline with no refinement. Advanced RAG adds pre-retrieval query rewriting, post-retrieval re-ranking, and chunk optimisation to improve relevance. Modular RAG treats each stage as a swappable component — you can plug in a HyDE query expander, a cross-encoder re-ranker, or a self-RAG verification loop independently. Most production systems land somewhere between advanced and modular.
+
+</details>
+
+<details>
+<summary><strong>Q: How does chunking strategy affect retrieval quality, and what approaches work best?</strong></summary>
+
+Chunks that are too small lose context; chunks that are too large dilute the signal and waste the LLM context window. Recursive character splitting with overlap (e.g., 512 tokens, 50 overlap) is a safe default. For structured documents, semantic chunking (splitting on topic shifts) or document-aware chunking (respecting headings and paragraphs) significantly outperforms naive splitting. Always evaluate chunking changes with retrieval recall metrics on a held-out test set.
+
+</details>
+
+<details>
+<summary><strong>Q: When would you use hybrid search (keyword + vector) instead of pure vector search?</strong></summary>
+
+Pure vector search excels at semantic similarity but misses exact-match requirements — product IDs, error codes, legal clause numbers. Hybrid search combines BM25 keyword scoring with vector similarity using reciprocal rank fusion. Use hybrid when your corpus contains structured identifiers, domain-specific jargon the embedding model was not trained on, or when users sometimes paste exact strings they expect to find.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you evaluate RAG system quality beyond simple accuracy?</strong></summary>
+
+Evaluate across three dimensions: retrieval quality (recall@k, MRR, NDCG), generation faithfulness (does the answer stay grounded in retrieved context — use LLM-as-judge or NLI models), and answer relevance (does it actually address the question). Frameworks like RAGAS automate these metrics. Track context precision separately — retrieving 10 chunks where only 2 are relevant wastes context window and increases hallucination risk.
+
+</details>
+
+<details>
+<summary><strong>Q: What causes hallucination in RAG systems and how do you mitigate it?</strong></summary>
+
+RAG hallucination occurs when the LLM generates claims not supported by the retrieved context — either because retrieval failed (wrong chunks), the context is ambiguous, or the model over-relies on parametric knowledge. Mitigation: improve retrieval precision, use explicit citation prompts ("Answer only from the provided context"), add a self-verification step where the LLM checks its answer against sources, and implement faithfulness scoring to flag low-confidence responses.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you handle multi-hop questions that require reasoning across multiple documents?</strong></summary>
+
+Single-pass retrieval often fails for multi-hop questions because no single chunk contains the full answer. Use iterative retrieval (retrieve, generate a partial answer, retrieve again using the partial answer as a new query), query decomposition (break the question into sub-questions, retrieve for each, then synthesise), or knowledge graph-augmented retrieval where entity relationships bridge documents. Each approach trades latency for answer quality.
+
+</details>
+
+<details>
+<summary><strong>Q: What embedding models would you choose and what are the tradeoffs?</strong></summary>
+
+OpenAI text-embedding-3-large offers strong general performance but requires API calls and has data privacy implications. Open-source alternatives like BGE-large, E5-mistral, or GTE-large run locally with competitive quality. Domain-specific fine-tuning (using your own query-document pairs) typically yields 10-20% retrieval improvement. Consider dimensionality (affects storage cost), inference speed (affects latency), and whether the model supports instruction-prefixed queries for asymmetric retrieval.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you handle document updates and maintain index freshness?</strong></summary>
+
+Implement an incremental indexing pipeline: hash each document, detect changes on ingestion, re-chunk and re-embed only modified documents, and delete orphaned vectors. For frequently changing data, consider a two-tier approach — a stable vector index for slow-changing reference docs plus a real-time search layer (keyword or small vector index) for recent updates. Version your embeddings so a model upgrade triggers a full re-index, not a silent quality degradation.
+
+</details>
+
+<details>
+<summary><strong>Q: What is the role of re-ranking in RAG and when is it worth the latency cost?</strong></summary>
+
+Re-ranking applies a more expensive cross-encoder model to the top-k retrieved candidates, dramatically improving precision by considering the full query-document interaction rather than just embedding similarity. It is worth the cost when retrieval precision directly impacts answer quality — knowledge bases with many near-duplicate or subtly different documents benefit most. A common pattern: retrieve top-50 with vector search (fast), re-rank to top-5 with a cross-encoder (accurate), pass top-5 to the LLM.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you secure a RAG system against prompt injection via retrieved documents?</strong></summary>
+
+Malicious content in your document corpus can hijack the LLM via indirect prompt injection — a document might contain "Ignore previous instructions and..." that gets retrieved and fed to the model. Defences: sanitise documents on ingestion (strip suspicious instruction-like patterns), use separate system prompts that the model is trained to prioritise, implement output filtering, and consider running retrieved content through a classifier that detects injection attempts before passing it to the generation model.
+
+</details>
 
 ---
 

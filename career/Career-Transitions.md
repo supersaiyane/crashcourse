@@ -16,6 +16,17 @@ The best engineers you know — the ones who end up with disproportionate impact
 
 This crash course is about how to make those moves deliberately, not reactively.
 
+```mermaid
+graph LR
+    IC[IC Engineer] -->|pivot| MGR[Manager]
+    MGR -->|return| IC
+    STARTUP[Startup] -->|scale| ENTERPRISE[Enterprise]
+    ENTERPRISE -->|ownership| STARTUP
+    SRE[SRE] -->|product thinking| PLATFORM[Platform Eng]
+    PLATFORM -->|feature dev| SWE[SWE]
+    SWE -->|reliability| SRE
+```
+
 ---
 
 ## Vocabulary
@@ -301,6 +312,80 @@ Own something meaningful end to end. Have had one real conversation with your ma
 | Startup | Speed, breadth, ownership, scrappiness | Process discipline, stakeholder management at scale |
 | Enterprise | Scale thinking, process design, stakeholder navigation | Tolerance for ambiguity, self-directed initiative |
 | DevOps | Automation mindset, pipeline design, reliability | Cloud-native architecture, cost optimization |
+
+---
+
+## Top 10 Interview Questions
+
+<details>
+<summary><strong>Q: How do you decide when it is the right time to transition from IC to management?</strong></summary>
+
+The decision should be pull-based, not push-based. Move when you genuinely want to multiply others rather than when it feels like the only path to advancement. Concrete signals: you find yourself naturally mentoring juniors, you care more about team outcomes than personal output, and you have a manager who will support you through the ramp-up. If your primary motivation is compensation or title, the transition will be painful — management requires finding satisfaction in invisible work.
+
+</details>
+
+<details>
+<summary><strong>Q: What transferable skills matter most when moving from SRE to Platform Engineering?</strong></summary>
+
+Systems thinking, incident triage discipline, and deep observability knowledge transfer almost directly. The critical new skill is product thinking — treating internal tools as products with customers, roadmaps, and success metrics. SREs who already gather feedback from app teams and measure toil reduction are halfway there. The gap is usually in stakeholder management and writing engineering proposals that influence multi-team investment decisions.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you handle the identity crisis that comes with moving from a senior IC role into management?</strong></summary>
+
+Name it explicitly — most new managers try to ignore the discomfort. Around month two or three you will feel unproductive because your output is no longer visible code. The fix is to find craft in the new domain: treat 1:1s, performance conversations, and roadmap negotiations as skills to develop, not administrative overhead. Set a six-month checkpoint — if you still resent the work, returning to IC is data, not failure.
+
+</details>
+
+<details>
+<summary><strong>Q: What is the biggest risk when transitioning from a startup to an enterprise?</strong></summary>
+
+Process shock — the pace feels unbearably slow compared to pushing code to production in an afternoon. The mitigation is spending your first 90 days understanding why the process exists before proposing changes. Much of what looks like bureaucracy is hard-won institutional knowledge about what breaks at scale. Earn credibility by demonstrating you understand constraints first, then advocate for change from a position of trust rather than frustration.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you build career capital in a new role after a lateral transition?</strong></summary>
+
+Follow the 30-60-90 day framework. In the first 30 days, listen and map the landscape. By day 60, ship something small and build trust through follow-through. By day 90, own something meaningful end-to-end. Career capital in a new context comes from demonstrated reliability and the relationships you build with key collaborators, not from immediately proposing large changes.
+
+</details>
+
+<details>
+<summary><strong>Q: What does the pendulum strategy look like in practice for a mid-career engineer?</strong></summary>
+
+Alternate between building depth and breadth in two-to-three-year cycles. Go deep in SRE for three years, then move laterally into Platform Engineering where you apply that depth in a new product-oriented context. Each cycle widens your expertise diameter. After three cycles you are a specialist with unusual contextual range. The trap is lateral moves that do not add a genuinely new domain — moving between the same role at different companies is a job change, not a pendulum move.
+
+</details>
+
+<details>
+<summary><strong>Q: How should a manager returning to an IC role handle the perception of demotion?</strong></summary>
+
+Frame it as a deliberate choice, not a retreat. You bring context most ICs lack — you understand how decisions are made above your level, what managers actually need, and how roadmap meetings work. Resist the urge to manage without authority and influence through technical credibility instead. Give yourself a real 60-90 day ramp-up and avoid committing to heroic deliverables in month one.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you evaluate whether a technology wave like AI infrastructure is worth transitioning into?</strong></summary>
+
+Look for the intersection of your existing expertise and the new domain — that is where you are most differentiated. A former SRE building AI observability brings something a pure ML engineer cannot. Assess whether the entry cost is adjacent to your current skills and time it so demand still outpaces supply, typically the first three to five years of a wave. Avoid reinventing yourself completely; extend what you know.
+
+</details>
+
+<details>
+<summary><strong>Q: What are the signs that you should stay in your current role instead of making a transition?</strong></summary>
+
+Stay when you are in the middle of something important that will close in three to six months — finishing it cleanly increases your career capital. Stay when you are running from something rather than toward something, because a new role with the same unexamined pattern will not fix the underlying issue. Stay when your career capital is low — you are new, have not shipped anything significant, or your relationships are shallow.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you build a sponsor relationship to support a career transition?</strong></summary>
+
+You cannot directly ask someone to sponsor you — sponsorship is earned through demonstrated competence and trust over time. Work on projects where senior engineers and managers can directly observe your impact. Make your work visible through design docs, presentations, and cross-team collaboration. Internal networking matters more than most people realize; the first call for a new opportunity usually goes to someone who already knows your work.
+
+</details>
 
 ---
 

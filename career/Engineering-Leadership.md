@@ -14,6 +14,17 @@ The good news is that the skills are learnable and the feedback loop is faster t
 
 This crash course is not about becoming a perfect leader. It is about avoiding the most common damage and building the habits that compound over time.
 
+```mermaid
+graph TD
+    LEAD[Engineering Leader] --> ONEONE[1:1s and Feedback]
+    LEAD --> HIRE[Hiring and Calibration]
+    LEAD --> PERF[Performance Reviews]
+    LEAD --> TEAM[Team Design]
+    LEAD --> UP[Managing Up]
+    ONEONE --> TRUST[Psychological Safety]
+    TRUST --> OUTPUT[Team Output and Growth]
+```
+
 ---
 
 ## Vocabulary
@@ -371,6 +382,80 @@ Weeks 3–4:  Understand the systems. Read postmortems.
 Weeks 5–8:  Remove one real blocker. Build trust through action.
 Weeks 9–12: Articulate a direction. Share it. Revise it.
 ```
+
+---
+
+## Top 10 Interview Questions
+
+<details>
+<summary><strong>Q: What is the difference between a Tech Lead and an Engineering Manager?</strong></summary>
+
+A Tech Lead sits inside the work — making technical calls, defining architecture, catching scope creep, and still writing code roughly 30-50% of the time. Their authority comes from technical credibility. An Engineering Manager sits outside the work looking at the people — holding 1:1s, running performance cycles, handling compensation, resolving interpersonal conflict, and representing the team to the organization. They are accountable for outcomes they do not directly produce. Combining both roles is possible but hard; you will consistently drop one hat.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you build psychological safety on an engineering team?</strong></summary>
+
+Model vulnerability first — say "I was wrong" or "I don't know" publicly so others feel safe doing the same. React to mistakes with curiosity rather than blame. Thank people explicitly for pushing back on ideas. Notice who is silent in meetings and draw them out directly. Psychological safety compounds slowly through consistent behavior but degrades fast — one public shaming can undo months of trust-building. Google's Project Aristotle found it was the single strongest predictor of high-performing teams.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you handle an underperforming engineer on your team?</strong></summary>
+
+Start early — as soon as you see a pattern, name it in a 1:1 with specific examples using the SBI framework. Understand what is going on before prescribing solutions. If the pattern continues after direct coaching, escalate to a documented improvement plan with specific expectations, a timeline, and the support you will provide. Some people turn it around. Keeping someone in a role they are failing in is not kind — it harms the team and delays the person from finding a role where they can succeed.
+
+</details>
+
+<details>
+<summary><strong>Q: What does your first 90 days look like as a new engineering lead?</strong></summary>
+
+Weeks 1-2: listen and observe through 1:1s with every team member. Weeks 3-4: understand the systems, deployment pipeline, incident history, and technical debt landscape. Weeks 5-8: build trust through small wins by removing one real blocker the team identified. Weeks 9-12: articulate a direction based on the context you have gathered, share it, get pushback, and revise it. The biggest mistake is trying to change everything in week one before you have earned the right.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you give effective feedback to engineers?</strong></summary>
+
+Use the SBI model: describe the specific Situation, the observable Behavior, and the Impact on the team or work. Deliver it as close to the event as possible — a week later, details blur. Positive feedback follows the same structure. "Good job" is forgettable; "In the incident on Thursday, you stayed calm when three services were down, kept the channel structured, and gave clear updates every fifteen minutes" is something they will remember and repeat.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you decide what to delegate versus what to keep?</strong></summary>
+
+Delegate work that someone else can do at 70% of your quality and will grow from, decisions that are reversible, and anything where holding on creates a bottleneck. Keep decisions with major irreversible consequences, conversations that require your authority or relationship, and work where you are the only person who can do it — while training someone so that changes. The most common failure is delegating and disappearing without providing context or staying available.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you structure a hiring process that actually predicts on-the-job performance?</strong></summary>
+
+Start by defining what success looks like in the role at six months, then build interview questions around that — not brainteasers or puzzles. Use a structured loop: recruiter screen, relevant technical screen, system design for senior roles, and behavioral interviews where past behavior predicts future behavior. Debrief as a panel before sharing scores. Disagreement between interviewers is important signal — do not average it into a lukewarm hire. Be honest about challenges when selling the role.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you manage up effectively as an engineering lead?</strong></summary>
+
+Share risks to commitments before they become misses, team health issues that might affect delivery, wins that touch leadership priorities, and specific asks like headcount or tech debt runway. The framing that works: "Here is what I am seeing, here is what I am doing about it, here is what I need from you." Do not shield your manager from bad news so long that they are blindsided, and do not escalate every problem before trying to solve it yourself.
+
+</details>
+
+<details>
+<summary><strong>Q: What is the right team size, and how do you know when to split a team?</strong></summary>
+
+Research clusters around 5-8 people as optimal. Below 4, you lose resilience — one person sick and the team stalls. Above 10, communication overhead compounds and accountability diffuses. Use Team Topologies as a framework: stream-aligned teams own product slices end-to-end, platform teams reduce cognitive load for others, enabling teams help acquire new capabilities then step back. If a team is too large, look for natural ownership boundaries to split along.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you balance addressing technical debt with feature delivery?</strong></summary>
+
+Create a sustainable ratio — roughly 20% of sprint capacity — dedicated to debt reduction continuously rather than waiting for a crisis. Frame technical debt to stakeholders in terms of delivery risk and velocity impact, not abstract engineering quality. The best leads make debt visible by tracking it in the same backlog as features, measuring its impact on incident frequency or deployment speed, and presenting it as an investment that accelerates future feature delivery.
+
+</details>
 
 ---
 

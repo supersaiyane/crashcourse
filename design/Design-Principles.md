@@ -29,6 +29,19 @@ Spend two days here. The rest of your design education will make more sense.
 | **Law of Demeter** | A module should only talk to its immediate collaborators — not reach through them |
 | **Principle of Least Surprise** | Code should behave the way a reader would expect it to |
 
+```mermaid
+graph LR
+    SOLID --> SRP[Single Responsibility]
+    SOLID --> OCP[Open/Closed]
+    SOLID --> LSP[Liskov Substitution]
+    SOLID --> ISP[Interface Segregation]
+    SOLID --> DIP[Dependency Inversion]
+    Beyond[Other Principles] --> DRY
+    Beyond --> KISS
+    Beyond --> YAGNI
+    Beyond --> CoI[Composition over Inheritance]
+```
+
 ---
 
 ## DAY 1 — SOLID Deep Dive
@@ -439,6 +452,80 @@ Before you finalize a design or submit a PR, run through this:
 ```
 
 If you answer no to any of these and you don't have a good reason, that's where to refactor.
+
+---
+
+## Top 10 Interview Questions
+
+<details>
+<summary><strong>Q: Explain the Single Responsibility Principle with a real-world example.</strong></summary>
+
+SRP means a class has one reason to change. A `UserService` that handles validation, persistence, and email notification has three reasons to change — a change to validation rules, a database migration, or a switch from SMTP to SendGrid all touch the same class. Extract `UserValidator`, `UserRepository`, and `WelcomeMailer`. Now each class changes for exactly one reason, and you can swap the mailer without risking the persistence logic.
+
+</details>
+
+<details>
+<summary><strong>Q: How does the Open/Closed Principle prevent regression?</strong></summary>
+
+OCP says code should be open for extension but closed for modification. When new requirements arrive, you add behavior without editing existing, tested code. A `ReportExporter` with if/elif for PDF, CSV, and Excel must be modified for every new format — each edit is a regression risk. Extract a `Formatter` interface with one class per format. Adding Excel means adding a class, not touching existing exporters. Existing code stays tested and stable.
+
+</details>
+
+<details>
+<summary><strong>Q: What is a Liskov Substitution Principle violation and how do you detect it?</strong></summary>
+
+LSP is violated when a subclass breaks the contract of its parent. The classic example: `Penguin` extends `Bird` but throws `NotImplementedError` on `fly()`. Code that takes a `Bird` and calls `fly()` breaks silently. You detect violations by looking for `isinstance` checks or `if type(x) ==` guards in code that is supposed to work generically. The fix: restructure the hierarchy so `FlyingBird` is separate from `Bird`, and code that needs flight takes `FlyingBird`.
+
+</details>
+
+<details>
+<summary><strong>Q: Why does Interface Segregation matter for testing?</strong></summary>
+
+Fat interfaces force implementers to depend on methods they do not use. A `WorkerInterface` with `work()`, `eat()`, and `sleep()` forces a `Robot` to throw `NotImplementedError` on `eat()` and `sleep()`. Worse, tests for `Robot` must mock or stub methods that are irrelevant. Smaller interfaces (`Workable`, `Feedable`, `Restable`) mean each implementation and its tests focus only on what matters. Less coupling, fewer mocks, clearer tests.
+
+</details>
+
+<details>
+<summary><strong>Q: How does Dependency Inversion enable testability?</strong></summary>
+
+DIP says high-level modules should depend on abstractions, not concrete implementations. An `OrderService` that instantiates `MySQLDatabase()` directly cannot be tested without MySQL running. Inject a `DatabasePort` interface instead, and tests pass in an `InMemoryDatabase`. Swapping databases in production becomes a config change. The business logic never knows or cares what storage technology backs it. This is the principle that makes Clean Architecture possible.
+
+</details>
+
+<details>
+<summary><strong>Q: What is the difference between DRY violation and accidental duplication?</strong></summary>
+
+DRY says every piece of knowledge has one canonical home. But two functions that share three lines of similar-looking code are not necessarily a DRY violation — they may represent different concepts that happen to look similar today. Extracting a shared helper couples two independent things. When one needs to change, the abstraction becomes a constraint. The rule of three helps: tolerate duplication once, consider abstracting on the third occurrence, and only when it is the same concept, not just similar syntax.
+
+</details>
+
+<details>
+<summary><strong>Q: When does YAGNI override good architecture?</strong></summary>
+
+YAGNI says do not build for requirements you do not have yet. "We might need multi-tenancy later" is speculation, not a requirement. YAGNI is not an argument against good architecture — it is an argument against speculative architecture. Build the right abstractions for today's code. When the new requirement arrives, refactor. A pluggable strategy pattern for a use case with one implementation is YAGNI waste. Two concrete implementations justify the abstraction; one does not.
+
+</details>
+
+<details>
+<summary><strong>Q: Why is Composition preferred over Inheritance in most cases?</strong></summary>
+
+Inheritance couples you to a parent's implementation — when the parent changes, all children change. Deep hierarchies become brittle and force you to inherit behavior you did not ask for. Composition lets you combine behaviors at runtime, swap components, and keep each piece independently testable. Use inheritance only for true "is-a" relationships that fully honor the parent's contract. For behavior reuse, compose small, focused objects.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you apply Separation of Concerns to infrastructure code?</strong></summary>
+
+Each tool owns one concern. Terraform provisions resources (infrastructure state). Ansible configures them (machine state). Terraform output feeds Ansible inventory — clean handoff, no overlap. Do not write Ansible tasks that call the AWS API; that is Terraform's concern. Each Terraform module provisions one resource group (SRP). Each Ansible role does one thing (SRP). This separation makes each layer independently testable, replaceable, and debuggable.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you use design principles in code review feedback?</strong></summary>
+
+Name the principle when you leave feedback — it makes comments actionable and depersonalized. Instead of "this is messy," say "this violates SRP — this class has two reasons to change: notification logic and persistence logic. Consider extracting `UserNotifier`." A function doing X, Y, and Z is SRP. A subclass raising NotImplementedError is LSP. A class instantiating its own dependencies is DIP. Citing the principle gives the author a mental model, not just a correction.
+
+</details>
 
 ---
 

@@ -16,6 +16,20 @@ The mental shift: you stop thinking of SQL as "queries you run" and start thinki
 
 ---
 
+
+```mermaid
+graph LR
+    Source[Raw Data] --> Staging[Staging Models]
+    Staging --> Intermediate[Intermediate Models]
+    Intermediate --> Marts[Mart Models]
+    Marts --> BI[BI / Analytics]
+    Tests[dbt Tests] --> Staging
+    Tests --> Marts
+    Docs[dbt Docs] --> Lineage[Lineage Graph]
+    Git[Git Repo] --> CI[CI/CD Pipeline]
+    CI --> Deploy[dbt Cloud / Airflow]
+```
+
 ## Part 1 — Vocabulary
 
 Before you write a line, these terms need to be solid.
@@ -673,3 +687,78 @@ Once you have dbt running in your warehouse, these are the natural continuations
 > Raw data is a liability. Tested, documented, version-controlled transformations are an asset. dbt makes the difference.
 
 You don't run dbt once and move on. You build models the way you build software — incrementally, with tests, with code review, with CI keeping production honest. Every model is a contract with the person querying it. Honor that contract and your warehouse becomes infrastructure people trust.
+
+## Top 10 Interview Questions
+
+<details>
+<summary><strong>Q: What is dbt and why has it become essential for modern data teams?</strong></summary>
+
+dbt (data build tool) transforms data inside the warehouse using SQL SELECT statements — you write the transformation logic, dbt handles the DDL (CREATE TABLE, INSERT). It brings software engineering practices to analytics: version-controlled SQL, modular models with refs, automated testing, documentation, and CI/CD. dbt is essential because it enables analysts (who know SQL) to build reliable, tested, documented data pipelines without writing Python or managing infrastructure.
+
+</details>
+
+<details>
+<summary><strong>Q: What is the dbt model layering convention and why does it matter?</strong></summary>
+
+The standard layers: staging (1:1 mapping to source tables — rename columns, cast types, basic cleaning), intermediate (business logic joins and transformations), and marts (final tables for specific business domains — finance mart, marketing mart). This layering matters because: it provides clear data lineage, makes models reusable (intermediate models feed multiple marts), isolates source changes (only staging models touch raw data), and makes testing targeted (test at each layer boundary).
+
+</details>
+
+<details>
+<summary><strong>Q: How do dbt tests work and what types should you implement?</strong></summary>
+
+Built-in tests: unique, not_null, accepted_values, relationships (referential integrity). Custom tests: SQL queries that return failing rows. dbt-expectations package adds statistical tests (column means, distributions). Implement: schema tests on every model (unique keys, not-null required columns), data tests on business rules (order amounts > 0, dates in valid ranges), and source freshness tests (data loaded within expected window). Run tests in CI on every PR and after every production run.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you handle incremental models in dbt?</strong></summary>
+
+Incremental models process only new or changed data instead of rebuilding the full table. Use the is_incremental() macro to filter rows: typically filter by a timestamp column (WHERE updated_at > (SELECT MAX(updated_at) FROM {{ this }})). Key considerations: choose the right incremental strategy (append, merge, delete+insert), handle late-arriving data (use a lookback window), and periodically full-refresh to correct any accumulated inconsistencies (--full-refresh flag).
+
+</details>
+
+<details>
+<summary><strong>Q: What is the difference between dbt Core and dbt Cloud?</strong></summary>
+
+dbt Core is the open-source CLI — you run it locally or in your own infrastructure (Airflow, CI/CD). dbt Cloud is Anthropic's managed service adding: web IDE, job scheduling, CI on PRs, documentation hosting, and the Semantic Layer. Choose Core for: full control, cost-sensitive teams, existing orchestration (Airflow). Choose Cloud for: teams without strong DevOps, faster setup, built-in scheduling and CI. Many teams start with Cloud for convenience and move to Core as they mature.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you implement CI/CD for dbt projects?</strong></summary>
+
+On PR: run dbt build --select state:modified+ (build and test only changed models and downstream dependencies) against a CI schema (separate from production). Post the test results and model changes as a PR comment. On merge to main: run dbt build in production. Use dbt Cloud's built-in CI or GitHub Actions with dbt Core. Key: the CI run must use a production-like environment (same warehouse, same source data) to catch real issues.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you manage dbt in a large organisation with multiple teams?</strong></summary>
+
+Use dbt packages for shared logic (macros, generic tests, utility models). Organise models by domain/team in directories. Use dbt groups and access modifiers (public/protected/private) to enforce boundaries — teams can only reference public models from other teams. Implement a shared staging layer owned by the data platform team, with domain-specific marts owned by domain teams. Centralise source definitions to avoid duplicate source declarations.
+
+</details>
+
+<details>
+<summary><strong>Q: What is the dbt Semantic Layer and why does it matter?</strong></summary>
+
+The Semantic Layer defines metrics (revenue, active users, conversion rate) as code in dbt, creating a single source of truth for metric definitions. Instead of each BI tool calculating 'revenue' differently, they all query the Semantic Layer which computes it consistently. This solves the 'why do these two dashboards show different revenue numbers?' problem. MetricFlow (dbt's metrics engine) handles time-series aggregation, dimensional slicing, and joins — BI tools become thin presentation layers.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you handle source freshness monitoring in dbt?</strong></summary>
+
+Define source freshness in sources.yml: specify the loaded_at_field (timestamp column) and warn_after/error_after thresholds. Run dbt source freshness to check whether sources have been updated within expected windows. Integrate into your orchestration: run freshness checks before dbt models to avoid processing stale data. Alert on freshness failures — in BFSI, stale data in a risk model can lead to incorrect credit decisions. Track freshness trends to identify degrading upstream pipelines.
+
+</details>
+
+<details>
+<summary><strong>Q: How does dbt handle database-specific SQL differences?</strong></summary>
+
+dbt uses Jinja macros and adapters to abstract database-specific SQL. The same model code works across Snowflake, BigQuery, Redshift, Databricks, and PostgreSQL (with minor adapter differences). Database-specific SQL goes in macros that dispatch to the correct implementation per adapter. Custom materializations handle database-specific DDL. However, not all SQL features are portable — window functions, JSON handling, and merge syntax vary. Test against your specific warehouse and avoid relying on adapter abstraction for complex SQL.
+
+</details>
+
+---
+

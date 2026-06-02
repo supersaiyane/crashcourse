@@ -24,6 +24,16 @@ DR planning forces you to think through failure before it happens. That is the o
 
 ---
 
+
+```mermaid
+graph LR
+    Trigger[Trigger Event] --> Plan[Plan / Assess]
+    Plan --> Execute[Execute Disaster Recovery]
+    Execute --> Review[Review / Measure]
+    Review --> Improve[Improve / Iterate]
+    Improve --> Plan
+```
+
 ## Part 1 — Vocabulary
 
 **RTO** — Recovery Time Objective. How long the system can be unavailable. Drives architecture choices (active-active vs. warm standby).
@@ -316,6 +326,82 @@ Banking, Financial Services, and Insurance (BFSI) workloads carry specific regul
 | Object storage replication | S3 CRR, GCS replication, Azure GRS |
 | Traffic shifting | AWS Traffic Manager, Istio, Route 53 weighted |
 | Drill reporting | Runbook + post-drill report template |
+
+---
+
+
+
+## Top 10 Interview Questions
+
+<details>
+<summary><strong>Q: What is Disaster Recovery and what problem does it solve?</strong></summary>
+
+Disaster Recovery addresses a specific need in modern engineering workflows. Understanding the core problem it solves — and the alternatives it replaced — is the foundation for every subsequent interview question. Frame your answer around the pain point first, then the solution.
+
+</details>
+
+<details>
+<summary><strong>Q: How does Disaster Recovery compare to its main alternatives?</strong></summary>
+
+Every tool exists in an ecosystem of alternatives. Be prepared to articulate the specific tradeoffs: when Disaster Recovery is the right choice, when an alternative is better, and what factors drive the decision (scale, team expertise, existing infrastructure, compliance requirements).
+
+</details>
+
+<details>
+<summary><strong>Q: What are the most common production pitfalls with Disaster Recovery?</strong></summary>
+
+Production experience is what separates senior from junior engineers. Common pitfalls include: misconfiguration that works in dev but fails at scale, security oversights, inadequate monitoring, and operational procedures that are untested until an incident occurs. Cite specific examples from your experience.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you monitor and observe Disaster Recovery in production?</strong></summary>
+
+Key metrics to track, alerting thresholds to set, dashboards to build, and log patterns to watch. Production monitoring should cover: health/liveness, performance (latency, throughput), capacity (resource utilisation), and business impact (error rates affecting users). Explain which metrics are leading indicators versus lagging.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you scale Disaster Recovery as load increases?</strong></summary>
+
+Scaling strategies depend on the bottleneck: horizontal scaling (add more instances), vertical scaling (bigger instances), caching (reduce load), sharding (distribute data), and async processing (decouple components). Explain which approach applies to Disaster Recovery and at what scale each strategy becomes necessary.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you handle security and access control with Disaster Recovery?</strong></summary>
+
+Security is non-negotiable in production. Cover: authentication and authorization mechanisms, secrets management (never in code), encryption (at rest and in transit), network security (firewalls, private networks), audit logging, and compliance requirements relevant to your industry.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you implement disaster recovery for Disaster Recovery?</strong></summary>
+
+DR planning requires defining RTO (recovery time objective) and RPO (recovery point objective), implementing backup strategies, testing restore procedures, and documenting runbooks. Explain your backup strategy, how you test restores, and what your recovery procedure looks like.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you automate Disaster Recovery deployment and configuration management?</strong></summary>
+
+Infrastructure as code, CI/CD pipelines, configuration management, and GitOps workflows. Explain how you version, test, deploy, and roll back changes. Cover: what is automated, what requires manual approval, and how you handle configuration drift.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you troubleshoot issues with Disaster Recovery in production?</strong></summary>
+
+A systematic debugging approach: check health endpoints, review recent changes (deploys, config changes), examine logs and metrics, reproduce the issue, identify root cause, fix, verify, and write a postmortem. Explain your actual debugging workflow with concrete examples.
+
+</details>
+
+<details>
+<summary><strong>Q: What are the best practices for Disaster Recovery that you have learned from experience?</strong></summary>
+
+Best practices that go beyond documentation: lessons learned from production incidents, configuration patterns that prevent common issues, testing strategies that catch bugs before production, and operational procedures that reduce toil. Share specific examples where following (or not following) a best practice had measurable impact.
+
+</details>
 
 ---
 

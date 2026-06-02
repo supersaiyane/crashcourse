@@ -4,6 +4,20 @@ Velero is a backup and restore tool for Kubernetes — cluster state, persistent
 
 **Prerequisite:** `Kubernetes.md` — you need a working understanding of namespaces, PVCs, and CRDs before this makes sense.
 
+
+```mermaid
+graph LR
+    Schedule[Backup Schedule] --> Velero[Velero Server]
+    Velero --> Snapshot[Volume Snapshots]
+    Velero --> Metadata[K8s Resource Backup]
+    Snapshot --> Storage[(Object Storage / S3)]
+    Metadata --> Storage
+    Storage --> Restore[Restore Process]
+    Restore --> Cluster[Target Cluster]
+    Velero --> Plugins[Storage Plugins]
+    Plugins --> AWS[AWS / GCP / Azure]
+```
+
 ---
 
 ## Part 0 — Why Velero Exists
@@ -468,3 +482,78 @@ velero restore create NAME --from-backup B --selector "app=my-api"
 
 > You do not have backups until you have tested restores.
 > Schedule the drill before you need the backup.
+
+## Top 10 Interview Questions
+
+<details>
+<summary><strong>Q: What is Velero and why do you need backup for Kubernetes?</strong></summary>
+
+Velero is an open-source tool for backing up and restoring Kubernetes cluster resources and persistent volumes. You need it because Kubernetes is declarative but not self-healing for data — if you accidentally delete a namespace, the resources and their persistent data are gone. Velero protects against: operator error (accidental deletion), cluster migration (move workloads between clusters), disaster recovery (restore to a new cluster after a failure), and upgrade safety (backup before major K8s version upgrades).
+
+</details>
+
+<details>
+<summary><strong>Q: How does Velero handle persistent volume backups?</strong></summary>
+
+Velero uses two approaches: volume snapshots (via CSI snapshotter or cloud-provider plugins — creates a point-in-time snapshot of the underlying disk) and file-level backup via Restic/Kopia (reads files from the volume and uploads to object storage). Snapshots are faster and more efficient but cloud-provider-specific. Restic/Kopia is portable (works anywhere) but slower for large volumes. For production, use snapshots for speed and Restic as a fallback for volumes that do not support snapshots.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you set up a disaster recovery strategy with Velero?</strong></summary>
+
+Schedule regular backups (hourly for critical namespaces, daily for others) to a cross-region object storage bucket. Test restores regularly — a backup you have never restored is not a backup. For DR: backup the source cluster, provision a new cluster in the DR region, install Velero pointing to the same backup location, and run velero restore. Include CRDs and cluster-scoped resources in backups. Document and test the full DR runbook quarterly. RTO depends on cluster provisioning time plus restore time.
+
+</details>
+
+<details>
+<summary><strong>Q: What is the difference between velero backup and velero schedule?</strong></summary>
+
+velero backup creates a one-time backup of specified resources. velero schedule creates a recurring backup on a cron schedule (e.g., every 6 hours). Schedules also support TTL (time-to-live) — automatically delete old backups after N days. In production, always use schedules for automated protection, and use one-time backups before risky operations (upgrades, migrations, large changes). Combine short-TTL frequent backups (hourly, keep 24h) with long-TTL infrequent backups (daily, keep 30d).
+
+</details>
+
+<details>
+<summary><strong>Q: How do you migrate workloads between clusters using Velero?</strong></summary>
+
+Backup the source cluster (or specific namespaces) with Velero. Install Velero on the target cluster pointing to the same backup storage location. Run velero restore on the target. Key considerations: the target cluster must have compatible storage classes (use --storage-class-mapping to remap), CRDs must be installed or included in the backup, and secrets/configmaps referenced by workloads must be included. Test the migration in a staging environment first. Velero handles resource UID regeneration automatically.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you handle backup of cluster-scoped resources like CRDs and ClusterRoles?</strong></summary>
+
+By default, Velero backs up only namespace-scoped resources in the selected namespaces. To include cluster-scoped resources, use --include-cluster-resources=true or specify them with --include-resources. For CRDs, include them explicitly — restoring a custom resource without its CRD will fail. Best practice: create a separate backup schedule for cluster-scoped resources (CRDs, ClusterRoles, StorageClasses) that runs less frequently but covers the full cluster infrastructure.
+
+</details>
+
+<details>
+<summary><strong>Q: What are Velero's backup hooks and how do you use them for application consistency?</strong></summary>
+
+Backup hooks run commands in pods before (pre-hook) or after (post-hook) the backup. Use pre-hooks to freeze the application state: flush database buffers (CHECKPOINT in PostgreSQL), pause write operations, or create application-level snapshots. Use post-hooks to resume operations. Without hooks, you risk backing up a database mid-transaction, resulting in an inconsistent backup. Define hooks via annotations on pods: pre.hook.backup.velero.io/command and post.hook.backup.velero.io/command.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you monitor and troubleshoot Velero backups?</strong></summary>
+
+Check backup status with velero backup describe <name> --details. Common failures: storage credentials expired (check the BackupStorageLocation status), volume snapshot failed (check CSI driver logs), timeout on large backups (increase --default-volumes-to-fs-backup-timeout). Monitor with Prometheus metrics: velero_backup_success_total, velero_backup_failure_total, velero_backup_duration_seconds, and velero_restore_success_total. Alert on backup failures immediately — a failed backup discovered during a disaster is the worst possible timing.
+
+</details>
+
+<details>
+<summary><strong>Q: How does Velero handle backup storage and what are the best practices?</strong></summary>
+
+Velero stores backups in object storage (S3, GCS, Azure Blob, MinIO). Best practices: use a dedicated bucket with versioning enabled, enable server-side encryption, configure cross-region replication for DR, use separate buckets for different environments (prod backups should not be in the same bucket as dev), and restrict access with IAM policies (Velero service account only). Enable object lock for compliance — prevents backup deletion even by admins. Monitor storage costs — large clusters with frequent backups can generate significant storage bills.
+
+</details>
+
+<details>
+<summary><strong>Q: When would you choose Velero over etcd snapshots for Kubernetes backup?</strong></summary>
+
+etcd snapshots back up the entire cluster state (all resources) but not persistent volume data. Velero backs up both resources and volume data, supports selective backup (specific namespaces, label selectors), and can restore to different clusters. Use etcd snapshots as a last-resort full-cluster recovery mechanism. Use Velero for operational backups (namespace-level, application-level), migrations, and DR scenarios where you need volume data. In production, use both: etcd snapshots for cluster-level recovery, Velero for application-level protection.
+
+</details>
+
+---
+

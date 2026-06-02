@@ -34,6 +34,19 @@ you must flip the "on" switch (enable the API) for each kind of part before usin
 
 ---
 
+
+```mermaid
+graph TD
+    GCP[Google Cloud Platform]
+    GCP --> Compute[Compute: GCE, GKE, Cloud Run]
+    GCP --> Storage[Storage: GCS, Persistent Disks]
+    GCP --> Network[Networking: VPC, Cloud LB, CDN]
+    GCP --> Data[Data: BigQuery, Cloud SQL, Spanner]
+    GCP --> AI[AI: Vertex AI, Gemini API]
+    GCP --> Ops[Operations: Cloud Monitoring, Logging]
+    Network --> Security[IAM / VPC-SC / Armor]
+```
+
 ## Part 1 — The AWS → GCP service translation (your real cheat sheet)
 
 | Need | AWS | GCP |

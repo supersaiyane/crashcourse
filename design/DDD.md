@@ -16,6 +16,20 @@ Two levels exist: **strategic** (how you carve up the problem) and **tactical** 
 
 ---
 
+
+```mermaid
+graph TD
+    Domain[Domain Layer]
+    Domain --> BC1[Bounded Context: Orders]
+    Domain --> BC2[Bounded Context: Inventory]
+    BC1 --> Agg1[Aggregate: Order]
+    BC1 --> Entity1[Entity: OrderLine]
+    BC1 --> VO1[Value Object: Money]
+    BC1 --> Event1[Domain Event: OrderPlaced]
+    BC2 --> Agg2[Aggregate: Product]
+    BC1 ---|Context Map| BC2
+```
+
 ## Part 1 — Vocabulary
 
 These terms have precise meanings in DDD. Use them precisely — imprecision here defeats the purpose.
@@ -297,3 +311,78 @@ This structure lets the Orders team and the Fulfillment team deploy independentl
 ## The Mantra
 
 > Model the business, not the database. Own your language, own your boundaries, own your events. When the domain expert and the code agree on what a word means, you're doing it right.
+
+## Top 10 Interview Questions
+
+<details>
+<summary><strong>Q: What is a Bounded Context and why is it the most important concept in DDD?</strong></summary>
+
+A Bounded Context is a boundary within which a domain model is consistent and terms have specific meanings. 'Customer' in the Sales context has different attributes and behaviour than 'Customer' in the Billing context. Without bounded contexts, teams create one giant shared model where every change affects everyone — the Big Ball of Mud. Bounded contexts enable: independent team ownership, independent deployment, clear contracts between contexts, and models that accurately reflect their specific subdomain.
+
+</details>
+
+<details>
+<summary><strong>Q: What is the difference between an Entity and a Value Object?</strong></summary>
+
+An Entity has identity — two entities with the same attributes but different IDs are different (User #123 vs User #456). A Value Object has no identity — it is defined entirely by its attributes (Money(100, 'USD') equals any other Money(100, 'USD')). Value Objects should be immutable. Use Entities for things you track individually (orders, users, products). Use Value Objects for descriptors (addresses, money, date ranges, coordinates). Preferring Value Objects reduces complexity and bug surface.
+
+</details>
+
+<details>
+<summary><strong>Q: What is an Aggregate and what is the Aggregate Root?</strong></summary>
+
+An Aggregate is a cluster of related objects treated as a single unit for data changes — it enforces invariants (business rules). The Aggregate Root is the entry point — all modifications go through it. Example: Order (root) contains OrderLines. You cannot modify an OrderLine directly; you call Order.addItem() which validates the business rules (max items, inventory check). External objects hold references only to the Aggregate Root, never to internal entities. Aggregates are the unit of consistency and transaction boundary.
+
+</details>
+
+<details>
+<summary><strong>Q: How do Domain Events enable loose coupling between Bounded Contexts?</strong></summary>
+
+When something significant happens in one context (OrderPlaced in Sales), it publishes a domain event. Other contexts (Inventory, Shipping, Billing) subscribe to events they care about and react independently. This decouples contexts: Sales does not know or care what Inventory does when an order is placed. Implementation: in-process event bus for same-service events, message broker (Kafka, RabbitMQ) for cross-service events. Events should be immutable facts about what happened, not commands.
+
+</details>
+
+<details>
+<summary><strong>Q: What is the difference between a Domain Service and an Application Service?</strong></summary>
+
+A Domain Service encapsulates domain logic that does not naturally belong to any single Entity or Value Object — e.g., a pricing strategy that depends on multiple aggregates. An Application Service orchestrates the workflow: loads aggregates from repositories, calls domain services, persists changes, and publishes events. Application Services are thin — they delegate business logic to the domain layer. A common mistake: putting business logic in Application Services, which leads to an anaemic domain model.
+
+</details>
+
+<details>
+<summary><strong>Q: What is an Anaemic Domain Model and why is it considered an anti-pattern?</strong></summary>
+
+An anaemic model has entities with only getters and setters (data bags) and all business logic in service classes. This violates OOP encapsulation — the model does not protect its own invariants. Example: instead of Order.addItem() enforcing max-items-per-order, a service checks the rule externally, meaning any code can bypass it. A rich domain model puts behaviour where the data is: Order knows its own rules. The anaemic model is an anti-pattern because it leads to scattered, duplicated, and inconsistent business rule enforcement.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you identify Bounded Contexts in a new project?</strong></summary>
+
+Listen to domain experts: when the same word means different things to different teams, you have found a context boundary. Event Storming is the best discovery technique: gather domain experts, map domain events on a timeline, group related events, and identify boundaries where language and models diverge. Also look at: organisational boundaries (Conway's Law), independently deployable units, and data ownership. Start with larger contexts and split as you learn — splitting too early creates unnecessary integration complexity.
+
+</details>
+
+<details>
+<summary><strong>Q: What is a Context Map and what are the common integration patterns?</strong></summary>
+
+A Context Map documents how Bounded Contexts relate to each other. Patterns: Shared Kernel (shared model subset — tight coupling, use sparingly), Customer-Supplier (upstream produces, downstream consumes — negotiate the contract), Conformist (downstream adopts upstream's model — no negotiation power), Anti-Corruption Layer (translate between models — protects your domain from external model changes), and Open Host Service (publish a well-defined API for multiple consumers). Choose based on team relationships and power dynamics.
+
+</details>
+
+<details>
+<summary><strong>Q: How does DDD apply to microservice architecture?</strong></summary>
+
+Each microservice typically maps to one Bounded Context (or a small number of closely related contexts). The microservice owns its data and domain model. Integration between microservices uses domain events (async via message broker) or API calls (sync, with Anti-Corruption Layers). DDD provides the strategic design (which services to build) while microservice architecture provides the technical implementation. Without DDD, microservices tend to become distributed monoliths — tightly coupled services with the wrong boundaries.
+
+</details>
+
+<details>
+<summary><strong>Q: What is Event Sourcing and how does it relate to DDD?</strong></summary>
+
+Event Sourcing stores the sequence of domain events (OrderPlaced, ItemAdded, OrderShipped) as the source of truth instead of the current state. The current state is derived by replaying events. Relationship to DDD: domain events are already a core DDD concept — Event Sourcing makes them the persistence mechanism. Benefits: complete audit trail, temporal queries (what was the state at time T?), easy debugging. Tradeoffs: complexity (event versioning, snapshots for performance), eventual consistency, and a different mental model for developers.
+
+</details>
+
+---
+

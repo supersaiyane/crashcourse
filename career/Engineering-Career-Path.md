@@ -10,6 +10,16 @@ Most engineers plateau not because they lack skill, but because they don't under
 
 This crash course gives you the mental model that most engineers piece together too late, in hindsight, after a missed promotion cycle.
 
+```mermaid
+graph TD
+    L3[L3 Junior — Task Scope] --> L4[L4 Mid — Feature Scope]
+    L4 --> L5[L5 Senior — Team Scope]
+    L5 --> FORK{IC or Manager?}
+    FORK -->|IC Track| L6[L6 Staff — Cross-Team]
+    FORK -->|Manager Track| EM[Engineering Manager]
+    L6 --> L7[L7 Principal — Org/Company]
+```
+
 ---
 
 ## Vocabulary
@@ -289,6 +299,80 @@ Use this with your manager every week or every two weeks:
 ```
 
 Keep it short. Most of the value is in item 2. If every 1:1 is comfortable, you are not using the time well.
+
+---
+
+## Top 10 Interview Questions
+
+<details>
+<summary><strong>Q: What is the difference between output and impact, and why does it matter for promotions?</strong></summary>
+
+Output is what you shipped — lines of code, features completed, tickets closed. Impact is the measurable outcome of that work on the business or users. Promotion committees care about impact, not output. "I built the caching layer" is output. "I designed a caching layer that reduced p99 latency from 800ms to 120ms, unblocking the mobile team's Q3 launch" is impact. Always frame your work in terms of what changed because you did it.
+
+</details>
+
+<details>
+<summary><strong>Q: How does the scope of work change from Senior to Staff engineer?</strong></summary>
+
+A Senior engineer executes well within a defined scope — typically their team. A Staff engineer defines the scope. Staff engineers identify problems the organization does not yet know it has, build alignment across teams that do not naturally coordinate, and make architectural decisions that shape systems for years. The influence radius extends to adjacent teams, and navigating org dynamics becomes a professional skill rather than an annoyance.
+
+</details>
+
+<details>
+<summary><strong>Q: What is the difference between mentorship and sponsorship in the context of career advancement?</strong></summary>
+
+A mentor gives you advice on how to grow. A sponsor spends their credibility on you in rooms where you are not present — they tell the calibration panel why you are ready. Both are valuable, but sponsorship is what directly moves the promotion needle. Build sponsor relationships by working on projects where senior people can directly observe your impact, then make that work visible through design docs, presentations, and cross-team collaboration.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you break out of the Senior-to-Staff promotion trap where you need Staff-level work to get promoted but need the title to get the work?</strong></summary>
+
+Do the work before you have the title. Find a problem that spans team boundaries, propose a solution, and own it end-to-end. Build the cross-team relationships in the process. Do not wait for your manager to hand you Staff-scope work — identify the gap yourself and ask to lead it. Your manager's job is to create opportunity and amplify visibility; your job is to do the work and build the narrative.
+
+</details>
+
+<details>
+<summary><strong>Q: When should an engineer consider switching companies versus staying for promotion?</strong></summary>
+
+Stay when you have a clear path to the next level, a manager investing in you, and work that grows your scope. Leave when none of those are true after a genuine attempt to change them — especially if you have been stuck at a level for more than two years with vague feedback. Tenure has compounding value through trust, systems knowledge, and sponsor relationships. Starting over resets all of that, so weigh the six-to-twelve month rebuild cost against the potential acceleration.
+
+</details>
+
+<details>
+<summary><strong>Q: How should you structure your 1:1s with your manager to maximize career growth?</strong></summary>
+
+Do not use 1:1s for status updates — those belong in tickets and standups. Bring decisions you are wrestling with, surface risks early, share career goals explicitly, and ask what it would take to be considered for the next level. A useful structure: one thing going well (brief), one thing stuck or risky (the real conversation), one career question, and one piece of feedback for your manager. If every 1:1 is comfortable, you are not using the time well.
+
+</details>
+
+<details>
+<summary><strong>Q: What makes a strong promotion packet?</strong></summary>
+
+Three components: an impact narrative that describes outcomes not outputs, written evidence like design docs, postmortem writeups, cross-team feedback, and data on results, and at least two sponsors beyond your manager who can vouch for your impact in calibration. If you cannot write the packet yourself, the evidence probably does not exist yet. Start creating artifacts now for the next cycle — design docs, architecture proposals, and recap emails are all evidence.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you decide between the IC track and the management track?</strong></summary>
+
+The honest question is whether you want to grow by going deeper technically and wider in cross-team influence, or by building and developing people. Management is not a promotion — it is a career change. The skills that make a great engineer are not the skills that make a great manager. Staff-plus engineers carry enormous influence without managing anyone. If you go into management expecting it to be "senior engineer plus people stuff," you will struggle.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you make your work visible without coming across as self-promotional?</strong></summary>
+
+Visibility is not self-promotion — it is how organizations function. Write design docs and share them broadly. Present results in cross-team syncs. Send recap emails after shipping something significant. Request skip-level meetings quarterly to share context on your work and ask about org direction. The goal is to ensure the right people can describe your impact clearly, because in calibration rooms, work that nobody can articulate does not get rewarded.
+
+</details>
+
+<details>
+<summary><strong>Q: What is the most common reason engineers plateau at the Senior level?</strong></summary>
+
+Almost always one of three things: no clear picture of what the next level looks like at their specific company, no sponsor, or scope that is too narrow to build a Staff-level case. Many engineers spend a decade at L5 doing excellent work within their team but never extending their influence across team boundaries. The fix is deliberate: understand your company's Staff expectations explicitly, build sponsor relationships, and seek ambiguous cross-team problems rather than staying in comfortable, well-defined work.
+
+</details>
 
 ---
 

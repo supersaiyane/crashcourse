@@ -42,6 +42,20 @@ You need these terms to be precise — in design docs, in interviews, and in pos
 
 **Trade-off** — The conscious acceptance that optimizing for one property degrades another. Consistency vs. availability. Latency vs. durability. Operational simplicity vs. feature velocity. Good HLD makes trade-offs explicit. Bad HLD pretends they do not exist.
 
+```mermaid
+graph LR
+    Client --> LB[Load Balancer]
+    LB --> GW[API Gateway]
+    GW --> Auth[Auth Service]
+    GW --> Svc1[Service A]
+    GW --> Svc2[Service B]
+    Svc1 --> DB[(Primary DB)]
+    Svc1 --> Cache[(Cache)]
+    Svc2 --> Queue[Message Queue]
+    Queue --> Worker[Async Workers]
+    Worker --> DB
+```
+
 ---
 
 ## DAY 1 — Building the HLD
@@ -433,6 +447,80 @@ Security: [auth mechanism at each boundary]
 Open Questions:
 - [OQ-1]
 ```
+
+---
+
+## Top 10 Interview Questions
+
+<details>
+<summary><strong>Q: How do you approach requirements gathering before drawing an HLD?</strong></summary>
+
+Split requirements into functional (what the system does) and non-functional (how well it does it). Pin down NFRs first — availability targets, latency budgets, compliance constraints, data retention — because they invalidate half your component choices if discovered late. In interviews, ask "what is the expected scale?" and "what are the consistency requirements?" before drawing anything. These questions signal you know that NFRs drive architecture.
+
+</details>
+
+<details>
+<summary><strong>Q: What is a failure mode analysis and why is it the most commonly omitted part of HLD?</strong></summary>
+
+For each component, document three things: blast radius (what breaks when it fails), detection (how you know it failed), and mitigation (what the system does while degraded). Most HLD documents skip this entirely because teams only think about the happy path. The result: you discover failure modes in production instead of on paper. Model both hard failures (component down) and latency failures (component slow) — a slow synchronous dependency can cascade worse than a dead one.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you decide between synchronous and asynchronous communication between components?</strong></summary>
+
+Synchronous calls couple latency budgets — if Service A calls B synchronously, A's p99 is at least B's p99. Use sync when the caller genuinely needs an immediate response (user-facing queries, real-time validation). Asynchronous messaging decouples latency but introduces eventual consistency. Use async for state changes that other services react to (order placed, payment processed). The decision shapes your architecture's availability and latency characteristics.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you perform capacity estimation in an HLD interview?</strong></summary>
+
+Work through: peak RPS (DAU times actions per user, divided by seconds, multiplied by a peak factor of 3-5x), data volume per request, storage growth at 3-year horizon, bandwidth at peak, and replication factor. Show the math explicitly. "10 million DAU, 5 transactions/user/day, 50 million daily, ~580 RPS average, 5x peak = 2,900 RPS." These numbers determine whether a single database suffices or you need sharding, and whether your queue handles thousands or millions per second.
+
+</details>
+
+<details>
+<summary><strong>Q: What is the difference between SLA and SLO, and how do they map to components?</strong></summary>
+
+SLA is the contractual commitment to customers — breaching it has financial or legal consequences. SLO is the internal target that gives you a safety buffer below the SLA. Mapping SLOs to individual components tells you which cannot afford downtime (payment authorization at 99.99%) and which can tolerate degradation (analytics dashboard at 99.9%). Not every component needs the same availability tier — designing them all to the highest SLO wastes resources and complexity.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you structure the first 45 minutes of an HLD interview?</strong></summary>
+
+Minutes 0-5: clarify requirements and NFRs. Minutes 5-15: sketch the happy path with major components and data flow. Minutes 15-25: justify technology choices tied to requirements. Minutes 25-35: failure modes, scaling the bottleneck, degradation strategies. Minutes 35-45: go deep where the interviewer probes. The most common mistake is drawing the happy path and stopping — failure analysis and scaling are where most candidates lose points.
+
+</details>
+
+<details>
+<summary><strong>Q: What are trust boundaries and why do they matter in HLD?</strong></summary>
+
+A trust boundary is any line where data crosses from a less-trusted to a more-trusted context. At each boundary, document: authentication mechanism (mTLS, JWT, API key), authorization model (RBAC, ABAC), data classification crossing the boundary (PII, cardholder data), and encryption requirements. In a payment system, the boundary between your gateway and payment processor is a PCI boundary. Security at HLD is about identifying where controls are needed so the security review has a map.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you choose between a relational database and a NoSQL store in HLD?</strong></summary>
+
+Choose relational (PostgreSQL) when you need ACID transactions, strong consistency, complex joins, and structured relationships — financial ledgers, audit records. Choose NoSQL (DynamoDB, MongoDB) when you need horizontal write scaling, flexible schema, or specific access patterns that relational handles poorly. The decision is driven by your NFRs: consistency requirements, write volume, query patterns, and operational complexity tolerance. Document the rationale so future engineers do not reverse-engineer it.
+
+</details>
+
+<details>
+<summary><strong>Q: What is deployment topology and why does it affect blast radius?</strong></summary>
+
+Deployment topology describes your system at region and availability zone level — single region vs multi-region, active-active vs active-passive, which components are stateless vs stateful, and your database replication model. If all components are in a single AZ, a zone failure takes you down. Multi-AZ within a region handles zone failures. Multi-region handles regional outages but adds complexity (data replication latency, conflict resolution). The topology directly determines your worst-case blast radius.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you avoid over-specifying or under-specifying an HLD?</strong></summary>
+
+Over-specifying: if your HLD has database schema columns or function signatures, you have gone too deep — that is LLD territory. Keep it at component and contract level. Under-specifying: "high availability" is not a requirement — "99.99% availability on the payment path, measured monthly" is. Vague NFRs produce architectures that satisfy nothing specifically. The right level: components with clear responsibilities, justified technology choices, defined API contracts, capacity estimates, and explicit tradeoffs.
+
+</details>
 
 ---
 

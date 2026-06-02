@@ -64,6 +64,13 @@ Before you write a single line, internalize these terms. They appear everywhere.
 
 ---
 
+
+```mermaid
+graph LR
+    Input[Input] --> Airflow[Airflow]
+    Airflow --> Output[Output]
+```
+
 ## DAY 1 — Getting Running
 
 ### Install via Docker Compose
@@ -719,3 +726,78 @@ You are not gluing cron jobs together anymore. Each task is a node in a graph wi
 ---
 
 *Reads: 0/4. Tier reached: PEAK. Lessons added: 0.*
+
+## Top 10 Interview Questions
+
+<details>
+<summary><strong>Q: What is a DAG in Airflow and how does it differ from a traditional cron job?</strong></summary>
+
+A DAG (Directed Acyclic Graph) defines task dependencies — task B runs only after task A succeeds. Unlike cron, Airflow handles: dependency management (task ordering), retry logic (automatic retries with backoff), backfilling (run historical dates), monitoring (web UI shows task status, logs, duration), and alerting (email/Slack on failure). A cron job is a single scheduled command; a DAG is an orchestrated workflow with visibility and error handling.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you handle task dependencies and data passing between tasks?</strong></summary>
+
+Dependencies are set with >> operator or set_upstream/set_downstream. Data passing uses XCom (cross-communication): tasks push small values to XCom, downstream tasks pull them. For large data, pass file paths or database table names via XCom, not the data itself — XCom is stored in the metadata database and is not designed for large payloads. The TaskFlow API (@task decorator) simplifies this with implicit XCom via function return values.
+
+</details>
+
+<details>
+<summary><strong>Q: What are the different executor types and when do you use each?</strong></summary>
+
+SequentialExecutor (development only — runs one task at a time), LocalExecutor (single machine, parallel tasks via processes — small to medium workloads), CeleryExecutor (distributed workers via Celery/Redis/RabbitMQ — production scale), KubernetesExecutor (spins up a pod per task — dynamic scaling, isolation, cloud-native). Choose KubernetesExecutor for: varied resource requirements per task, cost optimisation (scale to zero between runs), and task isolation. CeleryExecutor for: low-latency task startup and persistent workers.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you test Airflow DAGs before deploying to production?</strong></summary>
+
+Unit test: validate DAG structure (no import errors, correct dependencies) with dag.test() or pytest. Integration test: run tasks locally against test data. Use airflow dags test CLI command to run a full DAG for a specific date. Test idempotency by running the same date twice — results should be identical. Validate with airflow dags list and check for import errors. In CI: parse all DAGs (catches syntax errors), run structural tests, and optionally run against a staging environment.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you handle failures and retries in Airflow?</strong></summary>
+
+Set retries and retry_delay on tasks or DAG defaults. Use retry_exponential_backoff for transient failures. Configure on_failure_callback for custom alerting (Slack, PagerDuty). Use trigger rules: all_success (default), all_failed, one_success, one_failed, none_failed for branching logic. For manual intervention: mark tasks as success/failed in the UI, or clear a task to re-run it and all downstream dependencies. Design tasks to be idempotent so retries are safe.
+
+</details>
+
+<details>
+<summary><strong>Q: What is the difference between Airflow, Prefect, and Dagster?</strong></summary>
+
+Airflow: mature, large ecosystem, DAG-as-code, can be complex to operate. Prefect: modern, Pythonic, better local testing, hybrid execution model (cloud orchestration, local execution). Dagster: software-defined assets (data-centric rather than task-centric), strong typing, integrated testing. Choose Airflow for: established teams, large plugin ecosystem, complex scheduling. Prefect for: simpler developer experience, cloud-managed orchestration. Dagster for: data-centric workflows where assets (tables, files) are first-class.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you deploy and scale Airflow in production?</strong></summary>
+
+Use the official Helm chart for Kubernetes deployment. Components: webserver (UI), scheduler (DAG parsing and task scheduling), workers (task execution), metadata database (PostgreSQL recommended), and message broker (Redis for CeleryExecutor). Scale workers horizontally based on task queue depth. Use KubernetesExecutor for dynamic scaling. Enable DAG serialization to reduce scheduler memory. Monitor: scheduler heartbeat, task queue length, worker resource usage, and DAG parse time.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you manage secrets and connections in Airflow?</strong></summary>
+
+Use Airflow's Connections (Admin > Connections in UI) for database credentials, API keys, and service accounts. Enable a secrets backend (AWS Secrets Manager, Vault, GCP Secret Manager) so secrets are fetched at runtime, not stored in Airflow's metadata DB. Never hardcode secrets in DAG files. Use Variables for non-secret configuration. For Kubernetes deployments, mount secrets as environment variables or use the secrets backend. Rotate credentials without redeploying by updating the secrets backend.
+
+</details>
+
+<details>
+<summary><strong>Q: What are sensors in Airflow and when should you use them?</strong></summary>
+
+Sensors are special operators that wait for a condition: FileSensor (file appears), ExternalTaskSensor (another DAG's task completes), HttpSensor (API returns expected response), SqlSensor (query returns rows). Use sensors when your workflow depends on external events. Caveat: sensors occupy a worker slot while waiting — use mode='reschedule' (releases the slot between checks) instead of mode='poke' (holds the slot) for long waits. For very long waits, consider deferrable operators (async, no worker slot used).
+
+</details>
+
+<details>
+<summary><strong>Q: How do you implement data quality checks in Airflow pipelines?</strong></summary>
+
+Add validation tasks after data loading: use SQL checks (row counts, null checks, uniqueness), Great Expectations integration (schema validation, statistical tests), or custom Python operators that assert data quality rules. Fail the DAG if quality checks fail — this prevents bad data from propagating downstream. Use Airflow's BranchPythonOperator to route to different paths based on quality results (alert vs continue). Track quality metrics over time in a dedicated dashboard.
+
+</details>
+
+---
+

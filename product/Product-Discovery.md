@@ -35,6 +35,20 @@ you could sweep the detector across the surface first, find the strong signals, 
 precisely. Discovery does not guarantee you find gold, but it stops you from digging a hundred
 empty holes.
 
+```mermaid
+graph TD
+    A[Desired Outcome] --> B[Opportunities]
+    B --> C[User Problem 1]
+    B --> D[User Problem 2]
+    B --> E[User Problem 3]
+    C --> F[Solution A]
+    C --> G[Solution B]
+    D --> H[Solution C]
+    F --> I[Assumption Test]
+    G --> J[Assumption Test]
+    H --> K[Assumption Test]
+```
+
 ---
 
 ## Part 1 — The vocabulary
@@ -351,6 +365,80 @@ Start at the lowest fidelity that answers the question
 Share insights with the whole team
 Involve PM + designer + tech lead
 ```
+
+---
+
+## Top 10 Interview Questions
+
+<details>
+<summary><strong>Q: How do you balance discovery with delivery when there is pressure to ship?</strong></summary>
+
+Discovery and delivery run in parallel, not in sequence. While the team delivers Sprint N features, the PM and designer discover Sprint N+2 opportunities. Dedicate a fixed percentage of time — even 20% — to continuous discovery. The alternative is worse: shipping features nobody needs wastes far more time than a weekly user interview. Frame discovery as risk reduction, not delay.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you know when to stop discovery and start building?</strong></summary>
+
+Stop when you have validated that the problem is real (at least 5 users described it independently), tested the riskiest assumptions about your solution, and the team has a shared understanding of the direction. Remaining unknowns should be better resolved by building and shipping than by more research. If the next interview teaches you nothing new, that is the signal to commit.
+
+</details>
+
+<details>
+<summary><strong>Q: A stakeholder says "I already know what users want — just build it." How do you respond?</strong></summary>
+
+Acknowledge their experience and insight. Then propose a lightweight check: "Let me talk to 5 users this week to validate that and sharpen the requirements. If they confirm, we build with confidence. If they reveal something unexpected, we save engineering weeks." Frame discovery not as doubting their judgment but as de-risking their investment.
+
+</details>
+
+<details>
+<summary><strong>Q: What is the difference between the four risks of product development?</strong></summary>
+
+Desirability: will users actually want this? Usability: can they figure out how to use it? Feasibility: can engineering build it within constraints? Viability: does it work for the business (revenue, compliance, brand)? Most teams only check feasibility. The other three are where expensive failures hide. Discovery should address all four before committing to build.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you avoid confirmation bias in customer interviews?</strong></summary>
+
+Ask about past behaviour, not future intentions — "tell me about the last time" instead of "would you use." Have someone else review your interview notes and challenge your interpretation. Ask disconfirming questions on purpose. Interview for the problem, not the solution. If you leave every interview more confident in your hypothesis, you are likely hearing what you want to hear.
+
+</details>
+
+<details>
+<summary><strong>Q: Explain the Opportunity Solution Tree and how you would use it.</strong></summary>
+
+The OST connects a desired outcome (from OKRs) to user opportunities (problems worth solving) to potential solutions to assumption tests. It forces you to consider multiple user problems before jumping to a solution, and multiple solutions before committing to one. I use it to structure discovery: the outcome tells me where to look, interviews reveal opportunities, and assumption tests validate solutions before building.
+
+</details>
+
+<details>
+<summary><strong>Q: What makes a good assumption test, and how do you choose which assumptions to test first?</strong></summary>
+
+A good test is cheap, fast, and targets a single assumption. Plot assumptions on importance (if wrong, the solution fails) versus evidence (how much you already know). Test high-importance, low-evidence assumptions first. A fake door test (measuring clicks on a button that does not exist yet) can validate demand in hours. A concierge test can validate the experience in days. Spend hours testing, not months building.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you conduct a customer interview that reveals real problems instead of polite agreement?</strong></summary>
+
+Ask about specific past experiences, not hypotheticals. Follow the energy — when someone's voice changes or they lean forward, dig deeper. Let silences sit — people fill them with things they were not going to say. Listen 80%, talk 20%. Never lead with your solution. The goal is to understand their world, not to get validation for your idea.
+
+</details>
+
+<details>
+<summary><strong>Q: What is the difference between a prototype and an MVP?</strong></summary>
+
+A prototype is a disposable tool for learning — it tests assumptions before you build. An MVP is a real, shippable product with the minimum functionality needed to deliver value and collect real-world data. Prototypes come before the decision to build. MVPs come after. You should be embarrassed by your prototype's quality; your MVP should be small but genuinely useful.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you involve engineering in discovery without pulling them away from delivery?</strong></summary>
+
+Include the tech lead in one customer interview per week — it takes 30 minutes and gives them firsthand user context. Involve engineering in feasibility assessments during assumption mapping. Share interview highlights in a shared space the whole team can access. When engineers hear user pain directly, they build better solutions and challenge assumptions earlier, which saves time in delivery.
+
+</details>
 
 ---
 

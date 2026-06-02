@@ -18,6 +18,20 @@ Concurrent access is handled by **Multi-Version Concurrency Control (MVCC)**. Ev
 
 ---
 
+
+```mermaid
+graph LR
+    Client[Client] --> ConnPool[Connection Pool]
+    ConnPool --> Postgres[PostgreSQL Server]
+    Postgres --> WAL[Write-Ahead Log]
+    WAL --> Replica[(Streaming Replica)]
+    Postgres --> SharedBuf[Shared Buffers]
+    SharedBuf --> Disk[(Data Files)]
+    Postgres --> Vacuum[Autovacuum]
+    Postgres --> Stats[Statistics Collector]
+    Stats --> Planner[Query Planner]
+```
+
 ## Part 1 — The vocabulary
 
 Before you touch commands, get these concepts anchored. You'll see them repeatedly.
@@ -756,6 +770,81 @@ SELECT name, setting, context
 FROM pg_settings
 WHERE context IN ('postmaster', 'sighup');
 ```
+
+---
+
+
+## Top 10 Interview Questions
+
+<details>
+<summary><strong>Q: What is MVCC in PostgreSQL and why does it matter?</strong></summary>
+
+Multi-Version Concurrency Control allows readers and writers to operate simultaneously without blocking each other. Each transaction sees a snapshot of the database at its start time. When a row is updated, PostgreSQL creates a new version rather than overwriting — old versions remain visible to transactions that started before the update. This is why PostgreSQL needs VACUUM: dead tuple versions accumulate and must be cleaned up. MVCC enables high concurrency but requires understanding of transaction isolation levels and vacuum tuning.
+
+</details>
+
+<details>
+<summary><strong>Q: How does the Write-Ahead Log (WAL) work and why is it critical?</strong></summary>
+
+WAL ensures durability: every change is written to the WAL (sequential log on disk) before the actual data files are modified. On crash, PostgreSQL replays the WAL to recover committed transactions. WAL also enables streaming replication (replicas apply WAL records) and point-in-time recovery (PITR — replay WAL to any timestamp). Key tuning: wal_level (replica or logical), max_wal_size (checkpoint frequency), and archive_mode (for PITR). WAL is the foundation of PostgreSQL's reliability guarantees.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you diagnose and fix slow queries in PostgreSQL?</strong></summary>
+
+Use EXPLAIN ANALYZE to see the actual execution plan with timing. Look for: sequential scans on large tables (add an index), nested loop joins on large datasets (might need hash/merge join), poor row estimates (run ANALYZE to update statistics), and disk-heavy sorts (increase work_mem). Check pg_stat_statements for the top queries by total time. Common fixes: add targeted indexes (partial, covering, GIN for arrays/JSONB), rewrite subqueries as joins, add appropriate WHERE clauses, and ensure statistics are current.
+
+</details>
+
+<details>
+<summary><strong>Q: What is autovacuum and how do you tune it for production?</strong></summary>
+
+Autovacuum reclaims space from dead tuples (created by MVCC updates/deletes) and updates planner statistics. Default settings are conservative. For high-write workloads: reduce autovacuum_vacuum_cost_delay (make vacuum faster), increase autovacuum_max_workers for large databases, lower autovacuum_vacuum_scale_factor for large tables (trigger vacuum sooner). Monitor: pg_stat_user_tables.n_dead_tup and last_autovacuum. Symptoms of inadequate vacuuming: table bloat, index bloat, and transaction ID wraparound warnings.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you set up streaming replication in PostgreSQL?</strong></summary>
+
+Configure the primary: set wal_level=replica, max_wal_senders, and create a replication user. On the replica: use pg_basebackup to take a base backup, configure primary_conninfo in postgresql.conf, and start. The replica streams WAL from the primary in real-time. For HA, use synchronous_commit=on with synchronous_standby_names to ensure no data loss on failover. Use Patroni or repmgr for automated failover management. Monitor replication lag via pg_stat_replication.
+
+</details>
+
+<details>
+<summary><strong>Q: What are the different index types in PostgreSQL and when do you use each?</strong></summary>
+
+B-tree (default — equality and range queries, most use cases), Hash (equality only — rarely better than B-tree), GIN (arrays, JSONB, full-text search — inverted index), GiST (geometric data, full-text, range types), BRIN (very large tables with naturally ordered data — uses minimal storage), and SP-GiST (non-balanced data structures like tries). Use B-tree for 90% of cases. GIN for JSONB containment queries. BRIN for time-series tables with timestamp ordering. Partial indexes for selective queries.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you handle connection management in PostgreSQL?</strong></summary>
+
+PostgreSQL forks a process per connection (expensive — each uses ~10MB). Direct connections from applications with many instances exhaust limits quickly. Use a connection pooler: PgBouncer (lightweight, transaction-mode pooling — connections are returned to the pool between transactions) or PgPool-II (adds load balancing and query caching). Set max_connections conservatively (100-300, not thousands), and let the pooler multiplex. Monitor: pg_stat_activity for active connections and wait events.
+
+</details>
+
+<details>
+<summary><strong>Q: What is the difference between logical and physical replication?</strong></summary>
+
+Physical replication streams the entire WAL — byte-for-byte copy of all databases. Logical replication streams decoded changes (INSERT, UPDATE, DELETE) for selected tables. Use physical for HA failover (exact replica). Use logical for: selective table replication, cross-version replication (upgrading by replicating to a newer version), data integration (replicating to analytics systems), and multi-master setups (via BDR or Citus). Logical has more overhead but more flexibility.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you perform zero-downtime schema migrations?</strong></summary>
+
+Key rules: never lock tables for long (avoid ALTER TABLE on large tables without CONCURRENTLY). Add columns with DEFAULT NULL (instant in PG 11+). Create indexes with CREATE INDEX CONCURRENTLY (no lock). Drop columns by first removing application references, then dropping. For type changes: add a new column, backfill in batches, switch application reads, drop the old column. Use tools like pg_repack for table rewrites without locks. Test migrations against production-sized data to estimate lock time.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you backup and restore PostgreSQL in production?</strong></summary>
+
+Three strategies: pg_dump (logical — portable, table-level, slower for large DBs), pg_basebackup + WAL archiving (physical — fast, enables PITR), and filesystem snapshots (fastest for very large DBs, requires WAL for consistency). For production BFSI: use pg_basebackup with continuous WAL archiving to S3 for PITR capability. Tools like pgBackRest handle compression, encryption, incremental backups, and parallel restore. Test restores regularly — backup without tested restore is wishful thinking.
+
+</details>
 
 ---
 

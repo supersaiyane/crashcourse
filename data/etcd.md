@@ -41,6 +41,13 @@ Every `kubectl apply` you run lands in etcd. The API server translates your YAML
 
 ---
 
+
+```mermaid
+graph LR
+    Input[Input] --> etcd[etcd]
+    etcd --> Output[Output]
+```
+
 ## DAY 1 — Getting Your Hands Dirty
 
 ### Install etcd locally
@@ -468,3 +475,78 @@ etcdctl auth enable
 ## The Mantra
 
 Your cluster is only as healthy as its etcd. Back up before you touch the control plane. Compact before the quota bites. Test the restore before the incident forces you to. And when something goes wrong at 2 AM, remember: the data is almost certainly still there — you just need the last good snapshot and four commands to bring it back.
+
+## Top 10 Interview Questions
+
+<details>
+<summary><strong>Q: What is etcd and why does Kubernetes depend on it?</strong></summary>
+
+etcd is a distributed key-value store that provides strong consistency via the Raft consensus protocol. Kubernetes stores all cluster state in etcd — pods, services, deployments, secrets, configmaps, RBAC rules, everything. etcd's consistency guarantees ensure that all control plane components see the same cluster state. If etcd fails, the Kubernetes control plane cannot function — no new scheduling, no API responses, no updates. This makes etcd the most critical component in a Kubernetes cluster.
+
+</details>
+
+<details>
+<summary><strong>Q: How does the Raft consensus protocol work in etcd?</strong></summary>
+
+Raft elects a leader that handles all writes. The leader replicates writes to followers — once a majority (quorum) acknowledges, the write is committed. If the leader fails, followers hold an election to choose a new leader. This ensures consistency: a committed write is guaranteed to survive any single node failure. Key parameters: election timeout (how long a follower waits before starting an election) and heartbeat interval. The quorum formula: (N/2)+1 — a 3-node cluster tolerates 1 failure, 5-node tolerates 2.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you size an etcd cluster for production?</strong></summary>
+
+Use 3 nodes for most production clusters (tolerates 1 failure) or 5 nodes for critical clusters (tolerates 2 failures). Never use even numbers (split-brain risk). Hardware: SSDs are mandatory (etcd is write-heavy with fsync), 8GB+ RAM, dedicated disks (not shared with other workloads). Network latency between nodes should be < 10ms. etcd performance degrades with large values (> 1MB) and many watchers. Monitor: wal_fsync_duration, backend_commit_duration, and database size.
+
+</details>
+
+<details>
+<summary><strong>Q: What are the common failure modes of etcd and how do you handle them?</strong></summary>
+
+Leader failure: Raft elects a new leader automatically (seconds of unavailability). Quorum loss: if majority of nodes are down, etcd is read-only — restore from backup or rejoin recovered nodes. Disk full: etcd stops accepting writes — compact and defrag, or expand disk. Slow disk: high fsync latency causes leader elections and instability — use SSDs, avoid shared disks. Database too large: compact old revisions, enable auto-compaction. Monitor: mvcc_db_total_size, leader changes, and failed proposals.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you backup and restore etcd?</strong></summary>
+
+Use etcdctl snapshot save for point-in-time backups. Automate with a cron job or Kubernetes CronJob. Store backups in external storage (S3) encrypted at rest. For restore: stop all etcd members, restore the snapshot to each member using etcdctl snapshot restore (each member gets its own data directory), and restart. Important: after restore, all members must restore from the same snapshot. For Kubernetes, etcd backup = entire cluster state backup. Test restores regularly.
+
+</details>
+
+<details>
+<summary><strong>Q: What is the difference between etcd v2 and v3 API?</strong></summary>
+
+v3 is the current API with significant improvements: flat binary keyspace (instead of hierarchical), lease-based TTL (instead of per-key TTL), transactions (multi-key atomic operations), more efficient storage (boltdb backend), and gRPC-based protocol. v3 also supports range queries and pagination, essential for large clusters. Kubernetes uses v3 exclusively. v2 is deprecated and removed in etcd 3.6+. Always use v3 API (etcdctl with ETCDCTL_API=3 environment variable).
+
+</details>
+
+<details>
+<summary><strong>Q: How does etcd's watch mechanism work?</strong></summary>
+
+Watch lets clients subscribe to changes on specific keys or key ranges. When a watched key changes, etcd pushes an event (PUT or DELETE) to the client in real-time. Kubernetes uses watches extensively — the controller manager watches for resource changes and reconciles. Watches are multiplexed over a single gRPC stream for efficiency. If a client disconnects, it can resume watching from a specific revision number to avoid missing events. etcd stores a configurable history of revisions for this purpose.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you secure etcd in production?</strong></summary>
+
+Enable TLS for all communication: client-to-server and peer-to-peer (server-to-server). Use client certificate authentication (mutual TLS) — only clients with valid certificates can access etcd. Enable RBAC for fine-grained access control (Kubernetes uses a single root user, but multi-tenant setups need role-based restrictions). Network isolation: etcd should be accessible only from the Kubernetes control plane, not from worker nodes or external networks. Encrypt secrets at rest using Kubernetes encryption providers.
+
+</details>
+
+<details>
+<summary><strong>Q: What is compaction and defragmentation in etcd?</strong></summary>
+
+etcd stores all key revisions (history of every change). Compaction removes revisions older than a specified revision number — freeing logical space but not physical disk. Defragmentation reclaims the physical disk space after compaction. Enable auto-compaction (--auto-compaction-retention=1h for Kubernetes). Run defrag during maintenance windows — it briefly blocks reads/writes. Without regular compaction, the database grows unboundedly. Monitor mvcc_db_total_size and compare to actual key count.
+
+</details>
+
+<details>
+<summary><strong>Q: How does etcd perform under network partitions?</strong></summary>
+
+During a network partition, the side with the majority (quorum) continues operating normally — reads and writes succeed. The minority side becomes read-only (can serve stale reads if configured, but cannot write). When the partition heals, the minority side syncs from the leader. Key behaviour: etcd prioritises consistency over availability (CP in CAP theorem). A 3-node cluster with a network partition isolating 1 node continues serving; a partition isolating 2 nodes causes complete unavailability.
+
+</details>
+
+---
+

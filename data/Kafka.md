@@ -16,6 +16,17 @@ Kafka solves all three problems. Producers write to Kafka and have no idea who's
 
 **Mental model:** Kafka is a distributed append-only log. Producers write to the end of the log. Consumers read from any position and track where they are independently. Nothing is deleted on read — only when the retention policy expires. Every event is immutable once written.
 
+```mermaid
+graph LR
+    Producer["Producer"] -->|write| Broker1["Broker 1 (Leader)"]
+    Broker1 -->|replicate| Broker2["Broker 2 (Follower)"]
+    Broker1 -->|replicate| Broker3["Broker 3 (Follower)"]
+    Broker1 -->|read| ConsumerA["Consumer Group A"]
+    Broker1 -->|read| ConsumerB["Consumer Group B"]
+    Topic["Topic (Partitions)"] --- Broker1
+    SchemaReg["Schema Registry"] -.->|validate| Producer
+```
+
 ---
 
 ## Part 1 — The vocabulary
@@ -522,6 +533,80 @@ kafka-broker-api-versions.sh --bootstrap-server localhost:9092
 kafka-topics.sh --bootstrap-server localhost:9092 \
   --describe --under-replicated-partitions
 ```
+
+---
+
+## Top 10 Interview Questions
+
+<details>
+<summary><strong>Q: How does Kafka guarantee message ordering, and what are the limitations?</strong></summary>
+
+Kafka guarantees strict ordering within a single partition only — records with the same key always go to the same partition via consistent hashing. There is no ordering guarantee across partitions. If you need global ordering, you use a single partition, but this eliminates parallelism. In practice, per-key ordering (e.g., all events for a given user) is sufficient for most use cases.
+
+</details>
+
+<details>
+<summary><strong>Q: What is the difference between at-most-once, at-least-once, and exactly-once delivery in Kafka?</strong></summary>
+
+At-most-once (`acks=0`): messages may be lost, never duplicated — fire and forget. At-least-once (`acks=all`, retries enabled): messages are never lost but may be duplicated on retry. Exactly-once requires the idempotent producer (`enable.idempotence=true`) and, for cross-topic workflows, Kafka transactions. Exactly-once adds latency; most production systems use at-least-once with idempotent consumers.
+
+</details>
+
+<details>
+<summary><strong>Q: What happens during a consumer group rebalance, and how can you minimize its impact?</strong></summary>
+
+When a consumer joins or leaves a group, Kafka reassigns partitions across the remaining consumers. During rebalance, consumption pauses — no records are processed. This can cause latency spikes. Use the cooperative sticky assignor (available since Kafka 2.4) to minimize disruption — it only reassigns partitions that actually need to move, rather than revoking all partitions and reassigning from scratch.
+
+</details>
+
+<details>
+<summary><strong>Q: What is consumer lag and why is it the primary operational metric for Kafka?</strong></summary>
+
+Consumer lag is the difference between the latest offset on the broker and the committed offset of the consumer. It tells you how far behind consumers are. High or growing lag means consumers cannot keep up with producers. If lag exceeds the retention window, records expire before being consumed — silent data loss. Monitor lag per consumer group and per partition, and alert when it grows beyond a threshold.
+
+</details>
+
+<details>
+<summary><strong>Q: What is log compaction and when would you use it instead of time-based retention?</strong></summary>
+
+Log compaction retains at least the most recent record for each key indefinitely, removing older records for the same key during background compaction. Use it for changelog topics where each key represents the latest state of an entity — user profiles, configuration, inventory counts. New consumers can bootstrap from a compacted topic to get the current state of every key without needing a separate database.
+
+</details>
+
+<details>
+<summary><strong>Q: Why is increasing the partition count of an existing topic risky?</strong></summary>
+
+Increasing partitions changes the key-to-partition mapping because Kafka hashes the key modulo the partition count. Records with the same key may now land on a different partition than before, breaking any system that relies on per-key ordering across time. You also cannot decrease partitions. Start with more partitions than you think you need — 12 is a reasonable default for production topics.
+
+</details>
+
+<details>
+<summary><strong>Q: What is KRaft mode and why is Zookeeper being removed from Kafka?</strong></summary>
+
+KRaft (Kafka Raft) embeds metadata management directly into Kafka brokers using the Raft consensus algorithm, replacing the external Zookeeper dependency. Benefits include a single system to operate, faster controller failover (sub-second vs. several seconds), and support for millions of partitions. Zookeeper is deprecated in Kafka 3.x and removed in 4.x. All new clusters should use KRaft.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you handle failed messages in a Kafka consumer pipeline?</strong></summary>
+
+Use a dead-letter topic (DLQ). When a consumer encounters a message it cannot process after a bounded number of retries, it produces the failed message to the DLQ with error metadata in headers. A separate service monitors the DLQ for alerting, manual inspection, and replay after bug fixes. Never silently discard failed events — you lose auditability and cannot recover from logic bugs.
+
+</details>
+
+<details>
+<summary><strong>Q: What is the ISR (In-Sync Replicas) set and why does it matter for durability?</strong></summary>
+
+The ISR is the set of replicas that are fully caught up to the leader's log. A message is only considered committed when all ISR members acknowledge it. If a broker falls behind (network lag, disk issues), it drops out of the ISR. Under-replicated partitions (URPs) — where the ISR is smaller than the replication factor — mean reduced durability. Alert on URP > 0 as a pre-failure signal.
+
+</details>
+
+<details>
+<summary><strong>Q: Why should you disable auto-commit for consumers in production?</strong></summary>
+
+With `enable.auto.commit=true`, the consumer commits offsets on a timer regardless of whether processing succeeded. If the consumer crashes after the offset is committed but before processing completes, that message is silently lost — it will never be re-delivered. Disable auto-commit, process the message, then commit explicitly. This gives you at-least-once delivery semantics with reliable processing guarantees.
+
+</details>
 
 ---
 

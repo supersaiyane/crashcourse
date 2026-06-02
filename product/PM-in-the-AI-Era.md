@@ -41,6 +41,21 @@ read the room. You went from doing everything yourself to managing a team of bri
 context-blind assistants. The skill shifts from *doing the work* to *directing the work and
 validating the output*.
 
+```mermaid
+graph TD
+    A[PM Tasks] --> B[AI-Automatable]
+    A --> C[Human-Only]
+    B --> D[Research & Synthesis]
+    B --> E[Drafting & Reporting]
+    B --> F[Status Tracking]
+    C --> G[Strategy & Trade-offs]
+    C --> H[Stakeholder Alignment]
+    C --> I[User Empathy & Judgment]
+    D --> J[PM Validates & Decides]
+    E --> J
+    F --> J
+```
+
 ---
 
 ## Part 1 — The vocabulary
@@ -320,6 +335,80 @@ TO:   evaluating, deciding, influencing, strategising, empathising
 4. Understand AI capabilities at a conceptual level
 5. Build cross-functional influence
 ```
+
+---
+
+## Top 10 Interview Questions
+
+<details>
+<summary><strong>Q: Which PM tasks should be automated with AI first, and which should never be?</strong></summary>
+
+Automate high-volume, low-judgment tasks first: status report generation, meeting summaries, competitive analysis drafts, and bug triage suggestions. Never automate strategy decisions, trade-off calls, stakeholder relationship management, or saying no to requests. The rule is: AI handles the what and the first draft; the PM owns the why, the decision, and the validation.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you validate AI-generated output before sharing it with stakeholders?</strong></summary>
+
+Treat every AI output as a first draft from a junior analyst. Check facts against primary sources, especially metrics and competitive claims. Add organisational context AI cannot know. Remove hallucinated details — LLMs confidently fabricate specifics. Adjust tone for the audience. The PM who blindly forwards AI output will eventually share something embarrassingly wrong.
+
+</details>
+
+<details>
+<summary><strong>Q: How does the PM skill stack change in the AI era?</strong></summary>
+
+Skills declining in value: writing PRDs from scratch, manual competitive analysis, status tracking, data pulling, scheduling. Skills rising in value: evaluating AI output, prompt engineering, strategic thinking, cross-functional influence, user empathy, and judgment. The shift is from doing the work to directing AI and validating results.
+
+</details>
+
+<details>
+<summary><strong>Q: How would you use AI to accelerate user research without losing the human signal?</strong></summary>
+
+Use AI to transcribe and summarise interviews, identify recurring themes, and cluster support tickets. But always review the summaries yourself — AI misses emotional subtext, body language cues, and the one outlier insight that reveals a deeper truth. Maintain direct contact with users. AI can process what 100 users said; it cannot feel why one user's frustration matters most.
+
+</details>
+
+<details>
+<summary><strong>Q: What new risks does an AI-native product introduce that a traditional product does not?</strong></summary>
+
+AI fails differently: it does not crash, it confidently gives wrong answers. New risks include hallucination in user-facing outputs, variable inference costs that can explode with usage, bias in training data affecting outcomes, and guardrail failures where the AI does something off-brand or harmful. PMs must define failure modes, set guardrails, and design evaluation frameworks.
+
+</details>
+
+<details>
+<summary><strong>Q: A VP says "just add AI to the product." How do you respond?</strong></summary>
+
+Ask what user problem AI would solve. AI is a capability, not a feature. Start with the job-to-be-done, then evaluate whether AI is the right solution. If it is, define success metrics, failure modes, and cost constraints before building. Many products benefit more from better UX or faster performance than from an AI feature added for the sake of having one.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you manage the cost of AI features in production?</strong></summary>
+
+AI inference has variable cost that scales with usage. Map token consumption to user actions and set cost budgets per feature. Use smaller models for simpler tasks (classification, summarisation) and reserve expensive models for high-value tasks. Cache common responses. Set usage limits on free tiers. Monitor cost per active user as a key metric alongside engagement.
+
+</details>
+
+<details>
+<summary><strong>Q: How should PMs think about prompt engineering as a product skill?</strong></summary>
+
+In AI-powered features, the prompt is the product logic. Writing a good prompt is the new "writing a good spec" — it requires clarity about what the AI should do, how it should handle edge cases, and what it should never do. PMs do not need to train models, but they need to understand context windows, temperature, and system prompts well enough to collaborate with engineers.
+
+</details>
+
+<details>
+<summary><strong>Q: Will AI replace product managers?</strong></summary>
+
+AI is automating PM tasks, not the PM role. The tasks being automated — writing, tracking, formatting — were never the core of the job. The core — strategy, judgment, trade-offs, user empathy, stakeholder alignment, accountability — requires human context and interpersonal skills AI does not have. PMs who only did tasks are at risk. PMs who made decisions are more valuable than ever.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you evaluate whether an AI feature is actually working for users?</strong></summary>
+
+Combine quantitative and qualitative evaluation. Quantitatively: measure task completion rate, time-to-completion, error rate, and user satisfaction scores. Qualitatively: review a sample of AI outputs for accuracy, relevance, and tone. Use human-in-the-loop feedback to catch failures. Set guardrail metrics to ensure the AI feature does not degrade other product metrics.
+
+</details>
 
 ---
 

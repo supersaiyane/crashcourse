@@ -32,6 +32,16 @@ link between "I have YAML" and "I want to automate changes to it."
 **Mental model:** same pipeline-of-filters model as jq (`.` flows through `|`), but the data is
 YAML and yq can write changes *back into the file* while keeping comments and layout intact.
 
+```mermaid
+graph LR
+    A[YAML File] -->|yq expression| B[Parse YAML Tree]
+    B -->|.field / .list iterate| C[Query / Filter]
+    C -->|= value / del| D[Modify Tree]
+    D -->|-i flag| E[Write Back to File]
+    B -->|-o=json| F[Convert to JSON]
+    B -->|select .kind| G[Multi-Doc Filter]
+```
+
 ---
 
 ## DAY 1 — Read and query YAML
@@ -220,6 +230,80 @@ yq -o=props '.' f.yaml              -> java properties (also: csv, tsv, xml)
 # Flags
 -i in-place   -o=FORMAT output   -P pretty   -ea/eval-all multi-doc   -n null input
 ```
+
+---
+
+## Top 10 Interview Questions
+
+<details>
+<summary><strong>Q: What is the difference between Mike Farah's Go yq and the Python yq?</strong></summary>
+
+Mike Farah's Go yq uses jq-style syntax natively (`.field`, `select()`, `|`) and can edit YAML files in place while preserving comments. The Python yq is a thin wrapper that converts YAML to JSON, pipes it through actual jq, and converts back -- it requires jq to be installed and has different syntax quirks. Check with `yq --version`; the Go version shows `mikefarah/yq`. This guide covers the Go version.
+
+</details>
+
+<details>
+<summary><strong>Q: How does `yq -i` preserve comments and formatting when editing YAML?</strong></summary>
+
+The Go yq parser builds an internal tree that retains comments, blank lines, and indentation style as metadata attached to each node. When writing back, it reconstructs the file using this metadata. Most single-field edits preserve the surrounding file layout perfectly. Heavy structural changes (reordering keys, deep merges) can occasionally drop comments -- always diff the result after complex edits.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you inject a CI environment variable into a YAML file safely?</strong></summary>
+
+Use `env()` or `strenv()`: `TAG=abc123 yq -i '.image.tag = env(TAG)' values.yaml`. `env()` interprets the value as its native YAML type (number, bool, string). `strenv()` forces string interpretation -- critical for values like `1.10` which YAML would otherwise parse as the number `1.1`. Never use shell interpolation inside the yq expression; it creates quoting bugs.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you target a specific document in a multi-document YAML file?</strong></summary>
+
+Use `select(.kind == "Deployment")` to match a specific document by a field value. For Kubernetes manifests with `---` separators, this is the standard pattern: `yq 'select(.kind == "Service") | .spec.ports' multi.yaml`. For cross-document operations (merging, comparing), use `eval-all` (`-ea`) which loads all documents into a single evaluation context.
+
+</details>
+
+<details>
+<summary><strong>Q: What is the common pitfall with string vs number coercion in yq?</strong></summary>
+
+`.replicas = "3"` writes the YAML string `"3"`, while `.replicas = 3` writes the integer `3`. Kubernetes expects integers for replicas, ports, and other numeric fields -- a quoted string will fail validation. Conversely, version strings like `1.10` must use `strenv()` to prevent YAML from interpreting them as the float `1.1`. Always verify the output type matches what the consuming tool expects.
+
+</details>
+
+<details>
+<summary><strong>Q: How would you use yq to implement a GitOps image tag bump in a CI pipeline?</strong></summary>
+
+Read the current image: `yq '.spec.template.spec.containers[0].image' deploy.yaml`. Set the new tag: `yq -i ".spec.template.spec.containers[0].image = \"$REGISTRY/app:$GIT_SHA\"" deploy.yaml`. Optionally stamp a label: `GIT_SHA=$GIT_SHA yq -i '.metadata.labels.commit = strenv(GIT_SHA)' deploy.yaml`. Commit and push -- ArgoCD or Flux detects the change and syncs the cluster. This is the standard GitOps pattern for image promotion.
+
+</details>
+
+<details>
+<summary><strong>Q: How does yq handle format conversion, and when is this useful?</strong></summary>
+
+yq reads YAML, JSON, XML, TOML, and properties natively. `yq -o=json '.' file.yaml` converts YAML to JSON; `yq -o=yaml '.' file.json` converts JSON to YAML. This is useful when you need to hand off data to jq (which only reads JSON), when API responses in JSON need to become Kubernetes manifests, or when migrating configuration between formats. One tool replaces separate converters.
+
+</details>
+
+<details>
+<summary><strong>Q: What does `explode(.)` do and when would you need it?</strong></summary>
+
+`explode(.)` resolves YAML anchors (`&`) and aliases (`*`) into their full expanded values. YAML anchors allow you to define a value once and reference it elsewhere, but this makes the actual values opaque when reading the file. `explode(.)` produces a file with no anchors -- every value is written out explicitly. Use it when debugging complex Helm values or Ansible playbooks that rely heavily on anchors.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you append an item to a YAML array without overwriting the existing entries?</strong></summary>
+
+Use the `+=` operator: `yq -i '.spec.ports += [{"name": "metrics", "port": 9090}]' svc.yaml`. This appends the new item to the existing array. Using `=` instead of `+=` would replace the entire array. For nested arrays in multi-document files, combine with `select()`: `yq -i 'select(.kind == "Service") | .spec.ports += [{"name": "metrics", "port": 9090}]' multi.yaml`.
+
+</details>
+
+<details>
+<summary><strong>Q: Why should you never use sed to edit YAML files?</strong></summary>
+
+sed operates on text lines and has no understanding of YAML structure. YAML is indentation-sensitive -- a sed replacement that changes a value might break the indentation of nested keys, duplicate a key that appears at multiple levels, or corrupt multi-line strings. yq understands the YAML tree and modifies only the targeted node while preserving the surrounding structure, comments, and formatting. This is especially critical for Kubernetes manifests where a structural error causes silent deployment failures.
+
+</details>
 
 ---
 

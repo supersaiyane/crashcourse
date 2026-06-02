@@ -32,6 +32,13 @@ Patterns also make you a better reader of other people's code. Frameworks, infra
 
 ---
 
+
+```mermaid
+graph LR
+    Input[Input] --> DesignPatterns[Design Patterns]
+    DesignPatterns --> Output[Output]
+```
+
 ## DAY 1 — Creational and Structural Patterns
 
 ---
@@ -550,6 +557,80 @@ A useful test: if you removed the pattern and replaced it with the simplest poss
 | Encapsulating requests for queuing, logging, undo | Command |
 | Object behavior varies by internal state | State |
 | Fixed process with variable steps | Template Method |
+
+---
+
+## Top 10 Interview Questions
+
+<details>
+<summary><strong>Q: What is the difference between the Strategy and State patterns?</strong></summary>
+
+Both encapsulate behavior behind an interface, but the intent differs. Strategy lets you swap algorithms from outside — the client picks which strategy to use. State lets an object change its own behavior when its internal state changes — transitions happen internally. A deployment pipeline picks a strategy (blue-green, canary). A circuit breaker transitions between states (closed, open, half-open) based on failure counts. Strategy is about choice; State is about lifecycle.
+
+</details>
+
+<details>
+<summary><strong>Q: When would you use a Decorator over inheritance?</strong></summary>
+
+Use Decorator when you need to add behavior dynamically and compose capabilities independently — logging, caching, rate limiting, auth. Inheritance creates a rigid hierarchy: `LoggingCachingAuthService` is a maintenance nightmare. With Decorator, each concern wraps the next and is independently testable and composable. Use inheritance only for true "is-a" relationships where the subclass honors the parent's contract completely.
+
+</details>
+
+<details>
+<summary><strong>Q: How does the Factory Method pattern support the Open/Closed Principle?</strong></summary>
+
+Factory Method centralizes object creation behind an interface. When a new type is added (a new cloud provider, a new notification channel), you add one entry to the factory — no existing code changes. Without a factory, every `if cloud == "aws"` block in your codebase needs updating. The system is open for extension (add a new class) and closed for modification (existing creation logic untouched).
+
+</details>
+
+<details>
+<summary><strong>Q: What is the difference between Adapter, Proxy, and Decorator?</strong></summary>
+
+Adapter converts one interface into another — bridging incompatible APIs (e.g., wrapping a vendor SDK). Proxy controls access to an object with the same interface — adding caching, lazy loading, or access control transparently. Decorator adds behavior to an object with the same interface — layering logging, metrics, or auth. The structural code often looks similar; the distinction is intent: translation (Adapter), control (Proxy), enhancement (Decorator).
+
+</details>
+
+<details>
+<summary><strong>Q: Why is Singleton considered dangerous and what should you use instead?</strong></summary>
+
+Singleton introduces hidden global state, makes testing hard because you cannot substitute the instance, and creates tight coupling across modules. In most modern applications, dependency injection handles the same need — you declare something as a singleton in the DI container and let the framework manage the lifecycle. Legitimate uses remain: config loaders, connection pools, metrics registries. But if you are reaching for Singleton to avoid passing a dependency, reach for DI instead.
+
+</details>
+
+<details>
+<summary><strong>Q: How does the Observer pattern relate to event-driven architecture?</strong></summary>
+
+Observer is the in-process foundation of event-driven architecture. A subject notifies registered observers of state changes. At the system level, this becomes pub/sub: a deployment system publishes `deployment.completed`, and Slack notification, metrics, and audit handlers subscribe independently. The publisher knows nothing about its consumers. Adding a reaction means adding a subscriber, not modifying the publisher. This decoupling is what makes event-driven systems extensible.
+
+</details>
+
+<details>
+<summary><strong>Q: When is the Command pattern the right choice?</strong></summary>
+
+Command encapsulates a request as an object, enabling queueing, logging, replay, and undo. Use it when you need audit trails (every action is a serializable record), undo/redo functionality, or deferred execution (queue commands for later processing). Terraform's plan/apply model is a Command pattern — the plan is a serialized command that can be reviewed before execution. It is overkill for simple direct method calls with no need for these capabilities.
+
+</details>
+
+<details>
+<summary><strong>Q: What is an anti-pattern and can you name three common ones?</strong></summary>
+
+An anti-pattern is a commonly used solution that looks reasonable but causes more problems than it solves. God Object: one class that knows and does too much, becoming a change bottleneck. Lava Flow: dead code nobody dares delete, preventing refactoring. Premature Abstraction: building plugin systems for features that will never have a second implementation. Recognizing anti-patterns is as valuable as knowing good patterns — it prevents you from creating problems while trying to solve them.
+
+</details>
+
+<details>
+<summary><strong>Q: How would you refactor a growing if/else chain using design patterns?</strong></summary>
+
+A growing if/else chain (notification channels, export formats, deployment types) is a Strategy + Factory opportunity. Extract each branch into its own class implementing a shared interface (Strategy). Create a factory that maps the selector (channel name, format type) to the correct class. The original if/else disappears entirely. Each strategy is independently testable. Adding a new option means adding one class and one factory entry — no existing code touched.
+
+</details>
+
+<details>
+<summary><strong>Q: What does "over-engineering" look like when applying design patterns?</strong></summary>
+
+Over-engineering is introducing a pattern where the complexity it solves does not exist yet. A Factory for code that creates exactly one type of object. An Observer where a simple function call would do. A Strategy for two options that will never grow. The test: if you removed the pattern and replaced it with the simplest code, would anything get harder? If the answer is no, the pattern is adding indirection without benefit. Patterns are tools for managing complexity — if the complexity is absent, the tool is waste.
+
+</details>
 
 ---
 

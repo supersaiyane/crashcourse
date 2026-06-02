@@ -34,6 +34,13 @@ The core idea is simple: you describe *what* you want, not *how* to get there. C
 
 ---
 
+
+```mermaid
+graph LR
+    Input[Input] --> Chef[Chef]
+    Chef --> Output[Output]
+```
+
 ## Day 1
 
 ### Install Chef Workstation
@@ -710,3 +717,78 @@ cookstyle .          # RuboCop with Chef-aware cops
 > Run it twice — the second run should change nothing.
 > If it does, your resource is not idempotent.
 > Fix the resource, not the check.
+
+## Top 10 Interview Questions
+
+<details>
+<summary><strong>Q: What is Chef and how does its convergence model work?</strong></summary>
+
+Chef uses a pull-based model: the Chef Client runs on each managed node, pulls its desired state (run list of recipes) from the Chef Server, compares current state to desired state, and converges — making only the changes needed to reach the desired state. This is idempotent — running Chef multiple times produces the same result. The convergence model means Chef handles drift detection automatically: if someone manually changes a config, the next Chef run corrects it.
+
+</details>
+
+<details>
+<summary><strong>Q: How do Chef Cookbooks, Recipes, and Resources relate to each other?</strong></summary>
+
+A Resource is the smallest unit — it declares a desired state for one thing (a package installed, a file with specific content, a service running). A Recipe is a collection of resources executed in order. A Cookbook is a package containing recipes, attributes, templates, and files for managing a specific component (e.g., the nginx cookbook). Cookbooks are versioned and shared via Chef Supermarket. Think: Resource = a single instruction, Recipe = a procedure, Cookbook = a complete module.
+
+</details>
+
+<details>
+<summary><strong>Q: How does Chef handle secrets and sensitive data?</strong></summary>
+
+Chef provides encrypted data bags — JSON data encrypted with a shared key, stored on the Chef Server, decrypted on the node during convergence. For better security, integrate with Vault or AWS Secrets Manager using custom resources. Never store secrets in plain-text attributes or recipes. Chef Vault improves on data bags by encrypting to specific node public keys rather than a shared secret. In CI/CD, use environment-specific encrypted data bags and rotate keys regularly.
+
+</details>
+
+<details>
+<summary><strong>Q: What is Test Kitchen and how do you test Chef cookbooks?</strong></summary>
+
+Test Kitchen is Chef's integration testing framework: it provisions a VM or container, applies your cookbook, then runs InSpec tests to verify the result. Workflow: write a recipe, define a .kitchen.yml (platform, provisioner, verifier), run kitchen converge (apply), kitchen verify (test), kitchen destroy (cleanup). Use ChefSpec for unit tests (fast, mock the system, verify resource declarations) and Test Kitchen for integration tests (slow, real OS, verify actual system state). Both are essential for production cookbooks.
+
+</details>
+
+<details>
+<summary><strong>Q: How does Chef compare to Ansible and Puppet?</strong></summary>
+
+Chef: Ruby DSL, pull-based (client polls server), powerful but steeper learning curve, strong testing ecosystem. Ansible: YAML playbooks, push-based (agentless via SSH), simpler to start, weaker testing. Puppet: declarative DSL, pull-based (like Chef), strong at scale, less procedural flexibility. Choose Chef for: complex infrastructure requiring programmatic logic (Ruby power), strong testing requirements, and environments already using Ruby. Choose Ansible for: simpler setups, agentless requirements, and teams unfamiliar with Ruby.
+
+</details>
+
+<details>
+<summary><strong>Q: What are Chef Attributes and how does attribute precedence work?</strong></summary>
+
+Attributes are variables that customize cookbook behaviour (default port, package version, file paths). Precedence levels (lowest to highest): default, force_default, normal, override, force_override, automatic (Ohai facts). This enables: cookbooks define sensible defaults, roles override for environment-specific settings, and nodes can have unique overrides. The common mistake: using 'normal' precedence everywhere (it persists to the node object, causing confusion). Best practice: use 'default' in cookbooks and 'override' in roles/environments.
+
+</details>
+
+<details>
+<summary><strong>Q: What are Chef Roles and Environments and how do they organize infrastructure?</strong></summary>
+
+Roles group recipes and attributes for a server function: a 'web-server' role includes nginx, logging, and monitoring recipes. Environments separate stages (dev, staging, prod) with different attribute values and cookbook version constraints. Example: prod environment pins cookbook versions for stability, dev uses latest. Use Policyfiles (modern replacement) instead of roles/environments for: version-pinned, reproducible configurations that are tested as a unit.
+
+</details>
+
+<details>
+<summary><strong>Q: What is Chef Infra Client vs Chef Workstation vs Chef Server?</strong></summary>
+
+Chef Workstation is where you write and test cookbooks (developer's machine — includes knife CLI, Test Kitchen, ChefSpec). Chef Server is the central hub storing cookbooks, node data, and policies. Chef Infra Client runs on managed nodes, pulling configuration from the server and converging. For smaller setups, Chef Solo or Chef Zero allow running without a server (local mode). Chef Automate adds a dashboard for compliance, visibility, and workflow orchestration on top of the server.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you handle cookbook dependency management in Chef?</strong></summary>
+
+Cookbooks declare dependencies in metadata.rb (depends 'nginx', '~> 7.0'). Berkshelf (or Policyfile) resolves and vendors dependencies — like a package manager for cookbooks. Pin versions to prevent unexpected changes. Use a private Chef Supermarket or Artifactory for internal cookbooks. Test dependency updates in a staging environment before production. The Policyfile approach (replacing Berkshelf + roles + environments) provides a single lock file with exact versions — more reproducible and easier to manage.
+
+</details>
+
+<details>
+<summary><strong>Q: What are custom resources in Chef and when should you create them?</strong></summary>
+
+Custom resources encapsulate complex configuration into a reusable, declarative interface. Instead of writing 50 lines of file, template, and service resources to configure a component, create a custom resource (e.g., my_app_config) that accepts parameters and handles the details internally. Create custom resources when: you repeat the same pattern across recipes, you want to share functionality across cookbooks, or you want a clean abstraction that hides implementation complexity. Custom resources are testable with ChefSpec and InSpec.
+
+</details>
+
+---
+

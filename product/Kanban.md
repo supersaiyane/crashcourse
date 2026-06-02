@@ -39,6 +39,18 @@ enters at once, the motorway gridlocks, and nobody moves. With metering, cars en
 controlled rate, traffic flows, and everyone arrives faster — even though each car waited
 briefly at the ramp. WIP limits are the metered on-ramps.
 
+```mermaid
+graph LR
+    A[Backlog] --> B[Ready<br/>WIP: 3]
+    B --> C[In Dev<br/>WIP: 4]
+    C --> D[In Review<br/>WIP: 2]
+    D --> E[In QA<br/>WIP: 2]
+    E --> F[Done]
+    G[Pull Signal] -.-> B
+    G -.-> C
+    G -.-> D
+```
+
 ---
 
 ## Part 1 — The vocabulary
@@ -392,6 +404,80 @@ Scrum = time-boxed sprints + roles + velocity
 Kanban = continuous flow + WIP limits + flow metrics
 Scrumban = ceremonies of Scrum + flow discipline of Kanban
 ```
+
+---
+
+## Top 10 Interview Questions
+
+<details>
+<summary><strong>Q: What happens when a team member finishes their work but the next column is at its WIP limit?</strong></summary>
+
+They do not start new work. Instead, they help unblock the full column — pair on a review, assist with testing, or resolve a blocker. This is Kanban working as intended: WIP limits create pressure to finish existing work before starting new work. The discomfort is the signal that something downstream needs attention.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you set initial WIP limits for a team that has never used Kanban?</strong></summary>
+
+Start with the number of people who work in that stage plus one. For a team of six with three developers, set In Dev at 4, In Review at 2, In QA at 2. These are starting points — lower the limit to expose more bottlenecks, raise it slightly if the team is frequently idle. The goal is to find the limit where flow is smooth but problems surface quickly.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you convince a team that WIP limits help rather than slow them down?</strong></summary>
+
+Run a two-week experiment. Measure cycle time, throughput, and items completed before and after WIP limits. In nearly every case, throughput stays the same or increases while cycle time drops significantly. The team finishes the same number of items but each item finishes faster because it spends less time waiting. Let the data make the argument.
+
+</details>
+
+<details>
+<summary><strong>Q: What is the difference between lead time and cycle time, and why do both matter?</strong></summary>
+
+Lead time is from when a request enters the system to when it is delivered — the customer's perspective. Cycle time is from when work actively starts to when it is completed — the team's perspective. Customers care about lead time. The team optimises cycle time. A large gap between the two means items wait a long time before work begins, which is a prioritisation or capacity problem.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you use a cumulative flow diagram to identify bottlenecks?</strong></summary>
+
+Look for bands that are widening over time — that stage is accumulating items faster than it processes them. The vertical distance between bands shows WIP in each stage. If the In Review band grows while Done stays flat, review is the bottleneck. Fix it by dedicating time to reviews, adding reviewers, or requiring smaller PRs that are faster to review.
+
+</details>
+
+<details>
+<summary><strong>Q: When should a team use Kanban instead of Scrum?</strong></summary>
+
+Kanban suits teams with continuous incoming work that cannot be batched into sprints — support teams, ops, maintenance, or platform teams. It also suits teams where priorities shift frequently, because Kanban allows reprioritisation at any time. Scrum is better when teams need a predictable delivery cadence and benefit from the structure of sprint ceremonies.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you handle urgent work (expedite items) without breaking the Kanban system?</strong></summary>
+
+Create an expedite swim lane with a WIP limit of 1. Expedite items skip the queue and flow through immediately. The WIP limit of 1 is critical — if everything is expedited, nothing is. Track how often the expedite lane is used. If it is full constantly, the team has a prioritisation problem upstream, not a capacity problem.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you forecast delivery dates without story points or estimates?</strong></summary>
+
+Use throughput-based forecasting. Measure how many items the team completes per week over the last 6-8 weeks. Divide remaining items by average throughput for a naive forecast. Use best-week and worst-week throughput for a confidence range. This approach avoids estimation overhead and often produces more accurate forecasts than story-point-based estimates.
+
+</details>
+
+<details>
+<summary><strong>Q: What is the theory of constraints and how does it apply to Kanban?</strong></summary>
+
+The theory of constraints says that optimising a non-bottleneck stage does not improve overall flow. If code review is the bottleneck, making developers code faster just means items pile up in review faster. Always identify the constraint (the column most often at WIP limit or where items wait longest) and fix it first. Then re-measure and address the next constraint.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you transition a team from Scrum to Kanban?</strong></summary>
+
+Start by adding WIP limits to the existing Scrum board while keeping sprint ceremonies. Measure cycle time and throughput alongside velocity. Gradually reduce ceremony overhead — replace sprint planning with continuous replenishment, replace velocity tracking with flow metrics. This is Scrumban, and it gives the team a gentle transition without losing the structure they are used to.
+
+</details>
 
 ---
 

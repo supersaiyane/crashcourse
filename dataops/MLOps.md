@@ -49,6 +49,13 @@ MLOps doesn't slow you down. Done right, it's the thing that lets you ship model
 
 ---
 
+
+```mermaid
+graph LR
+    Input[Input] --> MLOps[MLOps]
+    MLOps --> Output[Output]
+```
+
 ## DAY 1 — The MLOps Lifecycle
 
 ### The Lifecycle
@@ -415,6 +422,81 @@ Most organizations are at Level 0 or 1. Level 2 is the practical target for team
 **Official docs & blogs:**
 - [MLflow Documentation](https://mlflow.org/docs/latest/index.html) — experiment tracking, model registry, and deployment APIs
 - [neptune.ai Blog — MLOps](https://neptune.ai/blog) — in-depth articles on experiment tracking, model versioning, and production monitoring patterns
+
+---
+
+
+## Top 10 Interview Questions
+
+<details>
+<summary><strong>Q: What is MLOps and how does it extend DevOps for machine learning?</strong></summary>
+
+MLOps adds ML-specific concerns to DevOps: data versioning (track which data trained which model), experiment tracking (compare hyperparameters and metrics across runs), model registry (version and stage models through dev/staging/prod), model serving (deploy models as APIs with autoscaling), and model monitoring (detect data drift, concept drift, and performance degradation). The key difference from DevOps: in traditional software, code changes behaviour; in ML, code AND data change behaviour.
+
+</details>
+
+<details>
+<summary><strong>Q: What is data drift and how do you detect it in production?</strong></summary>
+
+Data drift occurs when the distribution of input features in production diverges from the training data distribution. Detection: compare statistical properties (mean, variance, quantiles) of production features against training baselines using tests like KS-test, PSI (Population Stability Index), or Jensen-Shannon divergence. Monitor per-feature and flag when drift exceeds thresholds. Data drift often causes model performance degradation before the model's prediction quality visibly drops — it is a leading indicator.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you version ML experiments and ensure reproducibility?</strong></summary>
+
+Track: code version (git commit), data version (DVC hash or data snapshot ID), hyperparameters, environment (Docker image or conda env), random seeds, and resulting metrics. Tools: MLflow, Weights & Biases, Neptune. Store artifacts (model weights, feature transformations) in a model registry. To reproduce: check out the code, fetch the data version, restore the environment, and run with recorded hyperparameters. Without this, 'it worked last week' is unresolvable.
+
+</details>
+
+<details>
+<summary><strong>Q: What is a feature store and when do you need one?</strong></summary>
+
+A feature store is a centralised repository for feature definitions and computed values, serving both training (batch) and inference (real-time) with consistent features. You need one when: multiple models share features (reuse instead of recompute), training-serving skew is a problem (same feature computation logic for both), or feature computation is expensive (precompute and cache). Tools: Feast (open-source), Tecton, SageMaker Feature Store. For small teams with 1-2 models, a feature store may be overkill.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you deploy ML models to production?</strong></summary>
+
+Options: REST API (Flask/FastAPI wrapping the model — flexible, standard), managed services (SageMaker Endpoints, Vertex AI — less ops burden), batch inference (scheduled pipeline that scores a dataset — no real-time serving needed), and edge deployment (ONNX/TensorRT on device — latency-critical). For real-time: containerise the model, deploy behind a load balancer with autoscaling, canary-deploy new versions. Always separate model code from application code — deploy models independently of the application.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you implement A/B testing for ML models?</strong></summary>
+
+Route traffic by percentage to model versions (e.g., 90% to model-v1, 10% to model-v2). Measure business metrics (conversion rate, revenue, engagement) not just ML metrics (accuracy, AUC). Run for sufficient duration to reach statistical significance — ML model differences are often subtle. Use shadow mode first (run the new model in parallel without serving its results) to verify it works correctly, then shift live traffic. Implement automatic rollback if the new model underperforms thresholds.
+
+</details>
+
+<details>
+<summary><strong>Q: What is model monitoring and what metrics should you track?</strong></summary>
+
+Track: prediction distribution (shift indicates model behaviour change), feature distributions (data drift detection), model performance metrics (accuracy, latency, throughput), business impact metrics (conversion, revenue tied to model decisions), and infrastructure metrics (GPU utilisation, memory, request queue depth). Alert on: prediction distribution shift, data drift above threshold, performance metric drop, latency SLO breach, and error rate increase. Monitoring is the most commonly neglected MLOps practice.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you handle model retraining — scheduled vs triggered?</strong></summary>
+
+Scheduled: retrain on a fixed cadence (daily, weekly) regardless of performance — simple, predictable, but wastes compute when the model is still good and may be too slow when drift is rapid. Triggered: retrain when monitoring detects drift or performance degradation — efficient but requires good monitoring and automated pipelines. Best practice: combine both — scheduled as a baseline (weekly), triggered for urgent drift. Ensure the retraining pipeline is automated, tested, and can roll back if the new model is worse.
+
+</details>
+
+<details>
+<summary><strong>Q: What is the difference between MLOps maturity levels?</strong></summary>
+
+Level 0: Manual — notebooks, manual model training, no monitoring. Level 1: ML Pipeline — automated training pipeline, experiment tracking, but manual deployment. Level 2: CI/CD for ML — automated testing, deployment, and monitoring. Level 3: Continuous Training — automatic retraining triggered by drift detection, full automation from data to deployment. Most organisations are at Level 0-1. Aim for Level 2 minimum in production. Level 3 requires significant investment in monitoring and pipeline infrastructure.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you handle model governance and compliance in regulated industries?</strong></summary>
+
+Maintain: model inventory (what models are deployed, where, by whom), model cards (documentation of purpose, performance, limitations, biases), approval workflows (human sign-off before production deployment), audit trails (who changed what, when — full lineage from data to prediction), and bias monitoring (fairness metrics across protected attributes). In BFSI: models affecting credit decisions must comply with regulations (ECOA, GDPR) requiring explainability and fairness. Tools: MLflow Model Registry with stage gates, custom governance workflows.
+
+</details>
 
 ---
 

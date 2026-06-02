@@ -25,6 +25,19 @@ MCP is an open standard (published by Anthropic, adopted broadly). It is built o
 
 ---
 
+
+```mermaid
+graph LR
+    Host[Host Application] --> Client[MCP Client]
+    Client --> Transport[Stdio / SSE Transport]
+    Transport --> Server1[MCP Server: Files]
+    Transport --> Server2[MCP Server: Database]
+    Transport --> Server3[MCP Server: API]
+    Server1 --> Resources[Resources]
+    Server2 --> Tools[Tools]
+    Server3 --> Prompts[Prompts]
+```
+
 ## Part 1 — The vocabulary
 
 Before touching code, lock in the terms. The spec uses them precisely.
@@ -675,6 +688,81 @@ await server.connect(new StdioServerTransport());
 | Paginated results | When result sets can be large — accept `limit` and `offset`, return total count |
 | Async job | Long-running operations — return a job ID immediately, expose a separate `get_job_status` tool |
 | Structured error | Always return `isError: true` with a human-readable message on failure — lets the AI self-correct |
+
+---
+
+
+## Top 10 Interview Questions
+
+<details>
+<summary><strong>Q: What problem does MCP solve that function calling and tool use do not?</strong></summary>
+
+Function calling gives an LLM the ability to invoke predefined tools, but every integration is bespoke — each app reinvents how to connect to databases, files, and APIs. MCP standardises the protocol between AI hosts and capability providers, so a tool server written once works with any MCP-compatible client (Claude Desktop, IDE extensions, custom agents). It is the difference between every app writing its own USB driver versus plugging into a universal USB standard.
+
+</details>
+
+<details>
+<summary><strong>Q: What are the three core primitives in MCP and when do you use each?</strong></summary>
+
+Resources expose data the model can read (files, database records, API responses) — like GET endpoints. Tools expose actions the model can invoke with parameters (run a query, create a file, send a message) — like POST endpoints. Prompts expose reusable prompt templates with parameters. Use resources for context loading, tools for side-effecting actions, and prompts for standardised interaction patterns across clients.
+
+</details>
+
+<details>
+<summary><strong>Q: How does MCP handle transport and what are the options?</strong></summary>
+
+MCP supports two transports: stdio (for local servers running as child processes — the client spawns the server and communicates via stdin/stdout) and SSE (Server-Sent Events over HTTP for remote servers). Stdio is simpler and more secure for local tools. SSE enables remote servers but requires authentication and network security. The protocol is transport-agnostic — the same server code works over either transport with minimal configuration changes.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you secure an MCP server, especially one exposed over SSE?</strong></summary>
+
+For stdio servers, security is inherent — the server runs as a local child process with the user's permissions. For SSE, implement authentication (OAuth, API keys), TLS encryption, and rate limiting at the transport layer. At the protocol level, validate all tool input parameters server-side, implement least-privilege access (a file server should only access designated directories), and audit-log all tool invocations. Never trust client-side validation alone.
+
+</details>
+
+<details>
+<summary><strong>Q: How does MCP differ from OpenAI's function calling and LangChain tools?</strong></summary>
+
+OpenAI function calling is a model feature — the model decides to call functions but the application code must implement the dispatch and execution. LangChain tools are a framework abstraction tightly coupled to LangChain. MCP is a protocol — it standardises the communication between any AI host and any tool provider, regardless of model or framework. An MCP server works with Claude, Copilot, or any MCP-compatible client without modification. It is infrastructure, not a library feature.
+
+</details>
+
+<details>
+<summary><strong>Q: How would you build a production MCP server for a database?</strong></summary>
+
+Expose read queries as resources (list tables, describe schema, query with parameters) and write operations as tools (insert, update with confirmation). Use parameterised queries to prevent SQL injection. Implement connection pooling and query timeout limits. Add row-level security if multi-tenant. Return structured results the model can reason about (JSON, not raw result sets). Log all queries for audit. Consider a read-only mode for safety, requiring explicit user approval for mutations.
+
+</details>
+
+<details>
+<summary><strong>Q: What is the lifecycle of an MCP connection and how do you handle failures?</strong></summary>
+
+The client sends an initialize request with protocol version and capabilities, the server responds with its capabilities (supported tools, resources, prompts). The connection then enters the operational phase where the client can list and invoke capabilities. For stdio, if the server process crashes, the client detects the broken pipe and can restart it. For SSE, implement reconnection with exponential backoff. Servers should be stateless where possible so restarts are transparent.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you test and debug MCP servers during development?</strong></summary>
+
+Use the MCP Inspector (official debugging tool) to interactively call tools and resources without a full host application. Write integration tests that instantiate your server and call endpoints programmatically. For stdio servers, test by piping JSON-RPC messages via stdin. Log all requests and responses during development. Test edge cases: malformed inputs, timeout scenarios, concurrent requests, and large payloads.
+
+</details>
+
+<details>
+<summary><strong>Q: How does sampling work in MCP and why is it important?</strong></summary>
+
+Sampling allows MCP servers to request LLM completions from the host — the server asks the client to generate text using the host's model. This enables agentic patterns where a tool server can reason about intermediate results without the host orchestrating every step. The host controls approval (human-in-the-loop) and can limit which servers can sample. It inverts the typical flow — instead of only the model calling tools, tools can also call the model.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you handle versioning and backwards compatibility in MCP servers?</strong></summary>
+
+MCP uses capability negotiation during initialization — client and server declare what they support, and both sides adapt. When evolving a server, add new tools and resources without removing existing ones. Use semantic versioning for your server package. If you must break compatibility, check the client's declared protocol version and maintain fallback behaviour for older clients. The protocol itself versions independently from individual server implementations.
+
+</details>
 
 ---
 

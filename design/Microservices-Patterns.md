@@ -36,6 +36,20 @@ Patterns are the answer to the recurring problems that appear at scale. They are
 
 **Outbox Pattern** — a solution to the dual-write problem. Instead of writing to your database and publishing an event atomically (which you cannot do across two systems), you write both the business data and the event to the same database transaction. A separate process reads the outbox table and publishes to the message broker.
 
+```mermaid
+graph LR
+    Client --> GW[API Gateway]
+    GW --> SvcA[Service A]
+    GW --> SvcB[Service B]
+    SvcA -->|Sync gRPC| SvcB
+    SvcA -->|Events| EB[Event Bus / Kafka]
+    EB --> SvcC[Service C]
+    SvcA --> DBA[(DB A)]
+    SvcB --> DBB[(DB B)]
+    SvcC --> DBC[(DB C)]
+    SvcA -.->|Circuit Breaker| SvcB
+```
+
 ---
 
 ## DAY 1 — Communication Patterns
@@ -347,6 +361,80 @@ Each step writes to a saga state table: `saga_id`, `step`, `status`, `timestamp`
 | Cross-cutting concerns (metrics, mTLS) | Sidecar |
 | Simple linear workflow, loose coupling | Choreography Saga |
 | Complex workflow, observability needed | Orchestration Saga |
+
+---
+
+## Top 10 Interview Questions
+
+<details>
+<summary><strong>Q: What is the difference between choreography and orchestration sagas, and when would you use each?</strong></summary>
+
+In choreography, each service listens for events and reacts independently — no central coordinator. The workflow is implicit and distributed. In orchestration, a central orchestrator explicitly tells each service what to do via commands and owns the saga's state machine. Use choreography for simple, linear flows with few participants where loose coupling matters. Use orchestration for complex workflows with conditional branches, many participants, and when observability matters — the orchestrator's state table tells you exactly where a saga is stuck.
+
+</details>
+
+<details>
+<summary><strong>Q: How does CQRS work and when is it justified?</strong></summary>
+
+CQRS separates the write model (commands, normalized, ACID) from the read model (queries, denormalized, optimized for access patterns). The read model is updated asynchronously via events or CDC, introducing eventual consistency. It is justified when read patterns differ fundamentally from write patterns, you need to scale reads and writes independently, or complex reporting queries would require many JOINs on a normalized schema. For simple CRUD services, CQRS adds unjustified complexity.
+
+</details>
+
+<details>
+<summary><strong>Q: What is the Outbox Pattern and what problem does it solve?</strong></summary>
+
+The outbox pattern solves the dual-write problem: when you need to write to a database and publish an event atomically. If the DB write succeeds but Kafka fails, you have data without an event. The fix: write both the business data and the event to the same database transaction (outbox table). A separate relay (or Debezium via CDC) reads the outbox and publishes to Kafka. The relay guarantees at-least-once delivery, so consumers must be idempotent.
+
+</details>
+
+<details>
+<summary><strong>Q: Why is "database per service" a foundational rule, and what tradeoffs does it create?</strong></summary>
+
+Shared databases create coupling at the data layer — schema changes in one service break another, deployments must be coordinated, and you cannot independently scale or choose the right storage per service. The tradeoff is eventual consistency across services — a user's balance in the payment service may lag in analytics for seconds. Design for it, communicate it to stakeholders, and use domain events for cross-service data flow rather than shared database access.
+
+</details>
+
+<details>
+<summary><strong>Q: What is a distributed monolith and how do you detect one?</strong></summary>
+
+A distributed monolith has the operational cost of microservices without the benefits. Symptoms: every deployment requires coordinating multiple teams, a single slow service brings down the entire chain, services share a database, or one service knows too much about another's internals. You detect it by asking: can any service be deployed independently? If the answer is consistently no, you have a distributed monolith. The root cause is usually premature decomposition without clear bounded context boundaries.
+
+</details>
+
+<details>
+<summary><strong>Q: How does the Strangler Fig pattern enable safe migration from a monolith?</strong></summary>
+
+Deploy the new microservice alongside the monolith. Put a routing layer (API gateway or facade) in front of both. Route a subset of traffic to the new service — start with a feature flag, move to percentage-based routing. Expand the new service's scope, shrink the monolith's. The key insight: you migrate incrementally, verify each step, and can roll back if needed. No big bang rewrite. No freeze. The risk is bounded at each step.
+
+</details>
+
+<details>
+<summary><strong>Q: What is a circuit breaker and how does it prevent cascade failures?</strong></summary>
+
+A circuit breaker wraps calls to a downstream service. In the closed state, requests pass through normally. After a threshold of failures, it "opens" and fast-fails all requests without calling the downstream — giving it time to recover. After a timeout, it enters "half-open" and allows a probe request. If the probe succeeds, it closes; if it fails, it reopens. Without circuit breakers, a slow or failing dependency can exhaust thread pools and cascade failures to every upstream caller.
+
+</details>
+
+<details>
+<summary><strong>Q: When should you start with a monolith instead of microservices?</strong></summary>
+
+Start with a monolith when the team is small (under 10 engineers), the domain is not yet understood (premature decomposition creates wrong boundaries), deployment velocity is not constrained by team coordination, or you are early-stage and need to iterate quickly. Microservices solve organizational scale — multiple teams needing independent deployment, different scaling requirements, technology diversity. The modular monolith is underrated: strong module boundaries inside a single deployable gives many microservice benefits with far less operational overhead.
+
+</details>
+
+<details>
+<summary><strong>Q: What are contract tests and why are they the most important test category in microservices?</strong></summary>
+
+Contract tests verify that a provider's API matches what consumers expect. A consumer defines the expected request/response shapes (the "contract"). The provider runs those contracts in its test suite. If the provider changes its API in a breaking way, the contract test fails before deployment — not in production. This is more valuable than integration tests because it catches breaking changes early without requiring all services to be running. Pact is the standard tool.
+
+</details>
+
+<details>
+<summary><strong>Q: What is Event Sourcing and when should you avoid it?</strong></summary>
+
+Event Sourcing stores state as an immutable log of events rather than current values — `AccountOpened`, `MoneyDeposited`, `MoneyWithdrawn`. Current state is derived by replaying events. You gain a complete audit trail, ability to reconstruct state at any point in time, and natural fit for event-driven architectures. Avoid it when: you do not need audit history or temporal queries, the operational complexity is not justified, or schema evolution of old events would be painful. It is not for every service — reserve it for financial transactions, inventory, and legal records.
+
+</details>
 
 ---
 

@@ -42,6 +42,27 @@ These three names describe the same essential structure. The industry uses them 
 
 ---
 
+```mermaid
+graph TD
+    FW[Frameworks & Drivers] --> IA[Interface Adapters]
+    IA --> UC[Use Cases]
+    UC --> E[Entities]
+    subgraph Outer
+        FW
+    end
+    subgraph Middle
+        IA
+    end
+    subgraph Inner
+        UC
+        E
+    end
+    DB[(Database)] --> IA
+    HTTP[HTTP/gRPC] --> IA
+    IA -->|Port: Repository Interface| UC
+    UC -->|Pure Business Logic| E
+```
+
 ## DAY 1 — The Concentric Circles
 
 ### The Layers
@@ -379,6 +400,70 @@ Everything points inward. Domain points at nothing.
 
 ---
 
+## Interview Questions
+
+<details><summary><strong>Q: What is the Dependency Rule in Clean Architecture, and what happens when it is violated?</strong></summary>
+
+The Dependency Rule states that source code dependencies can only point inward — outer layers depend on inner layers, never the reverse. Entities know nothing about use cases, use cases know nothing about adapters, and adapters know nothing about frameworks. When violated, inner layers become coupled to infrastructure details — for example, a use case importing a database driver means changing databases requires rewriting business logic. The violation typically manifests as untestable code that requires a live database or running framework to exercise.
+
+</details>
+
+<details><summary><strong>Q: How do Ports and Adapters enforce the boundary between business logic and infrastructure?</strong></summary>
+
+A Port is an interface defined by an inner layer describing what it needs from the outside world — for example, a UserRepository interface in the application layer. An Adapter is a concrete implementation living in the infrastructure layer — for example, PostgresUserRepository. The application layer depends on the Port abstraction, not the Adapter. This means you can swap PostgreSQL for DynamoDB by writing a new Adapter without touching any business logic. Dependency injection wires the concrete Adapter to the Port at the composition root.
+
+</details>
+
+<details><summary><strong>Q: What is an anemic domain model, and why is it considered an anti-pattern in Clean Architecture?</strong></summary>
+
+An anemic domain model is when entities are pure data structures with no behavior — all business logic lives in service classes that manipulate entity fields externally. This violates Clean Architecture because business invariants should be enforced by the entities themselves. An Order entity should know how to calculate its total and reject invalid state transitions, not just expose fields for a service to manipulate. Anemic models lead to scattered business rules, weaker encapsulation, and harder testing.
+
+</details>
+
+<details><summary><strong>Q: When is Clean Architecture overkill, and what alternatives would you suggest for simpler systems?</strong></summary>
+
+Clean Architecture adds structural overhead — more files, more interfaces, more indirection. It is overkill for scripts, prototypes, trivial CRUD services with no complex business logic, and solo short-term projects. For a service that maps three endpoints directly to three database tables, a thin layer over your ORM is fine. The signal to reach for Clean Architecture is business rules complex enough to be worth protecting, and an expectation that the system will outlive current technology choices. For simpler systems, a straightforward layered architecture or even procedural code is appropriate.
+
+</details>
+
+<details><summary><strong>Q: How does Clean Architecture differ from traditional three-tier (layered) architecture?</strong></summary>
+
+Traditional three-tier architecture (presentation, business, data) has the data layer at the bottom with other layers depending on it — business logic depends on the database layer. Clean Architecture inverts this: business rules are at the center, and the data access layer implements interfaces defined by the business rules. The direction of dependency is the key difference. In Clean Architecture, changing the database is an infrastructure concern that does not touch business logic. In three-tier, changing the database often requires changes throughout the business layer.
+
+</details>
+
+<details><summary><strong>Q: Explain how you would test each layer of a Clean Architecture application independently.</strong></summary>
+
+Entities are tested with pure unit tests — no mocks, no setup, just function calls and assertions. Use cases are tested by replacing every Port with an in-memory fake (e.g., FakeOrderRepository backed by a map) — tests run in milliseconds with zero I/O. Adapters are integration-tested against real dependencies (Dockerized databases). Presentation handlers are tested with a fake use case to verify HTTP request/response translation. This separation means your unit test suite (entities + use cases) runs in seconds, integration tests in minutes.
+
+</details>
+
+<details><summary><strong>Q: How does Clean Architecture apply to microservices? What is the common mistake teams make with shared domain models?</strong></summary>
+
+Each microservice is its own Clean Architecture with its own domain, use cases, and adapters. When Service A calls Service B, that call is infrastructure from A's perspective — defined as a Port (e.g., OrderServiceClient interface) with an Adapter implementing the HTTP call. The common mistake is sharing domain models across services via a shared library, which creates tight coupling at the layer meant to be most stable. Each service should own its own domain objects, even if they represent overlapping concepts.
+
+</details>
+
+<details><summary><strong>Q: What is the composition root in Clean Architecture, and why does wiring happen there?</strong></summary>
+
+The composition root is the outermost point in the application — typically main.go, the application bootstrap, or the DI container configuration. This is where concrete implementations are instantiated and injected into inner layers. For example, you create PostgresOrderRepository, pass it to PlaceOrderUseCase, and pass that to the HTTP handler. Wiring happens here because it is the only place that knows about all layers simultaneously. Inner layers remain unaware of which concrete implementations they receive.
+
+</details>
+
+<details><summary><strong>Q: How would you add a CLI interface to an existing Clean Architecture HTTP service without touching business logic?</strong></summary>
+
+A CLI tool is just another presentation layer. You create a new command handler in the presentation/cli directory that parses command-line flags, constructs the use case input struct, calls the same use case, and formats the output for terminal display. The use case does not know whether it is being called by an HTTP handler or a CLI command. If the architecture is properly layered, adding the CLI is purely a presentation-layer change — zero business logic is touched.
+
+</details>
+
+<details><summary><strong>Q: What is Hexagonal Architecture, and how does it relate to Clean Architecture and Onion Architecture?</strong></summary>
+
+Hexagonal Architecture (Alistair Cockburn), Onion Architecture (Jeffrey Palermo), and Clean Architecture (Robert Martin) describe the same essential structure with different terminology. All three place business logic at the center with infrastructure on the outside, enforce inward-pointing dependencies, and use ports/interfaces to decouple inner and outer layers. Hexagonal emphasizes the hexagon shape with ports on the boundary and adapters plugging in. Onion emphasizes concentric rings. Clean Architecture adds explicit naming for entities, use cases, and interface adapters. The industry uses the terms interchangeably.
+
+</details>
+
+---
+
 ## Next Steps
 
 - `Design-Principles.md` — SOLID, DRY, YAGNI: the principles that motivate the architecture
@@ -409,3 +494,78 @@ Everything points inward. Domain points at nothing.
 > Infrastructure is a detail.
 > Dependencies point inward, always.
 > If you can't test it without a database, it's not clean.
+
+## Top 10 Interview Questions
+
+<details>
+<summary><strong>Q: What is the dependency rule in Clean Architecture and why is it the most important concept?</strong></summary>
+
+The dependency rule states that source code dependencies must point inward — outer layers depend on inner layers, never the reverse. Entities (innermost) know nothing about use cases, use cases know nothing about controllers, controllers know nothing about frameworks. This means your business logic is completely independent of the database, UI, or any framework — you can swap PostgreSQL for MongoDB without touching business rules. Violations of this rule are the #1 cause of untestable, rigid architectures.
+
+</details>
+
+<details>
+<summary><strong>Q: How does Clean Architecture differ from Hexagonal Architecture and Onion Architecture?</strong></summary>
+
+All three enforce the same core principle: business logic at the center, infrastructure at the edges, dependencies pointing inward. Hexagonal (Ports and Adapters) emphasises ports (interfaces) and adapters (implementations). Onion adds explicit layers (domain model, domain services, application services). Clean Architecture formalises the layers with specific names (entities, use cases, interface adapters, frameworks). In practice, they are nearly identical — the naming and emphasis differ, the result is the same.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you implement the repository pattern in Clean Architecture?</strong></summary>
+
+The domain layer defines a repository interface (port): UserRepository with methods like findById, save. The infrastructure layer provides the implementation (adapter): PostgresUserRepository that uses SQL. The use case depends on the interface, not the implementation — injected via dependency injection. This means you can test use cases with an in-memory repository (fast unit tests) and swap databases without changing business logic. The interface belongs to the inner layer; the implementation belongs to the outer layer.
+
+</details>
+
+<details>
+<summary><strong>Q: What are use cases in Clean Architecture and how granular should they be?</strong></summary>
+
+A use case is an application-specific business rule — 'Create Order', 'Calculate Shipping Cost', 'Approve Loan Application'. Each use case orchestrates entities and repositories to fulfil a single business operation. Granularity: one use case per business operation, not per CRUD action. 'Create Order' (validates inventory, calculates total, creates order, sends notification) is one use case, not four separate ones. Use cases should be testable in isolation with mocked repositories.
+
+</details>
+
+<details>
+<summary><strong>Q: When is Clean Architecture overkill and what alternatives exist?</strong></summary>
+
+Clean Architecture adds indirection (interfaces, adapters, multiple layers) that is overkill for: simple CRUD applications, prototypes/MVPs, scripts, and small services with a short expected lifespan. Alternatives: vertical slice architecture (organise by feature, not layer), simple MVC with service classes, or framework-native patterns (Rails/Django conventions). Use Clean Architecture when: the domain logic is complex, the project will be maintained for years, multiple teams work on it, or you need to swap infrastructure components.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you handle cross-cutting concerns (logging, auth, caching) in Clean Architecture?</strong></summary>
+
+Cross-cutting concerns should not leak into use cases. Implement them as: decorators (wrap use cases with logging/caching behaviour), middleware (HTTP middleware for auth, rate limiting), aspect-oriented patterns (interceptors), or infrastructure adapters (cache adapter wraps the repository adapter). The use case code remains pure business logic. For example: CachingUserRepository implements UserRepository, wraps PostgresUserRepository, and adds caching — the use case sees only UserRepository.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you test each layer of Clean Architecture?</strong></summary>
+
+Entities: pure unit tests (no dependencies, no mocks). Use cases: unit tests with mocked repository interfaces (fast, isolated). Interface adapters: integration tests (test the actual adapter against the real database/API). Frameworks/drivers: end-to-end tests (test the full HTTP → controller → use case → database flow). The dependency rule makes inner layers easy to test — entities and use cases need zero infrastructure. This is the primary benefit of the architecture: fast, reliable, comprehensive tests.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you map data between layers in Clean Architecture?</strong></summary>
+
+Each layer has its own data model: entities (domain model — business rules), DTOs (data transfer objects — API input/output), persistence models (database rows). Map between them at layer boundaries: controller maps DTO → use case input, use case maps input → entity, repository maps entity → persistence model (and reverse). This seems like boilerplate but prevents: domain model leaking database concerns (column names in entities), API changes breaking domain logic, and serialisation annotations polluting business objects.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you handle exceptions and error flows across layers?</strong></summary>
+
+Domain exceptions (InsufficientFunds, OrderNotFound) are defined in the domain layer. Use cases throw domain exceptions when business rules are violated. Interface adapters catch domain exceptions and translate them to appropriate responses (HTTP 404, 422, etc.). Infrastructure exceptions (DatabaseConnectionError) are caught and wrapped at the adapter boundary — they should never leak into use cases. This keeps error handling clean: each layer handles errors at its own level of abstraction.
+
+</details>
+
+<details>
+<summary><strong>Q: How does Clean Architecture apply to microservices?</strong></summary>
+
+Each microservice can follow Clean Architecture internally — the service has its own entities, use cases, and infrastructure adapters. The key addition: inter-service communication becomes an infrastructure concern. Define a port (OrderService interface) in the use case layer, implement an adapter (HttpOrderServiceClient) in the infrastructure layer. This means the use case does not know or care whether the order service is an HTTP call, gRPC call, or message queue — you can change the communication pattern without touching business logic.
+
+</details>
+
+---
+

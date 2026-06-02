@@ -21,6 +21,20 @@ The controller watches `Rollout` custom resources (not `Deployment` objects) and
 
 ---
 
+
+```mermaid
+graph LR
+    Deploy[New Version] --> Rollout[Argo Rollout]
+    Rollout --> Canary[Canary Release]
+    Canary --> Analysis[Analysis Run]
+    Analysis -->|pass| Promote[Promote to 100%]
+    Analysis -->|fail| Abort[Rollback]
+    Rollout --> BlueGreen[Blue-Green Switch]
+    BlueGreen --> Preview[Preview Service]
+    Preview --> Switch[Traffic Switch]
+    Metrics[Prometheus Metrics] --> Analysis
+```
+
 ## Part 1 — Vocabulary
 
 Before you touch any YAML, get these terms clear in your head.

@@ -38,6 +38,16 @@ You don't need all of these everywhere. You need the right ones in the right pla
 
 ---
 
+
+```mermaid
+graph LR
+    Trigger[Trigger Event] --> Plan[Plan / Assess]
+    Plan --> Execute[Execute Reliability Patterns]
+    Execute --> Review[Review / Measure]
+    Review --> Improve[Improve / Iterate]
+    Improve --> Plan
+```
+
 ## DAY 1
 
 ### 1. Timeouts — Set Them. Always.
@@ -597,6 +607,82 @@ pool_size = (expected_RPS × p99_latency_seconds) × 1.5
 minimum   : 3
 start at  : 10, tune with load testing
 ```
+
+---
+
+
+
+## Top 10 Interview Questions
+
+<details>
+<summary><strong>Q: What is Reliability Patterns and what problem does it solve?</strong></summary>
+
+Reliability Patterns addresses a specific need in modern engineering workflows. Understanding the core problem it solves — and the alternatives it replaced — is the foundation for every subsequent interview question. Frame your answer around the pain point first, then the solution.
+
+</details>
+
+<details>
+<summary><strong>Q: How does Reliability Patterns compare to its main alternatives?</strong></summary>
+
+Every tool exists in an ecosystem of alternatives. Be prepared to articulate the specific tradeoffs: when Reliability Patterns is the right choice, when an alternative is better, and what factors drive the decision (scale, team expertise, existing infrastructure, compliance requirements).
+
+</details>
+
+<details>
+<summary><strong>Q: What are the most common production pitfalls with Reliability Patterns?</strong></summary>
+
+Production experience is what separates senior from junior engineers. Common pitfalls include: misconfiguration that works in dev but fails at scale, security oversights, inadequate monitoring, and operational procedures that are untested until an incident occurs. Cite specific examples from your experience.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you monitor and observe Reliability Patterns in production?</strong></summary>
+
+Key metrics to track, alerting thresholds to set, dashboards to build, and log patterns to watch. Production monitoring should cover: health/liveness, performance (latency, throughput), capacity (resource utilisation), and business impact (error rates affecting users). Explain which metrics are leading indicators versus lagging.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you scale Reliability Patterns as load increases?</strong></summary>
+
+Scaling strategies depend on the bottleneck: horizontal scaling (add more instances), vertical scaling (bigger instances), caching (reduce load), sharding (distribute data), and async processing (decouple components). Explain which approach applies to Reliability Patterns and at what scale each strategy becomes necessary.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you handle security and access control with Reliability Patterns?</strong></summary>
+
+Security is non-negotiable in production. Cover: authentication and authorization mechanisms, secrets management (never in code), encryption (at rest and in transit), network security (firewalls, private networks), audit logging, and compliance requirements relevant to your industry.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you implement disaster recovery for Reliability Patterns?</strong></summary>
+
+DR planning requires defining RTO (recovery time objective) and RPO (recovery point objective), implementing backup strategies, testing restore procedures, and documenting runbooks. Explain your backup strategy, how you test restores, and what your recovery procedure looks like.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you automate Reliability Patterns deployment and configuration management?</strong></summary>
+
+Infrastructure as code, CI/CD pipelines, configuration management, and GitOps workflows. Explain how you version, test, deploy, and roll back changes. Cover: what is automated, what requires manual approval, and how you handle configuration drift.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you troubleshoot issues with Reliability Patterns in production?</strong></summary>
+
+A systematic debugging approach: check health endpoints, review recent changes (deploys, config changes), examine logs and metrics, reproduce the issue, identify root cause, fix, verify, and write a postmortem. Explain your actual debugging workflow with concrete examples.
+
+</details>
+
+<details>
+<summary><strong>Q: What are the best practices for Reliability Patterns that you have learned from experience?</strong></summary>
+
+Best practices that go beyond documentation: lessons learned from production incidents, configuration patterns that prevent common issues, testing strategies that catch bugs before production, and operational procedures that reduce toil. Share specific examples where following (or not following) a best practice had measurable impact.
+
+</details>
 
 ---
 

@@ -45,6 +45,13 @@ The fix isn't heroics after the fact. It's treating data quality as a first-clas
 
 ---
 
+
+```mermaid
+graph LR
+    Input[Input] --> DataQuality[Data Quality]
+    DataQuality --> Output[Output]
+```
+
 ## DAY 1 — The Foundations
 
 ### The Six Dimensions of Data Quality
@@ -554,3 +561,78 @@ You now have the foundations. Go deeper in these directions:
 ## The Mantra
 
 > Validate at the boundary. Contract before you consume. Alert before the stakeholder does.
+
+## Top 10 Interview Questions
+
+<details>
+<summary><strong>Q: What are the six dimensions of data quality?</strong></summary>
+
+Completeness (no missing values where required), Accuracy (values match reality), Consistency (no contradictions across datasets — same customer has same address everywhere), Timeliness (data arrives when expected), Uniqueness (no unwanted duplicates), and Validity (values conform to business rules — age > 0, email matches pattern). Each dimension requires different detection methods: completeness uses null checks, accuracy requires comparison to a source of truth, consistency needs cross-dataset joins.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you implement data quality checks in a production pipeline?</strong></summary>
+
+Layer checks at three stages: at ingestion (schema validation, freshness checks, row count expectations), after transformation (business rule validation, referential integrity, statistical tests), and before serving (final quality gate — aggregate score must exceed threshold). Use a framework (Great Expectations, Soda, dbt tests) for declarative rule definition. Fail the pipeline on critical violations, alert on warnings, and log all results for trend analysis. Design checks to be idempotent and fast.
+
+</details>
+
+<details>
+<summary><strong>Q: What is Great Expectations and how does it compare to dbt tests?</strong></summary>
+
+Great Expectations is a standalone data quality framework with 300+ built-in expectations (statistical, schema, value-based), data profiling (auto-generate expectations from data), and validation reports (HTML data docs). dbt tests are SQL-based, tightly integrated with dbt models, simpler but less feature-rich. Use dbt tests for: warehouse-centric pipelines where dbt is already the transform tool. Use Great Expectations for: multi-source validation, Python-based pipelines, or when you need statistical/distributional tests beyond SQL.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you detect data anomalies that rule-based checks miss?</strong></summary>
+
+Statistical anomaly detection: track metric distributions over time and flag deviations (z-score, IQR, seasonal decomposition). Machine learning: train models on historical quality patterns to detect novel issues. Volume-based: track row counts, file sizes, and arrival patterns — sudden drops or spikes indicate upstream problems. Cross-dataset: compare aggregates across related datasets (orders total should approximately match revenue total). Tools: Monte Carlo, Anomalo, or custom statistical checks in Airflow/dbt.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you handle data quality in a streaming context?</strong></summary>
+
+Streaming adds constraints: you cannot scan the entire dataset, checks must be incremental, and latency budgets are tight. Implement: schema validation on each message (reject malformed messages at ingestion), windowed statistics (track running averages, counts — flag windows that deviate from baseline), dead letter queues (quarantine failed messages without blocking the stream), and periodic batch validation (run comprehensive checks on materialised views of the streamed data).
+
+</details>
+
+<details>
+<summary><strong>Q: What is a data quality SLA and how do you define one?</strong></summary>
+
+A data quality SLA is a commitment: 'This dataset will have < 0.1% null values in column X, be refreshed by 6am daily, and match the source system within 0.01% on aggregate totals.' Define SLAs per dataset based on consumer requirements: a real-time fraud model needs stricter SLAs than an internal reporting dashboard. Measure compliance continuously and report on SLA adherence. In BFSI, data quality SLAs are often regulatory requirements — regulatory reports must have documented quality thresholds.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you implement data observability versus traditional data quality?</strong></summary>
+
+Traditional data quality: predefined rules that check known conditions (null checks, range checks). Data observability: automated monitoring that detects unknown issues (anomalies, distribution shifts, schema changes, freshness delays) without predefined rules — similar to how application monitoring detects issues without knowing every possible failure mode. Implement both: quality rules for known requirements, observability for discovering unknown problems. Tools: Monte Carlo, Bigeye, and Metaplane provide data observability; Great Expectations and dbt provide rule-based quality.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you handle data quality incidents?</strong></summary>
+
+Triage: assess impact (which downstream systems and reports are affected?), severity (is the data wrong or just delayed? Are decisions being made on bad data?), and blast radius (how many consumers are affected?). Respond: quarantine bad data if possible (stop pipeline, revert to last good state), notify affected consumers, fix the root cause, backfill corrected data, and run validation to confirm the fix. Post-incident: write a data quality incident postmortem (root cause, detection gap, prevention measures).
+
+</details>
+
+<details>
+<summary><strong>Q: What is data profiling and how does it bootstrap quality rules?</strong></summary>
+
+Data profiling analyses a dataset to extract statistical summaries: column types, null rates, unique value counts, min/max, distributions, patterns, and correlations. Use profiling to: understand a new dataset before writing transforms, auto-generate baseline quality expectations (Great Expectations profiler generates rules from data), detect schema drift (compare profiles over time), and identify data issues before they become pipeline failures. Profile monthly or on schema changes to keep baselines current.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you measure and report data quality across an organisation?</strong></summary>
+
+Define a data quality score per dataset: weighted average of dimension scores (completeness 95%, accuracy 99%, etc.). Aggregate into domain-level and organisation-level dashboards. Track trends over time — is quality improving or degrading? Report: datasets with lowest scores (remediation priority), SLA compliance rates, incident count and MTTR, and coverage (percentage of critical datasets with quality monitoring). Executive reporting should show business impact: 'Data quality issues caused X hours of delayed reporting this month.'
+
+</details>
+
+---
+

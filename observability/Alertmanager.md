@@ -31,6 +31,19 @@ system: it collects all the beeps, groups the ones from the same fire, decides w
 (fire dept vs. maintenance), avoids calling them every second, and stays quiet for a scheduled
 fire drill.
 
+```mermaid
+graph LR
+    Prom1[Prometheus 1] -->|fires alerts| AM[Alertmanager]
+    Prom2[Prometheus 2] -->|fires alerts| AM
+    AM -->|group + route| RT[Routing Tree]
+    RT -->|severity=page| PD[PagerDuty]
+    RT -->|team=payments| Slack1[Slack #payments]
+    RT -->|default| Slack2[Slack #alerts]
+    AM -->|inhibit| INH[Inhibition Rules]
+    AM -->|silence| SIL[Silences]
+    INH -->|suppress symptoms| AM
+```
+
 ---
 
 ## Part 1 — The vocabulary
@@ -267,6 +280,80 @@ amtool silence query | expire <id>
 curl localhost:9093/-/reload                   # hot-reload config
 # matchers in routes: =  (equal)  !=  =~ (regex)  !~ (regex not)
 ```
+
+---
+
+## Top 10 Interview Questions
+
+<details>
+<summary><strong>Q: How does Alertmanager's routing tree work, and how do you design one for a multi-team organisation?</strong></summary>
+
+The routing tree is a hierarchy where alerts enter at the root and fall into the first matching child route based on label matchers. Children inherit parent settings unless overridden. In a multi-team setup, you typically match on `team` or `severity` labels at the top level, routing critical pages to PagerDuty and team-specific warnings to dedicated Slack channels. The `continue: true` flag lets an alert match multiple sibling routes when you need both paging and chat notification for the same alert.
+
+</details>
+
+<details>
+<summary><strong>Q: What is the difference between grouping, inhibition, and silencing in Alertmanager?</strong></summary>
+
+Grouping bundles related alerts (same alertname, cluster, service) into a single notification to prevent pager storms. Inhibition automatically suppresses symptom alerts when a higher-severity cause alert is firing — for example, suppressing all warnings in a cluster when a ClusterDown critical is active. Silencing is a manual, time-bounded mute you create before planned maintenance so known-noisy alerts do not page anyone. All three reduce noise, but grouping is structural, inhibition is automatic, and silencing is deliberate.
+
+</details>
+
+<details>
+<summary><strong>Q: Explain `group_wait`, `group_interval`, and `repeat_interval` — what happens if you set them wrong?</strong></summary>
+
+`group_wait` is the initial delay before sending the first notification for a new group, allowing related alerts to arrive together. `group_interval` controls how long to wait before sending an update when new alerts join an existing group. `repeat_interval` determines how often to re-notify about a still-firing alert. Setting `group_wait` too high delays critical pages; setting `repeat_interval` too low causes alert fatigue; setting `group_interval` too high means new alerts in a group go unnoticed for too long.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you achieve high availability for Alertmanager without sending duplicate notifications?</strong></summary>
+
+You run multiple Alertmanager instances (at least two) in a gossip-based cluster. All Prometheus instances send alerts to all Alertmanager peers. The cluster uses a peer-to-peer protocol to deduplicate notifications — only one instance in the cluster actually sends each notification. If one Alertmanager dies, the remaining peers continue sending without duplication. You configure the cluster with `--cluster.peer` flags pointing instances at each other.
+
+</details>
+
+<details>
+<summary><strong>Q: How would you handle alert routing for a BFSI organisation where payment alerts must reach a specific on-call rotation within 30 seconds?</strong></summary>
+
+Create a dedicated child route matching `team=payments` and `severity=page` with a short `group_wait` (10-15s) and route it to a PagerDuty receiver tied to the payments on-call schedule. Set `repeat_interval` to 30 minutes so a still-firing alert re-pages if unacknowledged. Use inhibition rules so a full payment-system outage suppresses individual transaction-level alerts, and ensure the notification template includes a runbook URL pointing to the payment incident playbook.
+
+</details>
+
+<details>
+<summary><strong>Q: What is the `continue` flag in routing, and when would you use it?</strong></summary>
+
+By default, an alert stops at the first matching route (`continue: false`). Setting `continue: true` on a route lets the alert also evaluate subsequent sibling routes. This is useful when you want one alert to notify multiple channels — for example, routing severity=critical to both PagerDuty and a Slack war-room channel. Without `continue`, you would need a webhook receiver that fans out manually.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you test Alertmanager configuration changes safely before deploying to production?</strong></summary>
+
+Use `amtool check-config alertmanager.yml` to validate syntax. Then use `amtool config routes test --config.file=alertmanager.yml` with sample alert label sets to verify which receiver each alert would hit. In staging, fire synthetic alerts via the Alertmanager API (`POST /api/v2/alerts`) and confirm they arrive at the expected receiver. Never push untested routing changes to production — a misconfigured catch-all can silently swallow critical pages.
+
+</details>
+
+<details>
+<summary><strong>Q: When should you use Alertmanager's inhibition rules versus Prometheus's `for` duration?</strong></summary>
+
+The `for` duration in Prometheus prevents flapping by requiring a condition to hold for a period before firing at all — it filters out transient spikes. Inhibition in Alertmanager suppresses alerts that are symptoms of a known, already-firing cause. They solve different problems: `for` reduces false positives from noisy metrics; inhibition reduces alert storms during cascading failures. Use both together — `for` on every rule to kill flapping, inhibition to handle correlated outages.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you make Alertmanager notifications actionable rather than just informational?</strong></summary>
+
+Use Go templates in receiver configs to include the alert summary, current metric value, affected service, and most importantly a `runbook_url` annotation from the Prometheus alert rule. A good notification answers three questions in under 10 seconds: what is broken, how bad is it, and where do I go to fix it. Without a runbook link, responders waste the first minutes of every incident figuring out what the alert even means.
+
+</details>
+
+<details>
+<summary><strong>Q: What happens to alerts during an Alertmanager restart or rolling upgrade?</strong></summary>
+
+If you run a single instance, in-flight alert state (active alerts, silences, notification log) is persisted to disk in the `--storage.path` directory. On restart, Alertmanager reloads this state and resumes. However, there is a brief window where incoming alerts are not processed. In an HA cluster, the other peers continue handling alerts during the restart, so the gap is invisible. This is why running at least two instances is essential for production — a single instance restart creates a notification blind spot.
+
+</details>
 
 ---
 

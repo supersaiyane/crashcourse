@@ -18,6 +18,20 @@ Flux inverts the model. The cluster reaches out to Git, not the other way around
 
 ---
 
+
+```mermaid
+graph LR
+    Git[Git Repository] --> Source[Source Controller]
+    Source --> Kustomize[Kustomize Controller]
+    Source --> Helm[Helm Controller]
+    Kustomize --> Cluster[Kubernetes Cluster]
+    Helm --> Cluster
+    Notify[Notification Controller] --> Slack[Alerts]
+    ImageAuto[Image Automation] --> Git
+    Cluster --> Reconcile[Reconciliation Loop]
+    Reconcile --> Source
+```
+
 ## Part 1 — The vocabulary
 
 Before you touch a command, get these terms straight. They appear everywhere.

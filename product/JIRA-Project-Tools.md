@@ -35,6 +35,17 @@ custom field. The board is the view; the database is the power.
 
 ---
 
+
+```mermaid
+graph LR
+    Discovery[Discover] --> Define[Define]
+    Define --> Plan[Plan]
+    Plan --> Execute[Execute]
+    Execute --> Measure[Measure]
+    Measure --> Iterate[Iterate]
+    Iterate --> Discovery
+```
+
 ## Part 1 — The vocabulary
 
 | Term | Meaning |
@@ -369,6 +380,80 @@ Shortcut:        balanced power and simplicity
 GitHub Projects: lightweight, native to GitHub
 Azure DevOps:    Microsoft ecosystem integration
 ```
+
+---
+
+## Top 10 Interview Questions
+
+<details>
+<summary><strong>Q: How do you structure a JIRA project for a new team starting from scratch?</strong></summary>
+
+Start with the simplest hierarchy that works: Epic, Story, Bug, Subtask. Configure a lean workflow (Backlog, Ready, In Progress, In Review, Done) with validation rules on key transitions. Set up a Scrum or Kanban board depending on the team's work pattern. Build quick filters for common views. Add complexity only when pain demands it — over-engineering the setup is the most common mistake.
+
+</details>
+
+<details>
+<summary><strong>Q: When would you choose a tool like Linear over JIRA?</strong></summary>
+
+Linear suits small-to-mid teams that value speed, keyboard-driven workflows, and opinionated defaults. JIRA suits enterprise teams needing advanced custom workflows, cross-project reporting, fine-grained permissions, and deep integration with the Atlassian ecosystem. If your team spends more time configuring JIRA than using it, a simpler tool may be the right choice.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you keep a product backlog from becoming a graveyard of stale tickets?</strong></summary>
+
+Groom the backlog weekly. Set a policy: any issue untouched for 90 days gets reviewed. Close issues that are no longer relevant rather than letting them accumulate. Keep only the top 2-3 sprints' worth of backlog refined and ready. A backlog with 400 items provides no signal — a focused backlog of 40-60 items enables real prioritisation.
+
+</details>
+
+<details>
+<summary><strong>Q: What JQL queries do you use most frequently as a PM?</strong></summary>
+
+My open work: `assignee = currentUser() AND status != Done`. Current sprint overview: `project = X AND sprint in openSprints()`. Overdue items: `due < now() AND status != Done`. Unassigned work: `assignee is EMPTY AND sprint in openSprints()`. These four cover daily standups, sprint health checks, and risk identification.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you handle a team that does not update their JIRA tickets regularly?</strong></summary>
+
+First understand why — if the workflow has too many statuses or the process is unclear, simplify it. Add automation rules (e.g., move to In Progress when a branch is created, move to In Review when a PR is opened). Make the board the centrepiece of standups so updating tickets becomes part of the daily rhythm. Never add more process to fix a process compliance problem.
+
+</details>
+
+<details>
+<summary><strong>Q: How should JIRA and Confluence work together?</strong></summary>
+
+Confluence holds the why and the how — PRDs, design docs, architecture decisions. JIRA holds the what and the when — issues, sprints, releases. Link them bidirectionally: JIRA issues reference the Confluence spec, Confluence pages embed live JQL tables showing implementation progress. Neither tool should be orphaned from the other.
+
+</details>
+
+<details>
+<summary><strong>Q: What JIRA automation rules deliver the most value?</strong></summary>
+
+Three high-impact rules: when all subtasks are Done, auto-move the parent story to Done (eliminates manual status management). When a PR is merged, move the issue to In Review (keeps the board in sync with code). When a Critical bug is created, notify the team channel (reduces response time). Start with these and add more only as you identify repetitive manual steps.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you build dashboards for different stakeholders?</strong></summary>
+
+Team dashboards show sprint burndown, current sprint issues, and activity. Stakeholder dashboards show epic progress bars, version release status, and created-vs-resolved trends. Engineering lead dashboards show velocity charts, cycle time, and component workload. Each audience needs a different level of detail — one dashboard for all audiences satisfies none.
+
+</details>
+
+<details>
+<summary><strong>Q: How many workflow statuses should a team have?</strong></summary>
+
+Five to six is the sweet spot for most teams: Backlog, Ready, In Progress, In Review, QA, Done. Every status you add is a status someone must remember to update. If issues routinely skip a status, that status is unnecessary. Review workflows quarterly and remove statuses that are not used. The best workflow is the one the team actually follows.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you use JIRA for cross-team dependency tracking?</strong></summary>
+
+Use issue links (blocks/is blocked by) to make dependencies visible between projects. Create a cross-project JQL filter to surface all blocked items. If dependencies are frequent, consider a shared dashboard showing dependency status across teams. The goal is to make dependencies visible early so they can be resolved in refinement, not discovered mid-sprint.
+
+</details>
 
 ---
 

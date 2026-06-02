@@ -45,6 +45,19 @@ Good API design is not aesthetics. It is operational hygiene. When you get it ri
 
 ---
 
+```mermaid
+graph TD
+    Client[Client] -->|HTTP Request| GW[API Gateway]
+    GW -->|Route + Auth| SVC[Service]
+    SVC -->|Read/Write| DB[(Database)]
+    SVC -->|Publish Event| MQ[Message Queue]
+    GW -->|Rate Limit| RL[Rate Limiter]
+    GW -->|Version| V1[/v1/resources]
+    GW -->|Version| V2[/v2/resources]
+    SVC -->|Paginated Response| Client
+    SVC -->|Error RFC 7807| Client
+```
+
 ## Day 1 — REST Done Right
 
 ### Resource Design
@@ -667,6 +680,70 @@ security:
 
 ---
 
+## Interview Questions
+
+<details><summary><strong>Q: When should you use cursor-based pagination instead of offset-based, and what problem does offset pagination have with live datasets?</strong></summary>
+
+Offset pagination breaks when rows are inserted or deleted between page fetches — the client can skip items or see duplicates because the offset shifts. Cursor pagination encodes a position (typically a primary key or timestamp) as an opaque token, so the next page always starts from the correct record regardless of concurrent modifications. Use cursor pagination for any dataset that changes frequently or is large enough that counting total rows is expensive.
+
+</details>
+
+<details><summary><strong>Q: Why is returning HTTP 200 with an error body considered an anti-pattern, and what should you do instead?</strong></summary>
+
+Consumers rely on status codes for control flow — a 200 means success, and many HTTP clients, proxies, and monitoring tools treat it as such without parsing the body. Returning 200 with an error body forces every consumer to inspect the response payload to detect failures, which defeats the purpose of standardized status codes. Use the correct 4xx or 5xx code so clients, load balancers, and observability tools can distinguish success from failure without body parsing.
+
+</details>
+
+<details><summary><strong>Q: Explain idempotency keys for POST requests. Why are they necessary and how should the server handle retries?</strong></summary>
+
+POST is not idempotent by default — retrying a failed payment POST can create duplicate charges. An idempotency key is a client-generated UUID sent as a header with each logical operation. The server stores the key alongside the response; if the same key arrives again, the server returns the cached response without re-executing the operation. Keys should have a TTL (typically 24-48 hours), and the server should use atomic check-and-set operations to prevent race conditions between concurrent retries.
+
+</details>
+
+<details><summary><strong>Q: Compare URL versioning, header versioning, and content-type negotiation for APIs. When would you choose each?</strong></summary>
+
+URL versioning (/v1/users) is the most visible and easiest to route at infrastructure level — ideal for public APIs where discoverability matters. Header versioning (Accept: application/vnd.api+json;version=2) keeps URLs clean but requires clients to set custom headers, making it less discoverable — suitable for internal APIs where you control all clients. Content-type negotiation follows HTTP semantics closely and works well with content-aware proxies, but adds complexity. The practical default is URL versioning for external, header versioning for internal.
+
+</details>
+
+<details><summary><strong>Q: How does the token bucket rate limiting algorithm work, and why is it preferred over fixed-window for most APIs?</strong></summary>
+
+Token bucket maintains a bucket with a fixed capacity that refills at a constant rate. Each request consumes one token; when the bucket is empty, requests are denied. It naturally allows short bursts up to the bucket capacity while enforcing a long-term average rate. Fixed-window counting resets at window boundaries, allowing a burst of 2x the limit if requests cluster at the boundary between two windows. Token bucket provides smoother rate enforcement and is the algorithm used by most production API gateways.
+
+</details>
+
+<details><summary><strong>Q: What makes a change to a REST API "breaking" versus "additive"? Give examples of each.</strong></summary>
+
+Additive (non-breaking) changes include adding a new optional field to a response, adding a new endpoint, or adding a new optional query parameter. Breaking changes include removing a field, renaming a field, changing a field's type, making an optional field required, or changing the semantics of an existing field. Adding a new enum value is a gray area — clients that exhaustively switch on enum values will break. The rule is: never change the contract consumers already depend on without a version bump.
+
+</details>
+
+<details><summary><strong>Q: When would you choose gRPC over REST for service-to-service communication, and what are the trade-offs?</strong></summary>
+
+Choose gRPC when you control both client and server, need strong typing with code generation, require bidirectional streaming, or need high throughput with low latency. gRPC uses HTTP/2 and binary protobuf encoding, making it faster and more compact than JSON over REST. The trade-offs are: no browser support without gRPC-Web proxy, binary format is not human-readable for debugging, and the protobuf toolchain adds build complexity. REST remains better for public-facing APIs due to universal tooling and debuggability.
+
+</details>
+
+<details><summary><strong>Q: What is the dual-write problem in the context of API design, and how do idempotency keys and the outbox pattern address it?</strong></summary>
+
+The dual-write problem occurs when an API must write to a database and publish an event atomically — if the database write succeeds but the event publish fails, the system is inconsistent. Idempotency keys allow safe retries of the entire operation. The outbox pattern writes both the business data and the event to the same database transaction, then a separate relay publishes events from the outbox table. Together, these patterns ensure that mutations are both safe to retry and eventually consistent with downstream consumers.
+
+</details>
+
+<details><summary><strong>Q: How should you design error responses for an API that serves multiple consumer types (mobile, web, partners)?</strong></summary>
+
+Use a standardized error envelope like RFC 7807 Problem Details: a type URI identifying the error class, a human-readable title, the HTTP status code, a detail message, and an array of field-level validation errors. This format is machine-parseable (consumers can switch on type URI) and human-readable (detail gives context). Consistent error shapes across all endpoints mean consumers write one error-handling path, not a custom parser per endpoint. Never leak stack traces or internal implementation details — log those server-side.
+
+</details>
+
+<details><summary><strong>Q: What is HATEOAS and why is it rarely fully implemented? When does partial HATEOAS still add value?</strong></summary>
+
+HATEOAS (Hypermedia As The Engine Of Application State) means API responses include links to valid next actions, so clients navigate the API by following links rather than hardcoding URLs. Full HATEOAS is rarely implemented because it adds payload size, most clients are purpose-built and already know the URL structure, and it requires significant server-side logic to generate correct links per state. Partial HATEOAS — such as including pagination links (next/prev cursors) or a self link — adds genuine value by making responses self-describing without the full complexity.
+
+</details>
+
+---
+
 ## Next Steps
 
 - `HTTP.md` — HTTP/1.1, HTTP/2, headers, caching, TLS — the transport layer your API runs on
@@ -693,3 +770,78 @@ security:
 ## The Mantra
 
 > Design for the consumer, not the implementation. The API surface is a promise — once published, you own it.
+
+## Top 10 Interview Questions
+
+<details>
+<summary><strong>Q: What are the key differences between REST, GraphQL, and gRPC?</strong></summary>
+
+REST: resource-oriented, HTTP verbs, simple, widely supported, over-fetching/under-fetching problem. GraphQL: query language, client specifies exactly what data it needs, single endpoint, complex to cache. gRPC: binary protocol (protobuf), bidirectional streaming, strongly typed, excellent for service-to-service communication. Choose REST for public APIs (simplicity, cacheability), GraphQL for complex UIs needing flexible data fetching, gRPC for internal microservice communication (performance, type safety).
+
+</details>
+
+<details>
+<summary><strong>Q: How do you version APIs without breaking existing clients?</strong></summary>
+
+URL versioning (/v1/users — most common, explicit), header versioning (Accept: application/vnd.api.v1+json — cleaner URLs but harder to test), query parameter (?version=1 — flexible but unusual). Best practice: never break existing versions, deprecate with a timeline (6-12 months), monitor usage of deprecated versions, and communicate changes clearly. For internal APIs, gRPC with protobuf handles backward compatibility via field numbering rules.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you design pagination for large result sets?</strong></summary>
+
+Offset-based (page=2&limit=20 — simple, allows jumping to any page, but inconsistent with concurrent writes and slow for deep pages). Cursor-based (after=cursor_token&limit=20 — consistent, performant for any depth, but no random page access). Keyset-based (WHERE id > last_seen_id LIMIT 20 — most performant, uses index). Use cursor-based for most APIs. Offset for UIs that need page numbers. Always include total_count, next_cursor, and has_more in responses.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you handle errors in API design?</strong></summary>
+
+Use standard HTTP status codes correctly (400 client error, 401 unauthorized, 403 forbidden, 404 not found, 409 conflict, 422 validation, 429 rate limited, 500 server error). Return structured error bodies: code (machine-readable), message (human-readable), details (field-level validation errors). Never expose stack traces or internal details. Be consistent — all errors follow the same envelope format. Provide actionable guidance in error messages ('limit must be between 1 and 100').
+
+</details>
+
+<details>
+<summary><strong>Q: What is idempotency and why is it critical for API design?</strong></summary>
+
+An idempotent operation produces the same result regardless of how many times it is called. GET, PUT, DELETE are idempotent by design. POST is not — sending the same POST twice may create duplicate resources. Make POST idempotent using idempotency keys: the client sends a unique key with each request, the server stores it and returns the same response for duplicate keys. Critical for payment APIs (prevent double charges) and any operation where network retries can occur.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you design authentication and authorization for APIs?</strong></summary>
+
+Authentication (who are you): API keys (simple, for server-to-server), OAuth 2.0 (for user-delegated access), JWT (stateless tokens — encode claims in the token). Authorization (what can you do): RBAC (role-based — admin, user, viewer), ABAC (attribute-based — more flexible), or scope-based (OAuth scopes). For public APIs: OAuth 2.0 with API keys for identification. For internal: mTLS between services, JWT for user context. Never put secrets in URLs (they are logged).
+
+</details>
+
+<details>
+<summary><strong>Q: How do you design webhooks for event-driven APIs?</strong></summary>
+
+Define events (order.created, payment.completed), let consumers register callback URLs, and POST event payloads to those URLs when events occur. Implementation: queue events (do not send synchronously from the main flow), retry with exponential backoff on delivery failure (3-5 retries over hours), include an HMAC signature for verification, implement idempotency (include event_id so consumers can deduplicate), and provide a replay endpoint for missed events.
+
+</details>
+
+<details>
+<summary><strong>Q: What are the best practices for API rate limiting?</strong></summary>
+
+Limit by: API key (prevent individual abuse), user (prevent account abuse), IP (prevent DDoS), and endpoint (protect expensive operations). Communicate limits: X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset headers. Return 429 Too Many Requests with Retry-After header. Use sliding window algorithm for fairness. Allow burst capacity for legitimate traffic patterns. Implement graceful degradation: throttle before blocking, serve cached responses when rate-limited.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you design APIs for backward compatibility?</strong></summary>
+
+Rules: never remove fields from responses (add new fields instead), never change field types (add a new field with the new type), never change the meaning of existing fields, never make optional fields required, and always add new endpoints rather than changing existing ones. Use field masks or sparse fieldsets for clients to request only what they need. Deprecate old fields and endpoints with clear timelines. Run integration tests against previous API versions in CI.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you secure APIs against common vulnerabilities?</strong></summary>
+
+Input validation (whitelist, not blacklist), parameterised queries (prevent SQL injection), output encoding (prevent XSS in API responses that render in browsers), CORS configuration (restrict allowed origins), TLS everywhere (encrypt in transit), rate limiting (prevent abuse), authentication on every endpoint (no security by obscurity), and API key rotation (support multiple active keys for zero-downtime rotation). Use OWASP API Security Top 10 as your checklist.
+
+</details>
+
+---
+

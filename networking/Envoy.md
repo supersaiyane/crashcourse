@@ -46,6 +46,16 @@ Before you touch a config file, commit these terms to memory. Envoy has precise 
 
 ---
 
+
+```mermaid
+graph LR
+    Client[Client Request] --> Protocol[Envoy Layer]
+    Protocol --> Process[Processing]
+    Process --> Response[Response]
+    Config[Configuration] --> Protocol
+    Monitor[Monitoring] --> Protocol
+```
+
 ## DAY 1 — Static Configuration, Core Concepts
 
 ### Install
@@ -606,6 +616,80 @@ Key stats to know:
 | `cluster.<name>.upstream_rq_5xx` | 5xx responses from upstream |
 | `http.<stat_prefix>.downstream_rq_total` | Total downstream requests |
 | `http.<stat_prefix>.downstream_rq_time` | Downstream request latency |
+
+---
+
+## Top 10 Interview Questions
+
+<details>
+<summary><strong>Q: What problem does Envoy solve that Nginx does not?</strong></summary>
+
+Envoy was designed for dynamic service mesh environments where upstream endpoints change constantly. Unlike Nginx, which requires config file reloads to update upstreams, Envoy receives configuration updates at runtime via xDS gRPC APIs. It also provides built-in per-request observability (distributed tracing, latency histograms, circuit breaker stats) and runs natively as a sidecar proxy -- capabilities that Nginx was not designed for.
+
+</details>
+
+<details>
+<summary><strong>Q: Explain the xDS API family and why it matters.</strong></summary>
+
+xDS is a set of gRPC discovery APIs: LDS (listeners), CDS (clusters), RDS (routes), EDS (endpoints), and SDS (secrets). A management plane like Istiod pushes config updates through these APIs, allowing Envoy to add or remove routes, endpoints, and certificates without restarting. This enables zero-downtime configuration changes in environments where pods scale up and down continuously.
+
+</details>
+
+<details>
+<summary><strong>Q: How does Envoy's circuit breaking prevent cascade failures?</strong></summary>
+
+Circuit breaking sets hard limits on concurrent connections, pending requests, and retries per upstream cluster. When a threshold is exceeded, Envoy immediately returns a 503 instead of queueing more work to an already-struggling upstream. This prevents a slow or failing service from consuming all connection resources in the mesh, which would otherwise cascade to callers of callers.
+
+</details>
+
+<details>
+<summary><strong>Q: What is the difference between active health checks and outlier detection in Envoy?</strong></summary>
+
+Active health checks periodically send probe requests (e.g., HTTP GET /healthz) to upstream endpoints and remove unresponsive ones. Outlier detection is passive -- it monitors actual traffic and ejects endpoints that exceed error thresholds (e.g., 5 consecutive 5xx). Use both together for defence in depth: active checks catch crashes, outlier detection catches degraded performance under real load.
+
+</details>
+
+<details>
+<summary><strong>Q: When would you choose a front proxy deployment over a sidecar deployment?</strong></summary>
+
+Use a front proxy when you need edge-level concerns (TLS termination, rate limiting, auth) with low operational complexity. Use sidecars when you need per-service observability, per-service policy enforcement, and mTLS between every service pair. Start with front proxy and graduate to sidecar when you genuinely need mesh-level visibility. Sidecars add approximately 1ms latency per hop and significantly increase operational complexity.
+
+</details>
+
+<details>
+<summary><strong>Q: Why is it dangerous to configure retries without also setting max_retries in circuit breakers?</strong></summary>
+
+Retries multiply load on an upstream. If every request retries 3 times and the upstream is failing, you have tripled your request rate to a service that is already struggling. The `max_retries` field in circuit breaker thresholds caps the total concurrent retry attempts across all requests, preventing retry storms from turning a partial failure into a total outage.
+
+</details>
+
+<details>
+<summary><strong>Q: Explain the difference between LOGICAL_DNS, STRICT_DNS, and STATIC cluster types.</strong></summary>
+
+STATIC uses a fixed list of endpoints you provide in config. LOGICAL_DNS resolves a hostname once and sticks with that IP -- suitable for external services behind a load balancer. STRICT_DNS re-resolves continuously and uses all returned A records -- correct for Kubernetes headless services where pod IPs change. Using LOGICAL_DNS for Kubernetes backends is a common misconfiguration that causes traffic to route to dead pods.
+
+</details>
+
+<details>
+<summary><strong>Q: How do WASM filters extend Envoy, and what are their tradeoffs?</strong></summary>
+
+WASM filters let you write custom logic (auth, header manipulation, request transformation) in Rust, Go, or C++ and load it into Envoy at runtime without recompiling. They run in a sandbox and can read/modify headers and call external services. The tradeoff is performance: WASM filters are meaningfully slower than native C++ filters on hot paths, so benchmark before deploying them to high-throughput routes.
+
+</details>
+
+<details>
+<summary><strong>Q: How does Envoy handle distributed tracing?</strong></summary>
+
+Envoy generates ingress and egress spans for every request and reports them to a tracing backend (Zipkin, Jaeger, OpenTelemetry). It propagates trace context headers (e.g., `x-b3-traceid`, `x-b3-spanid`) automatically. However, your application services must forward these headers on outbound calls -- Envoy handles the edges, but the middle hops depend on your code passing the context through.
+
+</details>
+
+<details>
+<summary><strong>Q: What are the key Envoy metrics to monitor in production, and where do you find them?</strong></summary>
+
+The admin API at `/stats/prometheus` exposes all metrics. Key ones: `upstream_rq_total` (request volume), `upstream_rq_time` (latency), `upstream_rq_5xx` (error rate), `upstream_cx_active` (connection count), and `circuit_breakers.default.rq_open` (circuit breaker state). These align directly with the SRE golden signals -- traffic, latency, errors, and saturation. Alert on circuit breaker trips and p99 latency breaches.
+
+</details>
 
 ---
 

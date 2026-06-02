@@ -32,6 +32,19 @@ the dashboard does not tell you *where* to drive — that is strategy. And it do
 *why* the engine is making that noise — that is discovery. Analytics shows you the state of the
 machine so you can make better driving decisions.
 
+```mermaid
+graph LR
+    A[Acquisition] --> B[Activation]
+    B --> C[Retention]
+    C --> D[Revenue]
+    D --> E[Referral]
+    E --> A
+    F[Event Tracking] --> G[Funnels & Cohorts]
+    G --> H[Insights & Decisions]
+    H --> I[A/B Tests]
+    I --> G
+```
+
 ---
 
 ## Part 1 — The vocabulary
@@ -403,6 +416,80 @@ Health (North Star, active users) → Growth levers (AARRR input metrics) → Ex
 [object].[action] in past tense with documented properties
 Example: onboarding.step_completed { step_number, duration_seconds }
 ```
+
+---
+
+## Top 10 Interview Questions
+
+<details>
+<summary><strong>Q: How do you choose a North Star metric for a product?</strong></summary>
+
+The North Star should capture the core value exchange between the product and users. It must be measurable, influenceable by the product team, and a leading indicator of long-term business health. Slack chose "messages sent in channels per week" because it reflects actual team communication value. Avoid lagging indicators like revenue or vanity metrics like total signups — they tell you what happened, not whether you are delivering value.
+
+</details>
+
+<details>
+<summary><strong>Q: What is the difference between data-driven and data-informed decision-making?</strong></summary>
+
+Data-driven implies data makes the decision. Data-informed means data is one input alongside user research, strategic context, and product judgment. Data should lead when you are choosing an A/B test winner or identifying funnel drop-offs. Data should inform but not decide when choosing what to build next or whether to enter a new market. The best PMs know when to follow the data and when to override it with judgment.
+
+</details>
+
+<details>
+<summary><strong>Q: Retention is dropping. Walk me through how you would diagnose the problem.</strong></summary>
+
+Start with cohort analysis to identify when the drop started and which cohorts are affected. Check what changed around that time — product changes, channel mix shifts, pricing updates. Run funnel analysis on affected cohorts to find where users drop off. Segment by acquisition channel, user type, or plan tier to isolate the problem. Follow up with qualitative interviews of users who churned to understand why. Aggregate metrics hide problems; cohorts and segments reveal them.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you avoid common mistakes when running A/B tests?</strong></summary>
+
+Define the success metric before starting, not after. Calculate sample size in advance and commit to running the full duration. Do not peek at results and stop early when one variant looks better — this leads to false positives. Test one change at a time so you can attribute the result. Always check guardrail metrics: a change that improves activation but increases churn is not a win.
+
+</details>
+
+<details>
+<summary><strong>Q: What is the difference between a vanity metric and an actionable metric?</strong></summary>
+
+A vanity metric looks impressive but drives no decisions — total signups, page views, app downloads. An actionable metric tells you something specific you can act on — activation rate, Week 1 retention, free-to-paid conversion rate. The test: if the metric goes down, do you know what to investigate and change? If yes, it is actionable. If no, it is vanity.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you design an event tracking plan for a new feature?</strong></summary>
+
+Define every event using a consistent object.action taxonomy in past tense (user.signed_up, onboarding.step_completed). Include properties that provide context: user_id, timestamp, plan_type, source. Document every event in a tracking plan before engineering begins — what it is, when it fires, and what question it answers. Make instrumentation part of the definition of done. Without a plan, analytics become an unmaintainable mess within months.
+
+</details>
+
+<details>
+<summary><strong>Q: How do cohort analysis and funnel analysis complement each other?</strong></summary>
+
+Funnels show where users drop off in a journey — they reveal the weakest step. Cohorts show whether performance is improving over time by comparing users who joined in different periods. Use funnels to find the problem (60% drop-off at onboarding), then use cohorts to track whether your fix is working (did the January cohort have better onboarding completion than December?). Together they give you both the diagnosis and the treatment monitoring.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you handle the situation where correlation looks like causation in product data?</strong></summary>
+
+"Users who complete onboarding have higher retention" does not mean forcing users through onboarding improves retention — it means engaged users do both. Look for natural experiments, use A/B tests to prove causation, and be sceptical of any finding that conveniently confirms your hypothesis. Also watch for survivorship bias — you only see data from users who stayed; the ones who left are invisible.
+
+</details>
+
+<details>
+<summary><strong>Q: What should a product analytics dashboard include, and what should it leave out?</strong></summary>
+
+Three layers: health check (North Star metric, active users, error rate), growth levers (AARRR input metrics with trends), and experiment results (active A/B tests and recent feature impact). Leave out anything without an owner who monitors and acts on it. Fewer metrics are better — if you have 40, nobody looks at any. Every metric should include a trend, not just a snapshot.
+
+</details>
+
+<details>
+<summary><strong>Q: When should you not rely on analytics and use qualitative research instead?</strong></summary>
+
+Analytics tells you what is happening; it cannot tell you why. When you see a drop-off but do not know the reason, talk to users. When you are exploring a new problem space, interviews reveal needs that no data can surface. When you need to understand emotional reactions, workarounds, or unspoken needs, qualitative research is essential. The best product teams use both: quantitative to find the pattern, qualitative to understand it.
+
+</details>
 
 ---
 

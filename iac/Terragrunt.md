@@ -20,6 +20,22 @@ Terragrunt solves all three. It generates backend config at apply time from a si
 
 ---
 
+
+```mermaid
+graph TD
+    Root[Root terragrunt.hcl]
+    Root --> EnvDev[dev/]
+    Root --> EnvProd[prod/]
+    EnvDev --> VPC_Dev[vpc/terragrunt.hcl]
+    EnvDev --> EKS_Dev[eks/terragrunt.hcl]
+    EnvProd --> VPC_Prod[vpc/terragrunt.hcl]
+    EnvProd --> EKS_Prod[eks/terragrunt.hcl]
+    VPC_Dev --> Module[Shared Module: modules/vpc]
+    VPC_Prod --> Module
+    EKS_Dev --> Dep[dependency: vpc]
+    EKS_Prod --> Dep2[dependency: vpc]
+```
+
 ## Part 1 — The vocabulary
 
 | Term | What it is |
@@ -559,6 +575,81 @@ rm -rf .terragrunt-cache
 ```
 
 ⚠️ `run-all destroy` is irreversible. Always run `run-all plan` first and read the destroy plan carefully. In production, prefer targeted destroys.
+
+---
+
+
+## Top 10 Interview Questions
+
+<details>
+<summary><strong>Q: What is Terragrunt and what problems does it solve that Terraform alone cannot?</strong></summary>
+
+Terragrunt is a thin wrapper around Terraform that provides: DRY configuration (share common settings across environments without copy-paste), remote state management (auto-configure S3 + DynamoDB backends), dependency management (define execution order between modules), and multi-environment support (dev/staging/prod from the same modules with different inputs). Terraform alone requires: duplicating backend configs across modules, manually ordering applies for dependent resources, and maintaining separate directories with copy-pasted provider/backend blocks.
+
+</details>
+
+<details>
+<summary><strong>Q: How does Terragrunt keep Terraform configurations DRY?</strong></summary>
+
+Terragrunt uses include blocks and generate blocks to share configuration. A root terragrunt.hcl defines common provider config, backend config, and shared inputs. Child directories include the root config and add only what is specific to their module. This eliminates: duplicated backend blocks (defined once in root), duplicated provider blocks (generated into each module), and duplicated input values (inherited from parent configs, overridden where needed). The result: each environment's terragrunt.hcl is 10-20 lines instead of 50-100 lines of duplicated Terraform.
+
+</details>
+
+<details>
+<summary><strong>Q: How does Terragrunt handle cross-module dependencies?</strong></summary>
+
+Use dependency blocks: eks/terragrunt.hcl declares dependency { config_path = '../vpc' } to depend on the VPC module. Terragrunt automatically runs vpc first when you run terragrunt run-all apply. Dependencies can read outputs: dependency.vpc.outputs.vpc_id passes the VPC ID from the vpc module to the eks module without hardcoding. This replaces: manual ordering of terraform apply commands, terraform_remote_state data sources (fragile, couples modules), and wrapper scripts for orchestration.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you structure a Terragrunt project for multiple environments?</strong></summary>
+
+Recommended structure: root terragrunt.hcl (common config), environments as directories (dev/, staging/, prod/), each containing subdirectories per module (vpc/, eks/, rds/). Each module directory has a terragrunt.hcl that sources the shared Terraform module and provides environment-specific inputs. Shared Terraform modules live in a separate modules/ directory or Git repository. This structure gives: clear environment separation, minimal duplication, and independent state per module per environment.
+
+</details>
+
+<details>
+<summary><strong>Q: How does Terragrunt manage remote state automatically?</strong></summary>
+
+Define remote_state block in the root terragrunt.hcl with templated values: bucket name includes account ID and region, key uses path_relative_to_include() (auto-generates unique keys per module). Terragrunt automatically creates the S3 bucket and DynamoDB lock table if they do not exist. This eliminates: the chicken-and-egg problem (who creates the state bucket?), copy-pasted backend blocks, and manual state key management. Each module gets its own state file automatically, based on its directory path.
+
+</details>
+
+<details>
+<summary><strong>Q: What is run-all and how do you use it safely?</strong></summary>
+
+terragrunt run-all apply applies all modules in a directory tree respecting dependency order. terragrunt run-all plan previews all changes. Use --terragrunt-parallelism to control concurrency. Safety considerations: always run plan first and review the output, use --terragrunt-exclude-dir to skip specific modules, and be aware that run-all destroy processes modules in reverse dependency order. In production, run-all plan in CI for review, but consider applying critical modules individually for more control.
+
+</details>
+
+<details>
+<summary><strong>Q: How does Terragrunt compare to Terraform workspaces for multi-environment management?</strong></summary>
+
+Terraform workspaces use the same code with separate state files, switched via terraform workspace select. Limitations: all environments share the same directory (hard to have different module versions per environment), workspace name is the only differentiator (error-prone — applying to wrong workspace), and no dependency management between workspaces. Terragrunt uses separate directories per environment: different inputs, independent state, clear boundaries, and explicit dependency management. Most production teams prefer Terragrunt's directory-based approach for its clarity and safety.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you test Terragrunt configurations?</strong></summary>
+
+Use Terratest (Go testing framework): write tests that run terragrunt apply, validate outputs, verify infrastructure, then terragrunt destroy. Test in a dedicated test account with unique resource naming (avoid collisions). Unit test individual modules with minimal inputs. Integration test the full stack (run-all apply on a test environment). Validate configuration without applying: terragrunt validate and terragrunt run-all validate. In CI: validate on every PR, apply to a test environment on merge, run Terratest periodically for regression.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you handle secrets and sensitive variables in Terragrunt?</strong></summary>
+
+Never commit secret values to terragrunt.hcl files. Approaches: reference AWS SSM Parameter Store or Secrets Manager in inputs (data sources in the Terraform module fetch at plan time), use environment variables (TF_VAR_*), integrate with Vault via the Vault Terraform provider, or use sops-encrypted .yaml files decrypted at plan time. For the state backend: enable S3 bucket encryption and DynamoDB encryption at rest. Mark sensitive outputs with sensitive = true in Terraform to prevent logging.
+
+</details>
+
+<details>
+<summary><strong>Q: When should you adopt Terragrunt versus native Terraform or Pulumi?</strong></summary>
+
+Adopt Terragrunt when: you manage multiple environments with Terraform and are tired of duplication, you need cross-module dependency management, your team is already proficient in Terraform (Terragrunt adds minimal new concepts), or you want automated remote state management. Stick with native Terraform for: single-environment setups, small projects, or when you can use Terraform Cloud/Enterprise for state and workspace management. Choose Pulumi when: you prefer real programming languages over HCL and want richer abstractions than Terraform modules provide.
+
+</details>
 
 ---
 

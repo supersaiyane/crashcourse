@@ -18,6 +18,21 @@ The value isn't replacing the on-call engineer. It's making that engineer's firs
 
 ---
 
+
+```mermaid
+graph LR
+    Collect[Data Collection] --> Aggregate[Aggregation Layer]
+    Aggregate --> Detect[Anomaly Detection]
+    Detect --> Correlate[Event Correlation]
+    Correlate --> RCA[Root Cause Analysis]
+    RCA --> Automate[Automated Remediation]
+    Automate --> Feedback[Feedback Loop]
+    Feedback --> Detect
+    Metrics[Metrics] --> Collect
+    Logs[Logs] --> Collect
+    Traces[Traces] --> Collect
+```
+
 ## Part 1 — The vocabulary
 
 | Term | What it means |
@@ -438,6 +453,81 @@ Does ML correlation model score > 0.8 with any active incident? ──Yes──�
     ▼
 Create standalone alert ──▶ Assemble LLM context ──▶ Generate summary ──▶ Page on-call
 ```
+
+---
+
+
+## Top 10 Interview Questions
+
+<details>
+<summary><strong>Q: What is AIOps and how does it differ from traditional monitoring?</strong></summary>
+
+AIOps applies machine learning and AI to IT operations data (metrics, logs, traces, events) to automate detection, correlation, and remediation. Traditional monitoring uses static thresholds and manual rules — an engineer defines 'CPU > 80% = alert.' AIOps learns normal behaviour patterns and detects anomalies dynamically, correlates related alerts across services, and can trigger automated remediation. The shift is from reactive rule-based alerting to proactive pattern-based intelligence.
+
+</details>
+
+<details>
+<summary><strong>Q: What types of anomaly detection work best for infrastructure metrics?</strong></summary>
+
+Statistical methods (Z-score, IQR) work for stationary data. For time-series with seasonality (which most infra metrics have), use STL decomposition, Prophet, or SARIMA to model expected patterns and flag deviations. ML approaches like Isolation Forest and autoencoders handle multivariate anomalies. In practice, start with simple statistical baselines per metric, then add ML for cross-metric correlation. False positive rates are the main challenge — tune aggressively.
+
+</details>
+
+<details>
+<summary><strong>Q: How does event correlation reduce alert fatigue in AIOps?</strong></summary>
+
+A single incident (e.g., a database failover) triggers dozens of alerts across dependent services. Event correlation groups these into a single incident by analysing temporal proximity (alerts within the same time window), topological dependency (service A depends on service B), and causal patterns learned from historical incidents. This can reduce alert volume by 90%+. Without correlation, on-call engineers waste time triaging symptoms instead of finding the root cause.
+
+</details>
+
+<details>
+<summary><strong>Q: What role does NLP play in AIOps for log analysis?</strong></summary>
+
+NLP techniques parse and cluster unstructured log messages: log template extraction (Drain algorithm) identifies patterns in log streams, embedding-based clustering groups semantically similar log lines, and anomaly detection flags unusual log patterns. LLMs can now summarise log clusters, explain anomalies in natural language, and suggest remediation steps. The value: turning millions of log lines into actionable insights without manual regex authoring.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you implement automated remediation safely?</strong></summary>
+
+Start with low-risk, well-understood remediations (restart a pod, scale up instances, clear a cache). Gate automation with confidence thresholds — only auto-remediate when the system is highly confident in the diagnosis. Implement blast radius limits (only affect N instances), rollback mechanisms (revert if health checks fail post-remediation), and human approval for high-risk actions. Log every automated action for audit. Gradually expand scope as trust builds.
+
+</details>
+
+<details>
+<summary><strong>Q: What is the difference between supervised and unsupervised approaches in AIOps?</strong></summary>
+
+Supervised approaches (classification of incidents, prediction of failures) require labelled historical data — expensive to create and maintain but highly accurate for known patterns. Unsupervised approaches (clustering, anomaly detection) work without labels — better for discovering unknown issues but produce more false positives. Most production AIOps systems use unsupervised for detection and semi-supervised for classification, with human feedback continuously improving the models.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you measure the effectiveness of an AIOps implementation?</strong></summary>
+
+Key metrics: mean time to detect (MTTD — should decrease), mean time to resolve (MTTR — should decrease), alert-to-incident ratio (should increase — fewer false alerts per real incident), noise reduction percentage (alerts suppressed by correlation), and automated remediation success rate. Track before/after deployment and per-model. A common pitfall: optimising for detection speed while ignoring false positive rates, which shifts burden from monitoring to alert triage.
+
+</details>
+
+<details>
+<summary><strong>Q: How does AIOps handle the cold start problem with new services?</strong></summary>
+
+New services have no historical data for baseline learning. Approaches: transfer learning from similar services (a new API gateway behaves like existing ones), rule-based thresholds as a bootstrap (switch to ML once enough data accumulates), and synthetic baseline generation using load tests. Set explicit warm-up periods during which the system learns but does not auto-remediate. In practice, 2-4 weeks of data is sufficient for most statistical anomaly detection methods.
+
+</details>
+
+<details>
+<summary><strong>Q: What are the challenges of applying AIOps in a microservices environment?</strong></summary>
+
+Microservices multiply the data volume (hundreds of services, each emitting metrics, logs, traces) and the dependency complexity (a single request touches 10+ services). Challenges: maintaining an accurate service dependency graph, correlating events across service boundaries, handling ephemeral containers (short-lived instances break historical baselines), and distinguishing between a failing service and its failing dependency. Distributed tracing and service mesh telemetry are essential inputs.
+
+</details>
+
+<details>
+<summary><strong>Q: How do LLMs enhance AIOps compared to traditional ML approaches?</strong></summary>
+
+LLMs bring natural language understanding to AIOps: summarise incidents in human-readable language, query observability data conversationally ('what caused the latency spike at 3am?'), generate runbook steps from historical patterns, and explain anomalies with context. Unlike traditional ML which outputs scores and classifications, LLMs produce actionable explanations. The limitation: LLMs hallucinate, so ground their outputs in actual telemetry data and validate recommendations before auto-execution.
+
+</details>
 
 ---
 

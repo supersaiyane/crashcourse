@@ -36,6 +36,13 @@ Salt also blurs the line between configuration management and remote execution. 
 
 ---
 
+
+```mermaid
+graph LR
+    Input[Input] --> SaltStack[SaltStack]
+    SaltStack --> Output[Output]
+```
+
 ## DAY 1 — Get Running
 
 ### Install the Master
@@ -698,3 +705,78 @@ salt-call --local state.apply nginx         # masterless mode
 
 > States declare intent. Execution enforces it. The bus makes it instant.
 > You do not log into servers — you target them, describe what they should be, and let Salt make reality match the description.
+
+## Top 10 Interview Questions
+
+<details>
+<summary><strong>Q: What is SaltStack and how does it differ from Ansible and Puppet?</strong></summary>
+
+SaltStack (Salt) is a configuration management and remote execution framework using a master-minion architecture with ZeroMQ for high-speed communication. Key difference: Salt is the fastest at scale — ZeroMQ enables pushing commands to thousands of minions in seconds, while Ansible uses sequential SSH and Puppet uses periodic pulls. Salt combines: configuration management (states), remote execution (run commands on any minion instantly), event-driven automation (reactor system), and orchestration (multi-minion workflows).
+
+</details>
+
+<details>
+<summary><strong>Q: How does Salt's master-minion communication work?</strong></summary>
+
+Salt uses ZeroMQ (or optionally TCP) for asynchronous, encrypted communication. Minions connect to the master and maintain a persistent connection. The master can push commands to any minion instantly (remote execution) or minions can pull their desired state (highstate). Communication is authenticated via public key exchange (minion keys must be accepted by the master). The ZeroMQ bus enables: real-time command execution across thousands of nodes, event streaming, and the reactor system.
+
+</details>
+
+<details>
+<summary><strong>Q: What are Salt States and how do they define desired configuration?</strong></summary>
+
+States are YAML files (.sls) that declare the desired state of a system: packages installed, files present with specific content, services running. States are idempotent — applying them multiple times produces the same result. States support: requisites (require, watch, onchanges — dependency ordering), Jinja templating (dynamic content based on grains/pillar), and includes (compose states from reusable components). The top.sls file maps states to minions based on targeting (hostname, grains, pillar data).
+
+</details>
+
+<details>
+<summary><strong>Q: What is the difference between Grains and Pillar in Salt?</strong></summary>
+
+Grains are facts about the minion (OS, CPU, memory, IP addresses) — collected locally on the minion and available to all. Pillar is sensitive or minion-specific data defined on the master (passwords, API keys, per-minion config) — each minion receives only its own pillar data. Use grains for: targeting (apply state to all Ubuntu minions), conditional logic (install different packages per OS). Use pillar for: secrets, environment-specific config, and data that should not be shared between minions.
+
+</details>
+
+<details>
+<summary><strong>Q: How does Salt's remote execution work?</strong></summary>
+
+Salt can execute any command on any set of minions instantly: salt '*' cmd.run 'uptime' runs uptime on all minions. Targeting options: glob (*), regex, grains (os:Ubuntu), pillar, compound (combining multiple criteria). Execution modules provide hundreds of built-in functions: pkg.install, service.restart, file.read, etc. Remote execution is Salt's killer feature for operations: run a command across 10,000 servers and get results in seconds. Use with caution in production — add targeting carefully to avoid running destructive commands everywhere.
+
+</details>
+
+<details>
+<summary><strong>Q: What is Salt's Reactor system and how does it enable event-driven automation?</strong></summary>
+
+The Reactor watches Salt's event bus and triggers actions when specific events occur. Examples: when a minion starts (minion_start event), automatically apply highstate; when a monitoring alert fires, run a remediation state; when a deployment event occurs, clear caches on web servers. Reactors are defined in the master config mapping event tags to reactor SLS files. This enables: auto-remediation, auto-scaling responses, and event-driven infrastructure. The event bus is the backbone — everything in Salt generates events.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you manage Salt Formulas and share reusable configurations?</strong></summary>
+
+Salt Formulas are community-maintained state collections (like Puppet modules or Ansible roles) for common software: Apache, Nginx, PostgreSQL, Docker. Install via GitFS (master pulls formulas from Git repositories) or by cloning into the file_roots. Formulas follow conventions: pillar-driven configuration, multiple OS support, and documented defaults. Use the official SaltStack Formulas organization on GitHub. Pin formula versions via Git tags. Customize behaviour through pillar data rather than modifying formula code.
+
+</details>
+
+<details>
+<summary><strong>Q: How does Salt orchestration work for multi-minion workflows?</strong></summary>
+
+Salt Orchestrate runs on the master and coordinates states across multiple minions in a defined order. Example: update database servers first, wait for health checks, then update application servers, then update load balancers. Orchestrate uses the state runner (salt-run state.orchestrate): it can apply states to specific minions, run remote execution commands, wait for conditions, and handle failures. This replaces sequential manual deployment with automated, repeatable orchestration. Unlike states (per-minion), orchestration coordinates across the entire infrastructure.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you secure Salt in production?</strong></summary>
+
+Encrypt master-minion communication (enabled by default with AES encryption over ZeroMQ). Accept minion keys carefully (auto-accept only in trusted networks, otherwise manual approval). Use Pillar for secrets (each minion sees only its own data). Restrict remote execution with Salt ACLs (limit which users can run which modules on which minions). Enable the external auth system for user authentication (LDAP, PAM). Network: restrict master ports (4505/4506) to minion IPs only. Audit: log all remote execution commands.
+
+</details>
+
+<details>
+<summary><strong>Q: When should you choose SaltStack over Ansible or Puppet?</strong></summary>
+
+Choose Salt for: large-scale environments (thousands of nodes — Salt's ZeroMQ is fastest), real-time operations (instant remote execution across the fleet), event-driven automation (reactor system for auto-remediation), and combined config management + orchestration. Choose Ansible for: simpler setups, agentless requirements, and teams preferring YAML simplicity. Choose Puppet for: mature compliance reporting and environments already invested in the Puppet ecosystem. Salt's main drawback: smaller community and documentation compared to Ansible/Puppet.
+
+</details>
+
+---
+

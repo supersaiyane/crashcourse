@@ -37,6 +37,19 @@ supermarket, you walk in, pick things up, taste the free samples, and only pay f
 decide to keep. PLG lets users walk the aisles and fill their cart before asking for a credit
 card.
 
+```mermaid
+graph LR
+    A[Visitor] --> B[Signup]
+    B --> C[Activation / Aha Moment]
+    C --> D[Engagement]
+    D --> E[Conversion to Paid]
+    E --> F[Expansion]
+    F --> G[Referral]
+    G --> A
+    D --> H[PQL Trigger]
+    H --> I[Sales-Assisted Close]
+```
+
 ---
 
 ## Part 1 — The vocabulary
@@ -421,6 +434,80 @@ Self-serve: individuals and small teams (product handles everything)
 Sales-assisted: mid-market (product acquires, sales expands)
 Enterprise: large orgs (product proves value, sales closes)
 ```
+
+---
+
+## Top 10 Interview Questions
+
+<details>
+<summary><strong>Q: How do you find a product's activation moment?</strong></summary>
+
+Compare the early behaviours of users who retained long-term (30+ days) versus those who churned. The behaviour that best separates the two groups is your activation metric. Slack found it was 2000 messages sent as a team. Dropbox found it was uploading a first file to a synced folder. Once identified, design the entire onboarding to get users there as fast as possible.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you decide between freemium, free trial, and reverse trial?</strong></summary>
+
+It depends on time-to-value. If users can experience core value in minutes (Calendly, Canva), freemium works — low friction, large top of funnel. If it takes days of setup and data import, a free trial with enough time to reach the aha moment is better. Reverse trial (start with paid features, auto-downgrade) works when you want users to experience the full product and understand what they would lose.
+
+</details>
+
+<details>
+<summary><strong>Q: What is a Product-Qualified Lead and why does it convert better than a Marketing-Qualified Lead?</strong></summary>
+
+A PQL is a user who has demonstrated meaningful engagement — 5+ active users in an account, hitting usage limits, visiting the pricing page repeatedly. PQLs convert at 5-10x the rate of MQLs because the user has already experienced the product's value. An MQL filled out a form; a PQL used the product and wants more.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you design a free tier that is generous enough to activate but limited enough to convert?</strong></summary>
+
+The free tier must let users reach the aha moment — otherwise PLG fails at the start. Limit what grows with usage: storage, seats, message history, integrations. Keep the core experience fully functional. The upgrade trigger should feel natural, not punitive — users should think "I need more of this" rather than "they are crippling the product."
+
+</details>
+
+<details>
+<summary><strong>Q: PLG acquisition is strong but conversion to paid is below 2%. What do you investigate?</strong></summary>
+
+Check three areas. First, activation: are users reaching the aha moment? If not, fix onboarding before anything else. Second, the upgrade trigger: is the free tier too generous (users never hit the ceiling) or is the paid tier not compelling enough? Third, pricing page friction: is the path from "I want to upgrade" to "I have paid" simple? Often low conversion is an activation problem disguised as a monetisation problem.
+
+</details>
+
+<details>
+<summary><strong>Q: How does PLG change what a PM prioritises on the roadmap?</strong></summary>
+
+PLG shifts priority toward the self-serve experience: onboarding, activation, in-product education, and reducing time-to-value. Features that would normally be "nice to have" — like sample data, templates, or a guided setup wizard — become critical. The product itself must sell, which means UX quality, first-run experience, and viral loops compete with feature development for roadmap space.
+
+</details>
+
+<details>
+<summary><strong>Q: What is a viral loop and how do you measure its effectiveness?</strong></summary>
+
+A viral loop is the cycle where a user experiences value, shares the product (invites a colleague, shares a file), and the recipient signs up and repeats the cycle. Measure it with the viral coefficient K = invites per user multiplied by invite conversion rate. K greater than 1 means exponential growth (rare). Even K of 0.3 is valuable — it means every 10 acquired users bring 3 more for free, reducing effective CAC by 23%.
+
+</details>
+
+<details>
+<summary><strong>Q: Can you bolt PLG onto an existing sales-led product?</strong></summary>
+
+Not easily. PLG requires a product designed for self-serve discovery — intuitive onboarding, fast time-to-value, and in-product education. If your product needs a consultant to configure or a demo to understand, adding a signup button does not make it PLG. It requires rethinking the first-run experience, simplifying setup, and often building a separate self-serve entry point.
+
+</details>
+
+<details>
+<summary><strong>Q: How do self-serve and sales-assisted motions coexist in a PLG company?</strong></summary>
+
+Self-serve handles individuals and small teams — the product does everything from acquisition to conversion. Sales-assisted engages when PQL triggers fire: accounts with 5+ active users, usage limit hits, or pricing page visits. Enterprise sales handles large organisations with compliance, security, and procurement requirements. The product acquires and activates; sales expands and closes.
+
+</details>
+
+<details>
+<summary><strong>Q: What are the key metrics that distinguish a healthy PLG business from one that is just burning signups?</strong></summary>
+
+Activation rate (are signups reaching the aha moment?), free-to-paid conversion (2-5% benchmark for freemium), net revenue retention above 100% (expansion exceeds churn), organic-to-paid signup ratio (healthy PLG has high organic), and DAU/MAU ratio above 20% (strong engagement). A million signups with 0.1% conversion is a marketing expense, not PLG.
+
+</details>
 
 ---
 

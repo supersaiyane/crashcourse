@@ -29,6 +29,13 @@ The mental model that matters: **your origin is optional**. Cloudflare can serve
 
 ---
 
+
+```mermaid
+graph LR
+    Input[Input] --> Cloudflare[Cloudflare]
+    Cloudflare --> Output[Output]
+```
+
 ## DAY 1 — Domain, DNS, Proxy, SSL, Caching, Firewall
 
 ### 1.1 Add Your Domain

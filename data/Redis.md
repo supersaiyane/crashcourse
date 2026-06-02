@@ -28,6 +28,21 @@ See `Prometheus.md` for how you'd instrument Redis hit rates and latency in prod
 
 ---
 
+
+```mermaid
+graph LR
+    Client[Client] --> Redis[Redis Server]
+    Redis --> Memory[(In-Memory Store)]
+    Redis --> RDB[RDB Snapshots]
+    Redis --> AOF[Append-Only File]
+    Redis --> Pub[Pub/Sub]
+    Redis --> Lua[Lua Scripting]
+    Sentinel[Redis Sentinel] --> Redis
+    Sentinel --> Replica[Redis Replica]
+    Cluster[Redis Cluster] --> Shard1[Shard 1]
+    Cluster --> Shard2[Shard 2]
+```
+
 ## Part 1 — The vocabulary
 
 | Term | Meaning |
@@ -570,6 +585,81 @@ redis-cli --cluster info host:port
 redis-cli --cluster check host:port
 redis-cli --cluster rebalance host:port
 ```
+
+---
+
+
+## Top 10 Interview Questions
+
+<details>
+<summary><strong>Q: What are the main Redis data structures and their use cases?</strong></summary>
+
+Strings (caching, counters, session tokens), Hashes (object storage — user profiles, product details), Lists (queues, activity feeds, recent items), Sets (unique collections, tagging, social graphs), Sorted Sets (leaderboards, rate limiters, priority queues), Streams (event logs, message queues with consumer groups), and HyperLogLog (cardinality estimation — unique visitor counts). Choosing the right structure is critical — a leaderboard in a Sorted Set is O(log N) per update versus O(N log N) with a List.
+
+</details>
+
+<details>
+<summary><strong>Q: How does Redis handle persistence and what are the tradeoffs?</strong></summary>
+
+RDB creates point-in-time snapshots at configured intervals — compact, fast to load, but you lose data since the last snapshot. AOF logs every write command — more durable (fsync every second or every command) but larger files and slower restart. Best practice: use both — AOF for durability (fsync every second is a good default), RDB for fast backups and disaster recovery. In BFSI, if Redis holds session or rate-limit data, AOF with everysec is sufficient; if it holds financial state, consider AOF with always (performance impact).
+
+</details>
+
+<details>
+<summary><strong>Q: How does Redis Cluster sharding work?</strong></summary>
+
+Redis Cluster divides the keyspace into 16384 hash slots. Each master node owns a subset of slots. Keys are assigned to slots via CRC16(key) mod 16384. Clients discover the slot-to-node mapping and route commands directly. For multi-key operations, all keys must be in the same slot — use hash tags ({user:123}.profile, {user:123}.settings) to co-locate related keys. Adding/removing nodes involves migrating slots. Minimum production setup: 3 masters + 3 replicas for HA.
+
+</details>
+
+<details>
+<summary><strong>Q: What is Redis Sentinel and how does it provide high availability?</strong></summary>
+
+Sentinel monitors Redis master-replica setups and performs automatic failover. Multiple Sentinel instances (minimum 3 for quorum) watch the master. If the master is unreachable, Sentinels vote to confirm the failure (avoiding false positives) and promote a replica to master. Clients connect to Sentinel to discover the current master. Key config: quorum (how many Sentinels must agree), down-after-milliseconds (failure detection time), and failover-timeout. Sentinel handles HA; Redis Cluster handles HA + sharding.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you handle cache invalidation with Redis?</strong></summary>
+
+Three strategies: TTL-based (set expiry on keys — simple, eventual consistency), event-driven (application publishes invalidation events when data changes — more complex, faster consistency), and write-through (update cache on every write — always consistent but more write load). For most applications, TTL with a reasonable duration (5-60 minutes) is sufficient. For high-consistency requirements, use write-through or event-driven. The hardest part is choosing the right TTL — too short wastes cache, too long serves stale data.
+
+</details>
+
+<details>
+<summary><strong>Q: What are Redis eviction policies and how do you choose one?</strong></summary>
+
+When maxmemory is reached, Redis evicts keys based on the policy: noeviction (return errors — safest for data that must not be lost), allkeys-lru (evict least recently used — best for general caching), volatile-lru (evict LRU among keys with TTL — protect keys without expiry), allkeys-lfu (evict least frequently used — better for skewed access patterns), and allkeys-random (random eviction — uniform access patterns). For caching: allkeys-lru is the safe default. For mixed use (cache + persistent data): volatile-lru.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you handle the thundering herd / cache stampede problem?</strong></summary>
+
+When a popular cached key expires, hundreds of concurrent requests hit the database simultaneously. Solutions: lock-based (acquire a distributed lock before rebuilding — only one request hits the DB), probabilistic early expiration (randomly refresh before actual expiry), stale-while-revalidate (serve stale data while refreshing in background), and never-expire with background refresh. In BFSI during month-end traffic, the stampede problem on rate-limit or session cache keys can be severe — use lock-based or stale-while-revalidate.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you implement rate limiting with Redis?</strong></summary>
+
+Common patterns: fixed window (INCR + EXPIRE — simple but allows burst at window boundaries), sliding window log (ZADD timestamps, ZRANGEBYSCORE to count — accurate but memory-heavy), sliding window counter (combine current and previous window counts — good balance), and token bucket (DECR with periodic refill — allows controlled bursts). For API rate limiting, sliding window counter with Redis is the industry standard. Use Lua scripts for atomic operations to prevent race conditions.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you monitor Redis performance in production?</strong></summary>
+
+Key metrics: used_memory vs maxmemory (eviction pressure), keyspace_hits / keyspace_misses (hit rate — should be > 95% for caching), connected_clients (connection leaks), instantaneous_ops_per_sec (throughput), latency (redis-cli --latency), and evicted_keys (capacity issues). Use INFO command, Redis Exporter for Prometheus, and Grafana dashboards. Alert on: memory usage > 80%, hit rate drop, latency p99 spike, and replication lag. Monitor slow log (SLOWLOG GET) for expensive commands.
+
+</details>
+
+<details>
+<summary><strong>Q: What are the common pitfalls when using Redis in production?</strong></summary>
+
+Using KEYS command in production (blocks the server — use SCAN), storing large values (> 1MB — breaks network throughput), not setting maxmemory (Redis grows until OOM kills it), single-threaded bottleneck on CPU-bound Lua scripts, not using pipelining for bulk operations (N round trips vs 1), and treating Redis as a durable database without proper persistence config. Also: not monitoring memory fragmentation ratio — high fragmentation wastes memory. Use MEMORY DOCTOR for diagnostics.
+
+</details>
 
 ---
 

@@ -29,6 +29,16 @@ mistake familiarity with competence.
 Both failure modes are fixable with a system. This crash course gives you that system — grounded
 in learning science, not career-guru intuition.
 
+```mermaid
+graph LR
+    SIGNAL[Signal Filtering] --> LEARN[Deliberate Learning]
+    LEARN --> RECALL[Active Recall]
+    RECALL --> TEACH[Teach / Write]
+    TEACH --> BUILD[Build Something]
+    BUILD --> RADAR[Update Personal Radar]
+    RADAR --> SIGNAL
+```
+
 ---
 
 ## Part 1 — The vocabulary
@@ -436,6 +446,80 @@ HOLD (deprioritized):
 - "Team Topologies" — Skelton, Pais — platform as product, cognitive load
 - "Accelerate" — Forsgren, Humble, Kim — evidence-based engineering performance
 - "The Pragmatic Programmer" — Hunt, Thomas — foundational; still relevant after 25 years
+
+---
+
+## Top 10 Interview Questions
+
+<details>
+<summary><strong>Q: How do you decide what to learn next when the technology landscape is constantly changing?</strong></summary>
+
+Use half-life filtering: prioritize skills with long half-lives like distributed systems, networking, and observability principles over vendor-specific CLI flags. Mine job postings for the role you want in two years, consult ThoughtWorks Technology Radar and CNCF surveys, and ask engineers one level ahead of you what they wish they had learned earlier. Maintain a personal technology radar with Adopt/Trial/Assess/Hold rings and review it quarterly.
+
+</details>
+
+<details>
+<summary><strong>Q: What is the difference between active recall and passive reading, and why does it matter for engineers?</strong></summary>
+
+Passive reading builds fragile recognition — you feel like you understood it, but you cannot reproduce it under pressure. Active recall forces retrieval without looking at the source, which strengthens the neural pathways that make knowledge durable. In practice this means closing the documentation and trying to explain the concept, using spaced repetition tools like Anki, or applying the Feynman Technique. The discomfort of retrieval is the feeling of learning actually working.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you balance depth versus breadth in your technical skill development?</strong></summary>
+
+Early in your career, breadth wins because you need vocabulary and surface area to recognize patterns. Past the five-year mark, depth compounds non-linearly — deep understanding of distributed systems or observability lets you pick up new tools faster because the mental model is rich. Identify one or two domains to invest in disproportionately while staying broad enough to collaborate. Adding a tenth tool to your resume has diminishing returns; another thousand hours on fundamentals does not.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you maintain a learning habit without burning out?</strong></summary>
+
+Build a system, not a goal. Time-box two hours per week on your calendar and protect it like a meeting. Maintain a learning queue so new interests go on the list rather than immediately into your schedule — most will lose urgency on their own. Use retrieval practice at week's end to check what stuck. Two hours per week maintained for a year beats ten hours for two months followed by burnout. Track cognitive load, not hours.
+
+</details>
+
+<details>
+<summary><strong>Q: What is the 70/20/10 model and how do you apply it to engineering growth?</strong></summary>
+
+Seventy percent of capability develops from on-the-job experience at the edge of your ability — the incident that stretches you, the unfamiliar codebase. Twenty percent comes from learning from others through code reviews, pairing, mentorship, and postmortems. Ten percent comes from formal study like courses and certifications. Most engineers overweight the 10% and underweight the 70%. Use formal learning to build mental models and vocabulary, then verify them against real work.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you evaluate whether a new technology is worth investing time in versus hype?</strong></summary>
+
+Calibrate investment to the maturity stage. For emerging technologies, read one good overview and check back in six months. For technologies adopted by the early majority, do a hands-on project over two to four weeks. For commoditized tools everyone uses, get proficient. Engineers who chase peak hype spend enormous energy learning things at their most immature. Those who wait for the trough and pick up survivors learn things that last a decade.
+
+</details>
+
+<details>
+<summary><strong>Q: What does learning in public mean and how does it accelerate growth?</strong></summary>
+
+Writing a blog post or giving a talk forces precision that reading never does — you must commit to specific claims and handle edge cases. Every time you explain something, you find gaps in your own model. This works even with a tiny audience because the cognitive benefit comes from the act of teaching, not the reach. The trap is performance over practice — write about things you are still figuring out, not only things you have mastered.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you build and maintain a second brain for technical knowledge?</strong></summary>
+
+Write notes in your own words — never paste from documentation. Tag and link notes to related concepts because knowledge is a graph, not a list. Review and prune quarterly since stale notes that you never retrieve are noise. Prefer synthesis over collection: one note connecting three ideas beats thirty bookmarks you will never open. The tool matters less than the habit — Obsidian, Notion, or plain Git-backed Markdown all work.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you avoid tutorial purgatory and actually build real competence?</strong></summary>
+
+Tutorials scaffold recognition but not production capability. At some point you must close the tutorial and work from documentation alone. The test: can you build something without step-by-step instructions? If you have been learning something for three months without shipping anything real, you are using learning as productive procrastination. Build something that at least one other person uses — it does not need to be polished, just functional.
+
+</details>
+
+<details>
+<summary><strong>Q: How should an engineering team structure its collective learning investment?</strong></summary>
+
+Create a team learning queue alongside the work backlog. Allocate roughly 10% of sprint capacity to deliberate learning — study groups, internal tech talks, documentation contributions, or conference talk reviews. Rotate who presents learnings so the 20% peer-learning channel stays active. Use the personal technology radar format at a team level to make collective skill investments visible and prevent everyone from chasing the same hype cycle independently.
+
+</details>
 
 ---
 

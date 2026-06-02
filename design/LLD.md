@@ -52,6 +52,19 @@ Not just "catch exceptions." A strategy defines: what errors are recoverable vs.
 **Interface / Abstract Class**
 The contract without the implementation. Designing to interfaces keeps components loosely coupled and makes them independently testable. If you find yourself coupling to a concrete class, ask whether an interface would give you more flexibility.
 
+```mermaid
+graph TD
+    HLD[HLD Component] --> Scope[Scope & Requirements]
+    Scope --> DM[Data Models]
+    DM --> CS[Class Structure]
+    CS --> API[API Contracts]
+    API --> SF[Sequence Flows]
+    SF --> SM[State Machines]
+    SM --> Conc[Concurrency Model]
+    Conc --> Err[Error Handling]
+    Err --> Test[Testing Strategy]
+```
+
 ---
 
 ## Day 1 — Building the LLD
@@ -643,6 +656,80 @@ Sequence diagram symbols:
 
 \* given a pointer to the node
 \*\* peek only; pop is O(log n)
+
+---
+
+## Top 10 Interview Questions
+
+<details>
+<summary><strong>Q: How do you start an LLD interview — what is the first thing you do?</strong></summary>
+
+Clarify scope and requirements before drawing anything. Ask: what is the expected scale, what latency is acceptable, what consistency model, and what failure modes matter. Then pick one component — LLD is not system-wide. Define the data models first because the shape of your data constrains everything else. Interviewers deduct points for candidates who jump into class diagrams without understanding what they are designing.
+
+</details>
+
+<details>
+<summary><strong>Q: Why should you design data models before class structure?</strong></summary>
+
+Data is the most stable part of your design — it changes less frequently than behavior. Starting with data models reveals ambiguities early: which fields are required vs optional, which are mutable, what uniquely identifies an entity, and what relationships exist. Classes and their methods follow naturally from the data shape. If you start with classes, you often discover data model problems late when refactoring is expensive.
+
+</details>
+
+<details>
+<summary><strong>Q: What is the difference between a class diagram and a sequence diagram, and when do you use each?</strong></summary>
+
+A class diagram is a static view showing structure — classes, fields, methods, and relationships (inheritance, composition, dependency). Use it to capture your code's architecture. A sequence diagram is a dynamic view showing one specific flow over time — actors, method calls, and responses. Use it to show how components interact for a scenario like "user requests a rate-limited endpoint." Both are needed: class diagrams show what exists, sequence diagrams show how it behaves.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you handle concurrency in an LLD for a rate limiter?</strong></summary>
+
+Identify shared state: the request counter is accessed by concurrent threads. A naive in-memory counter breaks — two threads read 99, both increment to 100, both write back, allowing 101 requests. Fix: use atomic integers for in-process counters, or push the counter to Redis with a Lua script (Redis is single-threaded, so the script executes atomically). Document which state is shared, your synchronization strategy, and deadlock risks. This is where most LLD candidates fail.
+
+</details>
+
+<details>
+<summary><strong>Q: What is the difference between fail-open, fail-closed, and fail-to-local?</strong></summary>
+
+When a dependency (like Redis for a rate limiter) is unavailable: fail-open allows all requests (risk: no rate limiting during outage). Fail-closed denies all requests (risk: complete service disruption). Fail-to-local falls back to a per-instance in-memory counter (risk: limits not enforced globally, each instance counts independently). There is no universally right answer — the choice depends on your business context. You must make an explicit decision and document the tradeoff.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you design an API contract at the LLD level?</strong></summary>
+
+Define every public interface before implementation. For REST: HTTP method, path, request body shape with field types, response body shape for success and each error case, status codes, and error format. For internal interfaces: method signatures with typed parameters and return types. A contract is a design artifact, not after-the-fact documentation. It should be precise enough that someone who has never spoken to you can implement against it.
+
+</details>
+
+<details>
+<summary><strong>Q: When should you model something as a state machine?</strong></summary>
+
+Any entity with a lifecycle is a state machine candidate — orders (pending, confirmed, shipped, delivered), jobs (queued, running, completed, failed), connections (connecting, connected, disconnecting). Model it explicitly: list all states, all events that trigger transitions, and any actions on entry or exit. Draw it as a table or diagram. This forces you to handle every state and every transition — including the edge cases you would have otherwise forgotten.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you choose between Token Bucket and Sliding Window for rate limiting?</strong></summary>
+
+Token Bucket allows bursts up to the bucket capacity while enforcing an average rate — good when occasional bursts are acceptable. Sliding Window Log provides precise enforcement with no burst allowance — good when strict per-window limits are required. The tradeoff: Sliding Window is memory-intensive at high request rates (one entry per request in a sorted set). Token Bucket stores only two values (current tokens, last refill time). Choose based on whether your use case tolerates bursts.
+
+</details>
+
+<details>
+<summary><strong>Q: What makes a good error handling strategy in LLD?</strong></summary>
+
+Classify errors by type: transient (retry with exponential backoff + jitter), client error (return 4xx, no retry), permanent server error (log, alert, no blind retry), dependency failure (fall back or circuit break). Define retry policy: max retries, initial delay, backoff multiplier, jitter, and which operations are idempotent. Define what gets surfaced to callers (meaningful error codes) vs logged internally (stack traces, context). An error strategy designed upfront prevents ad-hoc handling that diverges across the codebase.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you present tradeoffs in an LLD interview?</strong></summary>
+
+Never present one solution as "the answer." Present options with tradeoffs, then recommend one with reasoning. "We could use an in-memory LRU cache — fast, but lose changes until TTL expires. Or Redis with a short TTL — slightly slower but consistent across replicas. I recommend Redis because the NFR requires consistency across instances." This structure — option A with tradeoff, option B with tradeoff, recommendation with justification — signals mature engineering thinking.
+
+</details>
 
 ---
 

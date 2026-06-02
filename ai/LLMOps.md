@@ -23,6 +23,21 @@ None of these problems exist in pure software engineering. All of them require n
 
 ---
 
+
+```mermaid
+graph LR
+    Develop[Model Selection] --> Eval[Evaluation Suite]
+    Eval --> Deploy[Deployment]
+    Deploy --> Monitor[Monitoring]
+    Monitor --> Feedback[User Feedback]
+    Feedback --> Improve[Prompt / Fine-tune]
+    Improve --> Eval
+    Deploy --> Gateway[LLM Gateway]
+    Gateway --> Cache[Semantic Cache]
+    Gateway --> RateLimit[Rate Limiting]
+    Gateway --> Fallback[Model Fallback]
+```
+
 ## Part 1 — The vocabulary
 
 | Term | What it means |
@@ -507,6 +522,81 @@ gen_ai.usage.output_tokens  # Completion tokens consumed
 
 Span naming: `{gen_ai.system} {operation}` — e.g., `anthropic chat`, `openai embeddings`.
 Span kind: `CLIENT` for all LLM API calls.
+
+---
+
+
+## Top 10 Interview Questions
+
+<details>
+<summary><strong>Q: What is LLMOps and how does it differ from MLOps?</strong></summary>
+
+LLMOps adapts MLOps principles for LLM-specific workflows. Key differences: LLMs often use pre-trained models (no training pipeline — prompt engineering and fine-tuning instead), evaluation is harder (no simple accuracy metric — need LLM-as-judge, human eval), deployment involves managing inference infrastructure (GPU scheduling, KV cache, batching), and cost management is critical (per-token pricing or GPU hours). The lifecycle is: select model → design prompts → evaluate → deploy → monitor → iterate.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you build an evaluation suite for an LLM application?</strong></summary>
+
+Create a dataset of 50-200 representative examples covering common cases, edge cases, and adversarial inputs. Define metrics per task: accuracy for classification, faithfulness + relevance for RAG, helpfulness for chat. Use automated evaluators (LLM-as-judge for subjective quality, exact match for factual tasks, code execution for coding tasks). Run the eval suite on every prompt change, model upgrade, or config change. Track scores over time to catch regressions. Include a human eval component for periodic calibration.
+
+</details>
+
+<details>
+<summary><strong>Q: What is an LLM gateway and why do production systems need one?</strong></summary>
+
+An LLM gateway sits between your application and LLM providers, providing: request routing (send to the best model for each task), fallback (switch providers on failure), rate limiting, caching (semantic cache for repeated queries), cost tracking (per-request cost attribution), logging and observability, and API key management. Without a gateway, each service manages its own LLM integration, creating inconsistent behaviour, no cost visibility, and no centralised control. Tools: LiteLLM, Portkey, Kong AI Gateway.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you manage prompt versions in production?</strong></summary>
+
+Treat prompts as code: store in version control, review changes in PRs, and run the eval suite before merging. Use a prompt registry (database or config system) that maps prompt IDs to versions, allowing rollback without code deploys. A/B test prompt changes by routing a percentage of traffic to the new version and comparing metrics. Include the prompt version in every log entry so you can correlate quality changes with prompt changes. Never edit prompts directly in production.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you optimise LLM inference cost in production?</strong></summary>
+
+Model routing (80% of queries to a cheap small model, 20% to an expensive large model), semantic caching (cache responses for semantically similar queries), prompt optimisation (shorter system prompts, fewer examples), output token limits (set max_tokens appropriately), batching (batch multiple requests for throughput), and quantisation (4-bit models for self-hosted inference). Monitor cost per request and per user. Set budget alerts. A well-optimised system can cut costs 60-80% versus naive deployment.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you handle model upgrades and deprecations in production?</strong></summary>
+
+Maintain a model abstraction layer so your application is not tightly coupled to a specific model version. When a new version is released: run your eval suite against it, compare scores to the current version, shadow-deploy (run both in parallel, compare outputs), then gradually shift traffic. Keep the previous version as a fallback for 2-4 weeks. For deprecations, start migration early — provider deprecation timelines are firm. Pin model versions explicitly; never use 'latest' in production.
+
+</details>
+
+<details>
+<summary><strong>Q: What observability do you need for production LLM applications?</strong></summary>
+
+Track: latency (time to first token, total response time), token usage (input and output per request), cost (per request, per user, per feature), error rates (API failures, timeouts, rate limits), quality metrics (user feedback scores, automated eval scores), and safety metrics (guardrail block rates, flagged content). Correlate these with prompt versions and model versions. Alert on latency spikes, cost anomalies, and quality drops. Tools: LangSmith, Langfuse, Helicone, or custom Prometheus/Grafana dashboards.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you implement A/B testing for LLM features?</strong></summary>
+
+Route traffic by user segment or percentage to different configurations (model, prompt, temperature). Measure both system metrics (latency, cost) and quality metrics (task completion rate, user satisfaction, automated eval scores). Run tests for sufficient duration to account for variability — LLM outputs are stochastic, so you need larger sample sizes than deterministic A/B tests. Use statistical tests appropriate for high-variance distributions. Consider using interleaving (show both outputs, let users choose) for faster signal.
+
+</details>
+
+<details>
+<summary><strong>Q: What is fine-tuning versus prompt engineering and when do you choose each?</strong></summary>
+
+Prompt engineering is faster, cheaper, and more flexible — iterate in minutes, no training data needed, works with any model. Fine-tuning requires labelled data and compute but produces more consistent outputs, can teach domain-specific behaviour, and reduces prompt length (saving input tokens). Choose prompt engineering first for 90% of use cases. Fine-tune when: you need consistent format/style that prompting cannot achieve, you have domain-specific knowledge the base model lacks, or you need to reduce latency by encoding behaviour into weights instead of long prompts.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you handle rate limits and failures from LLM providers?</strong></summary>
+
+Implement retry with exponential backoff for transient errors (429, 500, 503). Use a circuit breaker that stops calling a failing provider after N consecutive failures. Configure fallback providers (if OpenAI is down, route to Anthropic or a self-hosted model). Use request queuing to smooth traffic spikes. Pre-calculate your rate limit budget and implement client-side throttling to avoid hitting limits. Monitor provider status pages and set up alerts for degraded service. Cache aggressively to reduce the number of API calls.
+
+</details>
 
 ---
 

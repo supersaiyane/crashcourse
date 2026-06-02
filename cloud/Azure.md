@@ -35,6 +35,19 @@ folders) under a Subscription (billing), with Entra ID as the identity backbone.
 
 ---
 
+
+```mermaid
+graph TD
+    Azure[Azure Cloud]
+    Azure --> Compute[Compute: VMs, AKS, Functions]
+    Azure --> Storage[Storage: Blob, Disks, Files]
+    Azure --> Network[Networking: VNet, LB, Front Door]
+    Azure --> Data[Data: SQL, Cosmos DB, Synapse]
+    Azure --> Identity[Identity: Entra ID, RBAC]
+    Azure --> Monitor[Monitor: Log Analytics, App Insights]
+    Network --> Security[NSG / Firewall / WAF]
+```
+
 ## Part 1 — The cross-cloud service translation (your real cheat sheet)
 
 | Need | AWS | GCP | Azure |

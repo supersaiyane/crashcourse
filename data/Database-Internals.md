@@ -16,6 +16,20 @@ Internals knowledge gives you a mental model of what the database is actually do
 
 You don't need to read source code. You need to understand the five or six big ideas well enough to reason forward from symptoms to root cause. That's what this crash course builds.
 
+```mermaid
+graph TD
+    SQL["SQL Query"] --> Planner["Query Planner"]
+    Planner --> BTree["B+ Tree Index"]
+    Planner --> SeqScan["Sequential Scan"]
+    BTree --> BufferPool["Buffer Pool (RAM)"]
+    SeqScan --> BufferPool
+    BufferPool --> Heap["Heap Files (Pages)"]
+    Write["Write Operation"] --> WAL["Write-Ahead Log"]
+    WAL --> BufferPool
+    MVCC["MVCC Snapshots"] --> BufferPool
+    Vacuum["VACUUM"] --> Heap
+```
+
 ---
 
 ## Vocabulary
@@ -457,6 +471,80 @@ WHERE last_autovacuum < now() - interval '1 day'
    OR last_autovacuum IS NULL
 ORDER BY last_autovacuum NULLS FIRST;
 ```
+
+---
+
+## Top 10 Interview Questions
+
+<details>
+<summary><strong>Q: What is the difference between a B-tree and a B+ tree, and why do databases prefer B+ trees for indexes?</strong></summary>
+
+In a B-tree, data can live in both internal and leaf nodes. In a B+ tree, all data lives in leaf nodes and internal nodes hold only routing keys. Databases prefer B+ trees because the linked leaf pages make range scans efficient — you traverse to the first matching leaf and follow the links without returning to the root. This is critical for queries with ORDER BY or BETWEEN clauses.
+
+</details>
+
+<details>
+<summary><strong>Q: How does Write-Ahead Logging (WAL) ensure crash recovery?</strong></summary>
+
+Before any page modification is applied to heap files, PostgreSQL writes a description of the change to the WAL — a sequential, append-only log on disk. On crash, recovery replays the WAL from the last checkpoint forward, re-applying all changes that were in the buffer pool but not yet flushed. This guarantees no committed transaction is lost, even if the crash happened mid-write.
+
+</details>
+
+<details>
+<summary><strong>Q: How does MVCC allow readers to never block writers in PostgreSQL?</strong></summary>
+
+Every transaction gets a transaction ID (XID). Rows are stamped with the XID that created them (xmin) and deleted them (xmax). Readers see a consistent snapshot based on visibility rules — they only see rows where xmin committed before their snapshot and xmax is unset or committed after. Writers create new row versions rather than overwriting in place, so there is no contention between reads and writes.
+
+</details>
+
+<details>
+<summary><strong>Q: What is a checkpoint in a database, and what is the trade-off in checkpoint frequency?</strong></summary>
+
+A checkpoint is a point where the database writes all dirty buffer pool pages to disk and records that location in the WAL. After a checkpoint, crash recovery only needs to replay WAL from that point. Too infrequent checkpoints mean long recovery times after a crash. Too frequent checkpoints cause high write amplification as dirty pages are flushed more often than necessary.
+
+</details>
+
+<details>
+<summary><strong>Q: What causes table bloat in PostgreSQL and how do you detect and fix it?</strong></summary>
+
+Bloat is caused by dead tuples accumulating from UPDATE and DELETE operations under MVCC. These dead rows occupy space but are invisible to queries. You detect it by checking `n_dead_tup` vs `n_live_tup` in `pg_stat_user_tables`. The fix is running VACUUM (which marks dead space reusable) and tuning autovacuum thresholds — especially lowering `autovacuum_vacuum_scale_factor` on large tables.
+
+</details>
+
+<details>
+<summary><strong>Q: When would a query planner choose a sequential scan over an index scan, even when an index exists?</strong></summary>
+
+The planner chooses a sequential scan when it estimates the query will return a large fraction of the table (typically above 5-10%), when the table is very small (a few pages), or when the column has low cardinality. In these cases, the random I/O cost of index lookups plus heap fetches exceeds the cost of reading all pages sequentially. This is a correct optimization, not a bug.
+
+</details>
+
+<details>
+<summary><strong>Q: What is XID wraparound in PostgreSQL and why is it dangerous?</strong></summary>
+
+PostgreSQL uses 32-bit transaction IDs, which wrap around after about 2 billion transactions. If VACUUM FREEZE hasn't marked old rows as permanently visible before wraparound, data becomes invisible or the database enters protective shutdown mode. Monitor `age(datfrozenxid)` and alert at 1.5 billion. This is one of the worst production failures because it requires emergency maintenance under pressure.
+
+</details>
+
+<details>
+<summary><strong>Q: How do LSM trees differ from B+ trees, and when would you choose one over the other?</strong></summary>
+
+B+ trees do random in-place writes and are optimized for reads. LSM trees buffer writes in memory and flush as immutable sorted files, making writes sequential and fast. The trade-off is read amplification — LSM reads may check multiple SSTables. Choose B+ trees (PostgreSQL) for mixed OLTP workloads. Choose LSM trees (RocksDB, Cassandra) for write-heavy workloads like time-series or append-heavy logging.
+
+</details>
+
+<details>
+<summary><strong>Q: What does a large gap between estimated and actual rows in EXPLAIN ANALYZE indicate?</strong></summary>
+
+It indicates stale statistics in `pg_statistic`. The query planner relies on histograms and cardinality estimates to choose execution plans. When these are stale — after bulk loads, large deletes, or data distribution changes — the planner picks suboptimal plans. The immediate fix is `ANALYZE tablename`. The long-term fix is tuning `autovacuum_analyze_scale_factor` for tables with high write volume.
+
+</details>
+
+<details>
+<summary><strong>Q: What is the buffer pool and how does cache hit ratio guide tuning?</strong></summary>
+
+The buffer pool (`shared_buffers`) is PostgreSQL's in-memory cache for pages. When a query needs a page, it checks the buffer pool first — a hit avoids disk I/O entirely. A cache hit ratio below 95% on an OLTP workload indicates the working set exceeds available cache. Increase `shared_buffers` (commonly 25% of total RAM) or add more RAM. Check the ratio via `blks_hit / (blks_hit + blks_read)` in `pg_stat_database`.
+
+</details>
 
 ---
 

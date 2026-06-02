@@ -4,6 +4,19 @@
 
 **Prerequisite:** [`Kubernetes.md`](./Kubernetes.md)
 
+
+```mermaid
+graph LR
+    Pod1[Pod A] --> eBPF[eBPF Datapath]
+    Pod2[Pod B] --> eBPF
+    eBPF --> Policy[Network Policy Engine]
+    Policy --> L7[L7 Visibility / Filtering]
+    eBPF --> Encrypt[WireGuard Encryption]
+    eBPF --> LB[Load Balancing]
+    Hubble[Hubble Observability] --> eBPF
+    Identity[Cilium Identity] --> Policy
+```
+
 ---
 
 ## Part 0 — Why Cilium Exists
@@ -584,3 +597,78 @@ kubectl exec -n kube-system ds/cilium -- cilium monitor --type drop
 ## The Mantra
 
 > The network is the security boundary. eBPF makes that boundary programmable, observable, and fast enough to actually enforce at scale. Cilium is what happens when you stop treating networking as a solved problem and start treating it as a first-class engineering concern.
+
+## Top 10 Interview Questions
+
+<details>
+<summary><strong>Q: What is eBPF and why does Cilium use it instead of iptables?</strong></summary>
+
+eBPF (extended Berkeley Packet Filter) runs sandboxed programs in the Linux kernel without modifying kernel source or loading kernel modules. Cilium uses it because iptables performance degrades linearly with rule count — in a cluster with thousands of pods, iptables chains become a bottleneck. eBPF provides O(1) lookup performance via hash maps, programmable packet processing, and deep kernel visibility without the overhead of userspace proxies.
+
+</details>
+
+<details>
+<summary><strong>Q: How does Cilium handle network policy enforcement differently from Calico?</strong></summary>
+
+Cilium enforces policies at the eBPF level in the kernel datapath — packets are filtered before they even reach the network stack. Calico traditionally uses iptables (or newer eBPF mode). Cilium's advantage: identity-based policies (pods are assigned cryptographic identities, not just IP-based rules), L7 filtering (HTTP method/path, gRPC, Kafka topic), and no performance degradation as policy count grows. Calico is simpler to set up; Cilium is more powerful for complex policy requirements.
+
+</details>
+
+<details>
+<summary><strong>Q: What is Hubble and how does it provide network observability?</strong></summary>
+
+Hubble is Cilium's observability layer — it captures network flows at the eBPF level and exposes them via a CLI, UI, and Prometheus metrics. It provides L3/L4 flow visibility (source/destination pod, port, protocol), L7 visibility (HTTP status codes, DNS queries, Kafka topics), network policy verdicts (which policy allowed/denied a flow), and service dependency maps. Unlike traditional packet capture, Hubble has minimal performance overhead because it hooks into the kernel datapath directly.
+
+</details>
+
+<details>
+<summary><strong>Q: How does Cilium implement service mesh without sidecars?</strong></summary>
+
+Cilium's service mesh uses eBPF to handle L7 traffic management (load balancing, retries, circuit breaking) directly in the kernel, eliminating the need for sidecar proxies like Envoy. This removes the memory overhead (each sidecar consumes 50-100MB), latency overhead (extra network hops through the proxy), and operational complexity (managing sidecar injection and lifecycle). For advanced L7 features that require full protocol parsing, Cilium can optionally deploy an Envoy proxy per node instead of per pod.
+
+</details>
+
+<details>
+<summary><strong>Q: How does Cilium handle multi-cluster networking?</strong></summary>
+
+Cilium ClusterMesh connects multiple Kubernetes clusters with shared service discovery and unified network policies. Pods in cluster A can reach services in cluster B using standard Kubernetes service names. ClusterMesh uses etcd for cross-cluster state synchronisation and supports global services (load-balanced across clusters), affinity routing (prefer local cluster), and cross-cluster network policies. This enables active-active multi-cluster deployments and disaster recovery topologies.
+
+</details>
+
+<details>
+<summary><strong>Q: What is Cilium's identity-based security model?</strong></summary>
+
+Instead of using IP addresses for policy rules (which change constantly in Kubernetes), Cilium assigns each endpoint a numeric identity based on its labels. Policies reference identities, not IPs. When a pod communicates, Cilium embeds its identity in the packet header and the receiving side validates it. This is more robust than IP-based policies — pod rescheduling, scaling, and IP reuse do not break security rules. Identities are allocated cluster-wide and shared via the Cilium control plane.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you troubleshoot connectivity issues in a Cilium-managed cluster?</strong></summary>
+
+Use cilium status to check agent health, cilium endpoint list to verify endpoint identity assignment, cilium monitor for real-time packet tracing, and hubble observe for flow-level debugging. Common issues: policy denying expected traffic (check cilium policy get and look for default-deny), identity not assigned (pod labels not matching any policy), and BPF map full (increase map sizes). The cilium connectivity test command runs a comprehensive suite of connectivity checks between pods.
+
+</details>
+
+<details>
+<summary><strong>Q: How does Cilium handle encryption in transit?</strong></summary>
+
+Cilium supports transparent encryption using either WireGuard (default, simpler, kernel-based) or IPsec. WireGuard encryption is enabled cluster-wide with a single flag — all pod-to-pod traffic is encrypted without application changes. It uses the pod's Cilium identity for key management, so keys rotate automatically as pods come and go. Performance overhead is minimal (WireGuard is extremely fast in-kernel). For compliance requirements that mandate specific cipher suites, IPsec provides more configuration options.
+
+</details>
+
+<details>
+<summary><strong>Q: What are the resource requirements and operational considerations for running Cilium?</strong></summary>
+
+Cilium runs as a DaemonSet with one agent per node. Each agent consumes 200-500MB memory depending on cluster size and BPF map configurations. CPU usage scales with packet throughput. Key operational considerations: Cilium replaces kube-proxy (disable it), kernel version matters (5.4+ recommended for full features), BPF filesystem must be mounted, and upgrades require rolling restarts of the DaemonSet. Monitor agent health with Prometheus metrics and set alerts for agent restarts or BPF map pressure.
+
+</details>
+
+<details>
+<summary><strong>Q: When would you choose Cilium over other CNI plugins like Calico or Flannel?</strong></summary>
+
+Choose Cilium when you need: L7 network policies (HTTP/gRPC/Kafka-aware filtering), high-performance networking at scale (thousands of pods with complex policies), built-in observability (Hubble), sidecar-free service mesh, multi-cluster networking (ClusterMesh), or transparent encryption. Choose Calico for simpler setups with only L3/L4 policies or when you need BGP peering with existing network infrastructure. Choose Flannel for the simplest possible overlay networking without policy enforcement. Cilium has the steepest learning curve but the richest feature set.
+
+</details>
+
+---
+

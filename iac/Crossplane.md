@@ -32,6 +32,13 @@ The mental model: `XRD` defines the shape → `Composition` defines the behavior
 
 ---
 
+
+```mermaid
+graph LR
+    Input[Input] --> Crossplane[Crossplane]
+    Crossplane --> Output[Output]
+```
+
 ## DAY 1 — Install, Connect a Provider, Provision Real Resources
 
 ### 1.1 Prerequisites
@@ -462,3 +469,78 @@ kubectl get xr <name> -o yaml | grep -A 20 status
 ## The Mantra
 
 > Declare what you want. Let the control plane close the gap. Review the diff in Git, not in a console.
+
+## Top 10 Interview Questions
+
+<details>
+<summary><strong>Q: What is Crossplane and how does it differ from Terraform?</strong></summary>
+
+Crossplane is a Kubernetes-native infrastructure-as-code platform — you declare infrastructure as Kubernetes custom resources (CRDs), and Crossplane controllers reconcile them against cloud APIs. Unlike Terraform (imperative plan/apply, state file, HCL), Crossplane uses the Kubernetes reconciliation loop (continuous, self-healing, declarative). Crossplane excels at: platform engineering (build self-service infrastructure APIs for developers), GitOps-native IaC (works with ArgoCD/Flux), and drift detection/correction (continuous reconciliation). Terraform excels at: one-time provisioning, broader provider ecosystem, and simpler operational model.
+
+</details>
+
+<details>
+<summary><strong>Q: What are Managed Resources, Composite Resources, and Compositions in Crossplane?</strong></summary>
+
+Managed Resources (MRs) are 1:1 mappings to cloud resources (an RDS instance, a VPC, an S3 bucket). Composite Resources (XRs) are custom abstractions you define — e.g., 'Database' that creates an RDS instance, security group, and subnet group together. Compositions define how XRs map to MRs — the implementation details. This separation enables platform teams to build self-service APIs: developers request a 'Database' (XR), the composition creates all underlying resources (MRs) with security and compliance built in.
+
+</details>
+
+<details>
+<summary><strong>Q: How does Crossplane enable platform engineering?</strong></summary>
+
+Platform teams define XRDs (Composite Resource Definitions) and Compositions that encode organisational standards: 'When a developer requests a Database, create it in a private subnet with encryption enabled, backup configured, and monitoring attached.' Developers interact with simple, abstracted APIs (kubectl apply -f my-database.yaml) without knowing the cloud-specific details. This is the key value: Crossplane lets you build an internal developer platform (IDP) using Kubernetes as the universal control plane.
+
+</details>
+
+<details>
+<summary><strong>Q: How does Crossplane handle state compared to Terraform?</strong></summary>
+
+Terraform uses an explicit state file (S3 + DynamoDB lock) that tracks resource IDs and attributes. Crossplane stores state in the Kubernetes API server (etcd) as the status of custom resources — each managed resource CR contains its external resource ID and observed state. Crossplane continuously reconciles (every few minutes), detecting and correcting drift automatically. Terraform detects drift only on plan/apply. The tradeoff: Crossplane's continuous reconciliation is more robust but consumes API quota; Terraform's on-demand approach is simpler but allows drift between runs.
+
+</details>
+
+<details>
+<summary><strong>Q: What are Crossplane Providers and how do they work?</strong></summary>
+
+Providers are Crossplane packages that contain controllers for a specific API — AWS Provider, GCP Provider, Azure Provider, Helm Provider, Kubernetes Provider. Each provider installs CRDs for its resources and runs controllers that reconcile those CRDs against the cloud API. Providers authenticate using ProviderConfigs (IAM roles, service accounts, API keys). The provider ecosystem is growing but smaller than Terraform's — check provider maturity before committing. You can write custom providers for internal APIs.
+
+</details>
+
+<details>
+<summary><strong>Q: How does Crossplane integrate with GitOps workflows?</strong></summary>
+
+Crossplane resources are Kubernetes CRs, so they work natively with GitOps tools (ArgoCD, Flux). Workflow: define infrastructure as YAML in Git, ArgoCD syncs the YAML to Kubernetes, Crossplane controllers provision the cloud resources. Changes go through Git PRs with review and approval. This is more natural than Terraform + GitOps (which requires running terraform apply in a CI job). The entire infrastructure lifecycle is managed by the same GitOps pipeline as application deployments.
+
+</details>
+
+<details>
+<summary><strong>Q: What are the operational challenges of running Crossplane?</strong></summary>
+
+Challenges: etcd size (many managed resources = large etcd database — monitor and compact), provider rate limits (continuous reconciliation can hit cloud API rate limits — tune poll intervals), debugging (reconciliation errors surface in CR status conditions — less intuitive than Terraform plan output), provider maturity (some resources have gaps compared to Terraform providers), and learning curve (Compositions and XRDs require understanding Kubernetes CRD concepts). Run Crossplane on a dedicated management cluster, not your workload cluster.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you handle secrets and credentials in Crossplane?</strong></summary>
+
+ProviderConfigs reference Kubernetes Secrets containing cloud credentials. Best practices: use IRSA (IAM Roles for Service Accounts) on EKS or Workload Identity on GKE to avoid long-lived credentials. For cross-account provisioning, use assume-role chains. Encrypt secrets at rest in etcd (Kubernetes encryption providers). Never commit credentials to Git — use External Secrets Operator to sync from Vault/AWS Secrets Manager. Rotate credentials by updating the Kubernetes Secret — Crossplane picks up changes automatically.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you test Crossplane Compositions before deploying to production?</strong></summary>
+
+Validate Compositions with crossplane beta validate (checks syntax and schema). Use crossplane beta render to preview the managed resources a Composition will create without actually provisioning them. Deploy to a staging environment with a separate cloud account for integration testing. Use Uptest (Crossplane's testing framework) for automated end-to-end tests: apply a claim, wait for resources to be ready, verify properties, clean up. Unit test Go-based custom compositions with standard Go testing tools.
+
+</details>
+
+<details>
+<summary><strong>Q: When should you choose Crossplane over Terraform or Pulumi?</strong></summary>
+
+Choose Crossplane when: you are building an internal developer platform (self-service infrastructure APIs), you want GitOps-native IaC (ArgoCD/Flux integration), you need continuous drift detection and correction, or your team is already Kubernetes-native. Choose Terraform for: one-time provisioning, broader provider ecosystem, simpler operational model, or teams unfamiliar with Kubernetes. Choose Pulumi for: infrastructure in real programming languages (TypeScript, Python), strong IDE support, and teams that prefer code over YAML/HCL.
+
+</details>
+
+---
+

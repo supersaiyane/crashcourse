@@ -30,6 +30,20 @@ fresh runner in a chosen Docker image.
 
 ---
 
+
+```mermaid
+graph LR
+    Push[Git Push] --> Pipeline[.gitlab-ci.yml]
+    Pipeline --> Build[Build Stage]
+    Build --> Test[Test Stage]
+    Test --> Deploy[Deploy Stage]
+    Runner[GitLab Runner] --> Build
+    Runner --> Test
+    Runner --> Deploy
+    Cache[Cache / Artifacts] --> Build
+    Registry[Container Registry] --> Deploy
+```
+
 ## Part 1 — The vocabulary
 
 | Term | Meaning |

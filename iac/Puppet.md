@@ -20,6 +20,20 @@ The payoff: infrastructure that self-heals, audit logs that show every change, a
 
 ---
 
+
+```mermaid
+graph LR
+    Puppet[Puppet Server] --> Agent1[Puppet Agent]
+    Puppet --> Agent2[Puppet Agent]
+    Agent1 --> Catalog[Compiled Catalog]
+    Catalog --> Apply[Apply Resources]
+    Manifest[Manifests .pp] --> Puppet
+    Hiera[Hiera Data] --> Puppet
+    Facter[Facter Facts] --> Agent1
+    Forge[Puppet Forge] --> Module[Modules]
+    Module --> Manifest
+```
+
 ## Part 1 — The vocabulary
 
 | Term | What it is |
@@ -653,6 +667,81 @@ pdk validate
 pdk test unit
 pdk new class mymodule::config
 ```
+
+---
+
+
+## Top 10 Interview Questions
+
+<details>
+<summary><strong>Q: What is Puppet and how does its declarative model work?</strong></summary>
+
+Puppet uses a declarative DSL where you describe the desired state of your infrastructure (this package should be installed, this file should have these contents, this service should be running) without specifying the steps to get there. Puppet agents compile a catalog (ordered list of resources and dependencies), compare current state to desired state, and make only the changes needed. This is idempotent — running Puppet multiple times produces the same result. The declarative model handles drift automatically: manual changes are corrected on the next run.
+
+</details>
+
+<details>
+<summary><strong>Q: How does the Puppet agent-server architecture work?</strong></summary>
+
+Every 30 minutes (configurable), Puppet agents send facts (system information gathered by Facter) to the Puppet Server. The server compiles a catalog for that node (using manifests, Hiera data, and facts) and sends it back. The agent applies the catalog — making changes to reach the desired state — and sends a report to the server. This pull-based model means nodes converge even if the server was temporarily unreachable (they use the last cached catalog). PuppetDB stores facts and reports for querying and reporting.
+
+</details>
+
+<details>
+<summary><strong>Q: What is Hiera and how does it separate data from code in Puppet?</strong></summary>
+
+Hiera is Puppet's hierarchical data lookup system. Instead of hardcoding values in manifests (e.g., ntp_server = 'time.company.com'), you define them in Hiera data files (YAML/JSON) organized in a hierarchy: common defaults at the bottom, overridden by OS-specific, environment-specific, or node-specific values at higher levels. This separates what should be configured (manifests/modules) from what values to use (Hiera data). Example hierarchy: nodes/%{hostname}.yaml → environment/%{environment}.yaml → common.yaml.
+
+</details>
+
+<details>
+<summary><strong>Q: How do Puppet modules work and what is the Puppet Forge?</strong></summary>
+
+A module is a self-contained bundle of manifests, templates, files, Hiera data, and tests for managing a specific component (nginx, PostgreSQL, Java). Modules follow a standard directory layout (manifests/, files/, templates/, data/). The Puppet Forge is a public repository of community modules — well-maintained modules (puppetlabs-apache, puppetlabs-postgresql) save significant development time. Use r10k or Code Manager to manage module versions and deploy them to environments. Pin module versions in a Puppetfile for reproducibility.
+
+</details>
+
+<details>
+<summary><strong>Q: How does Puppet compare to Ansible for configuration management?</strong></summary>
+
+Puppet: pull-based (agent polls server every 30min), declarative DSL, continuous enforcement (drift correction), strong at scale (thousands of nodes), steeper learning curve. Ansible: push-based (agentless via SSH), YAML playbooks (procedural), on-demand execution (no continuous enforcement), simpler to start, better for ad-hoc tasks. Choose Puppet for: large-scale environments needing continuous enforcement and compliance reporting. Choose Ansible for: simpler setups, ad-hoc provisioning, and teams that prefer YAML over a DSL.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you test Puppet manifests?</strong></summary>
+
+Unit tests: rspec-puppet tests verify that manifests compile correctly and contain expected resources (fast, no infrastructure needed). Acceptance tests: Beaker or Litmus provision a real VM, apply the manifest, and verify the result with InSpec/ServerSpec. Syntax validation: puppet parser validate checks syntax, puppet-lint enforces style. Integration: test modules with different OS versions and Puppet versions in CI. Test pyramid: many rspec-puppet unit tests, fewer acceptance tests for critical modules, linting on every commit.
+
+</details>
+
+<details>
+<summary><strong>Q: What are Puppet environments and how do they support change management?</strong></summary>
+
+Environments (production, staging, development) are separate directory trees of Puppet code — each environment can have different module versions and manifests. Agents request a specific environment, receiving the code from that environment's directory. Workflow: develop in a feature branch, deploy to a development environment, test, promote to staging, then production. r10k automatically maps Git branches to Puppet environments, enabling branch-based workflow. Production environment should be the most stable, with tested and pinned module versions.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you handle secrets in Puppet?</strong></summary>
+
+Use hiera-eyaml to encrypt sensitive values in Hiera data files — values are encrypted at rest and decrypted only on the Puppet Server during catalog compilation. For dynamic secrets, integrate with Vault using the puppet-vault_lookup module. Never store secrets in plain text in manifests or unencrypted Hiera data. In Puppet Enterprise, the node classifier and RBAC provide additional access control. Ensure the Puppet Server's private key (used for eyaml decryption) is protected and backed up securely.
+
+</details>
+
+<details>
+<summary><strong>Q: What is PuppetDB and how does it enable infrastructure querying?</strong></summary>
+
+PuppetDB stores all facts, catalogs, and reports from every Puppet run. You can query it via PQL (Puppet Query Language): find all nodes running Ubuntu 22.04, find all nodes with a specific package installed, find all nodes that failed their last Puppet run. This enables: inventory management (what is deployed where), impact analysis (which nodes are affected by a module change), compliance reporting (which nodes are out of desired state), and exported resources (resources defined on one node that apply on others — e.g., firewall rules).
+
+</details>
+
+<details>
+<summary><strong>Q: What is the difference between Puppet Open Source and Puppet Enterprise?</strong></summary>
+
+Open Source: Puppet Server, PuppetDB, Facter, Hiera, Bolt — free, community-supported. Enterprise adds: web console (node management UI), RBAC (role-based access control), orchestration (run Puppet on specific nodes on demand), code manager (automated code deployment), reporting (compliance dashboards, change tracking), and official support. Choose Enterprise for: large organizations needing compliance reporting, RBAC, and support SLAs. Choose Open Source for: smaller teams comfortable with CLI management and community support.
+
+</details>
 
 ---
 

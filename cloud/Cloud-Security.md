@@ -25,6 +25,23 @@ Start with identity. Harden it harder than you think you need to. Then work outw
 
 ---
 
+
+```mermaid
+graph TD
+    Identity[Identity & Access]
+    Identity --> IAM[IAM Policies / RBAC]
+    Identity --> MFA[MFA / SSO]
+    Network[Network Security]
+    Network --> FW[Firewall / NSG]
+    Network --> WAF[WAF / DDoS]
+    Data[Data Protection]
+    Data --> Encrypt[Encryption at Rest + Transit]
+    Data --> KMS[Key Management]
+    Detect[Detection & Response]
+    Detect --> Audit[Audit Logging]
+    Detect --> SIEM[SIEM / GuardDuty]
+```
+
 ## Part 1 — Vocabulary
 
 **Shared Responsibility Model** — The contractual boundary between what the cloud provider secures (hardware, hypervisors, physical facilities, managed service internals) and what you secure (IAM, OS, application, data, network config). The exact split varies by service type: IaaS (EC2) gives you more control and more responsibility; PaaS (RDS) and SaaS (Workspaces) shift more to the provider.

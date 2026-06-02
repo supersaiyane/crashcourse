@@ -16,6 +16,18 @@ The daemon starts automatically on login (macOS/Linux) and handles GPU detection
 
 ---
 
+
+```mermaid
+graph LR
+    Pull[ollama pull model] --> Store[Local Model Store]
+    Store --> Run[ollama run model]
+    Run --> API[REST API :11434]
+    API --> App[Your Application]
+    Run --> CLI[Interactive Chat]
+    Modelfile[Modelfile] --> Create[ollama create custom]
+    Create --> Store
+```
+
 ## Part 1 — The vocabulary
 
 | Term | What it means |
@@ -585,6 +597,81 @@ OLLAMA_NUM_PARALLEL=2                      # concurrent request limit
 OLLAMA_MAX_LOADED_MODELS=3                 # max models in VRAM simultaneously
 CUDA_VISIBLE_DEVICES=0                     # restrict to specific GPU(s)
 ```
+
+---
+
+
+## Top 10 Interview Questions
+
+<details>
+<summary><strong>Q: What is Ollama and how does it differ from other local LLM runners like llama.cpp?</strong></summary>
+
+Ollama wraps llama.cpp (and other backends) in a user-friendly CLI and REST API with model management — pull, run, create custom models, and serve them via an OpenAI-compatible API, all with a single binary. Unlike raw llama.cpp, which requires manual model downloading and GGUF conversion, Ollama handles model packaging, quantisation selection, and GPU detection automatically. Think of it as Docker for LLMs — it abstracts the infrastructure so you focus on using models, not configuring them.
+
+</details>
+
+<details>
+<summary><strong>Q: How does Ollama handle GPU acceleration and what happens without a GPU?</strong></summary>
+
+Ollama auto-detects NVIDIA GPUs (via CUDA), AMD GPUs (via ROCm), and Apple Silicon (via Metal). It automatically offloads as many layers as VRAM allows. If no GPU is available or VRAM is insufficient, it falls back to CPU inference — slower but functional. You can control GPU usage with OLLAMA_NUM_GPU environment variable. For Apple Silicon Macs, Metal acceleration is used by default and performs well for 7B-13B models.
+
+</details>
+
+<details>
+<summary><strong>Q: What is a Modelfile and when would you create a custom one?</strong></summary>
+
+A Modelfile is Ollama's equivalent of a Dockerfile — it defines a custom model configuration with a base model, system prompt, parameters (temperature, top_p, context length), and optional adapter weights (LoRA). Create one when you need a domain-specific assistant (e.g., a coding assistant with a particular system prompt), want to adjust default parameters, or need to apply fine-tuned LoRA adapters on top of a base model.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you choose between quantisation levels (Q4_0, Q4_K_M, Q5_K_M, Q8_0)?</strong></summary>
+
+Lower quantisation (Q4) reduces model size and VRAM usage by ~60-75% but loses some quality. Q4_K_M is the sweet spot for most use cases — good quality with significant size reduction. Q5_K_M offers near-full quality at moderate savings. Q8_0 is nearly lossless but saves only ~50% compared to FP16. For production, benchmark on your specific task — quantisation impact varies by model architecture and task type. Creative writing suffers more than classification from aggressive quantisation.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you integrate Ollama with application code and what API does it expose?</strong></summary>
+
+Ollama exposes a REST API on port 11434 with endpoints for chat (/api/chat), generate (/api/generate), embeddings (/api/embeddings), and model management (/api/pull, /api/list). It also supports an OpenAI-compatible endpoint (/v1/chat/completions), so existing OpenAI SDK code works by changing the base URL. Libraries like LangChain, LlamaIndex, and the official ollama-python/ollama-js SDKs provide native integration.
+
+</details>
+
+<details>
+<summary><strong>Q: What are the memory and hardware requirements for running different model sizes?</strong></summary>
+
+Rule of thumb for Q4 quantised models: 7B needs ~4GB VRAM, 13B needs ~8GB, 30B needs ~18GB, 70B needs ~40GB. System RAM should be at least 2x the model size for comfortable operation. Apple Silicon Macs with unified memory can run larger models than discrete GPU setups with the same VRAM because they share the memory pool. For CPU-only inference, expect 10-50x slower token generation compared to GPU.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you serve Ollama in a production or team environment?</strong></summary>
+
+Set OLLAMA_HOST=0.0.0.0 to listen on all interfaces, put it behind a reverse proxy (Nginx) for TLS and authentication, and use a systemd service for process management. For team use, pre-pull required models and set OLLAMA_MODELS to a shared directory. For higher scale, run multiple Ollama instances behind a load balancer. Note that Ollama does not natively support request queuing or multi-tenant isolation — add those at the proxy layer.
+
+</details>
+
+<details>
+<summary><strong>Q: How does Ollama handle concurrent requests and what are the limitations?</strong></summary>
+
+Ollama can handle multiple concurrent requests but loads only one model at a time by default (configurable with OLLAMA_NUM_PARALLEL). When a request arrives for a different model, it unloads the current one and loads the requested one — this swap takes seconds and causes latency spikes. For multi-model serving, either run multiple Ollama instances on different ports or use OLLAMA_MAX_LOADED_MODELS to keep multiple models in memory simultaneously (requires sufficient VRAM).
+
+</details>
+
+<details>
+<summary><strong>Q: What security considerations apply when running Ollama?</strong></summary>
+
+By default Ollama binds to localhost only — safe for personal use but must be explicitly exposed for network access. It has no built-in authentication, so exposing it requires a reverse proxy with auth. Model downloads come from Ollama's registry — verify model provenance for sensitive workloads. Running locally keeps data private (no API calls to external services), which is the primary security advantage over cloud LLM APIs. Restrict file system access if running untrusted model code.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you troubleshoot slow inference or out-of-memory errors in Ollama?</strong></summary>
+
+Check GPU utilisation (nvidia-smi or Activity Monitor on Mac) to verify GPU offloading is working. If VRAM is insufficient, try a smaller quantisation (Q4 instead of Q8) or a smaller model. Set OLLAMA_DEBUG=1 for verbose logging showing layer offloading decisions. Common issues: another process using VRAM (check nvidia-smi), model too large for available memory (switch to a smaller variant), or CPU fallback causing slowness (ensure GPU drivers are installed). Monitor with `ollama ps` to see loaded models and memory usage.
+
+</details>
 
 ---
 

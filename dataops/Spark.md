@@ -44,6 +44,13 @@ If you're still using pandas on a single machine with a cron job and you're proc
 
 ---
 
+
+```mermaid
+graph LR
+    Input[Input] --> Spark[Spark]
+    Spark --> Output[Output]
+```
+
 ## DAY 1 — Getting Started
 
 ### Install PySpark Locally
@@ -684,3 +691,78 @@ You've covered the core of Spark — enough to write production jobs and underst
 **Transformations describe. Actions execute. Shuffles cost. Schema first, collect never, tune after you measure.**
 
 You don't need to memorize every API. You need to understand the execution model — lazy evaluation, partitions as the unit of parallelism, and shuffles as the bottleneck. Everything else is a lookup away.
+
+## Top 10 Interview Questions
+
+<details>
+<summary><strong>Q: What is the difference between RDD, DataFrame, and Dataset in Spark?</strong></summary>
+
+RDD (Resilient Distributed Dataset) is the original low-level API — distributed collection with functional transformations (map, filter, reduce). DataFrame is a distributed table with named columns and Catalyst optimizer — uses SQL-like operations, significantly faster than RDD due to optimisation. Dataset (Scala/Java only) adds compile-time type safety to DataFrames. Use DataFrame for 95% of use cases — it is the recommended API. Use RDD only when you need fine-grained control over partitioning or custom data structures.
+
+</details>
+
+<details>
+<summary><strong>Q: What are narrow and wide transformations and why does it matter for performance?</strong></summary>
+
+Narrow transformations (map, filter, union) process data partition-by-partition without shuffling data across the network. Wide transformations (groupBy, join, repartition) require shuffling data between executors — expensive due to serialisation, network transfer, and disk spill. Performance depends on minimising shuffles: filter early, broadcast small tables in joins, pre-partition data by join keys, and use reduceByKey instead of groupByKey (combines locally before shuffling). A shuffle-heavy job can be 10-100x slower than a shuffle-optimised one.
+
+</details>
+
+<details>
+<summary><strong>Q: How does Spark handle data skew and what are the mitigation strategies?</strong></summary>
+
+Data skew occurs when one partition has significantly more data than others (e.g., one customer ID has millions of records while others have hundreds). The skewed partition becomes a bottleneck — one task runs for hours while others finish in seconds. Mitigations: salting (add a random suffix to the skewed key, process separately, then combine), broadcast join (if one side is small, broadcast it to avoid shuffle), adaptive query execution (AQE in Spark 3.0+ automatically detects and splits skewed partitions), and custom partitioning.
+
+</details>
+
+<details>
+<summary><strong>Q: How does Spark's Catalyst optimizer work?</strong></summary>
+
+Catalyst is Spark's query optimizer for DataFrames and SQL. It: parses the query into a logical plan, applies rule-based optimizations (predicate pushdown, column pruning, constant folding, join reordering), generates physical plans (choose between sort-merge join, broadcast hash join, etc.), and selects the lowest-cost plan using statistics. This is why DataFrames are faster than RDDs — the same logical operation gets automatically optimised. Use df.explain(true) to see the optimisation stages.
+
+</details>
+
+<details>
+<summary><strong>Q: What is the difference between client mode and cluster mode in Spark?</strong></summary>
+
+In client mode, the driver runs on the machine that submits the job — useful for interactive development (notebooks, spark-shell) but the driver is a single point of failure and network-bound. In cluster mode, the driver runs inside the cluster on a worker node — better for production (driver is managed by the cluster manager, restartable). Always use cluster mode for production batch jobs. Use client mode only for interactive exploration and debugging.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you tune Spark for optimal performance?</strong></summary>
+
+Key levers: executor memory and cores (balance between parallelism and per-task memory), number of partitions (aim for 2-4x the number of cores, 128MB-256MB per partition), shuffle partitions (spark.sql.shuffle.partitions — default 200, tune based on data size), serialization (use Kryo instead of Java serialization), and caching (cache frequently reused DataFrames in memory). Monitor: Spark UI for stage duration, shuffle read/write, and spill to disk. The most common mistake: too few partitions causing OOM or too many causing scheduling overhead.
+
+</details>
+
+<details>
+<summary><strong>Q: What is Structured Streaming and how does it differ from batch Spark?</strong></summary>
+
+Structured Streaming treats a data stream as an unbounded table — new data arrives as new rows appended to the table. You write the same DataFrame/SQL operations as batch, and Spark handles the incremental execution. Key concepts: trigger interval (how often to process — micro-batch or continuous), watermarking (handle late data), and output modes (append, complete, update). It differs from batch by: maintaining state across micro-batches, handling late data, and providing exactly-once guarantees with checkpointing.
+
+</details>
+
+<details>
+<summary><strong>Q: How does Spark handle fault tolerance?</strong></summary>
+
+RDD lineage: if a partition is lost (executor crash), Spark recomputes it from the source data using the recorded transformation chain. For shuffles, intermediate data is written to disk, so it does not need to be recomputed from scratch. Checkpointing saves the RDD to reliable storage (HDFS/S3), truncating the lineage for long chains. For Structured Streaming, checkpointing is mandatory — it stores offsets and state for exactly-once processing. In practice, Spark can recover from any single executor failure automatically.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you manage dependencies and environments in Spark?</strong></summary>
+
+Package dependencies with the job: --jars for JVM dependencies, --py-files for Python modules, or use conda-pack/venv-pack for complete Python environments. For Kubernetes: build a Docker image with all dependencies. For PySpark: avoid version conflicts between driver and executor Python environments — pin versions explicitly. Use dependency management tools (Maven for Scala, pip for Python) and test in an environment matching production. The most common production issue: dependency version mismatches between driver and executors.
+
+</details>
+
+<details>
+<summary><strong>Q: When would you choose Spark over other data processing frameworks?</strong></summary>
+
+Choose Spark for: large-scale batch processing (TB+ datasets), complex transformations requiring SQL + code, unified batch + streaming, and ML workflows (MLlib). Consider alternatives: dbt for SQL-only warehouse transformations (simpler, cheaper), Flink for low-latency streaming (true event-at-a-time, not micro-batch), Polars/DuckDB for single-machine analytics (faster for data that fits in memory), and BigQuery/Snowflake for warehouse-native analytics (no infrastructure to manage). Spark's strength is versatility at scale; its weakness is operational complexity.
+
+</details>
+
+---
+

@@ -38,6 +38,13 @@ The shift: policy stops being tribal knowledge and becomes a first-class artifac
 
 ---
 
+
+```mermaid
+graph LR
+    Input[Input] --> OPA[OPA]
+    OPA --> Output[Output]
+```
+
 ## DAY 1 — Install, Write Rego, Test with Conftest
 
 ### Install OPA
@@ -463,3 +470,78 @@ kubectl describe <constrainttype> <constraintname>
 ## The Mantra
 
 Policy as code. Tested, versioned, enforced at the boundary — not documented in a wiki nobody reads.
+
+## Top 10 Interview Questions
+
+<details>
+<summary><strong>Q: What is OPA and what problem does it solve?</strong></summary>
+
+OPA (Open Policy Agent) is a general-purpose policy engine that decouples policy decisions from policy enforcement. Instead of hardcoding authorization rules in application code (if user.role == 'admin'), you write policies in Rego (OPA's declarative language) and query OPA for decisions. OPA solves: scattered authorization logic (policies are centralised and auditable), inconsistent enforcement (same policy engine across all systems), and policy-as-code (version control, testing, CI/CD for policies).
+
+</details>
+
+<details>
+<summary><strong>Q: How does the Rego language work and what makes it different from imperative languages?</strong></summary>
+
+Rego is declarative and rule-based — you state what should be true, not how to compute it. Rules evaluate to true or false based on input data. Rego uses: logical AND (multiple expressions in a rule body), logical OR (multiple rules with the same name), iteration (implicit — Rego iterates over collections automatically), and negation (not keyword). The key mental shift: Rego rules are not if-then statements; they are logical assertions. If all assertions in a rule body are true, the rule is true. This is powerful for policy expression but has a learning curve.
+
+</details>
+
+<details>
+<summary><strong>Q: How does OPA Gatekeeper enforce policies in Kubernetes?</strong></summary>
+
+Gatekeeper runs as a Kubernetes admission controller: when a resource is created/updated, the API server sends the request to Gatekeeper, which evaluates OPA policies and returns allow/deny. Policies are defined as ConstraintTemplates (reusable policy logic in Rego) and Constraints (instantiate templates with parameters). Example: a template enforces 'container image must be from allowed registries' and a constraint specifies the allowed registries. Gatekeeper also provides audit mode: evaluate existing resources against policies without blocking.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you use OPA with Terraform for infrastructure policy?</strong></summary>
+
+Use Conftest to evaluate Terraform plans against OPA policies. Workflow: terraform plan -out=tfplan, terraform show -json tfplan > plan.json, conftest test plan.json — Conftest runs Rego policies against the JSON plan. Example policies: 'no public S3 buckets', 'all RDS instances must have encryption enabled', 'no resources in unapproved regions'. Integrate into CI: fail the pipeline if policies are violated. This shifts policy enforcement left — catch violations before applying infrastructure changes.
+
+</details>
+
+<details>
+<summary><strong>Q: What is the difference between OPA and Kubernetes RBAC?</strong></summary>
+
+Kubernetes RBAC controls who can perform API operations (create pods, delete services) based on roles and role bindings. OPA/Gatekeeper controls what resources look like — the content of the resources. RBAC answers 'can user X create a Deployment?' OPA answers 'does this Deployment meet our standards (resource limits set, image from approved registry, no privileged containers)?' They complement each other: RBAC for identity-based access control, OPA for content-based policy enforcement.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you test OPA policies?</strong></summary>
+
+Use OPA's built-in test framework: write test rules (prefixed with test_) that assert policy behaviour for specific inputs. Run with opa test. Test both allow and deny cases, edge cases, and error conditions. Use opa eval for interactive testing during development. For Gatekeeper: use gator test (Gatekeeper's CLI) to validate ConstraintTemplates and Constraints against sample resources. Integrate tests into CI — policies should be tested like code before deployment. Build a test suite of known-good and known-bad resource examples.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you manage and distribute OPA policies across an organisation?</strong></summary>
+
+Store policies in Git repositories with CI/CD: lint, test, and review policies in PRs. Distribute via: OPA Bundles (package policies into tarballs, host on an HTTP server, OPA polls for updates), Gatekeeper ConstraintTemplates (deploy via Helm/Kustomize to K8s clusters), or Conftest policies (npm-like distribution with conftest pull). Maintain a policy library with shared, reusable policies. Version policies and communicate changes — policy updates can break deployments if not coordinated.
+
+</details>
+
+<details>
+<summary><strong>Q: What are the performance considerations when running OPA at scale?</strong></summary>
+
+OPA evaluates policies in-memory and is very fast (sub-millisecond for typical policies). Performance concerns: large external data sets loaded into OPA (keep data minimal — load only what policies need), complex Rego with deep iteration (avoid nested iterations over large collections), and high query rates in admission controllers (Gatekeeper caches decisions). Monitor: decision latency (should be < 5ms), policy compilation time, and data sync latency. OPA scales horizontally — run multiple instances behind a load balancer for high availability.
+
+</details>
+
+<details>
+<summary><strong>Q: How does OPA handle data-driven policies?</strong></summary>
+
+OPA separates policy logic (Rego rules) from data (JSON documents). Example: a policy says 'image must be from an allowed registry' — the list of allowed registries is data loaded separately (from a ConfigMap, API, or bundle). When registries change, update the data without changing the policy. This enables: dynamic policies (change behaviour without redeploying), environment-specific policies (same logic, different data per environment), and external data integration (load user attributes, resource metadata from APIs).
+
+</details>
+
+<details>
+<summary><strong>Q: When should you use OPA versus built-in tools like Kyverno or Sentinel?</strong></summary>
+
+OPA: general-purpose (works beyond K8s — APIs, CI/CD, microservices), powerful Rego language (steep learning curve but very expressive), large ecosystem. Kyverno: Kubernetes-native (policies as K8s resources in YAML, not Rego), simpler for K8s-only policies, easier to learn but less powerful. Sentinel: HashiCorp-specific (Terraform Cloud/Enterprise, Vault, Consul), tightly integrated with HashiCorp tools. Choose OPA for: multi-platform policy enforcement and complex policy logic. Choose Kyverno for: K8s-only with simpler policies. Choose Sentinel for: HashiCorp-stack environments.
+
+</details>
+
+---
+

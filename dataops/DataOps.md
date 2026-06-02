@@ -42,6 +42,13 @@ The insight DataOps brings is simple: data pipelines are software. They deserve 
 
 ---
 
+
+```mermaid
+graph LR
+    Input[Input] --> DataOps[DataOps]
+    DataOps --> Output[Output]
+```
+
 ## DAY 1 — Foundations
 
 ### DataOps Principles
@@ -444,3 +451,78 @@ These topics build directly on DataOps foundations — each one is a natural nex
 ## The Mantra
 
 > Your data pipeline is production software. Version it, test it, monitor it, and deploy it — or eventually it will lie to you at the worst possible moment.
+
+## Top 10 Interview Questions
+
+<details>
+<summary><strong>Q: What is DataOps and how does it differ from traditional data engineering?</strong></summary>
+
+DataOps applies DevOps principles to data pipelines: version control for transformations, CI/CD for pipeline deployment, automated testing for data quality, monitoring for pipeline health, and collaboration between data engineers, analysts, and scientists. Traditional data engineering focuses on building pipelines; DataOps focuses on operating them reliably. The shift: from 'it works on my machine' to 'it works in production, is tested, monitored, and can be rolled back.'
+
+</details>
+
+<details>
+<summary><strong>Q: How do you implement CI/CD for data pipelines?</strong></summary>
+
+Version control all pipeline code (SQL transforms, DAG definitions, schema migrations). On PR: run linting, unit tests (transform logic against sample data), and schema validation. On merge: deploy to staging, run integration tests against staging data, then promote to production. For dbt: dbt test in CI, dbt run in CD. For Airflow: validate DAG parsing, test task logic, deploy DAGs to the scheduler. Use blue-green deployments for zero-downtime pipeline updates.
+
+</details>
+
+<details>
+<summary><strong>Q: What is data quality and how do you automate quality checks?</strong></summary>
+
+Data quality dimensions: completeness (no missing values where required), accuracy (values match reality), consistency (no contradictions across datasets), timeliness (data arrives on schedule), uniqueness (no unwanted duplicates). Automate with: schema validation (column types, nullable constraints), statistical tests (value ranges, distributions), referential integrity checks, freshness checks (data updated within expected window). Tools: Great Expectations, dbt tests, Soda, Monte Carlo.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you handle schema evolution in data pipelines?</strong></summary>
+
+Treat schemas as contracts: define explicit schemas for each dataset, version them, and enforce compatibility rules (backward, forward, full). Use Schema Registry for streaming (Kafka/Avro). For data warehouses, use migration tools (dbt schema changes, Flyway). Key patterns: additive-only changes (add columns, never remove), explicit deprecation periods (mark columns as deprecated before removal), and consumer notification (alert downstream teams before breaking changes).
+
+</details>
+
+<details>
+<summary><strong>Q: What is a data catalog and why is it important for DataOps?</strong></summary>
+
+A data catalog indexes all datasets with metadata: schema, ownership, lineage (where data comes from and goes to), quality metrics, and documentation. It enables: discoverability (find the right dataset without asking around), trust (quality scores and lineage show data reliability), and governance (who owns what, who has access). Tools: DataHub, Amundsen, OpenMetadata, Atlan. Without a catalog, data teams waste 30-40% of time finding and understanding data.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you implement data lineage tracking?</strong></summary>
+
+Lineage tracks data flow from source to consumption: which tables feed which dashboards, which transforms touch which columns. Implement at: pipeline level (Airflow DAG dependencies), transform level (dbt model refs), and column level (which input columns produce which output columns). Tools: dbt lineage graph, OpenLineage (open standard), DataHub, Marquez. Lineage enables: impact analysis (what breaks if I change this table?), root cause analysis (where did bad data enter?), and compliance (data subject access requests).
+
+</details>
+
+<details>
+<summary><strong>Q: What is the difference between ETL and ELT and when do you choose each?</strong></summary>
+
+ETL (Extract-Transform-Load): transform data before loading into the warehouse — used when the warehouse has limited compute or when transformations must happen outside for compliance. ELT (Extract-Load-Transform): load raw data into the warehouse, then transform using the warehouse's compute power — modern approach enabled by powerful cloud warehouses (BigQuery, Snowflake, Redshift). Choose ELT for: cloud warehouses (cheaper compute), iterative analysis (raw data is preserved), and dbt-based workflows.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you monitor data pipelines in production?</strong></summary>
+
+Monitor: pipeline execution (DAG/task success/failure, duration, retries), data freshness (when was the table last updated), data quality (automated test results over time), resource usage (compute, storage, cost), and SLA compliance (did the data arrive by the committed time). Alert on: pipeline failure, data freshness breach, quality test failure, and cost anomaly. Tools: Airflow metrics to Prometheus/Grafana, Monte Carlo for data observability, or custom checks.
+
+</details>
+
+<details>
+<summary><strong>Q: What is a data mesh and how does it relate to DataOps?</strong></summary>
+
+Data mesh is an organisational paradigm where domain teams own and publish their data as products, rather than a centralised data team owning all pipelines. Each domain applies DataOps practices (CI/CD, quality, monitoring) to its data products. A platform team provides self-service infrastructure (compute, storage, catalog, governance). DataOps is the 'how' (practices and tooling); data mesh is the 'who' (organisational structure). Data mesh does not work without strong DataOps practices within each domain team.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you handle data pipeline testing at different levels?</strong></summary>
+
+Unit tests: test individual transform functions with sample data (fast, run in CI). Integration tests: test pipeline end-to-end with test data in a staging environment (slower, run on merge). Contract tests: validate that upstream data matches expected schema and quality (run on data arrival). Smoke tests: after production deployment, verify key outputs are correct (run post-deploy). Regression tests: compare current outputs against known-good outputs for the same inputs. Layer all five for comprehensive coverage.
+
+</details>
+
+---
+

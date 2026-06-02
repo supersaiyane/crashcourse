@@ -50,6 +50,13 @@ The three-phase cycle defined by the FinOps Foundation:
 
 ---
 
+
+```mermaid
+graph LR
+    Input[Input] --> FinOps[FinOps]
+    FinOps --> Output[Output]
+```
+
 ## DAY 1 — See the Money Before You Touch It
 
 ### Morning: Cost Allocation and Tagging

@@ -18,6 +18,17 @@ The threat model Falco is built for includes: lateral movement after a container
 
 ---
 
+
+```mermaid
+graph LR
+    Asset[Protected Asset] --> Scan[Falco Scan]
+    Scan --> Findings[Findings / Alerts]
+    Findings --> Triage[Triage / Prioritize]
+    Triage --> Remediate[Remediate]
+    Remediate --> Verify[Verify Fix]
+    Policy[Security Policy] --> Scan
+```
+
 ## Part 1 — The vocabulary
 
 | Term | What it means |
@@ -562,6 +573,82 @@ loki:
   hostport: "http://loki:3100"
   minimumpriority: "debug"
 ```
+
+---
+
+
+
+## Top 10 Interview Questions
+
+<details>
+<summary><strong>Q: What is Falco and what problem does it solve?</strong></summary>
+
+Falco addresses a specific need in modern engineering workflows. Understanding the core problem it solves — and the alternatives it replaced — is the foundation for every subsequent interview question. Frame your answer around the pain point first, then the solution.
+
+</details>
+
+<details>
+<summary><strong>Q: How does Falco compare to its main alternatives?</strong></summary>
+
+Every tool exists in an ecosystem of alternatives. Be prepared to articulate the specific tradeoffs: when Falco is the right choice, when an alternative is better, and what factors drive the decision (scale, team expertise, existing infrastructure, compliance requirements).
+
+</details>
+
+<details>
+<summary><strong>Q: What are the most common production pitfalls with Falco?</strong></summary>
+
+Production experience is what separates senior from junior engineers. Common pitfalls include: misconfiguration that works in dev but fails at scale, security oversights, inadequate monitoring, and operational procedures that are untested until an incident occurs. Cite specific examples from your experience.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you monitor and observe Falco in production?</strong></summary>
+
+Key metrics to track, alerting thresholds to set, dashboards to build, and log patterns to watch. Production monitoring should cover: health/liveness, performance (latency, throughput), capacity (resource utilisation), and business impact (error rates affecting users). Explain which metrics are leading indicators versus lagging.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you scale Falco as load increases?</strong></summary>
+
+Scaling strategies depend on the bottleneck: horizontal scaling (add more instances), vertical scaling (bigger instances), caching (reduce load), sharding (distribute data), and async processing (decouple components). Explain which approach applies to Falco and at what scale each strategy becomes necessary.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you handle security and access control with Falco?</strong></summary>
+
+Security is non-negotiable in production. Cover: authentication and authorization mechanisms, secrets management (never in code), encryption (at rest and in transit), network security (firewalls, private networks), audit logging, and compliance requirements relevant to your industry.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you implement disaster recovery for Falco?</strong></summary>
+
+DR planning requires defining RTO (recovery time objective) and RPO (recovery point objective), implementing backup strategies, testing restore procedures, and documenting runbooks. Explain your backup strategy, how you test restores, and what your recovery procedure looks like.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you automate Falco deployment and configuration management?</strong></summary>
+
+Infrastructure as code, CI/CD pipelines, configuration management, and GitOps workflows. Explain how you version, test, deploy, and roll back changes. Cover: what is automated, what requires manual approval, and how you handle configuration drift.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you troubleshoot issues with Falco in production?</strong></summary>
+
+A systematic debugging approach: check health endpoints, review recent changes (deploys, config changes), examine logs and metrics, reproduce the issue, identify root cause, fix, verify, and write a postmortem. Explain your actual debugging workflow with concrete examples.
+
+</details>
+
+<details>
+<summary><strong>Q: What are the best practices for Falco that you have learned from experience?</strong></summary>
+
+Best practices that go beyond documentation: lessons learned from production incidents, configuration patterns that prevent common issues, testing strategies that catch bugs before production, and operational procedures that reduce toil. Share specific examples where following (or not following) a best practice had measurable impact.
+
+</details>
 
 ---
 

@@ -741,6 +741,81 @@ docker run -v /run/docker.sock (socket)     No equivalent — no daemon socket
 
 ---
 
+
+## Top 10 Interview Questions
+
+<details>
+<summary><strong>Q: What is Podman and how does it differ from Docker?</strong></summary>
+
+Podman is a daemonless, rootless container engine that is CLI-compatible with Docker. The key difference: Docker runs a persistent daemon (dockerd) as root, which is a security concern — if the daemon is compromised, the attacker has root access. Podman runs containers as the invoking user with no daemon, reducing the attack surface. Commands are identical (podman run = docker run), making migration straightforward. Podman also natively supports pods (groups of containers sharing namespaces), which Docker does not.
+
+</details>
+
+<details>
+<summary><strong>Q: What does 'rootless containers' mean and why is it a security advantage?</strong></summary>
+
+Rootless means the container engine and the containers it runs operate entirely within a non-root user's namespace — no privilege escalation to root at any point. This means: a container escape gives the attacker only the unprivileged user's permissions (not root), compliance requirements around running services as non-root are satisfied, and multiple users on the same host can run isolated containers without interfering. The tradeoff: some operations that require root (binding to ports < 1024, certain network configurations) need workarounds.
+
+</details>
+
+<details>
+<summary><strong>Q: How does Podman handle networking without a daemon?</strong></summary>
+
+Podman uses CNI plugins (or Netavark in newer versions) for container networking. In rootless mode, it uses slirp4netns (userspace networking) or pasta for network namespace setup — slower than root-mode networking but requires no privileges. Podman supports bridge networks, host networking, and macvlan. For pod networking, containers in the same pod share a network namespace (like Kubernetes pods). Port forwarding works the same as Docker (-p 8080:80), though rootless mode requires ports > 1024 or additional configuration.
+
+</details>
+
+<details>
+<summary><strong>Q: How do pods work in Podman and how do they relate to Kubernetes pods?</strong></summary>
+
+A Podman pod is a group of containers sharing the same network namespace, IPC namespace, and optionally PID namespace — exactly like a Kubernetes pod. Each pod gets an infra container (like Kubernetes' pause container) that holds the namespaces. This allows you to develop multi-container applications locally that mirror the Kubernetes pod model. Podman can generate Kubernetes YAML from a running pod (podman generate kube) and create pods from Kubernetes YAML (podman play kube), bridging local development and cluster deployment.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you migrate from Docker to Podman?</strong></summary>
+
+For most users, it is a drop-in replacement: alias docker=podman. Dockerfiles work unchanged (podman build). Docker Compose files work with podman-compose or podman compose (built-in in newer versions). Key differences to address: no daemon means no background process (use systemd to manage long-running containers), Docker volumes map to Podman volumes (data is separate — migrate with export/import), and some Docker-specific socket dependencies (e.g., /var/run/docker.sock) need reconfiguration. Test your CI/CD pipelines after switching.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you run Podman containers as systemd services?</strong></summary>
+
+Use podman generate systemd to create a systemd unit file from a running container. This gives you auto-restart, boot-time startup, and standard systemd management (systemctl start/stop/status). For rootless containers, install the unit file in ~/.config/systemd/user/ and enable lingering (loginctl enable-linger). For root containers, install in /etc/systemd/system/. Quadlet (new in Podman 4.4+) provides a simpler declarative format — write a .container file and systemd generates the unit automatically.
+
+</details>
+
+<details>
+<summary><strong>Q: What is Buildah and how does it relate to Podman?</strong></summary>
+
+Buildah is a companion tool for building OCI container images. Podman uses Buildah internally for podman build. Buildah's advantage: it can build images without a Dockerfile using shell scripts (buildah from, buildah run, buildah commit), allowing fine-grained control over each layer. It also builds rootlessly and does not require a daemon. Use Podman for running containers and Buildah when you need advanced image building capabilities beyond what Dockerfiles provide.
+
+</details>
+
+<details>
+<summary><strong>Q: How does Podman handle container storage and volumes?</strong></summary>
+
+Podman uses containers/storage for image and container layer management, supporting overlayfs (default), vfs, and other drivers. Volumes work the same as Docker: podman volume create, -v mounts in containers. In rootless mode, storage is in ~/.local/share/containers/. Key difference from Docker: Podman uses a different default storage location, so Docker images are not shared — you need to pull images separately (or use podman pull from Docker daemon with --root).
+
+</details>
+
+<details>
+<summary><strong>Q: What are the limitations of rootless Podman compared to rootful?</strong></summary>
+
+Rootless limitations: cannot bind to ports below 1024 without net.ipv4.ip_unprivileged_port_start, slower networking (slirp4netns overhead), some volume mount permission issues (container UID may not match host file ownership — use --userns=keep-id), limited cgroup control (cgroups v2 required for resource limits), and no access to host devices without configuration. Most of these have workarounds. For development, rootless is usually fine. For production servers, evaluate whether the limitations affect your specific use case.
+
+</details>
+
+<details>
+<summary><strong>Q: How does Podman compare to containerd and CRI-O for Kubernetes?</strong></summary>
+
+Podman is a developer-facing tool for building and running containers locally — it is not a Kubernetes container runtime. CRI-O and containerd are Kubernetes container runtimes that implement the CRI (Container Runtime Interface) for kubelet. Podman complements Kubernetes: develop locally with Podman, deploy to clusters running CRI-O or containerd. Podman can generate Kubernetes YAML and play Kubernetes manifests, bridging the gap. In BFSI environments, CRI-O is often preferred for its minimal, security-focused design.
+
+</details>
+
+---
+
 ## Next steps after Day 2
 
 - **`Docker.md`** — solidify your container fundamentals; Podman is only as useful as your Docker knowledge base

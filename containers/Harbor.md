@@ -4,6 +4,20 @@ Harbor is an open-source container registry with vulnerability scanning, RBAC, r
 
 **Prerequisite:** `Docker.md`
 
+
+```mermaid
+graph LR
+    Push[Docker Push] --> Proxy[Nginx Proxy]
+    Proxy --> Registry[Container Registry]
+    Registry --> Storage[(Object Storage / Filesystem)]
+    Push --> Scanner[Vulnerability Scanner]
+    Scanner --> Trivy[Trivy / Clair]
+    Registry --> Replication[Replication Engine]
+    Replication --> Remote[Remote Registries]
+    RBAC[RBAC / OIDC] --> Proxy
+    Notary[Content Trust / Cosign] --> Registry
+```
+
 ---
 
 ## Part 0 — Why Harbor Exists
@@ -622,3 +636,78 @@ helm upgrade harbor harbor/harbor -n harbor -f values.yaml
 ## The Mantra
 
 > Own your registry. Scan before deploy. Sign what you ship. Block what fails. Rotate secrets. Schedule GC. Know your CVE db age. A registry without policy is just expensive storage.
+
+## Top 10 Interview Questions
+
+<details>
+<summary><strong>Q: What is Harbor and why would you self-host a container registry?</strong></summary>
+
+Harbor is an open-source container registry that adds enterprise features on top of the Docker Distribution: vulnerability scanning, RBAC, image signing, replication, audit logging, and quota management. Self-host when: you need to keep images on-premises for compliance (BFSI, government), want fine-grained access control beyond what Docker Hub or ECR provides, need to replicate images across air-gapped environments, or want integrated vulnerability scanning as a gating mechanism before deployment.
+
+</details>
+
+<details>
+<summary><strong>Q: How does Harbor's vulnerability scanning work and how do you use it as a quality gate?</strong></summary>
+
+Harbor integrates with Trivy (default), Clair, or other scanners. On image push, the scanner analyses all layers for known CVEs. You can configure policies: block pulls of images with Critical/High CVEs (prevent deployment of vulnerable images), automatically scan on push, and schedule periodic rescans (new CVEs are published daily). This creates a security gate — only images that pass scanning can be deployed. Integrate with CI/CD: push to Harbor, wait for scan, fail the pipeline if critical CVEs are found.
+
+</details>
+
+<details>
+<summary><strong>Q: How does Harbor handle replication and what are the use cases?</strong></summary>
+
+Harbor replicates images between registries — push-based (replicate from Harbor to a remote registry on push) or pull-based (pull from a remote registry on demand). Use cases: multi-region deployment (replicate to registries near each cluster), disaster recovery (replicate to a standby Harbor), hybrid cloud (replicate between on-prem and cloud registries), and air-gapped environments (replicate via intermediary). Replication supports filters (by project, tag, label) and retry logic for network failures.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you configure RBAC and multi-tenancy in Harbor?</strong></summary>
+
+Harbor organises images into projects. Each project has its own RBAC: project admin (full control), developer (push and pull), and guest (pull only). Users authenticate via local database, LDAP/AD, or OIDC providers. For multi-tenancy, create separate projects per team with distinct permissions and storage quotas. Robot accounts provide service credentials for CI/CD pipelines with scoped permissions (e.g., can only push to project X). Audit logs track who did what and when.
+
+</details>
+
+<details>
+<summary><strong>Q: How does image signing work in Harbor and why does it matter?</strong></summary>
+
+Harbor supports content trust via Notary (Docker Content Trust) and Cosign (Sigstore). Signing cryptographically proves that an image was built by a trusted pipeline and has not been tampered with. Configure Harbor to require signed images for pulls — unsigned images cannot be deployed. This closes the supply chain gap: even if an attacker pushes a malicious image to the registry, it will not have a valid signature and will be blocked. Cosign with keyless signing (using OIDC identity) is the modern approach.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you handle garbage collection in Harbor?</strong></summary>
+
+Container registries accumulate orphaned layers (blobs referenced by deleted tags) that waste storage. Harbor's garbage collection runs as a scheduled job that identifies and removes unreferenced blobs. Configure it to run during low-traffic periods because it pauses push operations. Key gotcha: GC only removes blobs not referenced by ANY tag — if you delete tag v1.0 but v1.1 shares layers with v1.0, those layers are retained. Monitor storage usage and GC effectiveness via Harbor's dashboard.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you set up Harbor for high availability?</strong></summary>
+
+Harbor HA requires: multiple Harbor instances behind a load balancer, shared external PostgreSQL database (replicated), shared Redis for session and job state, shared object storage backend (S3, GCS, or a distributed filesystem like Ceph) for image blobs. Each component must be redundant — a single PostgreSQL instance is the most common single point of failure. Use Helm charts with HA values for Kubernetes deployment. Test failover by killing individual components and verifying registry operations continue.
+
+</details>
+
+<details>
+<summary><strong>Q: How does Harbor integrate with Kubernetes for image management?</strong></summary>
+
+Deploy Harbor in Kubernetes via Helm. Configure Kubernetes to pull from Harbor by creating imagePullSecrets or configuring a cluster-wide pull secret. Use admission controllers (OPA Gatekeeper, Kyverno) to enforce that all images must come from your Harbor instance. Harbor can proxy external registries (Docker Hub, GCR) — pods pull through Harbor, which caches images locally and applies scanning policies. This gives you a single control point for all container images in your cluster.
+
+</details>
+
+<details>
+<summary><strong>Q: What are the storage backend options for Harbor and how do you choose?</strong></summary>
+
+Harbor supports local filesystem, S3, GCS, Azure Blob, Swift, and OSS. For production: use object storage (S3, GCS) for durability, scalability, and HA — filesystem storage ties you to a single node. For air-gapped environments, use a distributed filesystem like Ceph or NFS. Consider: storage cost (images can be large — terabytes at scale), access latency (affects pull speed), and compliance requirements (data residency). Enable deduplication — Harbor shares layers across images, so storage is more efficient than it appears.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you migrate from Docker Hub or another registry to Harbor?</strong></summary>
+
+Use Harbor's replication feature: create a replication rule that pulls from Docker Hub (or any Docker V2 registry) with filters for the repositories you need. Harbor will replicate all matching images and tags. For ongoing use, configure Harbor as a proxy cache for Docker Hub — first pull goes to Docker Hub, subsequent pulls are served from Harbor's cache. Update Kubernetes manifests and CI/CD pipelines to reference Harbor URLs. Use image rewriting admission controllers to automatically redirect Docker Hub references to Harbor.
+
+</details>
+
+---
+

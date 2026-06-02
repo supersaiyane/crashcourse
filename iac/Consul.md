@@ -50,6 +50,13 @@ Beyond discovery, Consul adds:
 
 ---
 
+
+```mermaid
+graph LR
+    Input[Input] --> Consul[Consul]
+    Consul --> Output[Output]
+```
+
 ## DAY 1 — Service Discovery Fundamentals
 
 ### Install Consul
@@ -677,3 +684,78 @@ consul snapshot restore backup.snap
 ## The Mantra
 
 Your services do not know where each other live — Consul does. Register everything, health-check everything, and let the mesh handle encryption. Stop hardcoding IPs the moment you hardcode one.
+
+## Top 10 Interview Questions
+
+<details>
+<summary><strong>Q: What is Consul and what are its core use cases?</strong></summary>
+
+Consul provides four capabilities: service discovery (services register and find each other via DNS or HTTP API), health checking (monitors service health, removes unhealthy instances from discovery), key-value store (distributed config storage), and service mesh (Consul Connect — mutual TLS, traffic management, intentions). Primary use case: dynamic service discovery in microservice and multi-cloud environments where IP addresses change frequently. Unlike static config files, Consul reflects the real-time state of your infrastructure.
+
+</details>
+
+<details>
+<summary><strong>Q: How does Consul's service discovery work?</strong></summary>
+
+Services register with the local Consul agent (sidecar or API call) including their name, address, port, and health check. Other services query Consul to find healthy instances: via DNS (service-name.service.consul resolves to healthy IPs) or HTTP API (returns full service info). Consul's gossip protocol propagates service state across the cluster. Health checks (HTTP, TCP, script, TTL) run locally on the agent and mark instances as passing/warning/critical. Failed health checks remove the instance from DNS responses.
+
+</details>
+
+<details>
+<summary><strong>Q: How does Consul Connect provide service mesh capabilities?</strong></summary>
+
+Consul Connect enables service-to-service communication via mutual TLS — services communicate through sidecar proxies (Envoy) that handle encryption, identity verification, and traffic management. Intentions define which services can communicate (allow/deny rules based on service identity, not IP addresses). This provides: zero-trust networking (every connection is authenticated and encrypted), traffic management (routing, splitting, failover), and observability (L7 metrics per service pair). Consul Connect can run on VMs, not just Kubernetes.
+
+</details>
+
+<details>
+<summary><strong>Q: How does Consul handle multi-datacenter deployments?</strong></summary>
+
+Consul supports WAN federation: each datacenter runs its own Consul server cluster, and the clusters communicate over the WAN. Services can discover services in other datacenters (service-name.dc2.consul). Prepared queries enable automatic failover: if no healthy instances exist locally, route to another datacenter. WAN gossip is bandwidth-efficient (only server-to-server). For Kubernetes multi-cluster, Consul supports cluster peering (mesh gateway connectivity between K8s clusters). This is a key differentiator from simpler discovery systems like CoreDNS.
+
+</details>
+
+<details>
+<summary><strong>Q: What is Consul's consensus protocol and how do you size the server cluster?</strong></summary>
+
+Consul servers use Raft consensus for the KV store, service catalog, and ACL state. Raft requires a quorum (majority) for writes. Use 3 servers for most deployments (tolerates 1 failure) or 5 for critical environments (tolerates 2). Never use even numbers. Servers should be on dedicated, low-latency nodes. Consul agents (on every node) use Serf gossip (not Raft) for membership and health — lightweight and scales to thousands of nodes. Agents forward requests to servers.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you secure Consul in production?</strong></summary>
+
+Enable ACLs (access control lists) to restrict who can register services, read the KV store, and manage the cluster. Use TLS for all communication (RPC between agents and servers, HTTP API, gossip encryption via a shared key). Enable Consul Connect for mutual TLS between services. Restrict network access (servers accessible only from agents, not from the internet). Rotate gossip encryption keys periodically. Use Vault integration for dynamic secret management. Audit API access via Consul's audit logging.
+
+</details>
+
+<details>
+<summary><strong>Q: How do Consul intentions work for service-to-service authorization?</strong></summary>
+
+Intentions are access control rules that define which services can communicate: 'web' can talk to 'api', 'api' can talk to 'database', but 'web' cannot talk to 'database' directly. Intentions are identity-based (service name), not network-based (IP/port). They are enforced by Consul Connect sidecar proxies. Default deny is recommended: explicitly allow required connections, deny everything else. Intentions can be managed via CLI, API, or UI, and support L7 attributes (HTTP path, method) for fine-grained control.
+
+</details>
+
+<details>
+<summary><strong>Q: How does Consul's KV store compare to etcd and ZooKeeper?</strong></summary>
+
+All three are distributed, consistent KV stores using consensus protocols. Consul's KV is a feature within a broader platform (service discovery, mesh, health checks) — good for configuration that needs to co-exist with service discovery. etcd is Kubernetes-native and optimised for the control plane workload. ZooKeeper is mature but operationally complex. Choose Consul KV for: service configuration in a Consul-managed environment. Choose etcd for: Kubernetes-specific state. Consul's KV is simpler but less performant than etcd for very high write loads.
+
+</details>
+
+<details>
+<summary><strong>Q: How does Consul integrate with Kubernetes?</strong></summary>
+
+Consul on Kubernetes runs as a Helm chart deploying: Consul servers, a connect-inject webhook (automatically adds sidecar proxies to pods), a sync-catalog controller (syncs K8s services to Consul and vice versa), and optionally a mesh gateway (for multi-cluster). Benefits: unified service discovery across K8s and VMs (a K8s service can discover a VM-based service), Consul intentions for cross-platform access control, and multi-cluster service mesh without requiring Istio. Use when you have a mixed K8s/VM environment.
+
+</details>
+
+<details>
+<summary><strong>Q: When would you choose Consul over Istio for service mesh?</strong></summary>
+
+Choose Consul when: you have a mixed environment (VMs + Kubernetes — Istio is K8s-only), you need service discovery and KV store alongside mesh (Consul is multi-feature), you want a simpler operational model (Consul Connect is lighter than Istio's control plane), or you need multi-datacenter federation out of the box. Choose Istio when: you are fully Kubernetes-native, need advanced traffic management (fault injection, traffic mirroring), or want deep integration with the K8s ecosystem (Gateway API, custom resources).
+
+</details>
+
+---
+

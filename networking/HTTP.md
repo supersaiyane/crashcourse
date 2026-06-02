@@ -12,6 +12,17 @@ HTTP is a request/response protocol. A client sends a request; a server sends a 
 
 This is not exhaustive — it is the 20% that explains 80% of what you will encounter in production.
 
+```mermaid
+graph LR
+    A[Client] -->|1. DNS Resolve| B[IP Address]
+    A -->|2. TCP + TLS Handshake| C[Server]
+    A -->|3. HTTP Request| C
+    C -->|4. HTTP Response| A
+    C -.->|Status 3xx| D[Redirect Target]
+    A -.->|Cache-Control| E[Browser Cache]
+    A -.->|CORS Preflight| C
+```
+
 ---
 
 ## Vocabulary
@@ -445,6 +456,80 @@ curl --http1.1 https://api.example.com/
 ```
 
 Full details in the DAY 1 tables above.
+
+---
+
+## Top 10 Interview Questions
+
+<details>
+<summary><strong>Q: What is the difference between HTTP/1.1, HTTP/2, and HTTP/3?</strong></summary>
+
+HTTP/1.1 sends one request per connection at a time and relies on multiple connections for parallelism. HTTP/2 multiplexes many streams over a single TCP connection, adds header compression (HPACK), and uses binary framing. HTTP/3 replaces TCP with QUIC (UDP-based), eliminating TCP-level head-of-line blocking so a lost packet only stalls the affected stream. Each version improves latency and efficiency, especially on unreliable networks.
+
+</details>
+
+<details>
+<summary><strong>Q: Explain the difference between 401 and 403 status codes.</strong></summary>
+
+401 Unauthorized means the request lacks valid credentials -- the server does not know who the client is. 403 Forbidden means the server knows who the client is (authentication succeeded) but the client does not have permission to access the resource. The fix for 401 is to provide or fix credentials; the fix for 403 is to change the client's permissions or role.
+
+</details>
+
+<details>
+<summary><strong>Q: How does CORS work, and why does it only affect browsers?</strong></summary>
+
+CORS is a browser security feature that blocks scripts on one origin from reading responses from a different origin unless the server explicitly allows it via `Access-Control-Allow-Origin` headers. For non-simple requests, the browser sends an OPTIONS preflight first. Server-to-server calls and curl ignore CORS entirely because it is enforced by the browser, not the network. CORS protects users from malicious websites, not servers from unauthorised access.
+
+</details>
+
+<details>
+<summary><strong>Q: What is an ETag and how does conditional caching work?</strong></summary>
+
+An ETag is a fingerprint of a response body sent by the server. On subsequent requests, the client sends `If-None-Match` with the cached ETag. If the resource has not changed, the server returns 304 Not Modified with no body -- the client reuses its cached copy. This saves bandwidth without serving stale data. ETags are more reliable than `Last-Modified` timestamps because they detect content changes precisely.
+
+</details>
+
+<details>
+<summary><strong>Q: When would you use PUT vs PATCH, and what does idempotency mean in this context?</strong></summary>
+
+PUT replaces a resource entirely -- you send the complete new representation. PATCH applies a partial update -- you send only the fields that changed. PUT is idempotent (calling it N times produces the same result), while PATCH is not guaranteed to be idempotent. In practice, use PUT when the client owns the full resource state, and PATCH when updating a single field to avoid overwriting concurrent changes.
+
+</details>
+
+<details>
+<summary><strong>Q: How does the TLS handshake work, and what changed between TLS 1.2 and 1.3?</strong></summary>
+
+The handshake establishes a secure channel: the client sends supported cipher suites, the server responds with its certificate and chosen cipher, the client verifies the certificate chain, and both sides derive a session key via key exchange. TLS 1.3 reduces this from two round trips to one by combining the key exchange and server parameters into a single flight, which meaningfully reduces first-connection latency.
+
+</details>
+
+<details>
+<summary><strong>Q: What is the difference between `Cache-Control: no-cache` and `no-store`?</strong></summary>
+
+`no-store` means the response must never be stored anywhere -- not in the browser cache, not in a CDN. `no-cache` means the response can be cached, but the client must revalidate with the server (via ETag or Last-Modified) before using the cached copy. Use `no-store` for sensitive data (banking responses). Use `no-cache` when you want cache efficiency but need freshness guarantees.
+
+</details>
+
+<details>
+<summary><strong>Q: Why should API keys be sent in headers rather than query parameters?</strong></summary>
+
+Query parameters appear in server access logs, browser history, referrer headers sent to third-party resources, and CDN logs. A key in the URL is effectively leaked to every system that logs the request. Placing credentials in the `Authorization` or a custom header (e.g., `X-API-Key`) keeps them out of URLs and ensures they are only visible in the request headers, which are not logged by default.
+
+</details>
+
+<details>
+<summary><strong>Q: Explain how to debug a 502 Bad Gateway error.</strong></summary>
+
+A 502 means the proxy or load balancer received an invalid response from the upstream server. First, check if the upstream application is running at all. Then check the proxy's error logs (Nginx: `/var/log/nginx/error.log`) for the specific upstream failure reason -- crashed process, timeout, or malformed response. Use `curl -v` directly against the upstream to isolate whether the issue is the app or the proxy configuration. Common causes: app crashed, upstream timeout too short, or connection refused.
+
+</details>
+
+<details>
+<summary><strong>Q: How does exponential backoff with jitter work, and why is it important for retries?</strong></summary>
+
+Exponential backoff doubles the wait time between retries (1s, 2s, 4s, 8s). Jitter adds randomness to each interval so that many clients retrying simultaneously do not all hit the server at the same instant (thundering herd problem). Without jitter, coordinated retries create periodic traffic spikes that can repeatedly overwhelm a recovering service. Cap the maximum wait time and always respect the `Retry-After` header if present.
+
+</details>
 
 ---
 

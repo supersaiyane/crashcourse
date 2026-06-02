@@ -22,6 +22,18 @@ The architecture matters: Nginx uses an event-driven, non-blocking model. A smal
 
 **Mental model:** Nginx is a receptionist — it receives every request at the front door, decides which backend handles it, and can cache, compress, rate-limit, and TLS-terminate along the way. Your backend never talks directly to the raw internet; it talks to the receptionist.
 
+```mermaid
+graph LR
+    A[Client] -->|HTTPS :443| B[Nginx]
+    B -->|TLS Termination| B
+    B -->|location /api/| C[upstream: app servers]
+    B -->|location /static/| D[Disk: /var/www]
+    C --> E[App :3000]
+    C --> F[App :3001]
+    C --> G[App :3002]
+    B -->|rate limit / gzip / headers| A
+```
+
 ---
 
 ## Part 1 — The vocabulary
@@ -707,6 +719,80 @@ $upstream_addr               # IP of the backend that served the request
 $upstream_response_time      # Backend response time in seconds
 $upstream_cache_status       # HIT / MISS / BYPASS / EXPIRED
 ```
+
+---
+
+## Top 10 Interview Questions
+
+<details>
+<summary><strong>Q: How does Nginx's event-driven architecture differ from Apache's thread-per-connection model?</strong></summary>
+
+Nginx uses a small number of worker processes, each handling thousands of connections via non-blocking I/O and an event loop (epoll/kqueue). Apache's prefork model spawns a process per connection and its worker model uses a thread per connection. Nginx uses far less memory per connection and handles C10K+ concurrency efficiently, while Apache's model struggles under high concurrency because each connection consumes a thread or process.
+
+</details>
+
+<details>
+<summary><strong>Q: What does `proxy_set_header Host $host` do, and what breaks without it?</strong></summary>
+
+Without this directive, Nginx forwards its own hostname or the upstream group name as the Host header to the backend. Many applications use the Host header for routing (virtual hosts), authentication, and generating URLs. If it receives `127.0.0.1` instead of `api.example.com`, features like OAuth callbacks, virtual hosting, and CORS origin checks fail silently. Always set Host, X-Real-IP, X-Forwarded-For, and X-Forwarded-Proto on proxy blocks.
+
+</details>
+
+<details>
+<summary><strong>Q: Explain the difference between `root` and `alias` in Nginx location blocks.</strong></summary>
+
+With `root`, Nginx appends the full location path to the root directory. `location /static/ { root /var/www/html; }` serves `/var/www/html/static/file.css`. With `alias`, the location prefix is replaced. `location /static/ { alias /var/www/assets/; }` serves `/var/www/assets/file.css`. Confusing these causes 404 errors because files are looked up in the wrong directory path.
+
+</details>
+
+<details>
+<summary><strong>Q: How does Nginx rate limiting work, and what does `burst` with `nodelay` do?</strong></summary>
+
+`limit_req_zone` defines a shared memory zone that tracks request counts per key (typically client IP). `limit_req` applies the limit to a location. The `burst` parameter allows a queue of requests above the rate. Without `nodelay`, burst requests are delayed to match the rate; with `nodelay`, burst requests are served immediately but still count against the limit. This gives responsive handling of traffic spikes while enforcing the sustained rate.
+
+</details>
+
+<details>
+<summary><strong>Q: How do you achieve zero-downtime configuration changes with Nginx?</strong></summary>
+
+Run `nginx -t` to validate the new config, then `nginx -s reload`. Reload sends SIGHUP to the master process, which starts new worker processes with the new configuration. Old workers finish their in-flight requests and exit gracefully. No connections are dropped during this process. Never use `systemctl restart nginx` in production as it stops workers immediately and drops active connections.
+
+</details>
+
+<details>
+<summary><strong>Q: What load balancing algorithms does Nginx support, and when would you choose each?</strong></summary>
+
+Round-robin (default) cycles through servers equally -- good for homogeneous backends. `least_conn` sends to the server with fewest active connections -- good for variable request durations. `ip_hash` pins a client IP to one server -- use when sessions are not externalized, but avoid if possible as it creates uneven distribution. Weight parameters adjust traffic proportion for heterogeneous backends.
+
+</details>
+
+<details>
+<summary><strong>Q: Why does `add_header` in a nested block silently clear parent headers?</strong></summary>
+
+Nginx's `add_header` directive at a more specific level (server or location) completely replaces -- not extends -- the headers defined at a parent level. If you add a header in a location block, all headers from the http or server block are silently dropped. The fix is to repeat all required headers at the most specific level or use an include file for shared headers. This is one of the most common Nginx misconfiguration traps.
+
+</details>
+
+<details>
+<summary><strong>Q: How would you configure Nginx as a caching reverse proxy, and how do you debug cache behaviour?</strong></summary>
+
+Define `proxy_cache_path` in the http block with a zone name, size, and TTL. In the location block, set `proxy_cache`, `proxy_cache_valid` for each status code, and `proxy_cache_use_stale` for resilience. Add `add_header X-Cache-Status $upstream_cache_status` to expose HIT/MISS/BYPASS in response headers. Use `proxy_cache_bypass $http_authorization` to skip cache for authenticated requests. The `X-Cache-Status` header is the primary debugging tool.
+
+</details>
+
+<details>
+<summary><strong>Q: What is `try_files` and how does it work for single-page applications?</strong></summary>
+
+`try_files` checks for file existence in order and serves the first match. For SPAs: `try_files $uri $uri/ /index.html` checks for the exact file, then a directory, then falls back to the app shell. This ensures client-side routes (e.g., `/dashboard/settings`) serve the SPA's `index.html` instead of returning 404, while real static files (CSS, JS, images) are still served directly from disk.
+
+</details>
+
+<details>
+<summary><strong>Q: How does the Nginx Ingress Controller work in Kubernetes?</strong></summary>
+
+The Nginx Ingress Controller watches Kubernetes Ingress resources and dynamically generates Nginx configuration from them. When you create an Ingress with rules mapping hosts and paths to backend Services, the controller translates those into `server` and `location` blocks with `proxy_pass` pointing to the Service ClusterIP. Annotations like `nginx.ingress.kubernetes.io/rate-limit` map to Nginx directives. This eliminates manual Nginx config management in container environments.
+
+</details>
 
 ---
 

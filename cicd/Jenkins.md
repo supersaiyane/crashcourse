@@ -31,6 +31,20 @@ plugins teach it new tricks. Unlike the hosted tools, the upkeep is yours.
 
 ---
 
+
+```mermaid
+graph LR
+    Trigger[SCM Trigger / Webhook] --> Controller[Jenkins Controller]
+    Controller --> Agent1[Build Agent 1]
+    Controller --> Agent2[Build Agent 2]
+    Agent1 --> Pipeline[Jenkinsfile Pipeline]
+    Pipeline --> Build[Build Stage]
+    Build --> Test[Test Stage]
+    Test --> Deploy[Deploy Stage]
+    Pipeline --> Artifacts[Artifact Storage]
+    Credentials[Credentials Store] --> Pipeline
+```
+
 ## Part 1 — The vocabulary
 
 | Term | Meaning |

@@ -32,6 +32,13 @@ You can't debug a "service can't reach the database" issue if you don't understa
 
 ---
 
+
+```mermaid
+graph LR
+    Input[Input] --> CloudNetworking[Cloud Networking]
+    CloudNetworking --> Output[Output]
+```
+
 ## DAY 1 — Building a VPC From Scratch
 
 ### CIDR Planning
