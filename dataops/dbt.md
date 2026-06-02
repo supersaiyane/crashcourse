@@ -659,6 +659,55 @@ dbt test --select state:modified+
 
 
 
+
+## Terminal Demo
+
+```terminal-demo
+# dbt@analytics ~ %
+
+$ dbt --version
+Core:
+  - installed: 1.7.8
+  - latest:    1.7.8
+
+$ dbt run --select staging.*
+10:15:01  Running with dbt=1.7.8
+10:15:01  Found 45 models, 120 tests, 8 sources
+10:15:02  Concurrency: 4 threads
+10:15:05  1 of 12 OK created view staging.stg_orders ............. [CREATE VIEW in 0.23s]
+10:15:05  2 of 12 OK created view staging.stg_users .............. [CREATE VIEW in 0.19s]
+10:15:06  3 of 12 OK created view staging.stg_products ........... [CREATE VIEW in 0.21s]
+10:15:08  12 of 12 OK .......................................... [12 views in 3.2s]
+10:15:08  Finished running 12 view models in 0 hours 0 minutes and 3.2 seconds
+
+$ dbt test --select staging.*
+10:15:10  Running 36 tests
+10:15:12  Pass 36  Warn 0  Error 0  Skip 0  Total 36
+
+$ dbt run --select marts.finance.*
+10:15:15  1 of 4 OK created table marts.finance.fct_revenue ...... [SELECT 2,345,678 in 12.3s]
+10:15:18  2 of 4 OK created table marts.finance.fct_costs ........ [SELECT 456,789 in 8.7s]
+10:15:20  3 of 4 OK created table marts.finance.dim_accounts ..... [SELECT 12,345 in 2.1s]
+10:15:21  4 of 4 OK created table marts.finance.fct_monthly_pl ... [SELECT 24 in 1.4s]
+
+$ dbt source freshness
+10:15:25  Running 8 freshness checks
+10:15:27  Pass 7  Warn 1  Error 0
+10:15:27  WARN  source.raw_events loaded 4h ago (threshold: 3h)
+
+$ dbt docs generate
+10:15:30  Found 45 models, 120 tests, 8 sources
+10:15:32  Catalog written to target/catalog.json
+
+$ dbt ls --select tag:daily --output name
+staging.stg_orders
+staging.stg_payments
+marts.finance.fct_revenue
+marts.finance.fct_daily_summary
+```
+
+---
+
 ## Quick Quiz
 
 Test your understanding with these rapid-fire questions (answers hidden):

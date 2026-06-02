@@ -695,6 +695,60 @@ from airflow.providers.dbt.cloud.operators.dbt import DbtCloudRunJobOperator
 
 
 
+
+## Terminal Demo
+
+```terminal-demo
+# airflow@scheduler ~ %
+
+$ airflow version
+2.8.3
+
+$ airflow dags list | head -8
+dag_id                     | filepath              | owner   | paused
+---------------------------+-----------------------+---------+-------
+etl_daily_orders           | dags/etl_orders.py    | data-eng| False
+ml_feature_pipeline        | dags/ml_features.py   | ml-team | False
+dbt_production_run         | dags/dbt_run.py       | data-eng| False
+data_quality_checks        | dags/quality.py       | data-eng| False
+
+$ airflow dags trigger etl_daily_orders --conf '{"date":"2026-06-02"}'
+Created <DagRun etl_daily_orders @ 2026-06-02T10:15:00+00:00: manual__2026-06-02, state:queued>
+
+$ airflow tasks list etl_daily_orders --tree
+<Task(PythonOperator): extract_orders>
+    <Task(PythonOperator): transform_orders>
+        <Task(PythonOperator): load_to_warehouse>
+            <Task(PythonOperator): run_quality_checks>
+                <Task(SlackAPIPostOperator): notify_completion>
+
+$ airflow tasks states-for-dag-run etl_daily_orders 2026-06-02T10:15:00+00:00
+extract_orders      | success | 2026-06-02T10:15:05
+transform_orders    | success | 2026-06-02T10:16:12
+load_to_warehouse   | success | 2026-06-02T10:17:45
+run_quality_checks  | running | 2026-06-02T10:18:00
+
+$ airflow tasks test etl_daily_orders extract_orders 2026-06-02
+[2026-06-02 10:15:05] INFO - Extracting orders for 2026-06-02
+[2026-06-02 10:15:08] INFO - Extracted 45,678 records
+[2026-06-02 10:15:08] INFO - Task completed successfully
+
+$ airflow connections list --output table | head -5
+conn_id            | conn_type  | host                    | port
+-------------------+------------+-------------------------+-----
+postgres_prod      | postgres   | prod-db.internal        | 5432
+redis_cache        | redis      | prod-redis.internal     | 6379
+slack_webhook      | http       | hooks.slack.com         |
+
+$ airflow pools list
+pool         | slots | running | queued | open
+-------------+-------+---------+--------+-----
+default_pool | 128   | 12      | 3      | 113
+heavy_tasks  | 8     | 2       | 0      | 6
+```
+
+---
+
 ## Quick Quiz
 
 Test your understanding with these rapid-fire questions (answers hidden):

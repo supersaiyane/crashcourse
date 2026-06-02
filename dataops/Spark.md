@@ -662,6 +662,52 @@ df.explain(mode="formatted")
 
 
 
+
+## Terminal Demo
+
+```terminal-demo
+# spark-submit@cluster ~ %
+
+$ spark-submit --version
+Welcome to Spark version 3.5.0
+Using Scala version 2.12.18
+
+$ spark-submit --master yarn --deploy-mode cluster --num-executors 10 --executor-memory 8g --executor-cores 4 etl_job.py --date 2026-06-02
+26/06/02 10:15:00 INFO Client: Submitting application to ResourceManager
+26/06/02 10:15:02 INFO Client: Application report: state=ACCEPTED
+26/06/02 10:15:15 INFO Client: Application report: state=RUNNING
+26/06/02 10:18:45 INFO Client: Application report: state=FINISHED, final=SUCCEEDED
+
+$ pyspark --master local[4]
+Python 3.11.8 | Spark 3.5.0
+>>> df = spark.read.parquet("s3://data-lake/orders/dt=2026-06-02/")
+>>> df.count()
+2345678
+>>> df.groupBy("status").count().show()
++-----------+-------+
+|    status | count |
++-----------+-------+
+| completed | 2100000|
+|  pending  | 200000 |
+| cancelled |  45678 |
++-----------+-------+
+
+>>> df.explain(mode="formatted")
+== Physical Plan ==
+* FileScan parquet [order_id,user_id,amount,status]
+  Location: InMemoryFileIndex[s3://data-lake/orders/dt=2026-06-02]
+  PushedFilters: []
+  ReadSchema: struct<order_id:string,user_id:string,amount:double,status:string>
+
+$ yarn application -status application_1717315200_0042 | grep -E "State|Progress|Elapsed"
+State: FINISHED
+Final-State: SUCCEEDED
+Progress: 100%
+Elapsed: 3m 45s
+```
+
+---
+
 ## Quick Quiz
 
 Test your understanding with these rapid-fire questions (answers hidden):

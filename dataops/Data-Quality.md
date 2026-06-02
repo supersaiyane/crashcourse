@@ -534,6 +534,52 @@ Common GX expectations at a glance:
 
 
 
+
+## Terminal Demo
+
+```terminal-demo
+# great-expectations@validation ~ %
+
+$ great_expectations suite list
+  - orders_suite (12 expectations)
+  - users_suite (8 expectations)
+  - events_suite (10 expectations)
+  - financial_suite (15 expectations)
+
+$ great_expectations checkpoint run daily_orders
+Calculating Metrics...
+Validating orders_suite against orders_202606:
+  ✓ expect_column_values_to_not_be_null(order_id)
+  ✓ expect_column_values_to_be_unique(order_id)
+  ✓ expect_column_values_to_be_between(amount, 0, 1000000)
+  ✓ expect_table_row_count_to_be_between(min=10000, max=500000)
+  ✓ expect_column_values_to_be_in_set(status, [completed, pending, cancelled])
+  ✓ expect_column_mean_to_be_between(amount, 50, 500)
+  12/12 expectations passed
+
+$ soda scan -d warehouse -c checks/orders.yml
+Scan summary:
+Checks: 8/8 passed
+  ✓ row_count > 10000
+  ✓ missing_count(order_id) = 0
+  ✓ duplicate_count(order_id) = 0
+  ✓ avg(amount) between 50 and 500
+  ✓ freshness(created_at) < 2h
+  ✓ schema changes: none detected
+
+$ dbt test --select orders
+10:15:10  Running 6 tests
+10:15:11  1 of 6 PASS unique_orders_order_id ................ [PASS in 0.34s]
+10:15:11  2 of 6 PASS not_null_orders_order_id .............. [PASS in 0.21s]
+10:15:12  3 of 6 PASS accepted_values_orders_status ......... [PASS in 0.28s]
+10:15:12  4 of 6 PASS relationships_orders_user_id .......... [PASS in 0.45s]
+10:15:12  5 of 6 PASS not_null_orders_amount ................ [PASS in 0.19s]
+10:15:13  6 of 6 PASS assert_positive_amounts ............... [PASS in 0.22s]
+10:15:13  Finished running 6 tests in 3.1 seconds (6 passed)
+```
+
+---
+
 ## Quick Quiz
 
 Test your understanding with these rapid-fire questions (answers hidden):

@@ -424,6 +424,48 @@ The same three pillars — metrics, logs, traces — apply to data systems, adap
 
 
 
+
+## Terminal Demo
+
+```terminal-demo
+# dataops@platform ~ %
+
+$ dbt run --select tag:daily
+10:15:01  Running with dbt=1.7.8
+10:15:01  Found 45 models, 120 tests, 8 sources
+10:15:15  Finished running 18 models in 14.2 seconds (18 OK, 0 ERROR)
+
+$ dbt test
+10:15:17  Running 120 tests
+10:15:25  Pass 118  Warn 2  Error 0  Total 120
+
+$ great_expectations checkpoint run daily_validation
+Calculating Metrics: 100%
+Validating Data: 100%
+Results:
+  ✓ orders_table: 12/12 expectations passed
+  ✓ users_table: 8/8 expectations passed
+  ⚠ events_table: 9/10 expectations passed (1 warning: row_count lower than expected)
+
+$ airflow dags trigger data_quality_pipeline
+Created <DagRun data_quality_pipeline @ 2026-06-02T10:16:00+00:00>
+
+$ datahub ingest -c recipe.yml
+Source (postgres) - 45 tables extracted
+Transformer - 45 tables enriched with lineage
+Sink (datahub-rest) - 45 tables published
+Pipeline finished successfully
+
+$ soda scan -d production -c checks.yml
+Scan summary:
+25/25 checks passed
+0 warnings
+0 failures
+All is good. No issues found.
+```
+
+---
+
 ## Quick Quiz
 
 Test your understanding with these rapid-fire questions (answers hidden):

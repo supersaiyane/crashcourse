@@ -403,6 +403,46 @@ Most organizations are at Level 0 or 1. Level 2 is the practical target for team
 
 
 
+
+## Terminal Demo
+
+```terminal-demo
+# mlflow@ml-platform ~ %
+
+$ mlflow --version
+mlflow, version 2.11.3
+
+$ mlflow experiments list
+  Experiment Id  Name                     Artifact Location
+  1              fraud-detection          s3://ml-artifacts/1
+  2              recommendation-engine    s3://ml-artifacts/2
+  3              churn-prediction         s3://ml-artifacts/3
+
+$ mlflow runs list --experiment-id 1 | head -5
+  Run ID                            Status     Start Time           Metrics
+  abc123def456                      FINISHED   2026-06-02 09:00:00  accuracy=0.943, f1=0.891
+  ghi789jkl012                      FINISHED   2026-06-01 14:00:00  accuracy=0.938, f1=0.885
+  mno345pqr678                      FINISHED   2026-05-30 10:00:00  accuracy=0.921, f1=0.867
+
+$ mlflow models list
+  Name                    Latest Versions
+  fraud-detector          3 (Production), 4 (Staging)
+  churn-predictor         2 (Production)
+  recommender             5 (Production), 6 (Staging)
+
+$ mlflow models serve -m "models:/fraud-detector/Production" -p 5001 --no-conda
+[2026-06-02 10:15:00] INFO  Serving model 'fraud-detector' version 3
+[2026-06-02 10:15:01] INFO  Listening on http://0.0.0.0:5001
+
+$ curl -s localhost:5001/invocations -H "Content-Type: application/json" -d '{"instances":[{"amount":9999,"merchant":"unknown","time":"03:00"}]}'
+{"predictions": [0.92]}
+
+$ mlflow models transition --name fraud-detector --version 4 --stage Production
+Model version 4 transitioned to Production successfully
+```
+
+---
+
 ## Quick Quiz
 
 Test your understanding with these rapid-fire questions (answers hidden):
