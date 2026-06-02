@@ -422,6 +422,51 @@ The same three pillars — metrics, logs, traces — apply to data systems, adap
 
 ---
 
+
+
+## Quick Quiz
+
+Test your understanding with these rapid-fire questions (answers hidden):
+
+<details>
+<summary>1. What is the ONE core problem that DataOps solves?</summary>
+Re-read Part 0 — the mental model section. If you can explain the "why" in one sentence, you understand the foundation.
+</details>
+
+<details>
+<summary>2. Name the 3 most important terms from the vocabulary section.</summary>
+Review Part 1. These are the building blocks every conversation about DataOps uses.
+</details>
+
+<details>
+<summary>3. What is the first thing you would set up on Day 1?</summary>
+Check the Day 1 section — the very first hands-on step that gets you a working result.
+</details>
+
+<details>
+<summary>4. What is the most common production pitfall with DataOps?</summary>
+Review the Common Pitfalls section. The first item listed is typically the most frequently encountered.
+</details>
+
+<details>
+<summary>5. How does DataOps compare to its closest alternative?</summary>
+Check the Comparison Matrix below — focus on the key differentiating row.
+</details>
+
+
+
+## Comparison Matrix
+
+| Dimension | DataOps | Traditional ETL | Ad-hoc Pipelines |
+|-----------|---------|-----------------|------------------|
+| **Primary use case** | Core strength of DataOps | Core strength of Traditional ETL | Core strength of Ad-hoc Pipelines |
+| **Learning curve** | Moderate | Varies | Varies |
+| **Community/ecosystem** | Active | Active | Growing |
+| **Operational complexity** | Medium | Varies | Varies |
+| **Best for** | See Part 0 | Different tradeoffs | Different tradeoffs |
+
+> **How to read this matrix:** no tool wins on every dimension. Pick based on your specific constraints — team expertise, existing infrastructure, scale requirements, and compliance needs. The right choice is the one that fits your context, not the one with the most checkmarks.
+
 ## Next Steps
 
 These topics build directly on DataOps foundations — each one is a natural next layer:

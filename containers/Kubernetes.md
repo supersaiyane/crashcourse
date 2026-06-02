@@ -397,6 +397,51 @@ Native Kubernetes Secrets are only base64-encoded, not encrypted at rest by defa
 
 ---
 
+
+
+## Quick Quiz
+
+Test your understanding with these rapid-fire questions (answers hidden):
+
+<details>
+<summary>1. What is the ONE core problem that Kubernetes solves?</summary>
+Re-read Part 0 — the mental model section. If you can explain the "why" in one sentence, you understand the foundation.
+</details>
+
+<details>
+<summary>2. Name the 3 most important terms from the vocabulary section.</summary>
+Review Part 1. These are the building blocks every conversation about Kubernetes uses.
+</details>
+
+<details>
+<summary>3. What is the first thing you would set up on Day 1?</summary>
+Check the Day 1 section — the very first hands-on step that gets you a working result.
+</details>
+
+<details>
+<summary>4. What is the most common production pitfall with Kubernetes?</summary>
+Review the Common Pitfalls section. The first item listed is typically the most frequently encountered.
+</details>
+
+<details>
+<summary>5. How does Kubernetes compare to its closest alternative?</summary>
+Check the Comparison Matrix below — focus on the key differentiating row.
+</details>
+
+
+
+## Comparison Matrix
+
+| Dimension | Kubernetes | Docker Swarm | Nomad |
+|-----------|------------|--------------|-------|
+| **Primary use case** | Core strength of Kubernetes | Core strength of Docker Swarm | Core strength of Nomad |
+| **Learning curve** | Moderate | Varies | Varies |
+| **Community/ecosystem** | Active | Active | Growing |
+| **Operational complexity** | Medium | Varies | Varies |
+| **Best for** | See Part 0 | Different tradeoffs | Different tradeoffs |
+
+> **How to read this matrix:** no tool wins on every dimension. Pick based on your specific constraints — team expertise, existing infrastructure, scale requirements, and compliance needs. The right choice is the one that fits your context, not the one with the most checkmarks.
+
 ## Next steps after Day 2
 - **Helm** to package and template manifests (see `Helm.md`) — you'll outgrow raw YAML fast.
 - **StatefulSets** (databases), **DaemonSets** (one pod per node), **Jobs/CronJobs** (batch).

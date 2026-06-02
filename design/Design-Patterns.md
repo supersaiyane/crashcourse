@@ -634,6 +634,51 @@ Over-engineering is introducing a pattern where the complexity it solves does no
 
 ---
 
+
+
+## Quick Quiz
+
+Test your understanding with these rapid-fire questions (answers hidden):
+
+<details>
+<summary>1. What is the ONE core problem that Design Patterns solves?</summary>
+Re-read Part 0 — the mental model section. If you can explain the "why" in one sentence, you understand the foundation.
+</details>
+
+<details>
+<summary>2. Name the 3 most important terms from the vocabulary section.</summary>
+Review Part 1. These are the building blocks every conversation about Design Patterns uses.
+</details>
+
+<details>
+<summary>3. What is the first thing you would set up on Day 1?</summary>
+Check the Day 1 section — the very first hands-on step that gets you a working result.
+</details>
+
+<details>
+<summary>4. What is the most common production pitfall with Design Patterns?</summary>
+Review the Common Pitfalls section. The first item listed is typically the most frequently encountered.
+</details>
+
+<details>
+<summary>5. How does Design Patterns compare to its closest alternative?</summary>
+Check the Comparison Matrix below — focus on the key differentiating row.
+</details>
+
+
+
+## Comparison Matrix
+
+| Dimension | GoF Patterns | Enterprise Patterns | Functional Patterns |
+|-----------|--------------|---------------------|---------------------|
+| **Primary use case** | Core strength of GoF Patterns | Core strength of Enterprise Patterns | Core strength of Functional Patterns |
+| **Learning curve** | Moderate | Varies | Varies |
+| **Community/ecosystem** | Active | Active | Growing |
+| **Operational complexity** | Medium | Varies | Varies |
+| **Best for** | See Part 0 | Different tradeoffs | Different tradeoffs |
+
+> **How to read this matrix:** no tool wins on every dimension. Pick based on your specific constraints — team expertise, existing infrastructure, scale requirements, and compliance needs. The right choice is the one that fits your context, not the one with the most checkmarks.
+
 ## Next Steps
 
 These files build on what you've just learned:

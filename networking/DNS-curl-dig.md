@@ -340,6 +340,51 @@ Best practices that go beyond documentation: lessons learned from production inc
 
 ---
 
+
+
+## Quick Quiz
+
+Test your understanding with these rapid-fire questions (answers hidden):
+
+<details>
+<summary>1. What is the ONE core problem that DNS curl dig solves?</summary>
+Re-read Part 0 — the mental model section. If you can explain the "why" in one sentence, you understand the foundation.
+</details>
+
+<details>
+<summary>2. Name the 3 most important terms from the vocabulary section.</summary>
+Review Part 1. These are the building blocks every conversation about DNS curl dig uses.
+</details>
+
+<details>
+<summary>3. What is the first thing you would set up on Day 1?</summary>
+Check the Day 1 section — the very first hands-on step that gets you a working result.
+</details>
+
+<details>
+<summary>4. What is the most common production pitfall with DNS curl dig?</summary>
+Review the Common Pitfalls section. The first item listed is typically the most frequently encountered.
+</details>
+
+<details>
+<summary>5. How does DNS curl dig compare to its closest alternative?</summary>
+Check the Comparison Matrix below — focus on the key differentiating row.
+</details>
+
+
+
+## Comparison Matrix
+
+| Dimension | dig | nslookup | dog |
+|-----------|-----|----------|-----|
+| **Primary use case** | Core strength of dig | Core strength of nslookup | Core strength of dog |
+| **Learning curve** | Moderate | Varies | Varies |
+| **Community/ecosystem** | Active | Active | Growing |
+| **Operational complexity** | Medium | Varies | Varies |
+| **Best for** | See Part 0 | Different tradeoffs | Different tradeoffs |
+
+> **How to read this matrix:** no tool wins on every dimension. Pick based on your specific constraints — team expertise, existing infrastructure, scale requirements, and compliance needs. The right choice is the one that fits your context, not the one with the most checkmarks.
+
 ## Next steps after Day 2
 - **`jq`** to parse JSON API responses fluently (see `jq.md`); **`yq`** for YAML (`yq.md`).
 - HTTP deeper: status codes, methods, headers (caching, CORS), HTTP/2 vs HTTP/3.

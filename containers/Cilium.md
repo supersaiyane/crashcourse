@@ -570,6 +570,51 @@ kubectl exec -n kube-system ds/cilium -- cilium monitor --type drop
 
 ---
 
+
+
+## Quick Quiz
+
+Test your understanding with these rapid-fire questions (answers hidden):
+
+<details>
+<summary>1. What is the ONE core problem that Cilium solves?</summary>
+Re-read Part 0 — the mental model section. If you can explain the "why" in one sentence, you understand the foundation.
+</details>
+
+<details>
+<summary>2. Name the 3 most important terms from the vocabulary section.</summary>
+Review Part 1. These are the building blocks every conversation about Cilium uses.
+</details>
+
+<details>
+<summary>3. What is the first thing you would set up on Day 1?</summary>
+Check the Day 1 section — the very first hands-on step that gets you a working result.
+</details>
+
+<details>
+<summary>4. What is the most common production pitfall with Cilium?</summary>
+Review the Common Pitfalls section. The first item listed is typically the most frequently encountered.
+</details>
+
+<details>
+<summary>5. How does Cilium compare to its closest alternative?</summary>
+Check the Comparison Matrix below — focus on the key differentiating row.
+</details>
+
+
+
+## Comparison Matrix
+
+| Dimension | Cilium | Calico | Flannel |
+|-----------|--------|--------|---------|
+| **Primary use case** | Core strength of Cilium | Core strength of Calico | Core strength of Flannel |
+| **Learning curve** | Moderate | Varies | Varies |
+| **Community/ecosystem** | Active | Active | Growing |
+| **Operational complexity** | Medium | Varies | Varies |
+| **Best for** | See Part 0 | Different tradeoffs | Different tradeoffs |
+
+> **How to read this matrix:** no tool wins on every dimension. Pick based on your specific constraints — team expertise, existing infrastructure, scale requirements, and compliance needs. The right choice is the one that fits your context, not the one with the most checkmarks.
+
 ## Next Steps
 
 - [`Kubernetes.md`](./Kubernetes.md) — Revisit `NetworkPolicy`, RBAC, and pod security with Cilium in mind
