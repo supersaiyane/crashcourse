@@ -509,6 +509,38 @@ No data sent to any external service. The embedding model, the LLM, and the vect
 
 ---
 
+
+## Terminal Demo
+
+```terminal-demo
+# ollama@local ~ %
+
+$ ollama --version
+ollama version 0.1.32
+
+$ ollama list
+NAME                 SIZE    MODIFIED
+llama3:8b            4.7 GB  2 days ago
+codellama:13b        7.4 GB  5 days ago
+mistral:7b           4.1 GB  1 week ago
+nomic-embed-text     274 MB  1 week ago
+
+$ ollama run llama3:8b "What is a circuit breaker pattern? One paragraph."
+A circuit breaker is a stability pattern that prevents cascading failures in distributed systems.
+When a downstream service fails repeatedly, the circuit breaker "opens" — stopping all requests
+to that service and returning a fallback response immediately. After a timeout, it allows one
+test request through. If it succeeds, normal traffic resumes.
+
+$ curl -s localhost:11434/api/generate -d '{"model":"llama3:8b","prompt":"Explain SLOs","stream":false}' | jq .response | head -3
+"Service Level Objectives (SLOs) define the target reliability..."
+
+$ ollama ps
+NAME         SIZE     PROCESSOR    UNTIL
+llama3:8b    5.5 GB   100% GPU     4 minutes from now
+```
+
+---
+
 ## Common pitfalls
 
 - **Model too large for VRAM.** If a 13B model requires 8 GB VRAM and you have 6 GB, Ollama offloads layers to RAM silently. Generation works but slows to 3–5 tokens/second. Always check `ollama show <model>` for VRAM requirements before pulling.

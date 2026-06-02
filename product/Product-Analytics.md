@@ -360,6 +360,38 @@ Layer 3: Experiment results (what have we learned recently?)
 
 ---
 
+
+## Terminal Demo
+
+```terminal-demo
+# analytics@metrics ~ %
+
+$ echo "Funnel Analysis: Onboarding"
+Step 1: Sign up          — 10,000 (100%)
+Step 2: Verify email      — 7,500 (75%)
+Step 3: Create first project — 4,500 (45%)
+Step 4: Invite team member — 2,250 (22.5%)
+Step 5: First deployment  — 1,500 (15%)
+Biggest drop: Step 2 → Step 3 (30% drop)
+
+$ echo "Cohort Retention (Weekly)"
+Week 0: 100%
+Week 1: 45%
+Week 2: 32%
+Week 4: 25%
+Week 8: 20%
+Week 12: 18%
+
+$ echo "Experiment: New Onboarding"
+Control:   15% activation (n=5,000)
+Treatment: 22% activation (n=5,000)
+Lift: +46.7%
+p-value: 0.002 (statistically significant)
+Decision: SHIP IT
+```
+
+---
+
 ## Common pitfalls
 
 - **Measuring everything, understanding nothing.** Tracking 500 events without a clear hierarchy

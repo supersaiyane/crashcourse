@@ -419,6 +419,27 @@ A classifier with this structure will handle the common case with high confidenc
 
 ---
 
+
+## Terminal Demo
+
+```terminal-demo
+# prompt@engineering ~ %
+
+$ echo "Zero-Shot"
+curl -s api.anthropic.com/v1/messages -d '{"model":"claude-sonnet-4-20250514","messages":[{"role":"user","content":"Classify: The server is returning 503 errors -> "}]}'
+"Category: Infrastructure/Availability"
+
+$ echo "Few-Shot"
+curl -s api.anthropic.com/v1/messages -d '{"messages":[{"role":"user","content":"Classify support tickets:\nTicket: Cannot login -> Auth\nTicket: Page loads slow -> Performance\nTicket: API returns 500 -> "}]}'
+"Infrastructure"
+
+$ echo "Chain-of-Thought"
+curl -s api.anthropic.com/v1/messages -d '{"messages":[{"role":"user","content":"Think step by step: If our API handles 1000 RPS and each request takes 50ms, how many concurrent connections do we need? Show your work."}]}'
+"Step 1: Each request occupies a connection for 50ms\nStep 2: In 1 second, each connection handles 1000/50 = 20 requests\nStep 3: For 1000 RPS: 1000/20 = 50 concurrent connections"
+```
+
+---
+
 ## Common pitfalls
 
 - **Ambiguous instructions produce ambiguous output.** "Be concise" means different things to different models. "Respond in at most 50 words" is unambiguous.

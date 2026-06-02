@@ -668,6 +668,29 @@ Best practices that go beyond documentation: lessons learned from production inc
 
 
 
+
+## Terminal Demo
+
+```terminal-demo
+# langfuse@observability ~ %
+
+$ echo "Trace Summary (last 1h)"
+curl -s localhost:3000/api/traces/summary | jq
+{"total_traces":1234,"avg_latency_ms":890,"avg_tokens":2345,"avg_cost_usd":0.012,"error_rate":0.02}
+
+$ echo "Top Traces by Cost"
+curl -s "localhost:3000/api/traces?sort=cost&limit=3" | jq ".[:3][] | {id,model,tokens,cost_usd,latency_ms}"
+{"id":"t-abc","model":"claude-opus-4-20250514","tokens":8901,"cost_usd":0.089,"latency_ms":3456}
+{"id":"t-def","model":"claude-opus-4-20250514","tokens":6789,"cost_usd":0.067,"latency_ms":2890}
+{"id":"t-ghi","model":"claude-sonnet-4-20250514","tokens":4567,"cost_usd":0.023,"latency_ms":1234}
+
+$ echo "Quality Score Trend"
+curl -s localhost:3000/api/metrics/quality?period=7d | jq
+{"avg_faithfulness":0.92,"avg_relevance":0.88,"avg_helpfulness":0.91,"trend":"stable"}
+```
+
+---
+
 ## Quick Quiz
 
 Test your understanding with these rapid-fire questions (answers hidden):

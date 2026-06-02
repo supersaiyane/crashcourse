@@ -372,6 +372,33 @@ Virality:
 
 ---
 
+
+## Terminal Demo
+
+```terminal-demo
+# plg@growth ~ %
+
+$ echo "PLG Funnel"
+Visitors:        100,000/mo
+Sign-ups:        10,000/mo (10% conversion)
+Activated:       3,200/mo (32% activation)
+Paying:          640/mo (20% of activated)
+Expanded:        128/mo (20% expand)
+
+$ echo "Time-to-Value"
+Median time to first value: 12 minutes
+Target: < 10 minutes
+Action: Simplify project creation (currently 5 steps -> 2)
+
+$ echo "Product-Qualified Leads"
+PQLs generated this month: 234
+PQL → Sales conversation: 45%
+PQL → Closed won: 18%
+Avg deal size (PQL): $12,000 ARR
+```
+
+---
+
 ## Common pitfalls
 
 - **Making the free tier too generous.** If users get everything they need for free, they will

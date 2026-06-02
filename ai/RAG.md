@@ -433,6 +433,37 @@ If the retriever had instead returned a chunk about the payments database, the a
 
 ---
 
+
+## Terminal Demo
+
+```terminal-demo
+# rag@pipeline ~ %
+
+$ python3 -c "
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+splitter = RecursiveCharacterTextSplitter(chunk_size=512, chunk_overlap=50)
+chunks = splitter.split_text(open('docs/runbook.md').read())
+print(f'Document split into {len(chunks)} chunks')
+print(f'Avg chunk size: {sum(len(c) for c in chunks)//len(chunks)} chars')
+"
+Document split into 45 chunks
+Avg chunk size: 487 chars
+
+$ python3 -c "
+from chromadb import Client
+db = Client()
+collection = db.get_collection('runbooks')
+results = collection.query(query_texts=['how to restart the API'], n_results=3)
+for doc, score in zip(results['documents'][0], results['distances'][0]):
+    print(f'Score: {score:.3f} | {doc[:80]}...')
+"
+Score: 0.123 | To restart the API service, first check the current pod status using kubectl...
+Score: 0.234 | The API deployment uses a rolling restart strategy. Run kubectl rollout...
+Score: 0.345 | If the API is unresponsive, check the health endpoint at /healthz first...
+```
+
+---
+
 ## Common pitfalls
 
 - **Chunks too large.** A 2000-token chunk usually contains multiple distinct topics. The embedding averages over all of them, making it a bad match for any single query about one of those topics. Keep chunks focused. 300-600 tokens is usually the right range.

@@ -550,6 +550,40 @@ Best practices that go beyond documentation: lessons learned from production inc
 
 
 
+
+## Terminal Demo
+
+```terminal-demo
+# langgraph@agents ~ %
+
+$ python3 -c "
+from langgraph.graph import StateGraph, END
+from typing import TypedDict
+
+class State(TypedDict):
+    messages: list
+    next_step: str
+
+graph = StateGraph(State)
+graph.add_node('agent', agent_fn)
+graph.add_node('tools', tool_fn)
+graph.add_edge('agent', 'tools')
+graph.add_conditional_edges('tools', router, {'continue': 'agent', 'end': END})
+print('Graph compiled:', graph.compile())
+"
+Graph compiled: CompiledGraph(nodes=[agent, tools], edges=3)
+
+$ echo "Agent Execution Trace"
+Step 1: agent -> decided to call search_docs(query="K8s pod restart")
+Step 2: tools -> returned 3 relevant documents
+Step 3: agent -> decided to call kubectl_exec(cmd="get pods")
+Step 4: tools -> returned pod status
+Step 5: agent -> generated final answer
+Total steps: 5, tokens: 2,345
+```
+
+---
+
 ## Quick Quiz
 
 Test your understanding with these rapid-fire questions (answers hidden):

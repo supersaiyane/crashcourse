@@ -457,6 +457,29 @@ If a regression appears — cost spike, score drop, guardrail trigger surge — 
 
 ---
 
+
+## Terminal Demo
+
+```terminal-demo
+# llmops@platform ~ %
+
+$ echo "Prompt Registry"
+curl -s localhost:8080/api/prompts | jq ".[:3][] | {name,version,active}"
+{"name":"summarize-incident","version":"v3","active":true}
+{"name":"classify-ticket","version":"v5","active":true}
+{"name":"generate-runbook","version":"v2","active":true}
+
+$ echo "Model Gateway Stats"
+curl -s localhost:8080/api/gateway/stats | jq
+{"requests_today":45678,"avg_latency_ms":234,"cache_hit_rate":0.32,"total_tokens":12345678,"estimated_cost_usd":45.67}
+
+$ echo "A/B Test: Prompt v4 vs v5"
+curl -s localhost:8080/api/experiments/classify-ticket | jq
+{"variant_a":"v4","variant_b":"v5","traffic_split":"50/50","accuracy_a":0.89,"accuracy_b":0.93,"p_value":0.023,"winner":"v5"}
+```
+
+---
+
 ## Common pitfalls
 
 - **Editing prompts directly in production code** — no audit trail, no rollback path, no way to run evals before the change is live. Always go through version control.

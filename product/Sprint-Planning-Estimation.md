@@ -281,6 +281,32 @@ The backlog has been groomed. Sprint length: 2 weeks. Team: 5 engineers.
 
 ---
 
+
+## Terminal Demo
+
+```terminal-demo
+# sprint@planning ~ %
+
+$ echo "Team Capacity"
+Team size: 6 engineers
+Sprint length: 2 weeks (10 working days)
+Focus factor: 70% (meetings, support, etc.)
+Capacity: 6 * 10 * 0.7 = 42 person-days
+Historical velocity: 34 story points (avg last 3 sprints)
+
+$ echo "Planning Poker Results"
+| Story                    | Votes        | Consensus |
+|-------------------------|-------------|----------|
+| Auth middleware refactor | 3,5,5,5,8   | 5 pts    |
+| Dashboard API endpoint  | 2,3,3,3,3   | 3 pts    |
+| Email notification      | 8,8,13,8,8  | 8 pts    |
+| Bug: timezone display   | 1,1,2,1,1   | 1 pt     |
+
+Total committed: 32 points (under 34 avg velocity ✓)
+```
+
+---
+
 ## Common pitfalls
 
 - **Treating story points as hours in disguise.** The moment a manager says "a point equals a

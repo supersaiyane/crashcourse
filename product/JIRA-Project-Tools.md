@@ -322,6 +322,36 @@ transaction-reconciliation API. Five engineers, two-week sprints.
 
 ---
 
+
+## Terminal Demo
+
+```terminal-demo
+# jira@project ~ %
+
+$ echo "Sprint Board"
+To Do:        8 issues (24 story points)
+In Progress:  4 issues (12 story points)
+In Review:    2 issues (5 story points)
+Done:         6 issues (18 story points)
+
+$ echo "JQL Queries"
+jira search "project = API AND sprint in openSprints() AND status = 'In Progress'"
+API-234: Implement rate limiting [IN PROGRESS] @gurpreet
+API-235: Add health check endpoint [IN PROGRESS] @priya
+API-236: Fix connection pool leak [IN PROGRESS] @rahul
+API-237: Update API documentation [IN PROGRESS] @aisha
+
+$ echo "Velocity Chart (last 5 sprints)"
+Sprint 20: 30 pts
+Sprint 21: 35 pts
+Sprint 22: 28 pts
+Sprint 23: 38 pts
+Sprint 24: 34 pts (current, projected)
+Average: 33 pts
+```
+
+---
+
 ## Common pitfalls
 
 - **Over-engineering the workflow.** Eight statuses with transition conditions on every arrow

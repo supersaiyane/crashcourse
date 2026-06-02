@@ -345,6 +345,34 @@ PM can now forecast: 88 points of remaining work = ~4 sprints.
 
 ---
 
+
+## Terminal Demo
+
+```terminal-demo
+# scrum@sprint ~ %
+
+$ echo "Sprint 24 Status"
+Sprint Goal: Launch checkout v2
+Duration: Jun 2 — Jun 13 (2 weeks)
+Velocity (avg last 3): 34 story points
+Committed: 32 story points
+Completed: 28 / 32 (87.5%)
+
+$ echo "Burndown"
+Day 1:  32 points remaining
+Day 5:  20 points remaining (on track)
+Day 8:  12 points remaining (on track)
+Day 10: 4 points remaining (will finish)
+
+$ echo "Ceremonies"
+Daily Standup:     15 min @ 9:30 AM
+Sprint Planning:   2 hrs (first Monday)
+Sprint Review:     1 hr (last Friday)
+Retrospective:     1 hr (last Friday, after review)
+```
+
+---
+
 ## Common pitfalls
 
 - **Treating the sprint as a mini-waterfall.** If all testing happens on the last day, you are

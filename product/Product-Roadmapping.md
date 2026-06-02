@@ -311,6 +311,36 @@ direction with tactical flexibility.
 
 ---
 
+
+## Terminal Demo
+
+```terminal-demo
+# roadmap@planning ~ %
+
+$ echo "NOW / NEXT / LATER"
+--- NOW (this quarter) ---
+✓ Checkout v2 (shipped May 15)
+◌ AI incident assistant (in progress, 60%)
+◌ SSO integration (starting next sprint)
+
+--- NEXT (next quarter) ---
+○ Self-service onboarding
+○ Custom dashboards
+○ Webhook integrations
+
+--- LATER (future) ---
+○ Mobile app
+○ Marketplace for plugins
+○ Multi-region deployment
+
+$ echo "Roadmap Confidence"
+NOW items:   90% confidence (committed, resourced)
+NEXT items:  60% confidence (validated, not yet resourced)
+LATER items: 30% confidence (strategic direction, may change)
+```
+
+---
+
 ## Common pitfalls
 
 - **Date-driven roadmaps.** Putting specific dates on items creates false precision. Use

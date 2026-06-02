@@ -278,6 +278,35 @@ AI handled ~40% of the work. PM judgment handled 100% of the decisions.
 
 ---
 
+
+## Terminal Demo
+
+```terminal-demo
+# ai-pm@product ~ %
+
+$ echo "AI Feature Evaluation"
+Feature: AI-powered incident root cause analysis
+Model: Claude Sonnet for reasoning, embeddings for retrieval
+Accuracy target: 85% correct root cause in top-3 suggestions
+Current accuracy: 78% (needs improvement)
+
+$ echo "AI-Specific Metrics"
+Model latency p99: 2.3s (target: < 3s) ✓
+Hallucination rate: 4.2% (target: < 5%) ✓
+User trust score: 3.8/5 (target: > 4.0) ✗
+Feedback: "suggestions are good but need more context"
+
+$ echo "Evaluation Matrix"
+| Dimension    | Score | Target | Status |
+|-------------|-------|--------|--------|
+| Accuracy    | 78%   | 85%    | ✗      |
+| Latency     | 2.3s  | 3.0s   | ✓      |
+| Hallucination| 4.2% | 5.0%   | ✓      |
+| User trust  | 3.8   | 4.0    | ✗      |
+```
+
+---
+
 ## Common pitfalls
 
 - **Outsourcing thinking to AI.** AI drafts. You decide. If you cannot explain *why* a

@@ -349,6 +349,32 @@ two-week sprints with per-sprint releases.
 
 ---
 
+
+## Terminal Demo
+
+```terminal-demo
+# delivery@metrics ~ %
+
+$ echo "DORA Metrics (last 30 days)"
+Deployment Frequency:    4.2 per day (Elite)
+Lead Time for Changes:   2.3 hours (Elite)
+Change Failure Rate:     3.2% (Elite)
+MTTR:                    18 minutes (Elite)
+
+$ echo "Release Train"
+Release v2.1.0: Jun 2 (today)
+  Features: 12 stories
+  Bug fixes: 5
+  Tests: 4,567 passing
+  Canary: 5% traffic for 2h -> no errors -> promote to 100%
+
+$ echo "Deployment Pipeline"
+Commit → Lint (22s) → Test (1m45s) → Build (58s) → Security (35s) → Deploy staging (45s) → E2E (2m) → Canary prod (2h) → Full prod
+Total: ~2.5 hours from commit to production
+```
+
+---
+
 ## Common pitfalls
 
 - **Big-bang releases.** Batching three months of work into one release maximises risk and

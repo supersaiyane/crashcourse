@@ -339,6 +339,33 @@ Always fix the constraint first.
 
 ---
 
+
+## Terminal Demo
+
+```terminal-demo
+# kanban@board ~ %
+
+$ echo "Board Status"
+Backlog:        15 items
+Ready:          3 items
+In Progress:    4 items (WIP limit: 5)
+In Review:      2 items (WIP limit: 3)
+Done (this wk): 8 items
+
+$ echo "Flow Metrics"
+Cycle Time (avg):     3.2 days
+Lead Time (avg):      5.8 days
+Throughput:           8 items/week
+Blockers active:      1 (waiting for API team)
+
+$ echo "WIP Limit Check"
+In Progress: 4/5 ✓
+In Review:   2/3 ✓
+Blocked:     1   ⚠ (escalate if > 24h)
+```
+
+---
+
 ## Common pitfalls
 
 - **A board without WIP limits is just a to-do list.** The board alone changes nothing. WIP

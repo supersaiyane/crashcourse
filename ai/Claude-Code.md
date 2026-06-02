@@ -630,6 +630,41 @@ Best practices that go beyond documentation: lessons learned from production inc
 
 
 
+
+## Terminal Demo
+
+```terminal-demo
+# claude@code ~ %
+
+$ claude --version
+Claude Code v1.0.0
+
+$ claude "What files handle authentication in this repo?"
+Searching codebase...
+Found 3 files related to authentication:
+  src/middleware/auth.ts:12    — JWT verification middleware
+  src/routes/auth.ts:1         — Login/logout endpoints
+  src/config/jwt.ts:1          — JWT configuration
+
+$ claude "Add rate limiting to the /api/v1/orders endpoint"
+Reading src/routes/orders.ts...
+Reading src/middleware/...
+Plan: Add express-rate-limit middleware to orders router
+
+Edited: src/routes/orders.ts (added rate limiter: 100 req/min per IP)
+Edited: package.json (added express-rate-limit dependency)
+Created: src/middleware/rate-limit.ts
+
+Running tests...
+  ✓ 142 tests passed, 0 failed
+  ✓ New test: rate limiting returns 429 after 100 requests
+
+$ claude /commit
+Commit: feat: add rate limiting to orders endpoint (100 req/min per IP)
+```
+
+---
+
 ## Quick Quiz
 
 Test your understanding with these rapid-fire questions (answers hidden):

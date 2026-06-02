@@ -238,6 +238,30 @@ think. Protect your thinking time — it is where the actual product decisions h
 
 ---
 
+
+## Terminal Demo
+
+```terminal-demo
+# pm@product ~ %
+
+$ echo "Product Health Dashboard"
+DAU: 45,678 (+5% WoW)
+Activation Rate: 32% (target: 40%)
+Retention D7: 45% (target: 50%)
+NPS: 42 (target: 50)
+Revenue MRR: $234,567 (+8% MoM)
+
+$ echo "RICE Prioritization"
+| Feature          | Reach | Impact | Confidence | Effort | Score |
+|-----------------|-------|--------|------------|--------|-------|
+| Onboarding v2   | 10K   | 3      | 80%        | 2      | 12.0  |
+| Search improve  | 8K    | 2      | 90%        | 1      | 14.4  |
+| Export feature  | 2K    | 2      | 70%        | 3      | 0.93  |
+Priority: Search improvement (highest RICE score)
+```
+
+---
+
 ## Common pitfalls
 
 - **Building what stakeholders ask for instead of what users need.** Stakeholders have opinions.

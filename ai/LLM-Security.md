@@ -406,6 +406,32 @@ Financial services and banking are the highest-scrutiny environment for LLM depl
 
 ---
 
+
+## Terminal Demo
+
+```terminal-demo
+# security@llm ~ %
+
+$ echo "Prompt Injection Test"
+python3 red_team.py --target api.example.com/chat --attack injection
+Testing 50 injection patterns...
+Blocked: 47/50 (94%)
+Bypassed: 3/50 (6%)
+Risk: MEDIUM — 3 indirect injection patterns via retrieved docs
+
+$ echo "PII Detection"
+python3 pii_scanner.py --input "Call John at 555-0123 or email john@corp.com"
+Detected: PHONE_NUMBER (555-0123), EMAIL (john@corp.com)
+Redacted: Call [PERSON] at [PHONE] or email [EMAIL]
+
+$ echo "Output Validation"
+python3 guardrails.py --check "The API key is sk-proj-abc123xyz"
+Flagging: potential secret detected (API key pattern)
+Action: blocked, logged for review
+```
+
+---
+
 ## Common pitfalls
 
 - **Treating the system prompt as a security boundary.** It isn't. The model can be convinced to ignore it. The system prompt is a policy statement, not an enforcement mechanism. Enforcement happens at the application layer.

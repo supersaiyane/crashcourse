@@ -361,6 +361,38 @@ Without AIOps, the on-call sees three critical alerts in PagerDuty, opens three 
 
 ---
 
+
+## Terminal Demo
+
+```terminal-demo
+# aiops@detection ~ %
+
+$ echo "Anomaly Detection — Last Hour"
+python3 anomaly_detect.py --metric cpu_usage --window 1h
+Baseline: mean=45.2%, std=8.3%
+Current:  89.7% (5.4 sigma above baseline)
+Verdict:  ANOMALY DETECTED
+
+$ echo "Alert Correlation"
+python3 correlate.py --window 5m
+Correlated 23 alerts into 2 incidents:
+  Incident #1: DB connection timeout (12 alerts)
+    Root: PostgreSQL connection pool exhausted
+  Incident #2: High API latency (11 alerts)
+    Root: Downstream of Incident #1
+Noise reduction: 23 alerts -> 2 incidents (91% reduction)
+
+$ echo "Automated Remediation"
+python3 remediate.py --incident 1 --action restart_pool
+Action: Restart DB connection pool
+Confidence: 0.94 (above threshold 0.90)
+Executing... Pool restarted
+Verification: Connection count normalized (25/25 -> 5/25)
+Result: Incident resolved automatically
+```
+
+---
+
 ## Common pitfalls
 
 - **Training on too little data.** Prophet and ML correlation models trained on less than 2 weeks of data have poor seasonality handling and generate high false-positive rates. Collect baseline data before enabling ML-based alerting.

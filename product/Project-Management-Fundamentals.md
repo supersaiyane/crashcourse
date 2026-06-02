@@ -369,6 +369,34 @@ Three teams involved, six-month timeline.
 
 ---
 
+
+## Terminal Demo
+
+```terminal-demo
+# pm@project ~ %
+
+$ echo "Project Status: API v2 Migration"
+Phase: Execution (3 of 5)
+Timeline: Apr 1 — Jul 31 (4 months)
+Budget: $120K spent of $180K (67%)
+Scope: 18/25 features delivered (72%)
+Risk: Medium (1 team member leaving in July)
+
+$ echo "Gantt Summary"
+Apr: Requirements + Design     [████████████] DONE
+May: Core API + Auth           [████████████] DONE
+Jun: Integration + Testing     [████████░░░░] 75%
+Jul: Migration + Go-live       [░░░░░░░░░░░░] Not started
+
+$ echo "RAID Log"
+Risks: 2 (team attrition, API compatibility)
+Assumptions: 3 (client migration support, no scope change)
+Issues: 1 (performance regression in batch endpoint)
+Dependencies: 2 (auth team, data team)
+```
+
+---
+
 ## Common pitfalls
 
 - **Skipping the charter.** Without a charter, stakeholders have different mental models of what

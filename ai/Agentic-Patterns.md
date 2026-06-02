@@ -535,6 +535,34 @@ Best practices that go beyond documentation: lessons learned from production inc
 
 
 
+
+## Terminal Demo
+
+```terminal-demo
+# agent@orchestration ~ %
+
+$ echo "ReAct Agent Trace"
+Thought: I need to find the failing deployment
+Action: kubectl get deployments -n production
+Observation: api deployment has 3/5 ready replicas
+Thought: Let me check the pod events
+Action: kubectl describe pod api-f4h7k -n production
+Observation: ImagePullBackOff — image not found in registry
+Thought: The image tag is wrong. Let me check the last rollout.
+Action: kubectl rollout undo deployment/api -n production
+Observation: deployment.apps/api rolled back
+Final Answer: Rolled back deployment — image tag v2.1.1 does not exist, reverted to v2.1.0
+
+$ echo "Agent Metrics"
+Steps: 4
+Tokens used: 1,234
+Time: 12.3s
+Tools called: kubectl (3x)
+Outcome: SUCCESS
+```
+
+---
+
 ## Quick Quiz
 
 Test your understanding with these rapid-fire questions (answers hidden):

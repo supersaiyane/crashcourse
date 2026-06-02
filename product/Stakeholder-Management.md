@@ -309,6 +309,31 @@ Disagreements are normal. Unresolved disagreements are dangerous:
 
 ---
 
+
+## Terminal Demo
+
+```terminal-demo
+# stakeholders@alignment ~ %
+
+$ echo "Stakeholder Map"
+| Stakeholder | Interest | Influence | Strategy     |
+|------------|----------|-----------|-------------|
+| CTO        | High     | High      | Manage closely |
+| VP Eng     | High     | High      | Manage closely |
+| Sales Lead | Medium   | Medium    | Keep informed  |
+| CS Lead    | High     | Low       | Keep satisfied |
+| Legal      | Low      | High      | Monitor        |
+
+$ echo "Communication Plan"
+CTO:      Weekly 1:1, monthly roadmap review
+VP Eng:   Bi-weekly sync, sprint demos
+Sales:    Monthly product update email
+CS:       Slack channel, release notes
+All:      Quarterly product review (all-hands)
+```
+
+---
+
 ## Common pitfalls
 
 - **Assuming silence is alignment.** A stakeholder who does not respond to your update has not

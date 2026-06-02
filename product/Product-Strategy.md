@@ -270,6 +270,33 @@ Strategic filter:
 
 ---
 
+
+## Terminal Demo
+
+```terminal-demo
+# strategy@product ~ %
+
+$ echo "Strategy Canvas"
+Vision:   "Every SRE team ships with confidence"
+Mission:  Reduce MTTR by 50% through AI-powered incident response
+North Star: Time-to-resolution for P1 incidents
+
+$ echo "OKR Q3 2026"
+O: Improve incident response speed
+  KR1: Reduce MTTR from 45min to 22min (50%)
+  KR2: Auto-resolve 30% of P3 incidents
+  KR3: Achieve 90% customer satisfaction on incident handling
+
+$ echo "Competitive Landscape"
+| Dimension      | Us    | Competitor A | Competitor B |
+|---------------|-------|-------------|-------------|
+| AI-powered    | ✓     | Partial     | ✗           |
+| Self-hosted   | ✓     | ✗           | ✓           |
+| Price         | $$    | $$$         | $           |
+```
+
+---
+
 ## Common pitfalls
 
 - **Strategy by accretion.** Adding every good idea to the strategy until it says everything and

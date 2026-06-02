@@ -296,6 +296,34 @@ you built is what you intended to build.
 
 ---
 
+
+## Terminal Demo
+
+```terminal-demo
+# stories@backlog ~ %
+
+$ echo "User Story Format"
+As a [on-call engineer]
+I want to [see correlated alerts grouped by incident]
+So that [I can identify root cause faster instead of triaging 20 separate alerts]
+
+$ echo "INVEST Check"
+✓ Independent: no dependency on other stories
+✓ Negotiable: implementation approach is flexible
+✓ Valuable: directly reduces MTTR
+✓ Estimable: team estimated 5 story points
+✓ Small: fits in one sprint
+✓ Testable: "given 20 related alerts, show as 1 incident"
+
+$ echo "Acceptance Criteria"
+Given: 20 alerts fired within 5 minutes for the same service
+When:  the on-call engineer opens the incident dashboard
+Then:  alerts are grouped into 1 incident with a summary
+And:   the probable root cause is highlighted
+```
+
+---
+
 ## Common pitfalls
 
 - **Skipping the "so that" clause.** Without the benefit, engineering cannot make trade-offs.

@@ -527,6 +527,29 @@ Best practices that go beyond documentation: lessons learned from production inc
 
 
 
+
+## Terminal Demo
+
+```terminal-demo
+# vllm@serving ~ %
+
+$ python3 -m vllm.entrypoints.openai.api_server --model meta-llama/Llama-3-8B --port 8000
+INFO: Loading model meta-llama/Llama-3-8B
+INFO: Model loaded in 12.3s
+INFO: Using PagedAttention with 16384 KV cache blocks
+INFO: Serving on http://0.0.0.0:8000
+
+$ curl -s localhost:8000/v1/chat/completions -H "Content-Type: application/json" -d '{"model":"meta-llama/Llama-3-8B","messages":[{"role":"user","content":"What is K8s?"}],"max_tokens":50}' | jq .choices[0].message.content
+"Kubernetes (K8s) is an open-source container orchestration platform that automates deployment, scaling, and management of containerized applications."
+
+$ curl -s localhost:8000/metrics | grep -E "vllm_num_requests|vllm_gpu_cache"
+vllm_num_requests_running 12
+vllm_num_requests_waiting 3
+vllm_gpu_cache_usage_perc 0.67
+```
+
+---
+
 ## Quick Quiz
 
 Test your understanding with these rapid-fire questions (answers hidden):

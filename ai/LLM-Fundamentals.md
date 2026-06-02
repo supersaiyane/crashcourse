@@ -410,6 +410,30 @@ This two-level summarization pattern — chunk → summarize → rollup — is r
 
 ---
 
+
+## Terminal Demo
+
+```terminal-demo
+# llm@fundamentals ~ %
+
+$ python3 -c "from anthropic import Anthropic; c=Anthropic(); r=c.messages.create(model='claude-sonnet-4-20250514',max_tokens=100,messages=[{'role':'user','content':'What is an LLM in one sentence?'}]); print(r.content[0].text)"
+An LLM is a neural network trained on massive text corpora that predicts the next token in a sequence, enabling it to generate human-like text.
+
+$ python3 -c "import tiktoken; enc=tiktoken.encoding_for_model('gpt-4'); tokens=enc.encode('Hello, world!'); print(f'Tokens: {tokens}\nCount: {len(tokens)}')"
+Tokens: [9906, 11, 1917, 0]
+Count: 4
+
+$ echo "Model Size vs Performance"
+| Model    | Params | Typical Use            |
+|----------|--------|------------------------|
+| 7B       | 7B     | Simple tasks, edge     |
+| 13B      | 13B    | Good quality, local    |
+| 70B      | 70B    | Near-frontier quality  |
+| Frontier | 200B+  | Best reasoning/coding  |
+```
+
+---
+
 ## Common pitfalls
 
 - **Treating LLMs as databases.** LLMs do not reliably recall specific facts, dates, or figures. They interpolate and confabulate. If you need accurate lookup, store data in an actual database and use RAG to inject it into the prompt.

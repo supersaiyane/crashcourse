@@ -305,6 +305,32 @@ the signal to commit.
 
 ---
 
+
+## Terminal Demo
+
+```terminal-demo
+# discovery@research ~ %
+
+$ echo "This Week's Discovery"
+Interviews conducted: 5
+Opportunity tree updated: 3 new opportunities
+Assumptions tested: 2 (1 validated, 1 invalidated)
+Prototypes tested: 1 (onboarding flow v2)
+
+$ echo "Opportunity Solution Tree"
+Outcome: Improve activation rate (32% -> 40%)
+├── Opportunity: Users don't understand value in first session
+│   ├── Solution: Interactive onboarding tour
+│   └── Solution: Personalized first-run experience
+├── Opportunity: Setup is too complex
+│   ├── Solution: One-click templates
+│   └── Solution: Auto-detect environment
+└── Opportunity: No immediate win
+    └── Solution: Quick-start dashboard with sample data
+```
+
+---
+
 ## Common pitfalls
 
 - **Confirmation bias.** Hearing what you want to hear in interviews. The antidote: have someone

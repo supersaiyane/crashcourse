@@ -321,6 +321,36 @@ a monolith to microservices. Four teams involved. Regulatory deadline: end of Q3
 
 ---
 
+
+## Terminal Demo
+
+```terminal-demo
+# tpm@program ~ %
+
+$ echo "Program Status: Platform Migration"
+Phase: 2 of 4 (Execution)
+Timeline: Q2-Q3 2026
+Teams involved: 5
+Milestones: 3/8 completed
+Risk items: 2 (1 high, 1 medium)
+Blockers: 0
+
+$ echo "Cross-Team Dependencies"
+Auth team → API team: new token format (due Jun 15) ✓
+API team → Frontend: v2 endpoints (due Jun 30) ◌
+Platform → All teams: K8s migration (due Jul 15) ◌
+Data team → Analytics: schema migration (due Jul 30) ○
+
+$ echo "Decision Log"
+| Date    | Decision                    | Owner    | Status   |
+|---------|----------------------------|----------|----------|
+| May 15  | Use gRPC for internal APIs | Gurpreet | Approved |
+| May 22  | Delay mobile until Q4      | PM team  | Approved |
+| Jun 1   | Add Redis cluster for cache| Platform | Pending  |
+```
+
+---
+
 ## Common pitfalls
 
 - **Becoming a status-collection service.** If all you do is ask "what's your status?" and relay

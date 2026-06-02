@@ -391,6 +391,29 @@ Compliance risk     — regulatory requirements misunderstood or missed
 
 ---
 
+
+## Terminal Demo
+
+```terminal-demo
+# risk@assessment ~ %
+
+$ echo "Risk Register"
+| ID | Risk                    | Probability | Impact | Score | Mitigation      |
+|----|------------------------|-------------|--------|-------|-----------------|
+| R1 | Key developer leaves   | Medium      | High   | 12    | Cross-training  |
+| R2 | API compatibility break | Low         | High   | 8     | Contract tests  |
+| R3 | Scope creep            | High        | Medium | 12    | Change board    |
+| R4 | Vendor API changes     | Medium      | Medium | 9     | Abstraction layer|
+
+$ echo "Risk Burndown"
+Q1: 8 risks identified, 5 mitigated
+Q2: 4 new risks, 3 mitigated
+Active risks: 4
+Accepted risks: 2
+```
+
+---
+
 ## Common pitfalls
 
 - **Writing a risk register once and never updating it.** A static register is a false safety

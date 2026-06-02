@@ -700,6 +700,38 @@ Best practices that go beyond documentation: lessons learned from production inc
 
 
 
+
+## Terminal Demo
+
+```terminal-demo
+# langchain@dev ~ %
+
+$ python3 -c "
+from langchain_anthropic import ChatAnthropic
+from langchain_core.prompts import ChatPromptTemplate
+
+llm = ChatAnthropic(model='claude-sonnet-4-20250514')
+prompt = ChatPromptTemplate.from_messages([
+    ('system', 'You are an SRE expert. Be concise.'),
+    ('user', '{question}')
+])
+chain = prompt | llm
+result = chain.invoke({'question': 'What is an SLO?'})
+print(result.content)
+"
+An SLO (Service Level Objective) is a target reliability metric — e.g., 99.95% availability over 30 days — that defines how reliable a service needs to be.
+
+$ python3 -c "
+from langchain_community.document_loaders import WebBaseLoader
+loader = WebBaseLoader('https://sre.google/sre-book/table-of-contents/')
+docs = loader.load()
+print(f'Loaded {len(docs)} documents, {len(docs[0].page_content)} chars')
+"
+Loaded 1 documents, 45678 chars
+```
+
+---
+
 ## Quick Quiz
 
 Test your understanding with these rapid-fire questions (answers hidden):

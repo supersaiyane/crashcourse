@@ -553,6 +553,34 @@ With this server running, you can ask Claude: "Show me the p99 request latency f
 
 ---
 
+
+## Terminal Demo
+
+```terminal-demo
+# mcp@server ~ %
+
+$ echo "MCP Server: Database Tools"
+python3 mcp_server.py
+MCP Server started on stdio
+Registered tools: [query_db, list_tables, describe_table]
+Registered resources: [db://schema, db://tables/*]
+
+$ echo "Client Request"
+{"jsonrpc":"2.0","method":"tools/call","params":{"name":"query_db","arguments":{"sql":"SELECT count(*) FROM orders WHERE status='pending'"}}}
+
+$ echo "Server Response"
+{"jsonrpc":"2.0","result":{"content":[{"type":"text","text":"456 pending orders"}]}}
+
+$ echo "MCP Inspector Test"
+npx @modelcontextprotocol/inspector
+Connected to: stdio://./mcp_server.py
+Tools: 3 available
+Resources: 2 available
+Testing query_db... OK (response in 45ms)
+```
+
+---
+
 ## Common pitfalls
 
 - **Tool descriptions are too vague.** The AI decides whether to call a tool based entirely on its description and schema. "Run a query" is useless. "Execute a PromQL expression against Prometheus and return time series results — use for latency, error rate, and throughput questions" tells the AI when and how to use it.
