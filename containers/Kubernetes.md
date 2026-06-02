@@ -270,12 +270,22 @@ kubectl uncordon <node>    # allow scheduling again
 ```terminal-demo
 # kubectl@production ~ %
 
+$ kubectl config current-context
+arn:aws:eks:ap-south-1:123456789:cluster/prod-cluster
+
+$ kubectl get nodes -o wide
+NAME                          STATUS   ROLES    AGE   VERSION   INTERNAL-IP    OS-IMAGE
+ip-10-0-1-42.ec2.internal    Ready    <none>   90d   v1.29.3   10.0.1.42      Amazon Linux 2
+ip-10-0-2-18.ec2.internal    Ready    <none>   90d   v1.29.3   10.0.2.18      Amazon Linux 2
+ip-10-0-3-55.ec2.internal    Ready    <none>   45d   v1.29.3   10.0.3.55      Amazon Linux 2
+
 $ kubectl get namespaces
 NAME              STATUS   AGE
-default           Active   45d
-kube-system       Active   45d
-production        Active   30d
-monitoring        Active   28d
+default           Active   90d
+kube-system       Active   90d
+production        Active   85d
+monitoring        Active   80d
+ingress-nginx     Active   80d
 
 $ kubectl get pods -n production
 NAME                        READY   STATUS    RESTARTS   AGE
@@ -285,6 +295,29 @@ web-5f8b9c4d7-m3p2q        1/1     Running   0          5d
 web-5f8b9c4d7-k7j4r        1/1     Running   0          5d
 worker-6c9a8b3d2-n5v1x     1/1     Running   0          2d
 
+$ kubectl top pods -n production --sort-by=cpu
+NAME                        CPU(cores)   MEMORY(bytes)
+worker-6c9a8b3d2-n5v1x     245m         512Mi
+api-7d4b8c6f5-x2k9n        120m         256Mi
+api-7d4b8c6f5-p8m3w        118m         248Mi
+web-5f8b9c4d7-m3p2q        45m          128Mi
+web-5f8b9c4d7-k7j4r        42m          124Mi
+
+$ kubectl logs api-7d4b8c6f5-x2k9n -n production --tail=5
+2026-06-02T10:15:32Z INFO  request completed method=GET path=/api/v1/users status=200 latency=12ms
+2026-06-02T10:15:33Z INFO  request completed method=POST path=/api/v1/orders status=201 latency=45ms
+2026-06-02T10:15:35Z WARN  high latency detected path=/api/v1/reports latency=890ms
+2026-06-02T10:15:36Z INFO  request completed method=GET path=/healthz status=200 latency=1ms
+2026-06-02T10:15:38Z INFO  request completed method=GET path=/api/v1/users status=200 latency=15ms
+
+$ kubectl describe pod api-7d4b8c6f5-x2k9n -n production | grep -A5 Events
+Events:
+  Type    Reason     Age   From               Message
+  Normal  Scheduled  3d    default-scheduler   Successfully assigned production/api-7d4b8c6f5-x2k9n
+  Normal  Pulled     3d    kubelet             Container image "myregistry/api:v2.0.0" already present
+  Normal  Created    3d    kubelet             Created container api
+  Normal  Started    3d    kubelet             Started container api
+
 $ kubectl scale deployment api -n production --replicas=5
 deployment.apps/api scaled
 
@@ -293,15 +326,7 @@ Waiting for deployment "api" rollout to finish: 3 of 5 updated replicas are avai
 Waiting for deployment "api" rollout to finish: 4 of 5 updated replicas are available...
 deployment "api" successfully rolled out
 
-$ kubectl get pods -n production -l app=api
-NAME                        READY   STATUS    RESTARTS   AGE
-api-7d4b8c6f5-x2k9n        1/1     Running   0          3d
-api-7d4b8c6f5-p8m3w        1/1     Running   0          3d
-api-7d4b8c6f5-a9c2d        1/1     Running   0          12s
-api-7d4b8c6f5-f4h7k        1/1     Running   0          12s
-api-7d4b8c6f5-j1n8m        1/1     Running   0          11s
-
-$ kubectl set image deployment/api api=myregistry/api:v2.1.0 -n production
+$ kubectl set image deployment/api api=myregistry/api:v2.1.0 -n production --record
 deployment.apps/api image updated
 
 $ kubectl rollout status deployment/api -n production
@@ -309,8 +334,58 @@ Waiting for deployment "api" rollout to finish: 2 out of 5 new replicas have bee
 Waiting for deployment "api" rollout to finish: 4 out of 5 new replicas have been updated...
 deployment "api" successfully rolled out
 
-$ kubectl describe deployment api -n production | grep Image
-    Image:        myregistry/api:v2.1.0
+$ kubectl rollout history deployment/api -n production
+REVISION  CHANGE-CAUSE
+1         initial deployment
+2         kubectl set image deployment/api api=myregistry/api:v2.0.0
+3         kubectl set image deployment/api api=myregistry/api:v2.1.0
+
+$ kubectl get svc -n production
+NAME         TYPE           CLUSTER-IP      EXTERNAL-IP                              PORT(S)
+api          ClusterIP      172.20.45.12    <none>                                   8080/TCP
+web          LoadBalancer   172.20.67.89    a1b2c3-prod-lb.ap-south-1.elb.amazonaws.com   443:31234/TCP
+
+$ kubectl get ingress -n production
+NAME         CLASS   HOSTS                    ADDRESS                                      PORTS
+prod-ingress nginx   app.example.com          a4b5c6-ingress.ap-south-1.elb.amazonaws.com  80, 443
+
+$ kubectl get hpa -n production
+NAME   REFERENCE        TARGETS       MINPODS   MAXPODS   REPLICAS   AGE
+api    Deployment/api   42%/70%       3         15        5          30d
+web    Deployment/web   18%/70%       2         10        2          30d
+
+$ kubectl exec -it api-7d4b8c6f5-x2k9n -n production -- sh -c "wget -qO- localhost:8080/healthz"
+{"status":"healthy","uptime":"3d2h","version":"v2.1.0","db":"connected"}
+
+$ kubectl get events -n production --sort-by='.lastTimestamp' | tail -5
+3m    Normal  Scheduled  pod/api-7d4b8c6f5-a9c2d   Successfully assigned production/api-7d4b8c6f5-a9c2d
+3m    Normal  Pulled     pod/api-7d4b8c6f5-a9c2d   Container image "myregistry/api:v2.1.0" already present
+3m    Normal  Created    pod/api-7d4b8c6f5-a9c2d   Created container api
+3m    Normal  Started    pod/api-7d4b8c6f5-a9c2d   Started container api
+2m    Normal  ScalingReplicaSet  deployment/api   Scaled up replica set api-7d4b8c6f5 to 5
+
+$ kubectl get pdb -n production
+NAME      MIN AVAILABLE   MAX UNAVAILABLE   ALLOWED DISRUPTIONS   AGE
+api-pdb   2               N/A               3                     30d
+
+$ kubectl apply -f - <<EOF
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: api-config
+  namespace: production
+data:
+  LOG_LEVEL: "info"
+  RATE_LIMIT: "1000"
+  DB_POOL_SIZE: "25"
+EOF
+configmap/api-config created
+
+$ kubectl rollout restart deployment/api -n production
+deployment.apps/api restarted
+
+$ kubectl rollout status deployment/api -n production
+deployment "api" successfully rolled out
 ```
 
 ---
