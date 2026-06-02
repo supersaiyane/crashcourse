@@ -67,7 +67,17 @@
   - Loader in app.js fetches cli-{catId}.json — add more courses by creating cli-{category}.json files
   - Split view: terminal (left) + command reference panel (right, 7 groups, 33 clickable commands)
   - Click any command in reference panel → auto-types into terminal
-  - To add next: create cli-iac.json (terraform), cli-data.json (psql/redis), etc.
+  - To add next — Tier 1 (8 courses, must-have):
+    1. Kubernetes — DONE (cli-containers.json, 40+ cmds, 2 scenarios, split view)
+    2. Docker — docker run/build/compose/stats/system
+    3. Terraform — terraform init/plan/apply/state/import
+    4. Git — git log/rebase/bisect/stash/reflog
+    5. Linux — ps/top/ss/df/journalctl/dmesg/lsof
+    6. Bash — for/awk/sed/grep/find/xargs piping
+    7. Helm — helm install/upgrade/rollback/template/history
+    8. Ansible — ansible-playbook/vault/inventory/adhoc
+  - Tier 2 (6 courses, high value): Prometheus, PostgreSQL, Redis, AWS, Vault, ArgoCD
+  - Tier 3 (skip): design/, product/, career/, interview/, patterns/ — not CLI-centric
 - PWA fixes: SW v2 bypasses external origins (fixes refresh 404), cache bust v3
 - Wave 3 (CLI playground, project walkthroughs) not started
 - TODO.txt has 48 project walkthroughs (33 + 15 industry case studies)
