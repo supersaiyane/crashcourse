@@ -53,10 +53,10 @@
 - Wave 2 completed features:
   - Quiz & Flashcards: DONE (153/153)
   - Comparison Matrices: DONE (153/153)
-  - Terminal Demo: 9/153 (containers/ batch done). Typed char-by-char, IntersectionObserver. 144 courses remaining.
+  - Terminal Demo: DONE (153/153). Typed char-by-char, IntersectionObserver.
   - Inline Highlights (Hypothes.is): DONE — embedded via script tag
-  - Comments (Giscus): DONE — GitHub Discussions per course. Need to install Giscus app at github.com/apps/giscus
-- Wave 2 remaining: terminal demos for 144 more courses
+  - Comments (Giscus): DONE — GitHub Discussions per course. Giscus app installed.
+- Wave 2 fully complete — all 5 features at 100%
 - PWA fixes: SW v2 bypasses external origins (fixes refresh 404), cache bust v3
 - Wave 3 (CLI playground, project walkthroughs) not started
 - TODO.txt has 48 project walkthroughs (33 + 15 industry case studies)
