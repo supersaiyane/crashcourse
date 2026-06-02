@@ -535,6 +535,32 @@ Exponential backoff doubles the wait time between retries (1s, 2s, 4s, 8s). Jitt
 
 
 
+
+## Terminal Demo
+
+```terminal-demo
+# http@debugging ~ %
+
+$ curl -I https://api.example.com/api/v1/users
+HTTP/2 200
+content-type: application/json
+cache-control: private, max-age=60
+x-request-id: req-abc123
+x-ratelimit-remaining: 997
+
+$ curl -w "\nDNS: %{time_namelookup}s\nConnect: %{time_connect}s\nTLS: %{time_appconnect}s\nTTFB: %{time_starttransfer}s\nTotal: %{time_total}s\n" -so /dev/null https://api.example.com
+DNS: 0.012s
+Connect: 0.045s
+TLS: 0.089s
+TTFB: 0.123s
+Total: 0.134s
+
+$ curl -s -X POST https://api.example.com/api/v1/orders -H "Content-Type: application/json" -H "Authorization: Bearer eyJ..." -d '{"items":[{"id":"p-1","qty":2}]}' | jq
+{"orderId":"ord-789","status":"created","total":199.98}
+```
+
+---
+
 ## Quick Quiz
 
 Test your understanding with these rapid-fire questions (answers hidden):

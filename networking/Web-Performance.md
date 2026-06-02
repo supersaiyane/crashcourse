@@ -543,6 +543,29 @@ Start with Lighthouse and the Network waterfall to identify the biggest bottlene
 
 
 
+
+## Terminal Demo
+
+```terminal-demo
+# lighthouse@performance ~ %
+
+$ npx lighthouse https://app.example.com --output=json --quiet | jq '.categories | to_entries[] | {category:.key, score:(.value.score*100)}'
+{"category":"performance","score":92}
+{"category":"accessibility","score":98}
+{"category":"best-practices","score":95}
+{"category":"seo","score":100}
+
+$ curl -w "TTFB: %{time_starttransfer}s Total: %{time_total}s Size: %{size_download} bytes\n" -so /dev/null https://app.example.com
+TTFB: 0.089s Total: 0.234s Size: 45678 bytes
+
+$ npx bundlesize
+  PASS  dist/main.js: 45.2 kB < 50 kB (gzip)
+  PASS  dist/vendor.js: 89.1 kB < 100 kB (gzip)
+  PASS  dist/styles.css: 12.3 kB < 20 kB (gzip)
+```
+
+---
+
 ## Quick Quiz
 
 Test your understanding with these rapid-fire questions (answers hidden):

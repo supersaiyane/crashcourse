@@ -529,6 +529,38 @@ Use `wg show` to check handshake age and byte counters per peer. A healthy peer 
 
 
 
+
+## Terminal Demo
+
+```terminal-demo
+# wg@vpn ~ %
+
+$ wg show
+interface: wg0
+  public key: aB1cD2eF3gH4iJ5kL6mN7oP8qR9sT0u=
+  listening port: 51820
+
+peer: xY1zA2bC3dE4fG5hI6jK7lM8nO9pQ0r=
+  endpoint: 203.0.113.50:51820
+  allowed ips: 10.10.0.0/24
+  latest handshake: 45 seconds ago
+  transfer: 12.34 GiB received, 8.56 GiB sent
+
+$ wg-quick up wg0
+[#] ip link add wg0 type wireguard
+[#] wg setconf wg0 /dev/fd/63
+[#] ip address add 10.10.0.1/24 dev wg0
+[#] ip link set mtu 1420 up dev wg0
+[#] ip route add 10.10.0.0/24 dev wg0
+
+$ ping -c 3 10.10.0.2
+64 bytes from 10.10.0.2: icmp_seq=1 ttl=64 time=15.2 ms
+64 bytes from 10.10.0.2: icmp_seq=2 ttl=64 time=14.8 ms
+64 bytes from 10.10.0.2: icmp_seq=3 ttl=64 time=15.1 ms
+```
+
+---
+
 ## Quick Quiz
 
 Test your understanding with these rapid-fire questions (answers hidden):

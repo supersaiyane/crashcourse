@@ -180,6 +180,35 @@ git push
 
 ---
 
+
+## Terminal Demo
+
+```terminal-demo
+# yq@yaml-processing ~ %
+
+$ yq --version
+yq (https://github.com/mikefarah/yq/) version v4.42.1
+
+$ yq '.metadata.name' deployment.yaml
+api
+
+$ yq '.spec.replicas = 5' deployment.yaml | head -8
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api
+spec:
+  replicas: 5
+
+$ yq eval-all 'select(.kind == "Service")' manifests.yaml | yq '.metadata.name'
+api
+web
+
+$ yq -i '.spec.template.spec.containers[0].image = "myregistry/api:v2.1.0"' deployment.yaml
+```
+
+---
+
 ## Common pitfalls
 - **Wrong yq.** Two tools share the name. The jq-style syntax here is **Mike Farah's Go yq**.
   `yq --version`; if `.foo` syntax errors, you likely have the Python wrapper (which uses jq via

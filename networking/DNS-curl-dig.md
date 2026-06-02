@@ -217,6 +217,35 @@ curl -v --resolve api.example.com:443:<new-ip> https://api.example.com/health  #
 
 ---
 
+
+## Terminal Demo
+
+```terminal-demo
+# dns@troubleshooting ~ %
+
+$ dig example.com +short
+93.184.216.34
+
+$ dig example.com MX +short
+10 mail.example.com.
+
+$ dig @8.8.8.8 api.internal.example.com +trace | tail -5
+api.internal.example.com. 300 IN A 10.0.1.42
+
+$ curl -sv https://api.example.com/healthz 2>&1 | grep -E "< HTTP|Connected|TLS"
+* Connected to api.example.com (52.66.123.45) port 443
+* TLS 1.3 connection using TLS_AES_256_GCM_SHA384
+< HTTP/2 200
+
+$ curl -s https://api.example.com/api/v1/status | jq
+{"status":"healthy","version":"v2.1.0","uptime":"90d"}
+
+$ dig +short TXT _dmarc.example.com
+"v=DMARC1; p=reject; rua=mailto:dmarc@example.com"
+```
+
+---
+
 ## Common pitfalls
 - **Assuming DNS propagated instantly.** TTL caching means old answers linger. Check the
   authoritative server with `dig @ns` and remember `dig` ignores `/etc/hosts` (use `getent`).

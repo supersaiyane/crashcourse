@@ -588,6 +588,35 @@ http {
 
 ---
 
+
+## Terminal Demo
+
+```terminal-demo
+# nginx@production ~ %
+
+$ nginx -v
+nginx version: nginx/1.25.4
+
+$ nginx -t
+nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
+nginx: configuration file /etc/nginx/nginx.conf test is successful
+
+$ curl -s localhost/nginx_status
+Active connections: 234
+server accepts handled requests
+ 4567890 4567890 12345678
+Reading: 12 Writing: 45 Waiting: 177
+
+$ nginx -s reload
+signal process started
+
+$ tail -5 /var/log/nginx/access.log
+10.0.1.42 - - [02/Jun/2026:10:15:32 +0000] "GET /api/v1/users HTTP/2.0" 200 1234 0.012
+10.0.1.42 - - [02/Jun/2026:10:15:33 +0000] "POST /api/v1/orders HTTP/2.0" 201 567 0.045
+```
+
+---
+
 ## Common pitfalls
 
 - **Forgetting `proxy_set_header Host $host`** — your backend receives Nginx's hostname or the upstream name instead of the original `Host` header. Auth systems and virtual hosts break silently.

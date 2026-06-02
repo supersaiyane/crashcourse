@@ -695,6 +695,34 @@ The admin API at `/stats/prometheus` exposes all metrics. Key ones: `upstream_rq
 
 
 
+
+## Terminal Demo
+
+```terminal-demo
+# envoy@proxy ~ %
+
+$ envoy --version
+envoy version: 1.29.2
+
+$ curl -s localhost:9901/server_info | jq '{version,state,uptime_current_epoch}'
+{"version":"1.29.2","state":"LIVE","uptime_current_epoch":"7776000s"}
+
+$ curl -s localhost:9901/clusters | head -10
+api::default_priority::max_connections::1024
+api::default_priority::max_retries::3
+api::172.20.10.1:8080::cx_active::45
+api::172.20.10.1:8080::rq_active::12
+api::172.20.10.1:8080::health_flags::healthy
+
+$ curl -s localhost:9901/stats | grep -E "upstream_cx_total|upstream_rq_2xx" | head -4
+cluster.api.upstream_cx_total: 4567890
+cluster.api.upstream_rq_2xx: 4500000
+cluster.web.upstream_cx_total: 2345678
+cluster.web.upstream_rq_2xx: 2340000
+```
+
+---
+
 ## Quick Quiz
 
 Test your understanding with these rapid-fire questions (answers hidden):

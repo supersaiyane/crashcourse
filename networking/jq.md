@@ -208,6 +208,31 @@ kubectl get pods -A -o json | jq -r '
 
 ---
 
+
+## Terminal Demo
+
+```terminal-demo
+# jq@json-processing ~ %
+
+$ echo '{"name":"gurpreet","role":"sre"}' | jq '.name'
+"gurpreet"
+
+$ curl -s api.example.com/users | jq '.[0] | {name,email,role}'
+{"name":"Gurpreet Singh","email":"gurpreet@example.com","role":"admin"}
+
+$ cat orders.json | jq '[.[] | select(.status=="completed")] | length'
+2345
+
+$ cat orders.json | jq 'group_by(.status) | map({status: .[0].status, count: length})'
+[{"status":"completed","count":2345},{"status":"pending","count":456},{"status":"cancelled","count":89}]
+
+$ kubectl get pods -o json | jq '.items[] | {name:.metadata.name, status:.status.phase, restarts:.status.containerStatuses[0].restartCount}'
+{"name":"api-x2k9n","status":"Running","restarts":0}
+{"name":"web-m3p2q","status":"Running","restarts":0}
+```
+
+---
+
 ## Common pitfalls
 - **Forgetting `-r`.** Without it, strings come out with quotes (`"api"`), which breaks shell
   variables and loops. Use `-r` whenever feeding jq output into Bash.
