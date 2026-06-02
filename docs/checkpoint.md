@@ -57,6 +57,9 @@
   - Inline Highlights (Hypothes.is): DONE — embedded via script tag
   - Comments (Giscus): DONE — GitHub Discussions per course. Giscus app installed.
 - Wave 2 fully complete — all 5 features at 100%
+- How to Use page: docs/how-to-use.md (route: #/how-to-use)
+- Private repo support: entire repo deployed to Pages, relative MD_BASE, root redirect
+- README: features section added between "Why this exists" and "Index"
 - PWA fixes: SW v2 bypasses external origins (fixes refresh 404), cache bust v3
 - Wave 3 (CLI playground, project walkthroughs) not started
 - TODO.txt has 48 project walkthroughs (33 + 15 industry case studies)
