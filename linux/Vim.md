@@ -541,6 +541,37 @@ This entire workflow — two substitutions, one macro, one ex-global — takes u
 
 ---
 
+
+## Terminal Demo
+
+```terminal-demo
+# vim@editing ~ %
+
+$ vim --version | head -2
+VIM - Vi IMproved 9.1
+Compiled by Ubuntu
+
+$ cat ~/.vimrc | head -8
+set number relativenumber
+set tabstop=4 shiftwidth=4 expandtab
+set ignorecase smartcase
+set hlsearch incsearch
+set clipboard=unnamedplus
+nnoremap <leader>f :Files<CR>
+nnoremap <leader>g :Rg<CR>
+
+$ echo "Common Vim Workflow"
+:e file.py     Open file
+/pattern       Search forward
+ciw            Change inner word
+dd             Delete line
+p              Paste below
+u              Undo
+:wq            Save and quit
+```
+
+---
+
 ## Common pitfalls
 
 - **Stuck in Insert mode.** If keystrokes produce characters instead of moving the cursor, press `Esc`. Press it twice if needed.

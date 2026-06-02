@@ -674,6 +674,43 @@ Best practices that go beyond documentation: lessons learned from production inc
 
 
 
+
+## Terminal Demo
+
+```terminal-demo
+# sre@incident ~ %
+
+$ echo "Step 1: Check system load"
+$ uptime
+ 10:15:32 up 90 days, load average: 8.45, 6.23, 3.12
+
+$ echo "Step 2: Identify CPU hogs"
+$ ps aux --sort=-%cpu | head -4
+USER     PID  %CPU %MEM COMMAND
+app      1234 89.2  3.2 node /app/api/server.js
+postgres 5678 12.1  5.6 postgres: autovacuum worker
+
+$ echo "Step 3: Check memory"
+$ free -h
+              total   used   free   available
+Mem:          15Gi    14.2Gi 200Mi  800Mi
+
+$ echo "Step 4: Check disk I/O"
+$ iostat -xz 1 1 | tail -3
+Device  r/s     w/s   rkB/s   wkB/s  %util
+xvda    12.34   45.67 234.5   890.1  78.9
+xvdf    2.34    123.4  45.6  4567.8  92.3
+
+$ echo "Step 5: Check for OOM kills"
+$ dmesg | grep -i "oom\|killed" | tail -2
+[4567890.123] Out of memory: Killed process 9012 (java)
+[4567891.456] oom_reaper: reaped process 9012 (java)
+
+$ echo "Root cause: Java process OOM -> memory pressure -> API latency spike"
+```
+
+---
+
 ## Quick Quiz
 
 Test your understanding with these rapid-fire questions (answers hidden):

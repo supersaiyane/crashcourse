@@ -420,6 +420,32 @@ Each of these is a single awk invocation. No temp files, no intermediate scripts
 
 ---
 
+
+## Terminal Demo
+
+```terminal-demo
+# awk@text-processing ~ %
+
+$ echo "Field extraction"
+$ ps aux | awk '{print $1, $2, $11}' | head -5
+USER     PID  COMMAND
+root     1    /sbin/init
+app      1234 node
+postgres 5678 postgres
+
+$ echo "Sum a column"
+$ awk '{sum+=$NF} END {printf "Total: %.2f\n", sum}' revenue.csv
+Total: 1234567.89
+
+$ echo "Log analysis — top 5 slowest endpoints"
+$ awk '/latency=/ {match($0,/path=([^ ]+)/,p); match($0,/latency=([0-9]+)ms/,l); print l[1], p[1]}' api.log | sort -rn | head -5
+890 /api/v1/reports
+456 /api/v1/export
+234 /api/v1/analytics
+```
+
+---
+
 ## Common pitfalls
 
 - **Quoting shell variables inside awk.** Never write `awk "{ print $1 }"` — the shell expands `$1` before awk sees it. Use single quotes around awk programs, and pass shell variables with `-v var="$shellvar"`.

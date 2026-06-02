@@ -239,6 +239,51 @@ That sequence resolves a large fraction of real server incidents.
 
 ---
 
+
+## Terminal Demo
+
+```terminal-demo
+# sre@production ~ %
+
+$ uname -a
+Linux prod-web-01 5.15.0-1049-aws x86_64 GNU/Linux
+
+$ uptime
+ 10:15:32 up 90 days, 5:23, 2 users, load average: 1.23, 0.98, 0.87
+
+$ free -h
+              total   used   free   shared  buff/cache  available
+Mem:          15Gi    8.2Gi  1.3Gi  256Mi   5.8Gi       6.5Gi
+Swap:         0B      0B     0B
+
+$ df -h | grep -v tmpfs
+Filesystem      Size  Used Avail Use% Mounted on
+/dev/xvda1       50G   32G   18G  64% /
+/dev/xvdf       200G  145G   55G  73% /data
+
+$ top -bn1 | head -8
+top - 10:15:32 up 90 days, load average: 1.23, 0.98, 0.87
+Tasks: 156 total, 2 running, 154 sleeping
+%Cpu(s): 12.3 us, 3.4 sy, 0.0 ni, 83.2 id, 0.8 wa
+MiB Mem: 15872.0 total, 1331.2 free, 8396.8 used, 6144.0 buff/cache
+  PID USER   PR  NI    VIRT    RES    SHR S  %CPU %MEM    COMMAND
+ 1234 app    20   0  2.5g   512m   45m S  45.2  3.2    node api
+ 5678 postgres 20  0  1.8g   890m  120m S  12.1  5.6    postgres
+
+$ ss -tlnp | head -5
+State  Recv-Q Send-Q Local Address:Port  Peer Address:Port Process
+LISTEN 0      128    0.0.0.0:8080        0.0.0.0:*        users:(("node",pid=1234))
+LISTEN 0      128    0.0.0.0:22          0.0.0.0:*        users:(("sshd",pid=890))
+LISTEN 0      244    0.0.0.0:5432        0.0.0.0:*        users:(("postgres",pid=5678))
+
+$ journalctl -u api --since "1 hour ago" --no-pager | tail -3
+Jun 02 10:15:32 prod-web-01 api[1234]: INFO request path=/healthz status=200
+Jun 02 10:15:33 prod-web-01 api[1234]: INFO request path=/api/v1/orders status=201
+Jun 02 10:15:35 prod-web-01 api[1234]: WARN high latency path=/api/v1/reports
+```
+
+---
+
 ## Common pitfalls
 - **`rm -rf` accidents.** No undo. Triple-check paths; beware unset variables (`rm -rf "$DIR/"`
   with empty `$DIR` = disaster). Consider `ls` first to confirm what matches.

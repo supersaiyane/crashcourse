@@ -301,6 +301,35 @@ exit 1
 
 ---
 
+
+## Terminal Demo
+
+```terminal-demo
+# bash@scripting ~ %
+
+$ echo "Hello from Bash ${BASH_VERSION}"
+Hello from Bash 5.2.21(1)-release
+
+$ for svc in api web worker; do echo "Checking $svc..."; curl -sf "localhost:8080/$svc/health" && echo "OK" || echo "FAIL"; done
+Checking api... OK
+Checking web... OK
+Checking worker... FAIL
+
+$ find /var/log -name "*.log" -mmin -60 -size +10M | sort
+/var/log/api/access.log
+/var/log/api/error.log
+
+$ ps aux --sort=-%mem | head -5
+USER     PID  %CPU %MEM    VSZ   RSS COMMAND
+postgres 5678 12.1  5.6  1843m 890m postgres: writer process
+app      1234 45.2  3.2  2560m 512m node /app/api/server.js
+
+$ awk '{sum+=$10} END {print "Total bytes:", sum}' /var/log/api/access.log
+Total bytes: 45678901234
+```
+
+---
+
 ## Common pitfalls
 - **Unquoted variables.** `$var` breaks on spaces/empties. Always `"$var"` and `"${arr[@]}"`.
   This causes the majority of subtle script bugs.

@@ -592,6 +592,38 @@ systemctl list-timers goapi-log-export.timer
 
 ---
 
+
+## Terminal Demo
+
+```terminal-demo
+# systemctl@production ~ %
+
+$ systemctl list-units --type=service --state=running | head -6
+UNIT                   LOAD   ACTIVE SUB     DESCRIPTION
+api.service            loaded active running API Server
+nginx.service          loaded active running nginx web server
+postgresql@15.service  loaded active running PostgreSQL
+redis-server.service   loaded active running Redis Server
+
+$ systemctl status api
+● api.service - API Server
+     Loaded: loaded (/etc/systemd/system/api.service; enabled)
+     Active: active (running) since Mon 2026-06-02 08:00:00 UTC; 2h ago
+   Main PID: 1234 (node)
+     Memory: 512.0M
+
+$ journalctl -u api --since "10 min ago" --no-pager | tail -3
+Jun 02 10:15:32 prod-web-01 api[1234]: INFO path=/healthz status=200
+Jun 02 10:15:33 prod-web-01 api[1234]: INFO path=/api/v1/orders status=201
+Jun 02 10:15:35 prod-web-01 api[1234]: WARN high latency path=/api/v1/reports
+
+$ systemctl restart api && systemctl status api --no-pager | head -3
+● api.service - API Server
+     Active: active (running) since Mon 2026-06-02 10:16:00 UTC; 1s ago
+```
+
+---
+
 ## Common pitfalls
 
 - **Forgetting `daemon-reload` after editing a unit file.** systemd caches unit files in memory. If you edit a file and don't run `systemctl daemon-reload`, systemd runs the old version. Do this every time.

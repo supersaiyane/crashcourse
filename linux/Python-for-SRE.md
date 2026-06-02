@@ -808,6 +808,35 @@ Best practices that go beyond documentation: lessons learned from production inc
 
 
 
+
+## Terminal Demo
+
+```terminal-demo
+# python@sre ~ %
+
+$ python3 --version
+Python 3.11.8
+
+$ python3 scripts/health_check.py --services api,web,worker
+Checking api...      ✓ 200 OK (12ms)
+Checking web...      ✓ 200 OK (8ms)
+Checking worker...   ✗ Connection refused
+
+$ python3 scripts/log_analyzer.py /var/log/api/access.log --top 5
+Top 5 by latency (last 1h):
+  /api/v1/reports   p99=890ms  count=234
+  /api/v1/export    p99=456ms  count=567
+  /api/v1/search    p99=234ms  count=1234
+
+$ pytest tests/ -v --tb=short
+tests/test_health.py::test_service_up PASSED
+tests/test_health.py::test_service_down PASSED
+tests/test_alerts.py::test_slack_notify PASSED
+3 passed in 0.45s
+```
+
+---
+
 ## Quick Quiz
 
 Test your understanding with these rapid-fire questions (answers hidden):

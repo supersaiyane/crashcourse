@@ -378,6 +378,40 @@ done
 
 ---
 
+
+## Terminal Demo
+
+```terminal-demo
+# sed@stream-editing ~ %
+
+$ echo "In-place replacement"
+$ sed -i 's/DEBUG/INFO/g' /etc/app/config.yml
+$ grep LOG_LEVEL /etc/app/config.yml
+LOG_LEVEL: INFO
+
+$ echo "Delete comments and blank lines"
+$ sed '/^#/d; /^$/d' config.yml | head -5
+server:
+  port: 8080
+  host: 0.0.0.0
+database:
+  host: prod-db.internal
+
+$ echo "Multiple operations"
+$ sed -e 's/localhost/prod-db.internal/' -e 's/5432/5433/' -e '/password/d' db.conf
+host=prod-db.internal
+port=5433
+database=production
+
+$ echo "Backup before editing"
+$ sed -i.bak 's/v2.0.0/v2.1.0/g' deployment.yaml
+$ diff deployment.yaml.bak deployment.yaml
+< image: myregistry/api:v2.0.0
+> image: myregistry/api:v2.1.0
+```
+
+---
+
 ## Common pitfalls
 
 - **macOS vs GNU sed and `-i`** — BSD sed (macOS) requires `-i ''` for in-place editing with no backup. GNU sed takes `-i` alone. The cross-platform safe form is `sed -i '' 's/x/y/' file` on Mac and `sed -i 's/x/y/' file` on Linux. If you write scripts that run on both, detect the platform or use `perl -pi -e 's/x/y/' file` — perl's in-place flag behaves identically on both.

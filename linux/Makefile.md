@@ -533,6 +533,32 @@ Best practices that go beyond documentation: lessons learned from production inc
 
 
 
+
+## Terminal Demo
+
+```terminal-demo
+# make@project ~ %
+
+$ make --version | head -1
+GNU Make 4.3
+
+$ make build
+docker build -t myregistry/api:v2.1.0 .
+[+] Building 12.3s (10/10) FINISHED
+ => naming to myregistry/api:v2.1.0
+
+$ make test
+go test ./... -cover -race
+ok  pkg/handler  0.234s  coverage: 87.3%
+ok  pkg/service  0.123s  coverage: 92.1%
+
+$ make deploy
+kubectl set image deployment/api api=myregistry/api:v2.1.0 -n production
+deployment.apps/api image updated
+```
+
+---
+
 ## Quick Quiz
 
 Test your understanding with these rapid-fire questions (answers hidden):

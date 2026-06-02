@@ -860,6 +860,31 @@ Best practices that go beyond documentation: lessons learned from production inc
 
 
 
+
+## Terminal Demo
+
+```terminal-demo
+# go@tooling ~ %
+
+$ go version
+go version go1.22.2 linux/amd64
+
+$ go build -o healthcheck ./cmd/healthcheck
+$ ./healthcheck --target=api --port=8081
+Listening on :8081
+Health check for 'api' service
+
+$ go test ./... -cover
+ok  healthcheck/pkg/checker  0.023s  coverage: 87.3%
+ok  healthcheck/pkg/notify   0.012s  coverage: 92.1%
+
+$ CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o bin/tool ./cmd/tool
+$ ls -lh bin/tool
+-rwxr-xr-x 1 sre sre 6.2M Jun 2 10:15 bin/tool
+```
+
+---
+
 ## Quick Quiz
 
 Test your understanding with these rapid-fire questions (answers hidden):

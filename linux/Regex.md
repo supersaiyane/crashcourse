@@ -568,6 +568,28 @@ Best practices that go beyond documentation: lessons learned from production inc
 
 
 
+
+## Terminal Demo
+
+```terminal-demo
+# regex@pattern-matching ~ %
+
+$ echo "Match IP addresses"
+$ grep -oE '([0-9]{1,3}\.){3}[0-9]{1,3}' /var/log/auth.log | sort | uniq -c | sort -rn | head -3
+    456 10.0.1.42
+    234 203.0.113.50
+     89 198.51.100.12
+
+$ echo "Extract JSON values from logs"
+$ grep -oP '"status":\s*\K[0-9]+' api.log | sort | uniq -c | sort -rn
+  45678 200
+   2345 201
+    234 404
+     12 500
+```
+
+---
+
 ## Quick Quiz
 
 Test your understanding with these rapid-fire questions (answers hidden):

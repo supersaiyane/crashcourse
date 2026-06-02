@@ -217,6 +217,35 @@ simple way to pair on an incident or debugging session (`tmux attach -t shared`)
 
 ---
 
+
+## Terminal Demo
+
+```terminal-demo
+# tmux@multiplexer ~ %
+
+$ tmux -V
+tmux 3.4
+
+$ tmux list-sessions
+production: 3 windows (created Mon Jun 2 08:00:00 2026)
+monitoring: 2 windows (created Mon Jun 2 08:05:00 2026)
+
+$ tmux list-windows -t production
+0: api (1 panes) [active]
+1: logs (2 panes)
+2: db (1 panes)
+
+$ echo "Key Commands"
+C-a c       New window
+C-a n/p     Next/prev window
+C-a |       Split horizontal
+C-a -       Split vertical
+C-a d       Detach session
+C-a z       Toggle pane zoom
+```
+
+---
+
 ## Common pitfalls
 - **Running long jobs without tmux on a server.** A dropped SSH kills them. Start inside
   `tmux new -s job` first — this is the whole reason tmux exists.
