@@ -338,6 +338,53 @@ async function renderReader(catId, filename) {
         block.parentElement.replaceWith(wrap);
         return;
       }
+      if (lang === 'terminal-demo') {
+        const raw = block.textContent;
+        const lines = raw.split('\n');
+        let title = 'terminal';
+        let startIdx = 0;
+        if (lines[0] && lines[0].startsWith('# ')) {
+          title = lines[0].slice(2).trim();
+          startIdx = 1;
+        }
+        let html = `<div class="terminal-demo">`;
+        html += `<div class="terminal-titlebar">`;
+        html += `<span class="terminal-dot red"></span>`;
+        html += `<span class="terminal-dot yellow"></span>`;
+        html += `<span class="terminal-dot green"></span>`;
+        html += `<span class="terminal-title">${esc(title)}</span>`;
+        html += `</div><div class="terminal-body">`;
+        let delay = 0;
+        for (let i = startIdx; i < lines.length; i++) {
+          const line = lines[i];
+          if (line.trim() === '') { html += `<div class="term-line" style="animation-delay:${delay}ms">&nbsp;</div>`; delay += 80; continue; }
+          if (line.startsWith('$ ')) {
+            html += `<div class="term-line" style="animation-delay:${delay}ms"><span class="term-prompt">$  </span><span class="term-cmd">${esc(line.slice(2))}</span></div>`;
+            delay += 200;
+          } else if (line.startsWith('# ')) {
+            html += `<div class="term-line" style="animation-delay:${delay}ms"><span class="term-output">${esc(line)}</span></div>`;
+            delay += 100;
+          } else if (line.includes('success') || line.includes('created') || line.includes('configured') || line.includes('scaled') || line.includes('rolled out') || line.includes('Complete') || line.includes('complete') || line.startsWith('✓')) {
+            html += `<div class="term-line" style="animation-delay:${delay}ms"><span class="term-success">    ${esc(line)}</span></div>`;
+            delay += 150;
+          } else if (line.includes('warning') || line.includes('Warning') || line.startsWith('⚠')) {
+            html += `<div class="term-line" style="animation-delay:${delay}ms"><span class="term-warn">    ${esc(line)}</span></div>`;
+            delay += 150;
+          } else if (line.startsWith('→ ') || line.startsWith('=> ')) {
+            html += `<div class="term-line" style="animation-delay:${delay}ms"><span class="term-highlight">    ${esc(line)}</span></div>`;
+            delay += 150;
+          } else {
+            html += `<div class="term-line" style="animation-delay:${delay}ms"><span class="term-output">    ${esc(line)}</span></div>`;
+            delay += 100;
+          }
+        }
+        html += `<div class="term-line" style="animation-delay:${delay}ms"><span class="term-prompt">$  </span><span class="term-cursor"></span></div>`;
+        html += `</div></div>`;
+        const wrap = document.createElement('div');
+        wrap.innerHTML = html;
+        block.parentElement.replaceWith(wrap.firstElementChild);
+        return;
+      }
       block.parentElement.setAttribute('data-lang', lang);
       if (!block.classList.contains('hljs') && window.hljs) {
         window.hljs.highlightElement(block);

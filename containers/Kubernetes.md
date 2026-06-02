@@ -264,6 +264,57 @@ kubectl uncordon <node>    # allow scheduling again
 
 ---
 
+
+## Terminal Demo
+
+```terminal-demo
+# kubectl@production ~ %
+
+$ kubectl get namespaces
+NAME              STATUS   AGE
+default           Active   45d
+kube-system       Active   45d
+production        Active   30d
+monitoring        Active   28d
+
+$ kubectl get pods -n production
+NAME                        READY   STATUS    RESTARTS   AGE
+api-7d4b8c6f5-x2k9n        1/1     Running   0          3d
+api-7d4b8c6f5-p8m3w        1/1     Running   0          3d
+web-5f8b9c4d7-m3p2q        1/1     Running   0          5d
+web-5f8b9c4d7-k7j4r        1/1     Running   0          5d
+worker-6c9a8b3d2-n5v1x     1/1     Running   0          2d
+
+$ kubectl scale deployment api -n production --replicas=5
+deployment.apps/api scaled
+
+$ kubectl rollout status deployment/api -n production
+Waiting for deployment "api" rollout to finish: 3 of 5 updated replicas are available...
+Waiting for deployment "api" rollout to finish: 4 of 5 updated replicas are available...
+deployment "api" successfully rolled out
+
+$ kubectl get pods -n production -l app=api
+NAME                        READY   STATUS    RESTARTS   AGE
+api-7d4b8c6f5-x2k9n        1/1     Running   0          3d
+api-7d4b8c6f5-p8m3w        1/1     Running   0          3d
+api-7d4b8c6f5-a9c2d        1/1     Running   0          12s
+api-7d4b8c6f5-f4h7k        1/1     Running   0          12s
+api-7d4b8c6f5-j1n8m        1/1     Running   0          11s
+
+$ kubectl set image deployment/api api=myregistry/api:v2.1.0 -n production
+deployment.apps/api image updated
+
+$ kubectl rollout status deployment/api -n production
+Waiting for deployment "api" rollout to finish: 2 out of 5 new replicas have been updated...
+Waiting for deployment "api" rollout to finish: 4 out of 5 new replicas have been updated...
+deployment "api" successfully rolled out
+
+$ kubectl describe deployment api -n production | grep Image
+    Image:        myregistry/api:v2.1.0
+```
+
+---
+
 ## Common pitfalls
 - **Creating bare Pods.** They don't self-heal or scale. Always use a Deployment (or
   StatefulSet/DaemonSet/Job as appropriate).
