@@ -1086,9 +1086,16 @@ code, pre { font-family: var(--font-mono); }
   border: 1px solid var(--border);
   border-radius: var(--radius);
   overflow-x: auto;
-  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
-.mermaid-wrap svg { max-width: 100%; height: auto; }
+.mermaid-wrap svg {
+  width: 100%;
+  min-width: 300px;
+  max-width: 100%;
+  height: auto;
+}
 
 /* ══════════════════ TERMINAL DEMO ══════════════════ */
 .terminal-demo {
