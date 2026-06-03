@@ -3,7 +3,7 @@
   &nbsp;&nbsp;
   <a href="https://github.com/supersaiyane/crashcourse/network/members"><img src="https://img.shields.io/github/forks/supersaiyane/crashcourse?style=social&cacheSeconds=3600" alt="Fork on GitHub"/></a>
   &nbsp;&nbsp;
-  <a href="https://github.com/supersaiyane/crashcourse/subscription"><img src="https://img.shields.io/github/subscribers/supersaiyane/crashcourse?style=social&label=Watch&cacheSeconds=3600" alt="Watch on GitHub"/></a>
+  <a href="https://github.com/supersaiyane/crashcourse/watchers"><img src="https://img.shields.io/github/watchers/supersaiyane/crashcourse?style=social&cacheSeconds=3600" alt="Watch on GitHub"/></a>
 </p>
 
 <p align="center">
