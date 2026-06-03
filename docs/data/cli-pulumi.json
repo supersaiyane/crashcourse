@@ -1,0 +1,340 @@
+{
+  "id": "pulumi",
+  "prompt": "pulumi@infra:~/aws-prod$",
+  "welcome": "Welcome to the Pulumi CLI Playground.\nType commands to explore a simulated infrastructure-as-code environment.\nType 'help' for available commands, 'scenario' for guided labs.\n",
+  "scenarios": [
+    {
+      "id": "deploy-infrastructure",
+      "title": "Deploy Infrastructure with Pulumi",
+      "steps": [
+        {
+          "instruction": "Create a new Pulumi project using the AWS TypeScript template.",
+          "expect": "pulumi new aws-typescript",
+          "hint": "Try: pulumi new aws-typescript"
+        },
+        {
+          "instruction": "Preview the infrastructure changes before deploying.",
+          "expect": "pulumi preview",
+          "hint": "Try: pulumi preview"
+        },
+        {
+          "instruction": "Deploy the infrastructure to AWS.",
+          "expect": "pulumi up",
+          "hint": "Try: pulumi up"
+        },
+        {
+          "instruction": "Check the stack outputs to get resource endpoints.",
+          "expect": "pulumi stack output",
+          "hint": "Try: pulumi stack output"
+        },
+        {
+          "instruction": "View all configuration values for this stack.",
+          "expect": "pulumi config ls",
+          "hint": "Try: pulumi config ls"
+        },
+        {
+          "instruction": "Export the current stack state for backup.",
+          "expect": "pulumi stack export",
+          "hint": "Try: pulumi stack export"
+        },
+        {
+          "instruction": "Check which Pulumi plugins are installed.",
+          "expect": "pulumi plugin ls",
+          "hint": "Try: pulumi plugin ls"
+        },
+        {
+          "instruction": "View detailed environment and project info.",
+          "expect": "pulumi about",
+          "hint": "Try: pulumi about"
+        }
+      ]
+    },
+    {
+      "id": "manage-stacks-secrets",
+      "title": "Manage Stacks and Secrets",
+      "steps": [
+        {
+          "instruction": "List all available stacks in this project.",
+          "expect": "pulumi stack ls",
+          "hint": "Try: pulumi stack ls"
+        },
+        {
+          "instruction": "Switch to the staging stack.",
+          "expect": "pulumi stack select staging",
+          "hint": "Try: pulumi stack select staging"
+        },
+        {
+          "instruction": "Set a secret configuration value for the database password.",
+          "expect": "pulumi config set --secret dbPassword S3cur3P@ss!",
+          "hint": "Try: pulumi config set --secret dbPassword S3cur3P@ss!"
+        },
+        {
+          "instruction": "Verify the secret was stored (value should be encrypted).",
+          "expect": "pulumi config get dbPassword",
+          "hint": "Try: pulumi config get dbPassword"
+        },
+        {
+          "instruction": "Refresh the stack state to detect any drift from actual cloud resources.",
+          "expect": "pulumi refresh",
+          "hint": "Try: pulumi refresh"
+        },
+        {
+          "instruction": "Import an existing S3 bucket that was created outside Pulumi.",
+          "expect": "pulumi import aws:s3/bucket:Bucket legacy-data legacy-data-bucket-prod",
+          "hint": "Try: pulumi import aws:s3/bucket:Bucket legacy-data legacy-data-bucket-prod"
+        },
+        {
+          "instruction": "List all stacks again to confirm the current stack.",
+          "expect": "pulumi stack ls",
+          "hint": "Try: pulumi stack ls"
+        }
+      ]
+    }
+  ],
+  "commands": {
+    "help": "Available commands:\n  pulumi new [template]          — Create a new Pulumi project\n  pulumi preview                 — Preview infrastructure changes\n  pulumi up                      — Deploy infrastructure changes\n  pulumi destroy                 — Tear down all resources\n  pulumi stack [subcommand]      — Manage stacks (ls, select, init, rm, output, export, import)\n  pulumi config [subcommand]     — Manage configuration (set, get, ls, set --secret)\n  pulumi refresh                 — Reconcile state with actual cloud resources\n  pulumi import                  — Import existing cloud resources\n  pulumi state delete            — Remove a resource from state\n  pulumi cancel                  — Cancel a running update\n  pulumi whoami                  — Show current identity\n  pulumi version                 — Show CLI version\n  pulumi login                   — Log in to Pulumi backend\n  pulumi logout                  — Log out from backend\n  pulumi plugin ls               — List installed plugins\n  pulumi plugin install          — Install a plugin\n  pulumi about                   — Show environment info\n  pulumi watch                   — Watch for file changes and auto-deploy\n  pulumi logs                    — Show resource logs\n\n  scenario                       — Start a guided lab\n  clear                          — Clear the terminal\n  help                           — Show this help",
+    "pulumi version": "v3.112.0",
+    "pulumi whoami": "supersaiyane\n\nUser: supersaiyane\nOrganizations: supersaiyane, acme-corp\nBackend URL: https://app.pulumi.com/supersaiyane",
+    "pulumi about": "CLI\nVersion:     3.112.0\nGo Version:  go1.22.3\nGo Compiler: gc\n\nPlugins\nNAME     VERSION\naws      6.32.0\nnodejs   unknown\n\nHost\nOS:       darwin\nVersion:  14.4.1\nArch:     arm64\n\nCurrent Stack: aws-prod/dev\n\nDependencies:\n  NAME                 VERSION\n  @pulumi/aws          6.32.0\n  @pulumi/pulumi       3.112.0\n\nPulumi locates its logs in /tmp/pulumi-logs",
+    "pulumi login": "Logged in to pulumi.com as supersaiyane (https://app.pulumi.com/supersaiyane)",
+    "pulumi logout": "Logged out of pulumi.com",
+    "pulumi new aws-typescript": "This command will walk you through creating a new Pulumi project.\n\nEnter a value or leave blank to accept the (default), and press <ENTER>.\nPress ^C at any time to quit.\n\nproject name: (aws-prod)\nproject description: (A minimal AWS TypeScript Pulumi program)\nCreated project 'aws-prod'\n\nstack name: (dev)\nCreated stack 'dev'\n\naws:region: The AWS region to deploy into: (ap-south-1)\nSaved config\n\nInstalling dependencies...\n\nadded 143 packages in 12s\n\nFinished installing dependencies\n\nYour new project is ready to go!\n\nTo perform an initial deployment, run `pulumi up`",
+    "pulumi new aws-python": "This command will walk you through creating a new Pulumi project.\n\nEnter a value or leave blank to accept the (default), and press <ENTER>.\nPress ^C at any time to quit.\n\nproject name: (aws-prod)\nproject description: (A minimal AWS Python Pulumi program)\nCreated project 'aws-prod'\n\nstack name: (dev)\nCreated stack 'dev'\n\naws:region: The AWS region to deploy into: (ap-south-1)\nSaved config\n\nCreating virtual environment...\nFinished creating virtual environment\nInstalling dependencies...\nFinished installing dependencies\n\nYour new project is ready to go!",
+    "pulumi preview": "Previewing update (dev):\n\n     Type                        Name                Plan\n +   pulumi:pulumi:Stack         aws-prod-dev        create\n +   ├─ aws:ec2:Vpc              prod-vpc            create\n +   │  ├─ aws:ec2:Subnet        prod-subnet-a       create\n +   │  ├─ aws:ec2:Subnet        prod-subnet-b       create\n +   │  └─ aws:ec2:InternetGateway prod-igw          create\n +   ├─ aws:s3:Bucket            app-assets          create\n +   ├─ aws:rds:Instance         prod-db             create\n +   ├─ aws:ec2:SecurityGroup    web-sg              create\n +   └─ aws:ec2:Instance         web-server          create\n\nResources:\n    + 9 to create\n\nDo you want to perform this update?  [Use arrows to move, type to filter]\n  yes\n> no\n  details",
+    "pulumi up": "Previewing update (dev):\n\n     Type                        Name                Plan\n +   pulumi:pulumi:Stack         aws-prod-dev        create\n +   ├─ aws:ec2:Vpc              prod-vpc            create\n +   │  ├─ aws:ec2:Subnet        prod-subnet-a       create\n +   │  ├─ aws:ec2:Subnet        prod-subnet-b       create\n +   │  └─ aws:ec2:InternetGateway prod-igw          create\n +   ├─ aws:s3:Bucket            app-assets          create\n +   ├─ aws:rds:Instance         prod-db             create\n +   ├─ aws:ec2:SecurityGroup    web-sg              create\n +   └─ aws:ec2:Instance         web-server          create\n\nDo you want to perform this update? yes\nUpdating (dev):\n\n     Type                        Name                Status\n +   pulumi:pulumi:Stack         aws-prod-dev        created (45s)\n +   ├─ aws:ec2:Vpc              prod-vpc            created (2s)\n +   │  ├─ aws:ec2:Subnet        prod-subnet-a       created (1s)\n +   │  ├─ aws:ec2:Subnet        prod-subnet-b       created (1s)\n +   │  └─ aws:ec2:InternetGateway prod-igw          created (1s)\n +   ├─ aws:s3:Bucket            app-assets          created (3s)\n +   ├─ aws:ec2:SecurityGroup    web-sg              created (2s)\n +   ├─ aws:ec2:Instance         web-server          created (32s)\n +   └─ aws:rds:Instance         prod-db             created (185s)\n\nOutputs:\n    bucketName : \"app-assets-a1b2c3d\"\n    dbEndpoint : \"prod-db.c9aksdjf.ap-south-1.rds.amazonaws.com:5432\"\n    publicIp   : \"13.232.45.67\"\n    vpcId      : \"vpc-0a1b2c3d4e5f67890\"\n\nResources:\n    + 9 created\n\nDuration: 3m28s",
+    "pulumi up --yes": "Updating (dev):\n\n     Type                        Name                Status\n +   pulumi:pulumi:Stack         aws-prod-dev        created (45s)\n +   ├─ aws:ec2:Vpc              prod-vpc            created (2s)\n +   │  ├─ aws:ec2:Subnet        prod-subnet-a       created (1s)\n +   │  ├─ aws:ec2:Subnet        prod-subnet-b       created (1s)\n +   │  └─ aws:ec2:InternetGateway prod-igw          created (1s)\n +   ├─ aws:s3:Bucket            app-assets          created (3s)\n +   ├─ aws:ec2:SecurityGroup    web-sg              created (2s)\n +   ├─ aws:ec2:Instance         web-server          created (32s)\n +   └─ aws:rds:Instance         prod-db             created (185s)\n\nOutputs:\n    bucketName : \"app-assets-a1b2c3d\"\n    dbEndpoint : \"prod-db.c9aksdjf.ap-south-1.rds.amazonaws.com:5432\"\n    publicIp   : \"13.232.45.67\"\n    vpcId      : \"vpc-0a1b2c3d4e5f67890\"\n\nResources:\n    + 9 created\n\nDuration: 3m28s",
+    "pulumi destroy": "Previewing destroy (dev):\n\n     Type                        Name                Plan\n -   pulumi:pulumi:Stack         aws-prod-dev        delete\n -   ├─ aws:rds:Instance         prod-db             delete\n -   ├─ aws:ec2:Instance         web-server          delete\n -   ├─ aws:ec2:SecurityGroup    web-sg              delete\n -   ├─ aws:s3:Bucket            app-assets          delete\n -   ├─ aws:ec2:Vpc              prod-vpc            delete\n -   │  ├─ aws:ec2:Subnet        prod-subnet-a       delete\n -   │  ├─ aws:ec2:Subnet        prod-subnet-b       delete\n -   │  └─ aws:ec2:InternetGateway prod-igw          delete\n\nDo you want to perform this destroy? yes\nDestroying (dev):\n\n     Type                        Name                Status\n -   pulumi:pulumi:Stack         aws-prod-dev        deleted\n -   ├─ aws:ec2:Instance         web-server          deleted (30s)\n -   ├─ aws:rds:Instance         prod-db             deleted (65s)\n -   ├─ aws:ec2:SecurityGroup    web-sg              deleted (2s)\n -   ├─ aws:s3:Bucket            app-assets          deleted (1s)\n -   ├─ aws:ec2:Vpc              prod-vpc            deleted (1s)\n -   │  ├─ aws:ec2:Subnet        prod-subnet-a       deleted (1s)\n -   │  ├─ aws:ec2:Subnet        prod-subnet-b       deleted (1s)\n -   │  └─ aws:ec2:InternetGateway prod-igw          deleted (1s)\n\nOutputs:\n  - bucketName: \"app-assets-a1b2c3d\"\n  - dbEndpoint: \"prod-db.c9aksdjf.ap-south-1.rds.amazonaws.com:5432\"\n  - publicIp  : \"13.232.45.67\"\n  - vpcId     : \"vpc-0a1b2c3d4e5f67890\"\n\nResources:\n    - 9 deleted\n\nDuration: 1m42s\n\nThe resources in the stack have been deleted, but the history and configuration\nassociated with the stack are still maintained. If you want to remove the stack\ncompletely, run `pulumi stack rm dev`.",
+    "pulumi destroy --yes": "Destroying (dev):\n\n     Type                        Name                Status\n -   pulumi:pulumi:Stack         aws-prod-dev        deleted\n -   ├─ aws:ec2:Instance         web-server          deleted (30s)\n -   ├─ aws:rds:Instance         prod-db             deleted (65s)\n -   ├─ aws:ec2:SecurityGroup    web-sg              deleted (2s)\n -   ├─ aws:s3:Bucket            app-assets          deleted (1s)\n -   ├─ aws:ec2:Vpc              prod-vpc            deleted (1s)\n -   │  ├─ aws:ec2:Subnet        prod-subnet-a       deleted (1s)\n -   │  ├─ aws:ec2:Subnet        prod-subnet-b       deleted (1s)\n -   │  └─ aws:ec2:InternetGateway prod-igw          deleted (1s)\n\nResources:\n    - 9 deleted\n\nDuration: 1m42s",
+    "pulumi stack ls": "NAME      LAST UPDATE     RESOURCE COUNT  URL\ndev*      2 minutes ago   9               https://app.pulumi.com/supersaiyane/aws-prod/dev\nstaging   1 hour ago      9               https://app.pulumi.com/supersaiyane/aws-prod/staging\nprod      3 days ago      14              https://app.pulumi.com/supersaiyane/aws-prod/prod",
+    "pulumi stack select dev": "Current stack is now dev",
+    "pulumi stack select staging": "Current stack is now staging",
+    "pulumi stack select prod": "Current stack is now prod",
+    "pulumi stack init testing": "Created stack 'testing'",
+    "pulumi stack rm testing": "This will permanently remove the 'testing' stack!\nPlease confirm that this is what you'd like to do by typing `testing`: testing\nStack 'testing' has been removed!",
+    "pulumi stack output": "Current stack outputs (4):\n    OUTPUT       VALUE\n    bucketName   app-assets-a1b2c3d\n    dbEndpoint   prod-db.c9aksdjf.ap-south-1.rds.amazonaws.com:5432\n    publicIp     13.232.45.67\n    vpcId        vpc-0a1b2c3d4e5f67890",
+    "pulumi stack export": "{\n    \"version\": 3,\n    \"deployment\": {\n        \"manifest\": {\n            \"time\": \"2026-06-02T14:30:00.000000000Z\",\n            \"magic\": \"d4a1b2c3e5f6a7b8c9d0e1f2\",\n            \"version\": \"v3.112.0\"\n        },\n        \"secrets_providers\": {\n            \"type\": \"service\",\n            \"state\": {\n                \"url\": \"https://app.pulumi.com\",\n                \"owner\": \"supersaiyane\",\n                \"project\": \"aws-prod\",\n                \"stack\": \"dev\"\n            }\n        },\n        \"resources\": [\n            {\n                \"urn\": \"urn:pulumi:dev::aws-prod::pulumi:pulumi:Stack::aws-prod-dev\",\n                \"custom\": false,\n                \"type\": \"pulumi:pulumi:Stack\"\n            },\n            {\n                \"urn\": \"urn:pulumi:dev::aws-prod::aws:ec2/vpc:Vpc::prod-vpc\",\n                \"custom\": true,\n                \"id\": \"vpc-0a1b2c3d4e5f67890\",\n                \"type\": \"aws:ec2/vpc:Vpc\"\n            },\n            {\n                \"urn\": \"urn:pulumi:dev::aws-prod::aws:s3/bucket:Bucket::app-assets\",\n                \"custom\": true,\n                \"id\": \"app-assets-a1b2c3d\",\n                \"type\": \"aws:s3/bucket:Bucket\"\n            }\n        ]\n    }\n}",
+    "pulumi stack import": "error: usage: pulumi stack import [filename]\n\nPlease provide a file to import from, or pipe state JSON to stdin.",
+    "pulumi config set aws:region ap-south-1": "pulumi:config set aws:region ap-south-1",
+    "pulumi config set instanceType t3.medium": "pulumi:config set instanceType t3.medium",
+    "pulumi config set --secret dbPassword S3cur3P@ss!": "pulumi:config set --secret dbPassword [secret]",
+    "pulumi config set --secret apiKey sk-prod-a1b2c3d4e5f6": "pulumi:config set --secret apiKey [secret]",
+    "pulumi config get dbPassword": "[secret]",
+    "pulumi config get aws:region": "ap-south-1",
+    "pulumi config get instanceType": "t3.medium",
+    "pulumi config ls": "KEY              VALUE\naws:region       ap-south-1\ndbPassword       [secret]\ninstanceType     t3.medium\ndbName           prod_banking\ndbEngine         postgres\nenvironment      production",
+    "pulumi refresh": "Refreshing (dev):\n\n     Type                        Name                Status         Info\n     pulumi:pulumi:Stack         aws-prod-dev\n     ├─ aws:ec2:Vpc              prod-vpc            refreshed\n     │  ├─ aws:ec2:Subnet        prod-subnet-a       refreshed\n     │  ├─ aws:ec2:Subnet        prod-subnet-b       refreshed\n     │  └─ aws:ec2:InternetGateway prod-igw          refreshed\n ~   ├─ aws:ec2:SecurityGroup    web-sg              updated        [diff: ~ingress]\n     ├─ aws:s3:Bucket            app-assets          refreshed\n     ├─ aws:rds:Instance         prod-db             refreshed\n     └─ aws:ec2:Instance         web-server          refreshed\n\nResources:\n    ~ 1 updated\n    8 unchanged\n\nDuration: 8s",
+    "pulumi import aws:s3/bucket:Bucket legacy-data legacy-data-bucket-prod": "Importing (dev):\n\n     Type                        Name                Status\n =   pulumi:pulumi:Stack         aws-prod-dev\n =   └─ aws:s3:Bucket            legacy-data         imported\n\nResources:\n    = 1 imported\n    9 unchanged\n\nDuration: 4s\n\nPlease copy the following code into your Pulumi application. Not doing so\nwill cause Pulumi to report that an update will happen on the next update command.\n\n    const legacyData = new aws.s3.Bucket(\"legacy-data\", {\n        bucket: \"legacy-data-bucket-prod\",\n        acl: \"private\",\n        tags: {\n            Environment: \"production\",\n            ManagedBy: \"pulumi\",\n        },\n    });",
+    "pulumi state delete urn:pulumi:dev::aws-prod::aws:s3/bucket:Bucket::orphaned-bucket": "warning: This command will edit your stack's state directly. Confirm? yes\nResource deleted from state successfully.",
+    "pulumi cancel": "The current update for 'dev' has been cancelled.",
+    "pulumi watch": "Watching (dev):\n\nWaiting for changes...\n\n[14:35:22] Change detected in index.ts\nUpdating (dev):\n\n     Type                        Name                Status\n     pulumi:pulumi:Stack         aws-prod-dev\n ~   └─ aws:ec2:SecurityGroup    web-sg              updated (2s)\n\nResources:\n    ~ 1 updated\n    8 unchanged\n\nDuration: 5s\n\nWaiting for changes...",
+    "pulumi logs": "Collecting logs for stack dev since 2026-06-02T14:00:00.000Z...\n\n 2026-06-02T14:28:32.000Z[     web-server-i0a1b2c] Starting nginx...\n 2026-06-02T14:28:33.000Z[     web-server-i0a1b2c] nginx: [info] listening on 0.0.0.0:80\n 2026-06-02T14:30:15.000Z[     web-server-i0a1b2c] GET /api/health 200 2ms\n 2026-06-02T14:30:45.000Z[     web-server-i0a1b2c] GET /api/accounts 200 45ms\n 2026-06-02T14:31:02.000Z[     web-server-i0a1b2c] POST /api/transfer 201 120ms",
+    "pulumi logs --follow": "Collecting logs for stack dev since 2026-06-02T14:00:00.000Z...\n\n 2026-06-02T14:30:15.000Z[     web-server-i0a1b2c] GET /api/health 200 2ms\n 2026-06-02T14:30:45.000Z[     web-server-i0a1b2c] GET /api/accounts 200 45ms\n 2026-06-02T14:31:02.000Z[     web-server-i0a1b2c] POST /api/transfer 201 120ms\n(streaming...)",
+    "pulumi plugin ls": "NAME     KIND      VERSION   SIZE     INSTALLED        LAST USED\naws      resource  6.32.0    287 MB   2 weeks ago      2 minutes ago\nnodejs   language  unknown   0 B      2 weeks ago      2 minutes ago\npython   language  unknown   0 B      3 weeks ago      1 hour ago",
+    "pulumi plugin install resource aws 6.32.0": "Downloading plugin: 287.12 MiB / 287.12 MiB [=========================] 100.00%\nMoving plugin into place...\nInstalled plugin aws v6.32.0",
+    "pulumi config set dbName prod_banking": "pulumi:config set dbName prod_banking",
+    "pulumi config set dbEngine postgres": "pulumi:config set dbEngine postgres",
+    "pulumi config set environment production": "pulumi:config set environment production",
+    "pulumi stack output bucketName": "app-assets-a1b2c3d",
+    "pulumi stack output dbEndpoint": "prod-db.c9aksdjf.ap-south-1.rds.amazonaws.com:5432",
+    "pulumi stack output publicIp": "13.232.45.67",
+    "pulumi stack output vpcId": "vpc-0a1b2c3d4e5f67890",
+    "pulumi preview --diff": "Previewing update (dev):\n\n  pulumi:pulumi:Stack: (same)\n    [urn=urn:pulumi:dev::aws-prod::pulumi:pulumi:Stack::aws-prod-dev]\n    + aws:ec2/vpc:Vpc: (create)\n        [urn=urn:pulumi:dev::aws-prod::aws:ec2/vpc:Vpc::prod-vpc]\n        cidrBlock          : \"10.0.0.0/16\"\n        enableDnsHostnames : true\n        enableDnsSupport   : true\n        tags               : {\n            Name       : \"prod-vpc\"\n            Environment: \"production\"\n        }\n    + aws:s3/bucket:Bucket: (create)\n        [urn=urn:pulumi:dev::aws-prod::aws:s3/bucket:Bucket::app-assets]\n        acl               : \"private\"\n        versioning        : {\n            enabled: true\n        }\n    + aws:rds/instance:Instance: (create)\n        [urn=urn:pulumi:dev::aws-prod::aws:rds/instance:Instance::prod-db]\n        allocatedStorage  : 50\n        engine            : \"postgres\"\n        engineVersion     : \"15.6\"\n        instanceClass     : \"db.t3.medium\"\n        storageEncrypted  : true\n\nResources:\n    + 9 to create",
+    "pulumi up --refresh": "Refreshing (dev):\n\n     Type                        Name                Status\n     pulumi:pulumi:Stack         aws-prod-dev\n     ├─ aws:ec2:Vpc              prod-vpc            refreshed\n     ├─ aws:s3:Bucket            app-assets          refreshed\n     └─ aws:ec2:Instance         web-server          refreshed\n\nUpdating (dev):\n\n     Type                        Name                Status\n     pulumi:pulumi:Stack         aws-prod-dev\n ~   └─ aws:ec2:SecurityGroup    web-sg              updated (2s)\n\nOutputs:\n    bucketName : \"app-assets-a1b2c3d\"\n    dbEndpoint : \"prod-db.c9aksdjf.ap-south-1.rds.amazonaws.com:5432\"\n    publicIp   : \"13.232.45.67\"\n    vpcId      : \"vpc-0a1b2c3d4e5f67890\"\n\nResources:\n    ~ 1 updated\n    8 unchanged\n\nDuration: 12s",
+    "pulumi up --target urn:pulumi:dev::aws-prod::aws:s3/bucket:Bucket::app-assets": "Updating (dev):\n\n     Type                        Name                Status\n     pulumi:pulumi:Stack         aws-prod-dev\n ~   └─ aws:s3:Bucket            app-assets          updated (2s)\n\nOutputs:\n    bucketName : \"app-assets-a1b2c3d\"\n\nResources:\n    ~ 1 updated\n\nDuration: 5s",
+    "pulumi destroy --target urn:pulumi:dev::aws-prod::aws:ec2/instance:Instance::web-server": "Destroying (dev):\n\n     Type                        Name                Status\n     pulumi:pulumi:Stack         aws-prod-dev\n -   └─ aws:ec2:Instance         web-server          deleted (30s)\n\nResources:\n    - 1 deleted\n    8 unchanged\n\nDuration: 35s",
+    "pulumi stack history": "Version  Date                 Duration  Result     Message\n3        2026-06-02 14:30:00  3m28s     succeeded  update\n2        2026-06-02 12:15:00  2m12s     succeeded  update\n1        2026-06-01 10:00:00  4m05s     succeeded  update",
+    "pulumi config rm dbPassword": "pulumi:config rm dbPassword",
+    "pulumi stack tag set environment production": "Stack tag 'environment' set to 'production'",
+    "pulumi stack tag ls": "NAME          VALUE\nenvironment   production\nteam          platform\nregion        ap-south-1"
+  },
+  "reference": [
+    {
+      "group": "Project & Identity",
+      "commands": [
+        {
+          "cmd": "pulumi new aws-typescript",
+          "desc": "new AWS TypeScript project"
+        },
+        {
+          "cmd": "pulumi new aws-python",
+          "desc": "new AWS Python project"
+        },
+        {
+          "cmd": "pulumi whoami",
+          "desc": "current user/org"
+        },
+        {
+          "cmd": "pulumi version",
+          "desc": "CLI version"
+        },
+        {
+          "cmd": "pulumi login",
+          "desc": "log in to backend"
+        },
+        {
+          "cmd": "pulumi logout",
+          "desc": "log out"
+        },
+        {
+          "cmd": "pulumi about",
+          "desc": "environment info"
+        }
+      ]
+    },
+    {
+      "group": "Deploying",
+      "commands": [
+        {
+          "cmd": "pulumi preview",
+          "desc": "preview changes"
+        },
+        {
+          "cmd": "pulumi preview --diff",
+          "desc": "detailed diff view"
+        },
+        {
+          "cmd": "pulumi up",
+          "desc": "deploy (with prompt)"
+        },
+        {
+          "cmd": "pulumi up --yes",
+          "desc": "deploy (skip prompt)"
+        },
+        {
+          "cmd": "pulumi up --refresh",
+          "desc": "refresh then deploy"
+        },
+        {
+          "cmd": "pulumi watch",
+          "desc": "auto-deploy on change"
+        }
+      ]
+    },
+    {
+      "group": "Destroying",
+      "commands": [
+        {
+          "cmd": "pulumi destroy",
+          "desc": "tear down all resources"
+        },
+        {
+          "cmd": "pulumi destroy --yes",
+          "desc": "destroy (skip prompt)"
+        },
+        {
+          "cmd": "pulumi cancel",
+          "desc": "cancel running update"
+        }
+      ]
+    },
+    {
+      "group": "Stack Management",
+      "commands": [
+        {
+          "cmd": "pulumi stack ls",
+          "desc": "list all stacks"
+        },
+        {
+          "cmd": "pulumi stack select staging",
+          "desc": "switch to stack"
+        },
+        {
+          "cmd": "pulumi stack init testing",
+          "desc": "create new stack"
+        },
+        {
+          "cmd": "pulumi stack rm testing",
+          "desc": "remove a stack"
+        },
+        {
+          "cmd": "pulumi stack output",
+          "desc": "show outputs"
+        },
+        {
+          "cmd": "pulumi stack export",
+          "desc": "export state JSON"
+        },
+        {
+          "cmd": "pulumi stack history",
+          "desc": "update history"
+        }
+      ]
+    },
+    {
+      "group": "Configuration & Secrets",
+      "commands": [
+        {
+          "cmd": "pulumi config set instanceType t3.medium",
+          "desc": "set config value"
+        },
+        {
+          "cmd": "pulumi config set --secret dbPassword S3cur3P@ss!",
+          "desc": "set encrypted secret"
+        },
+        {
+          "cmd": "pulumi config get dbPassword",
+          "desc": "get config value"
+        },
+        {
+          "cmd": "pulumi config ls",
+          "desc": "list all config"
+        },
+        {
+          "cmd": "pulumi config rm dbPassword",
+          "desc": "remove config key"
+        }
+      ]
+    },
+    {
+      "group": "State & Import",
+      "commands": [
+        {
+          "cmd": "pulumi refresh",
+          "desc": "reconcile with cloud"
+        },
+        {
+          "cmd": "pulumi import aws:s3/bucket:Bucket legacy-data legacy-data-bucket-prod",
+          "desc": "import existing resource"
+        },
+        {
+          "cmd": "pulumi state delete urn:pulumi:dev::aws-prod::aws:s3/bucket:Bucket::orphaned-bucket",
+          "desc": "remove from state"
+        }
+      ]
+    },
+    {
+      "group": "Plugins & Logs",
+      "commands": [
+        {
+          "cmd": "pulumi plugin ls",
+          "desc": "list plugins"
+        },
+        {
+          "cmd": "pulumi plugin install resource aws 6.32.0",
+          "desc": "install plugin"
+        },
+        {
+          "cmd": "pulumi logs",
+          "desc": "resource logs"
+        },
+        {
+          "cmd": "pulumi logs --follow",
+          "desc": "stream logs"
+        }
+      ]
+    },
+    {
+      "group": "Scenarios",
+      "commands": [
+        {
+          "cmd": "scenario deploy-infrastructure",
+          "desc": "deploy AWS infra"
+        },
+        {
+          "cmd": "scenario manage-stacks-secrets",
+          "desc": "stacks & secrets"
+        }
+      ]
+    }
+  ]
+}

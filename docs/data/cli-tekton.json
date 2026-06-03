@@ -1,0 +1,323 @@
+{
+  "id": "tekton",
+  "prompt": "tkn@cicd:~$",
+  "welcome": "Welcome to the Tekton CLI Playground.\nType commands to explore a simulated Tekton Pipelines cluster.\nType 'help' for available commands, 'scenario' for guided labs.\n",
+  "scenarios": [
+    {
+      "id": "run-and-debug-pipeline",
+      "title": "Run and Debug a CI Pipeline",
+      "steps": [
+        {
+          "instruction": "List all available pipelines in the cluster to see what's configured.",
+          "expect": "tkn pipeline list",
+          "hint": "Try: tkn pipeline list"
+        },
+        {
+          "instruction": "Start the 'build-and-deploy' pipeline with the git revision parameter.",
+          "expect": "tkn pipeline start build-and-deploy -p git-revision=main",
+          "hint": "Try: tkn pipeline start build-and-deploy -p git-revision=main"
+        },
+        {
+          "instruction": "List recent pipeline runs to find the one you just triggered.",
+          "expect": "tkn pipelinerun list",
+          "hint": "Try: tkn pipelinerun list"
+        },
+        {
+          "instruction": "The run 'build-and-deploy-run-7x9k2' has Failed. Check its logs.",
+          "expect": "tkn pipelinerun logs build-and-deploy-run-7x9k2",
+          "hint": "Try: tkn pipelinerun logs build-and-deploy-run-7x9k2"
+        },
+        {
+          "instruction": "Get more details on the failed run to see which task failed.",
+          "expect": "tkn pipelinerun describe build-and-deploy-run-7x9k2",
+          "hint": "Try: tkn pipelinerun describe build-and-deploy-run-7x9k2"
+        },
+        {
+          "instruction": "The 'run-tests' task failed. Check the task run logs directly.",
+          "expect": "tkn taskrun logs build-and-deploy-run-7x9k2-run-tests-kwm4d",
+          "hint": "Try: tkn taskrun logs build-and-deploy-run-7x9k2-run-tests-kwm4d"
+        },
+        {
+          "instruction": "The tests were flaky. Cancel any in-progress runs and re-run the pipeline.",
+          "expect": "tkn pipeline start build-and-deploy -p git-revision=main --use-param-defaults",
+          "hint": "Try: tkn pipeline start build-and-deploy -p git-revision=main --use-param-defaults"
+        },
+        {
+          "instruction": "Verify the new run is progressing successfully.",
+          "expect": "tkn pipelinerun logs -f --last",
+          "hint": "Try: tkn pipelinerun logs -f --last"
+        }
+      ]
+    },
+    {
+      "id": "create-build-test-deploy",
+      "title": "Create a Build-Test-Deploy Pipeline",
+      "steps": [
+        {
+          "instruction": "Search Tekton Hub for a git-clone task to reuse.",
+          "expect": "tkn hub search git-clone",
+          "hint": "Try: tkn hub search git-clone"
+        },
+        {
+          "instruction": "Install the git-clone task from the hub.",
+          "expect": "tkn hub install task git-clone",
+          "hint": "Try: tkn hub install task git-clone"
+        },
+        {
+          "instruction": "Verify the task was installed by listing all tasks.",
+          "expect": "tkn task list",
+          "hint": "Try: tkn task list"
+        },
+        {
+          "instruction": "Describe the git-clone task to see its parameters and workspaces.",
+          "expect": "tkn task describe git-clone",
+          "hint": "Try: tkn task describe git-clone"
+        },
+        {
+          "instruction": "Now list pipelines to confirm our new pipeline was applied via kubectl.",
+          "expect": "tkn pipeline list",
+          "hint": "Try: tkn pipeline list"
+        },
+        {
+          "instruction": "Check the trigger templates that will start our pipeline on git push.",
+          "expect": "tkn triggertemplate list",
+          "hint": "Try: tkn triggertemplate list"
+        },
+        {
+          "instruction": "Verify the event listener is running and ready to receive webhooks.",
+          "expect": "tkn eventlistener list",
+          "hint": "Try: tkn eventlistener list"
+        },
+        {
+          "instruction": "Start the pipeline manually to test it end-to-end.",
+          "expect": "tkn pipeline start build-test-deploy -p repo-url=https://github.com/org/app.git -p image=registry.io/org/app:latest",
+          "hint": "Try: tkn pipeline start build-test-deploy -p repo-url=https://github.com/org/app.git -p image=registry.io/org/app:latest"
+        }
+      ]
+    }
+  ],
+  "commands": {
+    "help": "Available commands:\n  tkn pipeline [list|describe|start|delete]   \u2014 Manage pipelines\n  tkn pipelinerun [list|describe|logs|delete|cancel]  \u2014 Manage pipeline runs\n  tkn task [list|describe|start|delete]       \u2014 Manage tasks\n  tkn taskrun [list|describe|logs|delete]     \u2014 Manage task runs\n  tkn hub [search|install]                    \u2014 Interact with Tekton Hub\n  tkn clustertask list                        \u2014 List cluster-scoped tasks\n  tkn triggertemplate list                    \u2014 List trigger templates\n  tkn eventlistener list                      \u2014 List event listeners\n  tkn condition list                          \u2014 List conditions\n  tkn resource list                           \u2014 List pipeline resources (deprecated)\n  tkn version                                 \u2014 Show CLI version\n\n  scenario                                    \u2014 Start a guided lab\n  clear                                       \u2014 Clear the terminal\n  help                                        \u2014 Show this help",
+    "tkn version": "Client version: 0.37.0\nPipeline version: v0.56.2\nTriggers version: v0.27.0\nDashboard version: v0.43.0",
+    "tkn pipeline list": "NAME                 AGE             LAST RUN                          STARTED          DURATION   STATUS\nbuild-and-deploy     30d             build-and-deploy-run-7x9k2        2 minutes ago    3m22s      Failed\ntest-suite           25d             test-suite-run-abc12              1 hour ago       5m14s      Succeeded\nsecurity-scan        20d             security-scan-run-def34           3 hours ago      8m45s      Succeeded\nbuild-test-deploy    2d              build-test-deploy-run-gh56        5 hours ago      6m30s      Succeeded\nrelease-pipeline     15d             release-pipeline-run-ij78         1 day ago        12m08s     Succeeded",
+    "tkn pipeline describe build-and-deploy": "Name:        build-and-deploy\nNamespace:   default\n\nParams:\n  NAME            TYPE     DESCRIPTION              DEFAULT VALUE\n  git-revision    string   Git branch or tag        main\n  git-url         string   Repository URL           https://github.com/org/payments-api.git\n  image           string   Target image             registry.io/org/payments-api:latest\n\nTasks:\n  NAME            TASKREF          WHEN\n  fetch-source    git-clone        ---\n  run-tests       golang-test      after fetch-source\n  build-image     kaniko           after run-tests\n  deploy          kubectl-deploy   after build-image\n\nPipelineRuns:\n  NAME                              STARTED          DURATION   STATUS\n  build-and-deploy-run-7x9k2        2 minutes ago    3m22s      Failed\n  build-and-deploy-run-5m3j8        6 hours ago      4m15s      Succeeded\n  build-and-deploy-run-2n7p4        1 day ago        4m02s      Succeeded",
+    "tkn pipeline describe test-suite": "Name:        test-suite\nNamespace:   default\n\nParams:\n  NAME            TYPE     DESCRIPTION              DEFAULT VALUE\n  git-revision    string   Git branch or tag        main\n  test-filter     string   Test pattern filter      ./...\n\nTasks:\n  NAME            TASKREF          WHEN\n  fetch-source    git-clone        ---\n  unit-tests      golang-test      after fetch-source\n  lint            golangci-lint    after fetch-source\n  integration     integration-test after unit-tests\n\nPipelineRuns:\n  NAME                          STARTED          DURATION   STATUS\n  test-suite-run-abc12          1 hour ago       5m14s      Succeeded\n  test-suite-run-xyz99          3 hours ago      5m08s      Succeeded",
+    "tkn pipeline describe security-scan": "Name:        security-scan\nNamespace:   default\n\nParams:\n  NAME            TYPE     DESCRIPTION              DEFAULT VALUE\n  image           string   Image to scan            ---\n  severity        string   Minimum severity         HIGH\n\nTasks:\n  NAME            TASKREF          WHEN\n  trivy-scan      trivy-scanner    ---\n  grype-scan      grype-scanner    ---\n  report          scan-reporter    after trivy-scan, grype-scan\n\nPipelineRuns:\n  NAME                              STARTED          DURATION   STATUS\n  security-scan-run-def34           3 hours ago      8m45s      Succeeded\n  security-scan-run-qrs56           1 day ago        9m12s      Succeeded",
+    "tkn pipeline start build-and-deploy -p git-revision=main": "PipelineRun started: build-and-deploy-run-8w2m5\n\nIn order to track the PipelineRun progress run:\ntkn pipelinerun logs build-and-deploy-run-8w2m5 -f",
+    "tkn pipeline start build-and-deploy -p git-revision=main --use-param-defaults": "PipelineRun started: build-and-deploy-run-9t4n6\n\nIn order to track the PipelineRun progress run:\ntkn pipelinerun logs build-and-deploy-run-9t4n6 -f",
+    "tkn pipeline start build-test-deploy -p repo-url=https://github.com/org/app.git -p image=registry.io/org/app:latest": "PipelineRun started: build-test-deploy-run-kl89\n\nIn order to track the PipelineRun progress run:\ntkn pipelinerun logs build-test-deploy-run-kl89 -f",
+    "tkn pipeline start test-suite": "PipelineRun started: test-suite-run-mn34\n\nIn order to track the PipelineRun progress run:\ntkn pipelinerun logs test-suite-run-mn34 -f",
+    "tkn pipeline start security-scan -p image=registry.io/org/payments-api:latest": "PipelineRun started: security-scan-run-op56\n\nIn order to track the PipelineRun progress run:\ntkn pipelinerun logs security-scan-run-op56 -f",
+    "tkn pipeline delete build-and-deploy": "Are you sure you want to delete Pipeline \"build-and-deploy\" (y/n): y\nPipeline deleted: build-and-deploy",
+    "tkn pipelinerun list": "NAME                                STARTED          DURATION   STATUS\nbuild-and-deploy-run-7x9k2          2 minutes ago    3m22s      Failed\ntest-suite-run-abc12                1 hour ago       5m14s      Succeeded\nsecurity-scan-run-def34             3 hours ago      8m45s      Succeeded\nbuild-test-deploy-run-gh56          5 hours ago      6m30s      Succeeded\nbuild-and-deploy-run-5m3j8          6 hours ago      4m15s      Succeeded\nrelease-pipeline-run-ij78           1 day ago        12m08s     Succeeded\ntest-suite-run-xyz99                1 day ago        5m08s      Succeeded",
+    "tkn pipelinerun describe build-and-deploy-run-7x9k2": "Name:           build-and-deploy-run-7x9k2\nNamespace:      default\nPipeline Ref:   build-and-deploy\nService Account: pipeline\n\nStatus:     Failed\nMessage:    Tasks Completed: 2 (Failed: 1, Cancelled: 1), Skipped: 1\n\nParams:\n  NAME             VALUE\n  git-revision     main\n  git-url          https://github.com/org/payments-api.git\n  image            registry.io/org/payments-api:latest\n\nTaskruns:\n  NAME                                                STATUS      STARTED          DURATION\n  build-and-deploy-run-7x9k2-fetch-source-xb4m2       Succeeded   5 minutes ago    32s\n  build-and-deploy-run-7x9k2-run-tests-kwm4d          Failed      4 minutes ago    1m45s\n  build-and-deploy-run-7x9k2-build-image-skipped      ---         ---              ---\n  build-and-deploy-run-7x9k2-deploy-cancelled         ---         ---              ---\n\nSkipped Tasks:\n  NAME            WHEN EXPRESSIONS\n  build-image     run-tests completed successfully\n  deploy          build-image completed successfully",
+    "tkn pipelinerun describe build-and-deploy-run-5m3j8": "Name:           build-and-deploy-run-5m3j8\nNamespace:      default\nPipeline Ref:   build-and-deploy\nService Account: pipeline\n\nStatus:     Succeeded\nMessage:    Tasks Completed: 4 (Failed: 0)\n\nParams:\n  NAME             VALUE\n  git-revision     main\n  git-url          https://github.com/org/payments-api.git\n  image            registry.io/org/payments-api:v1.4.2\n\nTaskruns:\n  NAME                                                STATUS      STARTED          DURATION\n  build-and-deploy-run-5m3j8-fetch-source-ab12        Succeeded   6 hours ago      28s\n  build-and-deploy-run-5m3j8-run-tests-cd34           Succeeded   6 hours ago      1m32s\n  build-and-deploy-run-5m3j8-build-image-ef56         Succeeded   6 hours ago      1m48s\n  build-and-deploy-run-5m3j8-deploy-gh78              Succeeded   6 hours ago      27s",
+    "tkn pipelinerun logs build-and-deploy-run-7x9k2": "[fetch-source : clone] Cloning https://github.com/org/payments-api.git into /workspace/source...\n[fetch-source : clone] Successfully cloned revision main (a3b4c5d)\n\n[run-tests : test] === RUN   TestPaymentProcess\n[run-tests : test] === RUN   TestPaymentProcess/valid_card\n[run-tests : test]     --- PASS: TestPaymentProcess/valid_card (0.12s)\n[run-tests : test] === RUN   TestPaymentProcess/expired_card\n[run-tests : test]     --- FAIL: TestPaymentProcess/expired_card (0.08s)\n[run-tests : test]         payment_test.go:45: expected error ErrCardExpired, got nil\n[run-tests : test] === RUN   TestPaymentProcess/insufficient_funds\n[run-tests : test]     --- PASS: TestPaymentProcess/insufficient_funds (0.09s)\n[run-tests : test] FAIL\n[run-tests : test] exit status 1\n\nfailed to get logs for task build-image: task was skipped\nfailed to get logs for task deploy: task was cancelled",
+    "tkn pipelinerun logs -f --last": "[fetch-source : clone] Cloning https://github.com/org/payments-api.git into /workspace/source...\n[fetch-source : clone] Successfully cloned revision main (f7e8d9c)\n\n[run-tests : test] === RUN   TestPaymentProcess\n[run-tests : test]     --- PASS: TestPaymentProcess/valid_card (0.11s)\n[run-tests : test]     --- PASS: TestPaymentProcess/expired_card (0.09s)\n[run-tests : test]     --- PASS: TestPaymentProcess/insufficient_funds (0.08s)\n[run-tests : test] PASS\n[run-tests : test] ok  \tgithub.com/org/payments-api/pkg/payment\t0.28s\n\n[build-image : build] INFO[0000] Building image registry.io/org/payments-api:latest\n[build-image : build] INFO[0035] Pushing to registry.io/org/payments-api:latest\n[build-image : build] INFO[0042] Successfully pushed image\n\n[deploy : apply] deployment.apps/payments-api configured\n[deploy : verify] deployment \"payments-api\" successfully rolled out",
+    "tkn pipelinerun logs build-and-deploy-run-5m3j8": "[fetch-source : clone] Cloning https://github.com/org/payments-api.git into /workspace/source...\n[fetch-source : clone] Successfully cloned revision main (b2c3d4e)\n\n[run-tests : test] PASS\n[run-tests : test] ok  \tgithub.com/org/payments-api/pkg/payment\t0.31s\n\n[build-image : build] INFO[0000] Building image registry.io/org/payments-api:v1.4.2\n[build-image : build] INFO[0038] Successfully pushed image\n\n[deploy : apply] deployment.apps/payments-api configured\n[deploy : verify] deployment \"payments-api\" successfully rolled out",
+    "tkn pipelinerun delete build-and-deploy-run-7x9k2": "Are you sure you want to delete PipelineRun \"build-and-deploy-run-7x9k2\" (y/n): y\nPipelineRun deleted: build-and-deploy-run-7x9k2",
+    "tkn pipelinerun cancel build-and-deploy-run-7x9k2": "PipelineRun cancelled: build-and-deploy-run-7x9k2",
+    "tkn task list": "NAME               DESCRIPTION                              AGE\ngit-clone          Clone a git repository                   30d\ngolang-test        Run Go tests                             30d\ngolangci-lint      Run golangci-lint                        25d\nkaniko             Build images with Kaniko                 30d\nkubectl-deploy     Deploy with kubectl                      30d\ntrivy-scanner      Scan images with Trivy                   20d\ngrype-scanner      Scan images with Grype                   20d\nscan-reporter      Generate vulnerability report            20d\nintegration-test   Run integration tests                    25d\nbuildpacks         Build with Cloud Native Buildpacks       15d\nhelm-upgrade       Deploy with Helm                         10d",
+    "tkn task describe git-clone": "Name:        git-clone\nNamespace:   default\n\nDescription: Clone a git repository URL to a workspace\n\nParams:\n  NAME          TYPE     DESCRIPTION                     DEFAULT VALUE\n  url           string   Repository URL to clone         ---\n  revision      string   Branch, tag, or SHA             main\n  depth         string   Shallow clone depth             1\n  submodules    string   Initialize submodules           true\n\nResults:\n  NAME       DESCRIPTION\n  commit     The precise commit SHA that was fetched\n  url        The precise URL fetched by the task\n\nWorkspaces:\n  NAME      DESCRIPTION                  OPTIONAL\n  output    The git repo will be cloned here   false\n  ssh-directory    .ssh directory with keys   true\n\nSteps:\n  NAME     IMAGE\n  clone    gcr.io/tekton-releases/github.com/tektoncd/pipeline/cmd/git-init:v0.40.0",
+    "tkn task describe golang-test": "Name:        golang-test\nNamespace:   default\n\nDescription: Run Go unit tests\n\nParams:\n  NAME          TYPE     DESCRIPTION                  DEFAULT VALUE\n  package       string   Go packages to test          ./...\n  flags         string   Additional test flags        -v -count=1\n  go-version    string   Go version                   1.22\n\nWorkspaces:\n  NAME      DESCRIPTION            OPTIONAL\n  source    Source code workspace  false\n\nSteps:\n  NAME     IMAGE\n  test     docker.io/library/golang:1.22",
+    "tkn task describe kaniko": "Name:        kaniko\nNamespace:   default\n\nDescription: Build and push container images with Kaniko\n\nParams:\n  NAME             TYPE     DESCRIPTION                  DEFAULT VALUE\n  IMAGE            string   Image name with tag          ---\n  DOCKERFILE       string   Path to Dockerfile           ./Dockerfile\n  CONTEXT          string   Build context                .\n  EXTRA_ARGS       array    Extra args for Kaniko        []\n\nWorkspaces:\n  NAME          DESCRIPTION                  OPTIONAL\n  source        Source code workspace        false\n  dockerconfig  Docker config for auth       true\n\nSteps:\n  NAME      IMAGE\n  build     gcr.io/kaniko-project/executor:v1.19.2",
+    "tkn task describe trivy-scanner": "Name:        trivy-scanner\nNamespace:   default\n\nDescription: Scan container images for vulnerabilities with Trivy\n\nParams:\n  NAME          TYPE     DESCRIPTION                     DEFAULT VALUE\n  IMAGE         string   Image to scan                   ---\n  SEVERITY      string   Minimum severity to report      HIGH,CRITICAL\n  EXIT_CODE     string   Exit code on findings           1\n\nSteps:\n  NAME     IMAGE\n  scan     aquasec/trivy:0.50.0",
+    "tkn task describe helm-upgrade": "Name:        helm-upgrade\nNamespace:   default\n\nDescription: Deploy or upgrade a Helm chart release\n\nParams:\n  NAME            TYPE     DESCRIPTION                  DEFAULT VALUE\n  release-name    string   Helm release name            ---\n  chart           string   Chart reference              ---\n  namespace       string   Target namespace             default\n  values-file     string   Path to values file          values.yaml\n\nWorkspaces:\n  NAME      DESCRIPTION            OPTIONAL\n  source    Source with values     false\n\nSteps:\n  NAME      IMAGE\n  upgrade   alpine/helm:3.14.0",
+    "tkn task start git-clone": "? Value for param `url` of type `string`? https://github.com/org/payments-api.git\n? Value for param `revision` of type `string`? (Default is `main`) main\nTaskRun started: git-clone-run-x9m3k\n\nIn order to track the TaskRun progress run:\ntkn taskrun logs git-clone-run-x9m3k -f",
+    "tkn task start golang-test": "? Value for param `package` of type `string`? (Default is `./...`) ./...\nTaskRun started: golang-test-run-p4n7w\n\nIn order to track the TaskRun progress run:\ntkn taskrun logs golang-test-run-p4n7w -f",
+    "tkn task delete integration-test": "Are you sure you want to delete Task \"integration-test\" (y/n): y\nTask deleted: integration-test",
+    "tkn taskrun list": "NAME                                                 STARTED          DURATION   STATUS\nbuild-and-deploy-run-7x9k2-fetch-source-xb4m2        5 minutes ago    32s        Succeeded\nbuild-and-deploy-run-7x9k2-run-tests-kwm4d           4 minutes ago    1m45s      Failed\ntest-suite-run-abc12-fetch-source-lm34               1 hour ago       30s        Succeeded\ntest-suite-run-abc12-unit-tests-no56                  1 hour ago       2m12s      Succeeded\ntest-suite-run-abc12-lint-pq78                        1 hour ago       1m45s      Succeeded\ntest-suite-run-abc12-integration-rs90                 1 hour ago       3m02s      Succeeded\ngit-clone-run-x9m3k                                  2 hours ago      28s        Succeeded",
+    "tkn taskrun describe build-and-deploy-run-7x9k2-run-tests-kwm4d": "Name:              build-and-deploy-run-7x9k2-run-tests-kwm4d\nNamespace:         default\nTask Ref:          golang-test\nService Account:   pipeline\n\nStatus:\n  STARTED          DURATION   STATUS\n  4 minutes ago    1m45s      Failed\n\nMessage: \"step-test\" exited with code 1\n\nParams:\n  NAME       VALUE\n  package    ./...\n  flags      -v -count=1\n\nSteps:\n  NAME    STATUS\n  test    Failed (exit code 1)\n\nSidecars: No sidecars",
+    "tkn taskrun describe build-and-deploy-run-7x9k2-fetch-source-xb4m2": "Name:              build-and-deploy-run-7x9k2-fetch-source-xb4m2\nNamespace:         default\nTask Ref:          git-clone\nService Account:   pipeline\n\nStatus:\n  STARTED          DURATION   STATUS\n  5 minutes ago    32s        Succeeded\n\nResults:\n  NAME      VALUE\n  commit    a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2\n  url       https://github.com/org/payments-api.git\n\nSteps:\n  NAME     STATUS\n  clone    Succeeded",
+    "tkn taskrun logs build-and-deploy-run-7x9k2-run-tests-kwm4d": "[test] === RUN   TestPaymentProcess\n[test] === RUN   TestPaymentProcess/valid_card\n[test]     --- PASS: TestPaymentProcess/valid_card (0.12s)\n[test] === RUN   TestPaymentProcess/expired_card\n[test]     --- FAIL: TestPaymentProcess/expired_card (0.08s)\n[test]         payment_test.go:45: expected error ErrCardExpired, got nil\n[test] === RUN   TestPaymentProcess/insufficient_funds\n[test]     --- PASS: TestPaymentProcess/insufficient_funds (0.09s)\n[test] FAIL\n[test] exit status 1",
+    "tkn taskrun logs build-and-deploy-run-7x9k2-fetch-source-xb4m2": "[clone] Cloning https://github.com/org/payments-api.git into /workspace/output...\n[clone] Resolved revision main to commit a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2\n[clone] Successfully cloned and checked out revision main",
+    "tkn taskrun logs git-clone-run-x9m3k": "[clone] Cloning https://github.com/org/payments-api.git into /workspace/output...\n[clone] Resolved revision main to commit f9e8d7c6b5a4f3e2d1c0b9a8f7e6d5c4b3a2f1e0\n[clone] Successfully cloned and checked out revision main",
+    "tkn taskrun delete build-and-deploy-run-7x9k2-run-tests-kwm4d": "Are you sure you want to delete TaskRun \"build-and-deploy-run-7x9k2-run-tests-kwm4d\" (y/n): y\nTaskRun deleted: build-and-deploy-run-7x9k2-run-tests-kwm4d",
+    "tkn hub search git-clone": "NAME          KIND   CATALOG   DESCRIPTION                              RATING\ngit-clone     Task   tekton    Clone a git repository                   \u2605\u2605\u2605\u2605\u2605\ngit-clone     Task   community Clone with sparse-checkout support       \u2605\u2605\u2605\u2605\ngit-batch-merge Task  community Batch merge branches then clone         \u2605\u2605\u2605",
+    "tkn hub search kaniko": "NAME          KIND   CATALOG   DESCRIPTION                              RATING\nkaniko        Task   tekton    Build container images with Kaniko       \u2605\u2605\u2605\u2605\u2605\nkaniko-chains Task   community Kaniko with Tekton Chains signing        \u2605\u2605\u2605\u2605",
+    "tkn hub search buildpacks": "NAME          KIND   CATALOG   DESCRIPTION                              RATING\nbuildpacks    Task   tekton    Build with Cloud Native Buildpacks       \u2605\u2605\u2605\u2605\u2605\nbuildpacks-phases Task community Multi-phase buildpacks build            \u2605\u2605\u2605",
+    "tkn hub install task git-clone": "Task git-clone(0.9) installed in default namespace",
+    "tkn hub install task kaniko": "Task kaniko(0.6) installed in default namespace",
+    "tkn hub install task buildpacks": "Task buildpacks(0.6) installed in default namespace",
+    "tkn clustertask list": "NAME                    DESCRIPTION                              AGE\ngit-clone               Clone a git repo (cluster-wide)          60d\nbuildah                 Build images with Buildah                60d\nopenshift-client        Run oc commands                          60d\ntkn                     Run tkn commands                         60d\nkubectl-actions         Run kubectl commands                     45d",
+    "tkn condition list": "No Conditions found in default namespace\n(Note: Conditions are deprecated \u2014 use WhenExpressions in Pipeline tasks instead)",
+    "tkn resource list": "No PipelineResources found in default namespace\n(Note: PipelineResources are deprecated \u2014 use Workspaces and Results instead)",
+    "tkn triggertemplate list": "NAME                         AGE\npush-to-main-template        20d\npull-request-template         20d\nrelease-tag-template          15d",
+    "tkn triggertemplate describe push-to-main-template": "Name:        push-to-main-template\nNamespace:   default\n\nParams:\n  NAME            DESCRIPTION\n  git-revision    The git revision\n  git-url         The git repository URL\n\nResourcetemplates:\n  NAME    GENERATENAME                    KIND\n  ---     build-and-deploy-run-           PipelineRun",
+    "tkn eventlistener list": "NAME                    AGE    URL                                             AVAILABLE\ngithub-listener         20d    http://el-github-listener.default.svc:8080       True\nbitbucket-listener      15d    http://el-bitbucket-listener.default.svc:8080    True",
+    "tkn eventlistener describe github-listener": "Name:          github-listener\nNamespace:     default\nURL:           http://el-github-listener.default.svc:8080\n\nServiceAccount: tekton-triggers-sa\n\nTriggers:\n  NAME                TEMPLATE                    INTERCEPTORS\n  push-trigger        push-to-main-template       github (secretRef: github-secret), cel (filter: body.ref == 'refs/heads/main')\n  pr-trigger          pull-request-template       github (secretRef: github-secret), cel (filter: body.action in ['opened','synchronize'])",
+    "tkn pipeline start release-pipeline -p version=v1.5.0": "PipelineRun started: release-pipeline-run-qr12\n\nIn order to track the PipelineRun progress run:\ntkn pipelinerun logs release-pipeline-run-qr12 -f",
+    "tkn pipelinerun describe test-suite-run-abc12": "Name:           test-suite-run-abc12\nNamespace:      default\nPipeline Ref:   test-suite\nService Account: pipeline\n\nStatus:     Succeeded\nMessage:    Tasks Completed: 4 (Failed: 0)\n\nParams:\n  NAME             VALUE\n  git-revision     main\n  test-filter      ./...\n\nTaskruns:\n  NAME                                         STATUS      STARTED        DURATION\n  test-suite-run-abc12-fetch-source-lm34       Succeeded   1 hour ago     30s\n  test-suite-run-abc12-unit-tests-no56         Succeeded   1 hour ago     2m12s\n  test-suite-run-abc12-lint-pq78               Succeeded   1 hour ago     1m45s\n  test-suite-run-abc12-integration-rs90        Succeeded   1 hour ago     3m02s",
+    "tkn pipelinerun describe security-scan-run-def34": "Name:           security-scan-run-def34\nNamespace:      default\nPipeline Ref:   security-scan\nService Account: pipeline\n\nStatus:     Succeeded\nMessage:    Tasks Completed: 3 (Failed: 0)\n\nParams:\n  NAME        VALUE\n  image       registry.io/org/payments-api:v1.4.2\n  severity    HIGH\n\nTaskruns:\n  NAME                                           STATUS      STARTED          DURATION\n  security-scan-run-def34-trivy-scan-uv12        Succeeded   3 hours ago      3m22s\n  security-scan-run-def34-grype-scan-wx34        Succeeded   3 hours ago      4m10s\n  security-scan-run-def34-report-yz56            Succeeded   3 hours ago      1m13s",
+    "tkn pipelinerun logs test-suite-run-abc12": "[fetch-source : clone] Successfully cloned revision main (d4e5f6a)\n\n[unit-tests : test] PASS\n[unit-tests : test] ok  \tgithub.com/org/payments-api/pkg/...\t2.12s\n\n[lint : lint] golangci-lint: no issues found\n\n[integration : test] PASS\n[integration : test] ok  \tgithub.com/org/payments-api/test/integration\t3.02s",
+    "tkn pipelinerun logs security-scan-run-def34": "[trivy-scan : scan] 2026-06-02T07:15:00Z INFO  Scanning registry.io/org/payments-api:v1.4.2...\n[trivy-scan : scan] registry.io/org/payments-api:v1.4.2 (alpine 3.19)\n[trivy-scan : scan] Total: 0 (HIGH: 0, CRITICAL: 0)\n[trivy-scan : scan] No vulnerabilities found above threshold\n\n[grype-scan : scan] NAME               INSTALLED  FIXED-IN  TYPE  VULNERABILITY  SEVERITY\n[grype-scan : scan] No vulnerabilities found matching severity filter\n\n[report : generate] Scan report generated: 0 HIGH, 0 CRITICAL vulnerabilities\n[report : generate] Image registry.io/org/payments-api:v1.4.2 PASSED security gate",
+    "tkn pipeline describe build-test-deploy": "Name:        build-test-deploy\nNamespace:   default\n\nParams:\n  NAME            TYPE     DESCRIPTION              DEFAULT VALUE\n  repo-url        string   Repository URL           ---\n  image           string   Target image             ---\n  revision        string   Git revision             main\n\nTasks:\n  NAME            TASKREF          WHEN\n  clone           git-clone        ---\n  test            golang-test      after clone\n  build           kaniko           after test\n  scan            trivy-scanner    after build\n  deploy          helm-upgrade     after scan\n\nPipelineRuns:\n  NAME                              STARTED          DURATION   STATUS\n  build-test-deploy-run-gh56        5 hours ago      6m30s      Succeeded",
+    "tkn pipeline describe release-pipeline": "Name:        release-pipeline\nNamespace:   default\n\nParams:\n  NAME            TYPE     DESCRIPTION              DEFAULT VALUE\n  version         string   Release version tag      ---\n  git-url         string   Repository URL           https://github.com/org/payments-api.git\n\nTasks:\n  NAME            TASKREF          WHEN\n  fetch-source    git-clone        ---\n  run-tests       golang-test      after fetch-source\n  build-release   kaniko           after run-tests\n  sign-image      cosign-sign      after build-release\n  security-scan   trivy-scanner    after build-release\n  deploy-staging  helm-upgrade     after security-scan, sign-image\n  smoke-tests     integration-test after deploy-staging\n  deploy-prod     helm-upgrade     after smoke-tests\n\nPipelineRuns:\n  NAME                              STARTED          DURATION   STATUS\n  release-pipeline-run-ij78         1 day ago        12m08s     Succeeded"
+  },
+  "reference": [
+    {
+      "group": "Pipelines",
+      "commands": [
+        {
+          "cmd": "tkn pipeline list",
+          "desc": "list all pipelines"
+        },
+        {
+          "cmd": "tkn pipeline describe build-and-deploy",
+          "desc": "pipeline details"
+        },
+        {
+          "cmd": "tkn pipeline start build-and-deploy -p git-revision=main",
+          "desc": "start a pipeline"
+        },
+        {
+          "cmd": "tkn pipeline delete build-and-deploy",
+          "desc": "delete pipeline"
+        }
+      ]
+    },
+    {
+      "group": "Pipeline Runs",
+      "commands": [
+        {
+          "cmd": "tkn pipelinerun list",
+          "desc": "list all runs"
+        },
+        {
+          "cmd": "tkn pipelinerun describe build-and-deploy-run-7x9k2",
+          "desc": "run details"
+        },
+        {
+          "cmd": "tkn pipelinerun logs build-and-deploy-run-7x9k2",
+          "desc": "run logs"
+        },
+        {
+          "cmd": "tkn pipelinerun logs -f --last",
+          "desc": "follow latest"
+        },
+        {
+          "cmd": "tkn pipelinerun cancel build-and-deploy-run-7x9k2",
+          "desc": "cancel run"
+        },
+        {
+          "cmd": "tkn pipelinerun delete build-and-deploy-run-7x9k2",
+          "desc": "delete run"
+        }
+      ]
+    },
+    {
+      "group": "Tasks",
+      "commands": [
+        {
+          "cmd": "tkn task list",
+          "desc": "list all tasks"
+        },
+        {
+          "cmd": "tkn task describe git-clone",
+          "desc": "task details"
+        },
+        {
+          "cmd": "tkn task start git-clone",
+          "desc": "start task"
+        },
+        {
+          "cmd": "tkn task delete integration-test",
+          "desc": "delete task"
+        }
+      ]
+    },
+    {
+      "group": "Task Runs",
+      "commands": [
+        {
+          "cmd": "tkn taskrun list",
+          "desc": "list task runs"
+        },
+        {
+          "cmd": "tkn taskrun describe build-and-deploy-run-7x9k2-run-tests-kwm4d",
+          "desc": "task run details"
+        },
+        {
+          "cmd": "tkn taskrun logs build-and-deploy-run-7x9k2-run-tests-kwm4d",
+          "desc": "task run logs"
+        },
+        {
+          "cmd": "tkn taskrun delete build-and-deploy-run-7x9k2-run-tests-kwm4d",
+          "desc": "delete task run"
+        }
+      ]
+    },
+    {
+      "group": "Tekton Hub",
+      "commands": [
+        {
+          "cmd": "tkn hub search git-clone",
+          "desc": "search hub"
+        },
+        {
+          "cmd": "tkn hub install task git-clone",
+          "desc": "install from hub"
+        },
+        {
+          "cmd": "tkn hub search kaniko",
+          "desc": "find build tasks"
+        }
+      ]
+    },
+    {
+      "group": "Triggers & Events",
+      "commands": [
+        {
+          "cmd": "tkn triggertemplate list",
+          "desc": "list templates"
+        },
+        {
+          "cmd": "tkn triggertemplate describe push-to-main-template",
+          "desc": "template details"
+        },
+        {
+          "cmd": "tkn eventlistener list",
+          "desc": "list listeners"
+        },
+        {
+          "cmd": "tkn eventlistener describe github-listener",
+          "desc": "listener details"
+        }
+      ]
+    },
+    {
+      "group": "Cluster & Legacy",
+      "commands": [
+        {
+          "cmd": "tkn clustertask list",
+          "desc": "cluster tasks"
+        },
+        {
+          "cmd": "tkn condition list",
+          "desc": "conditions (deprecated)"
+        },
+        {
+          "cmd": "tkn resource list",
+          "desc": "resources (deprecated)"
+        },
+        {
+          "cmd": "tkn version",
+          "desc": "CLI version"
+        }
+      ]
+    },
+    {
+      "group": "Scenarios",
+      "commands": [
+        {
+          "cmd": "scenario run-and-debug-pipeline",
+          "desc": "debug a failed CI run"
+        },
+        {
+          "cmd": "scenario create-build-test-deploy",
+          "desc": "create full pipeline"
+        }
+      ]
+    }
+  ]
+}

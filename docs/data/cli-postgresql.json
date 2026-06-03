@@ -1,0 +1,385 @@
+{
+  "id": "postgresql",
+  "prompt": "psql@prod-db:~$",
+  "welcome": "Welcome to the PostgreSQL CLI Playground.\nType commands to explore a simulated production e-commerce database.\nType 'help' for available commands, 'scenario' for guided labs.\n",
+  "scenarios": [
+    {
+      "id": "debug-slow-query",
+      "title": "Debug a Slow Query",
+      "steps": [
+        {
+          "instruction": "First, check what queries are currently running on the database.",
+          "expect": "SELECT * FROM pg_stat_activity WHERE state = 'active';",
+          "hint": "Try: SELECT * FROM pg_stat_activity WHERE state = 'active';"
+        },
+        {
+          "instruction": "There's a long-running query on the orders table. Check for blocking locks.",
+          "expect": "SELECT * FROM pg_locks WHERE NOT granted;",
+          "hint": "Try: SELECT * FROM pg_locks WHERE NOT granted;"
+        },
+        {
+          "instruction": "A lock is blocked by PID 4829. Find what that process is doing.",
+          "expect": "SELECT pid, query, state, wait_event_type FROM pg_stat_activity WHERE pid = 4829;",
+          "hint": "Try: SELECT pid, query, state, wait_event_type FROM pg_stat_activity WHERE pid = 4829;"
+        },
+        {
+          "instruction": "It's an idle transaction holding a lock. Let's look at the slow query plan for the orders lookup.",
+          "expect": "EXPLAIN ANALYZE SELECT * FROM orders WHERE user_id = 42 AND status = 'pending';",
+          "hint": "Try: EXPLAIN ANALYZE SELECT * FROM orders WHERE user_id = 42 AND status = 'pending';"
+        },
+        {
+          "instruction": "Sequential scan on 2.4M rows! Check existing indexes on the orders table.",
+          "expect": "\\di orders*",
+          "hint": "Try: \\di orders*"
+        },
+        {
+          "instruction": "No composite index on (user_id, status). Create one to fix the slow query.",
+          "expect": "CREATE INDEX CONCURRENTLY idx_orders_user_status ON orders(user_id, status);",
+          "hint": "Try: CREATE INDEX CONCURRENTLY idx_orders_user_status ON orders(user_id, status);"
+        },
+        {
+          "instruction": "Now terminate the idle transaction that was holding locks.",
+          "expect": "SELECT pg_terminate_backend(4829);",
+          "hint": "Try: SELECT pg_terminate_backend(4829);"
+        },
+        {
+          "instruction": "Verify the query now uses the new index.",
+          "expect": "EXPLAIN ANALYZE SELECT * FROM orders WHERE user_id = 42 AND status = 'pending';",
+          "hint": "Try: EXPLAIN ANALYZE SELECT * FROM orders WHERE user_id = 42 AND status = 'pending';"
+        }
+      ]
+    },
+    {
+      "id": "backup-and-restore",
+      "title": "Backup and Restore a Database",
+      "steps": [
+        {
+          "instruction": "First, check the size of the ecommerce database before backing up.",
+          "expect": "SELECT pg_size_pretty(pg_database_size('ecommerce'));",
+          "hint": "Try: SELECT pg_size_pretty(pg_database_size('ecommerce'));"
+        },
+        {
+          "instruction": "Check which tables are the largest to estimate backup time.",
+          "expect": "SELECT relname, pg_size_pretty(pg_total_relation_size(relid)) FROM pg_stat_user_tables ORDER BY pg_total_relation_size(relid) DESC;",
+          "hint": "Try: SELECT relname, pg_size_pretty(pg_total_relation_size(relid)) FROM pg_stat_user_tables ORDER BY pg_total_relation_size(relid) DESC;"
+        },
+        {
+          "instruction": "Good. Now create a compressed custom-format backup of the database.",
+          "expect": "pg_dump -Fc -Z 9 -f /backups/ecommerce_20260602.dump ecommerce",
+          "hint": "Try: pg_dump -Fc -Z 9 -f /backups/ecommerce_20260602.dump ecommerce"
+        },
+        {
+          "instruction": "Verify the backup file was created and check its size.",
+          "expect": "ls -lh /backups/ecommerce_20260602.dump",
+          "hint": "Try: ls -lh /backups/ecommerce_20260602.dump"
+        },
+        {
+          "instruction": "List the contents of the backup to verify it contains all tables.",
+          "expect": "pg_restore --list /backups/ecommerce_20260602.dump",
+          "hint": "Try: pg_restore --list /backups/ecommerce_20260602.dump"
+        },
+        {
+          "instruction": "Create the target database for the restore test.",
+          "expect": "createdb ecommerce_restore",
+          "hint": "Try: createdb ecommerce_restore"
+        },
+        {
+          "instruction": "Restore the backup into the test database.",
+          "expect": "pg_restore -d ecommerce_restore /backups/ecommerce_20260602.dump",
+          "hint": "Try: pg_restore -d ecommerce_restore /backups/ecommerce_20260602.dump"
+        },
+        {
+          "instruction": "Verify the restore by checking row counts match the original.",
+          "expect": "psql -d ecommerce_restore -c \"SELECT count(*) FROM orders;\"",
+          "hint": "Try: psql -d ecommerce_restore -c \"SELECT count(*) FROM orders;\""
+        }
+      ]
+    }
+  ],
+  "commands": {
+    "help": "Available commands:\n  \\l                             \u2014 List all databases\n  \\dt                            \u2014 List tables in current database\n  \\d+ <table>                    \u2014 Describe table with details\n  \\di                            \u2014 List indexes\n  \\du                            \u2014 List roles/users\n  \\conninfo                      \u2014 Show connection info\n  \\timing on                     \u2014 Enable query timing\n  SELECT version()               \u2014 Show PostgreSQL version\n  EXPLAIN ANALYZE <query>        \u2014 Show query execution plan\n  pg_dump / pg_restore           \u2014 Backup and restore\n  VACUUM ANALYZE <table>         \u2014 Reclaim space and update stats\n\n  scenario                       \u2014 Start a guided lab\n  clear                          \u2014 Clear the terminal\n  help                           \u2014 Show this help",
+    "SELECT version();": "                                                 version\n---------------------------------------------------------------------------------------------------------\n PostgreSQL 16.3 on x86_64-pc-linux-gnu, compiled by gcc (Ubuntu 12.3.0-1ubuntu1~22.04) 12.3.0, 64-bit\n(1 row)",
+    "\\l": "                                    List of databases\n    Name      |  Owner   | Encoding |   Collate   |    Ctype    |   Access\n--------------+----------+----------+-------------+-------------+-----------\n ecommerce    | dbadmin  | UTF8     | en_US.UTF-8 | en_US.UTF-8 |\n postgres     | postgres | UTF8     | en_US.UTF-8 | en_US.UTF-8 |\n template0    | postgres | UTF8     | en_US.UTF-8 | en_US.UTF-8 | =c/postgres\n template1    | postgres | UTF8     | en_US.UTF-8 | en_US.UTF-8 | =c/postgres\n analytics    | dbadmin  | UTF8     | en_US.UTF-8 | en_US.UTF-8 |\n(5 rows)",
+    "\\dt": "              List of relations\n Schema |    Name     | Type  |  Owner\n--------+-------------+-------+---------\n public | users       | table | dbadmin\n public | orders      | table | dbadmin\n public | products    | table | dbadmin\n public | payments    | table | dbadmin\n public | categories  | table | dbadmin\n public | order_items | table | dbadmin\n public | sessions    | table | dbadmin\n public | audit_log   | table | dbadmin\n(8 rows)",
+    "\\d+ users": "                                          Table \"public.users\"\n   Column    |            Type             | Collation | Nullable |              Default\n-------------+-----------------------------+-----------+----------+-----------------------------------\n id          | bigint                      |           | not null | nextval('users_id_seq'::regclass)\n email       | character varying(255)       |           | not null |\n name        | character varying(100)       |           | not null |\n password    | character varying(255)       |           | not null |\n created_at  | timestamp with time zone     |           | not null | now()\n updated_at  | timestamp with time zone     |           |          |\n last_login  | timestamp with time zone     |           |          |\n status      | character varying(20)        |           | not null | 'active'::character varying\nIndexes:\n    \"users_pkey\" PRIMARY KEY, btree (id)\n    \"users_email_key\" UNIQUE, btree (email)\n    \"idx_users_status\" btree (status)\n    \"idx_users_created_at\" btree (created_at)\nReferenced by:\n    TABLE \"orders\" CONSTRAINT \"orders_user_id_fkey\" FOREIGN KEY (user_id) REFERENCES users(id)\n    TABLE \"payments\" CONSTRAINT \"payments_user_id_fkey\" FOREIGN KEY (user_id) REFERENCES users(id)\nAccess method: heap\nSize: 892 MB",
+    "\\d+ orders": "                                          Table \"public.orders\"\n    Column     |            Type             | Collation | Nullable |              Default\n---------------+-----------------------------+-----------+----------+-----------------------------------\n id            | bigint                      |           | not null | nextval('orders_id_seq'::regclass)\n user_id       | bigint                      |           | not null |\n status        | character varying(20)        |           | not null | 'pending'::character varying\n total_amount  | numeric(10,2)               |           | not null |\n currency      | character(3)                |           | not null | 'INR'::bpchar\n created_at    | timestamp with time zone     |           | not null | now()\n updated_at    | timestamp with time zone     |           |          |\n shipped_at    | timestamp with time zone     |           |          |\nIndexes:\n    \"orders_pkey\" PRIMARY KEY, btree (id)\n    \"idx_orders_user_id\" btree (user_id)\n    \"idx_orders_created_at\" btree (created_at)\nForeign-key constraints:\n    \"orders_user_id_fkey\" FOREIGN KEY (user_id) REFERENCES users(id)\nReferenced by:\n    TABLE \"order_items\" CONSTRAINT \"order_items_order_id_fkey\" FOREIGN KEY (order_id) REFERENCES orders(id)\n    TABLE \"payments\" CONSTRAINT \"payments_order_id_fkey\" FOREIGN KEY (order_id) REFERENCES orders(id)\nAccess method: heap\nSize: 1.8 GB",
+    "\\d+ products": "                                          Table \"public.products\"\n    Column     |            Type             | Collation | Nullable |               Default\n---------------+-----------------------------+-----------+----------+------------------------------------\n id            | bigint                      |           | not null | nextval('products_id_seq'::regclass)\n name          | character varying(255)       |           | not null |\n description   | text                        |           |          |\n price         | numeric(10,2)               |           | not null |\n category_id   | bigint                      |           |          |\n stock_count   | integer                     |           | not null | 0\n created_at    | timestamp with time zone     |           | not null | now()\n is_active     | boolean                     |           | not null | true\nIndexes:\n    \"products_pkey\" PRIMARY KEY, btree (id)\n    \"idx_products_category\" btree (category_id)\n    \"idx_products_active\" btree (is_active) WHERE is_active = true\nAccess method: heap\nSize: 245 MB",
+    "\\d+ payments": "                                          Table \"public.payments\"\n    Column      |            Type             | Collation | Nullable |               Default\n----------------+-----------------------------+-----------+----------+-------------------------------------\n id             | bigint                      |           | not null | nextval('payments_id_seq'::regclass)\n order_id       | bigint                      |           | not null |\n user_id        | bigint                      |           | not null |\n amount         | numeric(10,2)               |           | not null |\n method         | character varying(30)        |           | not null |\n status         | character varying(20)        |           | not null | 'initiated'::character varying\n gateway_ref    | character varying(100)       |           |          |\n created_at     | timestamp with time zone     |           | not null | now()\n completed_at   | timestamp with time zone     |           |          |\nIndexes:\n    \"payments_pkey\" PRIMARY KEY, btree (id)\n    \"idx_payments_order_id\" btree (order_id)\n    \"idx_payments_user_id\" btree (user_id)\n    \"idx_payments_status\" btree (status)\n    \"idx_payments_gateway_ref\" UNIQUE, btree (gateway_ref)\nForeign-key constraints:\n    \"payments_order_id_fkey\" FOREIGN KEY (order_id) REFERENCES orders(id)\n    \"payments_user_id_fkey\" FOREIGN KEY (user_id) REFERENCES users(id)\nAccess method: heap\nSize: 1.2 GB",
+    "\\di": "                              List of relations\n Schema |            Name             | Type  |  Owner  |  Table\n--------+-----------------------------+-------+---------+----------\n public | users_pkey                  | index | dbadmin | users\n public | users_email_key             | index | dbadmin | users\n public | idx_users_status            | index | dbadmin | users\n public | idx_users_created_at        | index | dbadmin | users\n public | orders_pkey                 | index | dbadmin | orders\n public | idx_orders_user_id          | index | dbadmin | orders\n public | idx_orders_created_at       | index | dbadmin | orders\n public | products_pkey               | index | dbadmin | products\n public | idx_products_category       | index | dbadmin | products\n public | idx_products_active         | index | dbadmin | products\n public | payments_pkey               | index | dbadmin | payments\n public | idx_payments_order_id       | index | dbadmin | payments\n public | idx_payments_user_id        | index | dbadmin | payments\n public | idx_payments_status         | index | dbadmin | payments\n public | idx_payments_gateway_ref    | index | dbadmin | payments\n(15 rows)",
+    "\\di orders*": "                              List of relations\n Schema |          Name           | Type  |  Owner  | Table\n--------+-------------------------+-------+---------+--------\n public | orders_pkey             | index | dbadmin | orders\n public | idx_orders_user_id      | index | dbadmin | orders\n public | idx_orders_created_at   | index | dbadmin | orders\n(3 rows)",
+    "\\du": "                                    List of roles\n  Role name  |                         Attributes\n-------------+------------------------------------------------------------\n dbadmin     | Superuser, Create role, Create DB, Replication\n app_user    | \n readonly    | Cannot login\n replication | Replication\n postgres    | Superuser, Create role, Create DB, Replication, Bypass RLS",
+    "\\conninfo": "You are connected to database \"ecommerce\" as user \"dbadmin\" on host \"prod-db-primary.internal\" (address \"10.0.5.42\") at port \"5432\".\nSSL connection (protocol: TLSv1.3, cipher: TLS_AES_256_GCM_SHA384, compression: off)",
+    "\\timing on": "Timing is on.",
+    "SELECT count(*) FROM users;": " count\n--------\n 1285347\n(1 row)\n\nTime: 142.853 ms",
+    "SELECT count(*) FROM orders;": " count\n---------\n 2438291\n(1 row)\n\nTime: 198.412 ms",
+    "SELECT count(*) FROM products;": " count\n-------\n 45892\n(1 row)\n\nTime: 12.341 ms",
+    "SELECT count(*) FROM payments;": " count\n---------\n 2156483\n(1 row)\n\nTime: 178.291 ms",
+    "SELECT * FROM pg_stat_activity WHERE state = 'active';": " pid  |  datname   | usename  |          query                                              | state  | wait_event_type | wait_event |    backend_start        |      query_start\n------+------------+----------+-------------------------------------------------------------+--------+-----------------+------------+-------------------------+------------------------\n 4821 | ecommerce  | app_user | SELECT * FROM orders WHERE user_id = 42 AND status = 'pen...| active | Lock            | relation   | 2026-06-02 08:12:00+05:30| 2026-06-02 10:43:12+05:30\n 4829 | ecommerce  | app_user | UPDATE orders SET status = 'processing' WHERE id = 98231... | idle in transaction | Client | ClientRead | 2026-06-02 09:01:00+05:30| 2026-06-02 10:41:05+05:30\n 4835 | ecommerce  | app_user | SELECT p.name, oi.quantity FROM order_items oi JOIN produ...| active |                 |            | 2026-06-02 07:30:00+05:30| 2026-06-02 10:44:01+05:30\n 5012 | ecommerce  | dbadmin  | SELECT * FROM pg_stat_activity WHERE state = 'active'       | active |                 |            | 2026-06-02 10:30:00+05:30| 2026-06-02 10:44:15+05:30\n(4 rows)",
+    "SELECT * FROM pg_locks WHERE NOT granted;": " locktype | database | relation | page | tuple | virtualxid | transactionid |  pid | mode             | granted | fastpath | waitstart\n----------+----------+----------+------+-------+------------+---------------+------+------------------+---------+----------+--------------------------\n relation |    16384 |    18205 |      |       |            |               | 4821 | AccessShareLock  | f       | f        | 2026-06-02 10:43:12+05:30\n(1 row)",
+    "SELECT pid, query, state, wait_event_type FROM pg_stat_activity WHERE pid = 4829;": " pid  |                              query                               |       state       | wait_event_type\n------+------------------------------------------------------------------+-------------------+-----------------\n 4829 | UPDATE orders SET status = 'processing' WHERE id = 982314        | idle in transaction | Client\n(1 row)",
+    "EXPLAIN ANALYZE SELECT * FROM orders WHERE user_id = 42 AND status = 'pending';": "                                                        QUERY PLAN\n---------------------------------------------------------------------------------------------------------------------------\n Seq Scan on orders  (cost=0.00..98234.56 rows=12 width=72) (actual time=2145.234..8923.456 rows=8 loops=1)\n   Filter: ((user_id = 42) AND ((status)::text = 'pending'::text))\n   Rows Removed by Filter: 2438283\n Planning Time: 0.234 ms\n Execution Time: 8923.891 ms\n(5 rows)\n\nTime: 8924.512 ms (00:08.925)",
+    "CREATE INDEX CONCURRENTLY idx_orders_user_status ON orders(user_id, status);": "CREATE INDEX\n\nTime: 34521.234 ms (00:34.521)",
+    "SELECT pg_terminate_backend(4829);": " pg_terminate_backend\n----------------------\n t\n(1 row)",
+    "SELECT pg_cancel_backend(4829);": " pg_cancel_backend\n-------------------\n t\n(1 row)",
+    "SELECT pg_size_pretty(pg_database_size('ecommerce'));": " pg_size_pretty\n----------------\n 4.8 GB\n(1 row)",
+    "SELECT pg_size_pretty(pg_database_size(current_database()));": " pg_size_pretty\n----------------\n 4.8 GB\n(1 row)",
+    "SELECT relname, pg_size_pretty(pg_total_relation_size(relid)) FROM pg_stat_user_tables ORDER BY pg_total_relation_size(relid) DESC;": "   relname    | pg_size_pretty\n--------------+----------------\n orders       | 1.8 GB\n payments     | 1.2 GB\n users        | 892 MB\n audit_log    | 456 MB\n products     | 245 MB\n order_items  | 198 MB\n sessions     | 89 MB\n categories   | 2.1 MB\n(8 rows)",
+    "SELECT relname, n_live_tup, n_dead_tup, last_vacuum, last_autovacuum, last_analyze FROM pg_stat_user_tables;": "   relname    | n_live_tup | n_dead_tup |       last_vacuum       |     last_autovacuum     |      last_analyze\n--------------+------------+------------+-------------------------+-------------------------+------------------------\n users        |    1285347 |      12453 | 2026-06-01 03:00:00+05:30| 2026-06-02 04:12:00+05:30| 2026-06-01 03:00:00+05:30\n orders       |    2438291 |     198234 | 2026-05-28 03:00:00+05:30| 2026-06-01 22:45:00+05:30| 2026-05-28 03:00:00+05:30\n products     |      45892 |        234 | 2026-06-02 03:00:00+05:30| 2026-06-02 06:30:00+05:30| 2026-06-02 03:00:00+05:30\n payments     |    2156483 |     156789 | 2026-05-29 03:00:00+05:30| 2026-06-02 01:15:00+05:30| 2026-05-29 03:00:00+05:30\n categories   |        342 |          0 | 2026-06-02 03:00:00+05:30| 2026-06-02 03:00:00+05:30| 2026-06-02 03:00:00+05:30\n order_items  |   5892341 |      89234 | 2026-05-30 03:00:00+05:30| 2026-06-02 02:30:00+05:30| 2026-05-30 03:00:00+05:30\n sessions     |    456123 |      34521 | 2026-06-02 03:00:00+05:30| 2026-06-02 08:00:00+05:30| 2026-06-02 03:00:00+05:30\n audit_log    |   8923451 |      45123 | 2026-05-25 03:00:00+05:30|                         | 2026-05-25 03:00:00+05:30\n(8 rows)",
+    "VACUUM ANALYZE orders;": "VACUUM\n\nTime: 45231.123 ms (00:45.231)",
+    "VACUUM ANALYZE users;": "VACUUM\n\nTime: 18923.456 ms (00:18.923)",
+    "REINDEX INDEX idx_orders_user_id;": "REINDEX\n\nTime: 12453.789 ms (00:12.454)",
+    "REINDEX TABLE orders;": "REINDEX\n\nTime: 89234.567 ms (01:29.235)",
+    "ALTER TABLE orders ADD COLUMN notes text;": "ALTER TABLE\n\nTime: 2.345 ms",
+    "ALTER TABLE users ADD COLUMN phone character varying(20);": "ALTER TABLE\n\nTime: 1.892 ms",
+    "SELECT pg_reload_conf();": " pg_reload_conf\n----------------\n t\n(1 row)",
+    "SHOW shared_buffers;": " shared_buffers\n----------------\n 4GB\n(1 row)",
+    "SHOW max_connections;": " max_connections\n-----------------\n 200\n(1 row)",
+    "SHOW work_mem;": " work_mem\n----------\n 64MB\n(1 row)",
+    "SHOW effective_cache_size;": " effective_cache_size\n----------------------\n 12GB\n(1 row)",
+    "SHOW maintenance_work_mem;": " maintenance_work_mem\n----------------------\n 1GB\n(1 row)",
+    "SHOW wal_level;": " wal_level\n-----------\n replica\n(1 row)",
+    "SHOW max_wal_senders;": " max_wal_senders\n-----------------\n 10\n(1 row)",
+    "ALTER SYSTEM SET work_mem = '128MB';": "ALTER SYSTEM\n\nTime: 1.234 ms",
+    "ALTER SYSTEM SET shared_buffers = '8GB';": "ALTER SYSTEM\n\nTime: 1.456 ms\n\n-- Note: Requires server restart to take effect.",
+    "pg_dump -Fc -Z 9 -f /backups/ecommerce_20260602.dump ecommerce": "pg_dump: dumping database \"ecommerce\"...\npg_dump: saving schemas...\npg_dump: saving tables (8)...\npg_dump: dumping contents of table \"public.users\"...\npg_dump: dumping contents of table \"public.orders\"...\npg_dump: dumping contents of table \"public.products\"...\npg_dump: dumping contents of table \"public.payments\"...\npg_dump: dumping contents of table \"public.order_items\"...\npg_dump: dumping contents of table \"public.sessions\"...\npg_dump: dumping contents of table \"public.audit_log\"...\npg_dump: dumping contents of table \"public.categories\"...\npg_dump: dump complete\n\nTime: 4m 23s",
+    "pg_dump --schema-only -f /backups/ecommerce_schema.sql ecommerce": "pg_dump: dumping schema for database \"ecommerce\"...\npg_dump: dump complete\n\nTime: 1.234 s",
+    "pg_dumpall --globals-only -f /backups/globals.sql": "pg_dumpall: dumping roles...\npg_dumpall: dumping tablespaces...\npg_dumpall: dump complete",
+    "ls -lh /backups/ecommerce_20260602.dump": "-rw-r--r-- 1 postgres postgres 1.2G Jun  2 10:45 /backups/ecommerce_20260602.dump",
+    "pg_restore --list /backups/ecommerce_20260602.dump": ";\n; Archive created at 2026-06-02 10:45:00 IST\n;     dbname: ecommerce\n;     TOC Entries: 45\n;     Compression: 9\n;     Dump Version: 1.14-0\n;     Format: CUSTOM\n;\n2; 3079 16384 EXTENSION - plpgsql\n192; 1259 16385 TABLE public users dbadmin\n193; 1259 18203 TABLE public orders dbadmin\n194; 1259 18210 TABLE public products dbadmin\n195; 1259 18215 TABLE public payments dbadmin\n196; 1259 18220 TABLE public order_items dbadmin\n197; 1259 18225 TABLE public sessions dbadmin\n198; 1259 18230 TABLE public audit_log dbadmin\n199; 1259 18235 TABLE public categories dbadmin\n3421; 0 16385 TABLE DATA public users dbadmin\n3422; 0 18203 TABLE DATA public orders dbadmin\n3423; 0 18210 TABLE DATA public products dbadmin\n3424; 0 18215 TABLE DATA public payments dbadmin\n3425; 0 18220 TABLE DATA public order_items dbadmin\n3426; 0 18225 TABLE DATA public sessions dbadmin\n3427; 0 18230 TABLE DATA public audit_log dbadmin\n3428; 0 18235 TABLE DATA public categories dbadmin\n210; 1259 INDEX public users_pkey dbadmin\n211; 1259 INDEX public users_email_key dbadmin\n212; 1259 INDEX public orders_pkey dbadmin\n213; 1259 INDEX public idx_orders_user_id dbadmin\n214; 1259 INDEX public payments_pkey dbadmin",
+    "createdb ecommerce_restore": "CREATE DATABASE",
+    "pg_restore -d ecommerce_restore /backups/ecommerce_20260602.dump": "pg_restore: creating EXTENSION \"plpgsql\"\npg_restore: creating TABLE \"public.users\"\npg_restore: creating TABLE \"public.orders\"\npg_restore: creating TABLE \"public.products\"\npg_restore: creating TABLE \"public.payments\"\npg_restore: creating TABLE \"public.order_items\"\npg_restore: creating TABLE \"public.sessions\"\npg_restore: creating TABLE \"public.audit_log\"\npg_restore: creating TABLE \"public.categories\"\npg_restore: processing data for table \"public.users\"...\npg_restore: processing data for table \"public.orders\"...\npg_restore: processing data for table \"public.products\"...\npg_restore: processing data for table \"public.payments\"...\npg_restore: creating indexes...\npg_restore: creating constraints...\npg_restore: restore complete\n\nTime: 6m 12s",
+    "psql -d ecommerce_restore -c \"SELECT count(*) FROM orders;\"": " count\n---------\n 2438291\n(1 row)",
+    "pg_basebackup -D /backups/base -Ft -z -P": "  89234/89234 kB (100%), 1/1 tablespace\nbase backup completed",
+    "pg_isready": "prod-db-primary.internal:5432 - accepting connections",
+    "pg_isready -h prod-db-primary.internal": "prod-db-primary.internal:5432 - accepting connections",
+    "pg_controldata /var/lib/postgresql/16/main": "pg_control version number:            1300\nCatalog version number:               202306141\nDatabase system identifier:           7389234567891234567\nDatabase cluster state:               in production\npg_control last modified:             Mon 02 Jun 2026 10:44:00 IST\nLatest checkpoint location:           2A/4F000028\nLatest checkpoint's REDO location:    2A/4F000028\nLatest checkpoint's TimeLineID:       1\nTime of latest checkpoint:            Mon 02 Jun 2026 10:40:00 IST\nMinimum recovery ending location:     0/0\nBackup start location:                0/0\nBackup end location:                  0/0\nWAL block size:                       8192\nBytes per WAL segment:                16777216\nMaximum length of identifiers:        64\nMaximum number of function arguments: 100\nData page checksum version:           1",
+    "pg_lsclusters": "Ver Cluster   Port Status Owner    Data directory                Log file\n16  main      5432 online postgres /var/lib/postgresql/16/main  /var/log/postgresql/postgresql-16-main.log",
+    "systemctl status postgresql": "\u25cf postgresql.service - PostgreSQL RDBMS\n     Loaded: loaded (/lib/systemd/system/postgresql.service; enabled; preset: enabled)\n     Active: active (exited) since Mon 2026-06-01 03:00:12 IST; 1 day 7h ago\n   Main PID: 1234 (code=exited, status=0/SUCCESS)\n        CPU: 23ms\n\nJun 01 03:00:12 prod-db-primary systemd[1]: Starting PostgreSQL RDBMS...\nJun 01 03:00:12 prod-db-primary systemd[1]: Finished PostgreSQL RDBMS.",
+    "systemctl status postgresql@16-main": "\u25cf postgresql@16-main.service - PostgreSQL Cluster 16-main\n     Loaded: loaded (/lib/systemd/system/postgresql@.service; enabled-runtime; preset: enabled)\n     Active: active (running) since Mon 2026-06-01 03:00:12 IST; 1 day 7h ago\n   Main PID: 1456 (postgres)\n      Tasks: 42 (limit: 38400)\n     Memory: 5.2G\n        CPU: 2h 34min 12.345s\n     CGroup: /system.slice/system-postgresql.slice/postgresql@16-main.service\n             \u251c\u25001456 /usr/lib/postgresql/16/bin/postgres -D /var/lib/postgresql/16/main\n             \u251c\u25001458 postgres: 16/main: checkpointer\n             \u251c\u25001459 postgres: 16/main: background writer\n             \u251c\u25001460 postgres: 16/main: walwriter\n             \u251c\u25001461 postgres: 16/main: autovacuum launcher\n             \u2514\u25001462 postgres: 16/main: logical replication launcher",
+    "SELECT * FROM pg_stat_replication;": " pid  | usesysid | usename     | application_name | client_addr   | client_port | backend_start           | state     | sent_lsn    | write_lsn   | flush_lsn   | replay_lsn  | sync_state\n------+----------+-------------+------------------+---------------+-------------+-------------------------+-----------+-------------+-------------+-------------+-------------+------------\n 2345 |    16385 | replication | replica1         | 10.0.5.43     |       54321 | 2026-06-01 03:01:00+05:30| streaming | 2A/4F000100 | 2A/4F000100 | 2A/4F000100 | 2A/4F0000E0| async\n 2346 |    16385 | replication | replica2         | 10.0.5.44     |       54322 | 2026-06-01 03:01:05+05:30| streaming | 2A/4F000100 | 2A/4F000100 | 2A/4F0000E0 | 2A/4F0000C0| async\n(2 rows)",
+    "SELECT pg_is_in_recovery();": " pg_is_in_recovery\n--------------------\n f\n(1 row)",
+    "SELECT pg_current_wal_lsn();": " pg_current_wal_lsn\n---------------------\n 2A/4F000100\n(1 row)",
+    "SELECT pg_wal_lsn_diff(sent_lsn, replay_lsn) AS replication_lag_bytes, application_name FROM pg_stat_replication;": " replication_lag_bytes | application_name\n-----------------------+------------------\n                    32 | replica1\n                    64 | replica2\n(2 rows)",
+    "SELECT schemaname, relname, seq_scan, seq_tup_read, idx_scan, idx_tup_fetch FROM pg_stat_user_tables ORDER BY seq_scan DESC LIMIT 5;": " schemaname |  relname   | seq_scan | seq_tup_read | idx_scan  | idx_tup_fetch\n------------+------------+----------+--------------+-----------+---------------\n public     | orders     |    45234 |   1102834567 |   8923451 |      12345678\n public     | users      |     2341 |    301245789 |  15234567 |      18923456\n public     | payments   |    12456 |    268945123 |   6789234 |       9234567\n public     | sessions   |     8923 |     40689234 |   3456789 |       4567890\n public     | order_items|     3456 |    204523891 |   7891234 |      10234567\n(5 rows)",
+    "SELECT query, calls, total_exec_time, mean_exec_time, rows FROM pg_stat_statements ORDER BY total_exec_time DESC LIMIT 5;": "                              query                               | calls  | total_exec_time | mean_exec_time | rows\n------------------------------------------------------------------+--------+-----------------+----------------+----------\n SELECT * FROM orders WHERE user_id = $1 AND status = $2          | 234567 |    2145234.123  |       9.145    |   1892345\n SELECT p.*, c.name FROM products p JOIN categories c ON...        |  89234 |     892345.234  |       9.999    |    892340\n UPDATE payments SET status = $1 WHERE order_id = $2              | 156789 |     678234.567  |       4.326    |    156789\n INSERT INTO audit_log (user_id, action, details) VALUES...       | 456123 |     456789.012  |       1.001    |    456123\n SELECT count(*) FROM orders WHERE created_at > $1                |  12345 |     345678.901  |      28.001    |     12345\n(5 rows)",
+    "SELECT datname, numbackends, xact_commit, xact_rollback, blks_read, blks_hit, tup_returned, tup_fetched, tup_inserted, tup_updated, tup_deleted FROM pg_stat_database WHERE datname = 'ecommerce';": " datname   | numbackends | xact_commit | xact_rollback | blks_read  | blks_hit    | tup_returned  | tup_fetched | tup_inserted | tup_updated | tup_deleted\n-----------+-------------+-------------+---------------+------------+-------------+---------------+-------------+--------------+-------------+------------\n ecommerce |          42 |    89234567 |         12345 |   45678901 |  2345678901 |   12345678901 |   890123456 |     56789012 |    23456789 |     1234567\n(1 row)",
+    "SELECT pg_size_pretty(pg_total_relation_size('orders'));": " pg_size_pretty\n----------------\n 1.8 GB\n(1 row)",
+    "SELECT pg_size_pretty(pg_total_relation_size('users'));": " pg_size_pretty\n----------------\n 892 MB\n(1 row)",
+    "SELECT pg_size_pretty(pg_total_relation_size('payments'));": " pg_size_pretty\n----------------\n 1.2 GB\n(1 row)",
+    "SELECT blocked.pid AS blocked_pid, blocked.query AS blocked_query, blocking.pid AS blocking_pid, blocking.query AS blocking_query FROM pg_stat_activity blocked JOIN pg_locks bl ON bl.pid = blocked.pid JOIN pg_locks blk ON blk.relation = bl.relation AND blk.pid != bl.pid JOIN pg_stat_activity blocking ON blocking.pid = blk.pid WHERE NOT bl.granted;": " blocked_pid |                    blocked_query                     | blocking_pid |                   blocking_query\n-------------+------------------------------------------------------+--------------+-----------------------------------------------------\n        4821 | SELECT * FROM orders WHERE user_id = 42 AND stat... |         4829 | UPDATE orders SET status = 'processing' WHERE id...\n(1 row)",
+    "SELECT state, count(*) FROM pg_stat_activity GROUP BY state;": "        state        | count\n---------------------+-------\n active              |     8\n idle                |    28\n idle in transaction |     3\n                     |     3\n(4 rows)",
+    "SELECT usename, count(*) FROM pg_stat_activity GROUP BY usename;": " usename     | count\n-------------+-------\n app_user    |    35\n dbadmin     |     4\n replication |     2\n postgres    |     1\n(4 rows)",
+    "SELECT pg_postmaster_start_time();": "   pg_postmaster_start_time\n-------------------------------\n 2026-06-01 03:00:12.345+05:30\n(1 row)",
+    "SHOW server_version;": " server_version\n----------------\n 16.3\n(1 row)",
+    "SELECT now() - pg_postmaster_start_time() AS uptime;": "      uptime\n-----------------\n 1 day 07:44:03\n(1 row)",
+    "SELECT * FROM pg_stat_bgwriter;": " checkpoints_timed | checkpoints_req | buffers_checkpoint | buffers_clean | buffers_backend | buffers_alloc\n-------------------+-----------------+--------------------+---------------+-----------------+---------------\n              1234 |              23 |            5678901 |        234567 |           89012 |       1234567\n(1 row)",
+    "SELECT setting, unit FROM pg_settings WHERE name = 'shared_buffers';": " setting | unit\n---------+------\n 524288  | 8kB\n(1 row)",
+    "SELECT name, setting, unit, context FROM pg_settings WHERE name IN ('shared_buffers', 'work_mem', 'effective_cache_size', 'max_connections');": "        name         | setting  | unit | context\n---------------------+----------+------+------------\n effective_cache_size | 1572864  | 8kB  | user\n max_connections      | 200      |      | postmaster\n shared_buffers       | 524288   | 8kB  | postmaster\n work_mem             | 65536    | kB   | user\n(4 rows)",
+    "SELECT wait_event_type, wait_event, count(*) FROM pg_stat_activity WHERE wait_event IS NOT NULL GROUP BY wait_event_type, wait_event ORDER BY count DESC;": " wait_event_type |   wait_event    | count\n-----------------+-----------------+-------\n Client          | ClientRead      |    28\n Lock            | relation        |     1\n Activity        | WalWriterMain   |     1\n Activity        | AutoVacuumMain  |     1\n Activity        | BgWriterMain    |     1\n Activity        | CheckpointerMain|     1\n(6 rows)",
+    "SELECT locktype, relation::regclass, mode, granted, pid FROM pg_locks WHERE relation IS NOT NULL ORDER BY relation;": " locktype |  relation  |       mode       | granted | pid\n----------+------------+------------------+---------+------\n relation | orders     | RowExclusiveLock | t       | 4829\n relation | orders     | AccessShareLock  | f       | 4821\n relation | users      | AccessShareLock  | t       | 4835\n relation | products   | AccessShareLock  | t       | 4835\n relation | payments   | RowExclusiveLock | t       | 4838\n(5 rows)",
+    "EXPLAIN (ANALYZE, BUFFERS) SELECT * FROM orders WHERE user_id = 42 AND status = 'pending';": "                                                        QUERY PLAN\n---------------------------------------------------------------------------------------------------------------------------\n Seq Scan on orders  (cost=0.00..98234.56 rows=12 width=72) (actual time=2145.234..8923.456 rows=8 loops=1)\n   Filter: ((user_id = 42) AND ((status)::text = 'pending'::text))\n   Rows Removed by Filter: 2438283\n   Buffers: shared hit=12345 read=45678\n Planning Time: 0.234 ms\n Execution Time: 8923.891 ms\n(6 rows)",
+    "EXPLAIN ANALYZE SELECT u.name, count(o.id) FROM users u JOIN orders o ON o.user_id = u.id GROUP BY u.name ORDER BY count DESC LIMIT 10;": "                                                              QUERY PLAN\n----------------------------------------------------------------------------------------------------------------------------------------\n Limit  (cost=245678.90..245678.93 rows=10 width=40) (actual time=4523.123..4523.145 rows=10 loops=1)\n   ->  Sort  (cost=245678.90..248912.34 rows=1285347 width=40) (actual time=4523.121..4523.138 rows=10 loops=1)\n         Sort Key: (count(o.id)) DESC\n         Sort Method: top-N heapsort  Memory: 25kB\n         ->  HashAggregate  (cost=198234.56..211089.03 rows=1285347 width=40) (actual time=3892.234..4345.678 rows=1285347 loops=1)\n               Group Key: u.name\n               Batches: 5  Memory Usage: 40961kB  Disk Usage: 12345kB\n               ->  Hash Join  (cost=45678.90..178234.56 rows=2438291 width=36) (actual time=892.123..2345.678 rows=2438291 loops=1)\n                     Hash Cond: (o.user_id = u.id)\n                     ->  Seq Scan on orders o  (cost=0.00..89234.91 rows=2438291 width=16) (actual time=0.012..892.345 rows=2438291 loops=1)\n                     ->  Hash  (cost=34567.47..34567.47 rows=1285347 width=28) (actual time=891.234..891.234 rows=1285347 loops=1)\n                           Buckets: 2097152  Batches: 1  Memory Usage: 72345kB\n                           ->  Seq Scan on users u  (cost=0.00..34567.47 rows=1285347 width=28) (actual time=0.008..456.789 rows=1285347 loops=1)\n Planning Time: 1.234 ms\n Execution Time: 4523.567 ms\n(15 rows)",
+    "SELECT relname, n_tup_ins, n_tup_upd, n_tup_del, n_tup_hot_upd FROM pg_stat_user_tables;": "   relname    | n_tup_ins | n_tup_upd | n_tup_del | n_tup_hot_upd\n--------------+-----------+-----------+-----------+---------------\n users        |   1285347 |    456789 |     12345 |        345678\n orders       |   2438291 |    892345 |     23456 |        234567\n products     |     45892 |     12345 |       234 |         11234\n payments     |   2156483 |    567891 |      1234 |        456789\n categories   |       342 |        23 |         0 |            23\n order_items  |   5892341 |     34567 |      5678 |         23456\n sessions     |    456123 |    234567 |    123456 |        212345\n audit_log    |   8923451 |         0 |         0 |             0\n(8 rows)",
+    "SELECT indexrelname, idx_scan, idx_tup_read, idx_tup_fetch FROM pg_stat_user_indexes WHERE schemaname = 'public' ORDER BY idx_scan DESC LIMIT 10;": "       indexrelname        | idx_scan  | idx_tup_read | idx_tup_fetch\n---------------------------+-----------+--------------+---------------\n users_email_key           |  15234567 |     15234567 |      15234567\n users_pkey                |  12345678 |     12345678 |      12345678\n orders_pkey               |   8923451 |      8923451 |       8923451\n idx_payments_order_id     |   6789234 |      7234567 |       6789234\n idx_orders_user_id        |   5678923 |      8923456 |       5678923\n idx_payments_status       |   4567891 |      5678912 |       4567891\n idx_users_status          |   3456789 |      4567890 |       3456789\n products_pkey             |   2345678 |      2345678 |       2345678\n idx_products_category     |   1234567 |      1567890 |       1234567\n idx_payments_gateway_ref  |    891234 |       891234 |        891234\n(10 rows)",
+    "SELECT blk_read_time, blk_write_time FROM pg_stat_database WHERE datname = 'ecommerce';": " blk_read_time | blk_write_time\n---------------+----------------\n   234567.890  |      12345.678\n(1 row)",
+    "SELECT round(100 * blks_hit / (blks_hit + blks_read)::numeric, 2) AS cache_hit_ratio FROM pg_stat_database WHERE datname = 'ecommerce';": " cache_hit_ratio\n-----------------\n           98.09\n(1 row)"
+  },
+  "reference": [
+    {
+      "group": "Connection & Info",
+      "commands": [
+        {
+          "cmd": "\\conninfo",
+          "desc": "connection details"
+        },
+        {
+          "cmd": "SELECT version();",
+          "desc": "PostgreSQL version"
+        },
+        {
+          "cmd": "\\l",
+          "desc": "list databases"
+        },
+        {
+          "cmd": "\\du",
+          "desc": "list roles"
+        },
+        {
+          "cmd": "pg_isready",
+          "desc": "check if accepting connections"
+        },
+        {
+          "cmd": "\\timing on",
+          "desc": "enable query timing"
+        }
+      ]
+    },
+    {
+      "group": "Tables & Schema",
+      "commands": [
+        {
+          "cmd": "\\dt",
+          "desc": "list tables"
+        },
+        {
+          "cmd": "\\d+ orders",
+          "desc": "describe table with size"
+        },
+        {
+          "cmd": "\\di",
+          "desc": "list all indexes"
+        },
+        {
+          "cmd": "SELECT count(*) FROM users;",
+          "desc": "row count"
+        },
+        {
+          "cmd": "SELECT pg_size_pretty(pg_total_relation_size('orders'));",
+          "desc": "table size"
+        }
+      ]
+    },
+    {
+      "group": "Query Performance",
+      "commands": [
+        {
+          "cmd": "EXPLAIN ANALYZE SELECT ...;",
+          "desc": "query execution plan"
+        },
+        {
+          "cmd": "SELECT * FROM pg_stat_activity WHERE state = 'active';",
+          "desc": "running queries"
+        },
+        {
+          "cmd": "SELECT * FROM pg_stat_statements ORDER BY total_exec_time DESC LIMIT 5;",
+          "desc": "slowest queries"
+        },
+        {
+          "cmd": "SELECT * FROM pg_locks WHERE NOT granted;",
+          "desc": "blocked locks"
+        },
+        {
+          "cmd": "SELECT pg_terminate_backend(pid);",
+          "desc": "kill a connection"
+        }
+      ]
+    },
+    {
+      "group": "Indexes & Maintenance",
+      "commands": [
+        {
+          "cmd": "CREATE INDEX CONCURRENTLY idx_name ON table(col);",
+          "desc": "create index (no lock)"
+        },
+        {
+          "cmd": "VACUUM ANALYZE orders;",
+          "desc": "reclaim space + update stats"
+        },
+        {
+          "cmd": "REINDEX TABLE orders;",
+          "desc": "rebuild indexes"
+        },
+        {
+          "cmd": "SELECT indexrelname, idx_scan FROM pg_stat_user_indexes;",
+          "desc": "index usage stats"
+        }
+      ]
+    },
+    {
+      "group": "Backup & Restore",
+      "commands": [
+        {
+          "cmd": "pg_dump -Fc -Z 9 -f backup.dump dbname",
+          "desc": "compressed backup"
+        },
+        {
+          "cmd": "pg_restore -d target backup.dump",
+          "desc": "restore from backup"
+        },
+        {
+          "cmd": "pg_restore --list backup.dump",
+          "desc": "list backup contents"
+        },
+        {
+          "cmd": "pg_basebackup -D /path -Ft -z -P",
+          "desc": "physical base backup"
+        },
+        {
+          "cmd": "pg_dumpall --globals-only -f globals.sql",
+          "desc": "backup roles/tablespaces"
+        }
+      ]
+    },
+    {
+      "group": "Replication & HA",
+      "commands": [
+        {
+          "cmd": "SELECT * FROM pg_stat_replication;",
+          "desc": "replication status"
+        },
+        {
+          "cmd": "SELECT pg_is_in_recovery();",
+          "desc": "am I a replica?"
+        },
+        {
+          "cmd": "SELECT pg_current_wal_lsn();",
+          "desc": "current WAL position"
+        },
+        {
+          "cmd": "SELECT pg_wal_lsn_diff(sent_lsn, replay_lsn) FROM pg_stat_replication;",
+          "desc": "replication lag"
+        }
+      ]
+    },
+    {
+      "group": "Configuration",
+      "commands": [
+        {
+          "cmd": "SHOW shared_buffers;",
+          "desc": "buffer pool size"
+        },
+        {
+          "cmd": "SHOW max_connections;",
+          "desc": "connection limit"
+        },
+        {
+          "cmd": "SHOW work_mem;",
+          "desc": "per-operation memory"
+        },
+        {
+          "cmd": "ALTER SYSTEM SET work_mem = '128MB';",
+          "desc": "change config"
+        },
+        {
+          "cmd": "SELECT pg_reload_conf();",
+          "desc": "reload without restart"
+        }
+      ]
+    },
+    {
+      "group": "Database Health",
+      "commands": [
+        {
+          "cmd": "SELECT pg_size_pretty(pg_database_size('ecommerce'));",
+          "desc": "database size"
+        },
+        {
+          "cmd": "SELECT round(100*blks_hit/(blks_hit+blks_read)::numeric,2) FROM pg_stat_database;",
+          "desc": "cache hit ratio"
+        },
+        {
+          "cmd": "SELECT relname, n_dead_tup FROM pg_stat_user_tables;",
+          "desc": "dead tuple bloat"
+        },
+        {
+          "cmd": "SELECT state, count(*) FROM pg_stat_activity GROUP BY state;",
+          "desc": "connection states"
+        },
+        {
+          "cmd": "pg_controldata /var/lib/postgresql/16/main",
+          "desc": "cluster control data"
+        }
+      ]
+    }
+  ]
+}

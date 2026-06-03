@@ -1,0 +1,318 @@
+{
+  "id": "k6",
+  "prompt": "k6@loadtest:~/tests$",
+  "welcome": "Welcome to the k6 Load Testing CLI Playground.\nType commands to explore a simulated load testing environment.\nType 'help' for available commands, 'scenario' for guided labs.\n",
+  "scenarios": [
+    {
+      "id": "run-and-analyze",
+      "title": "Run a Load Test and Analyze Results",
+      "steps": [
+        {
+          "instruction": "First, inspect the test script to understand what it does.",
+          "expect": "k6 inspect script.js",
+          "hint": "Try: k6 inspect script.js"
+        },
+        {
+          "instruction": "Run the load test script with default settings.",
+          "expect": "k6 run script.js",
+          "hint": "Try: k6 run script.js"
+        },
+        {
+          "instruction": "The default run used 10 VUs. Run again with 50 virtual users for 30 seconds.",
+          "expect": "k6 run --vus 50 --duration 30s script.js",
+          "hint": "Try: k6 run --vus 50 --duration 30s script.js"
+        },
+        {
+          "instruction": "Good — p95 latency is 320ms. Now tag this run as a smoke test for traceability.",
+          "expect": "k6 run --tag testid=smoke script.js",
+          "hint": "Try: k6 run --tag testid=smoke script.js"
+        },
+        {
+          "instruction": "Export the results to JSON for post-processing and dashboarding.",
+          "expect": "k6 run --out json=results.json script.js",
+          "hint": "Try: k6 run --out json=results.json script.js"
+        },
+        {
+          "instruction": "Now export to CSV as well — the QA team prefers spreadsheets.",
+          "expect": "k6 run --out csv=results.csv script.js",
+          "hint": "Try: k6 run --out csv=results.csv script.js"
+        },
+        {
+          "instruction": "Enable HTTP debug output to inspect individual request/response headers.",
+          "expect": "k6 run --http-debug script.js",
+          "hint": "Try: k6 run --http-debug script.js"
+        },
+        {
+          "instruction": "Finally, stream results to InfluxDB for Grafana dashboarding.",
+          "expect": "k6 run --out influxdb=http://localhost:8086/k6 script.js",
+          "hint": "Try: k6 run --out influxdb=http://localhost:8086/k6 script.js"
+        }
+      ]
+    },
+    {
+      "id": "progressive-load",
+      "title": "Progressive Load Testing",
+      "steps": [
+        {
+          "instruction": "Check the k6 version to confirm the installation.",
+          "expect": "k6 version",
+          "hint": "Try: k6 version"
+        },
+        {
+          "instruction": "Run the staged load test script that ramps from 0 to 200 VUs.",
+          "expect": "k6 run stages-test.js",
+          "hint": "Try: k6 run stages-test.js"
+        },
+        {
+          "instruction": "The API started failing at 150 VUs. Let's set an environment variable for the base URL and re-run.",
+          "expect": "k6 run --env BASE_URL=https://api.example.com stages-test.js",
+          "hint": "Try: k6 run --env BASE_URL=https://api.example.com stages-test.js"
+        },
+        {
+          "instruction": "Check the live test status while it's running.",
+          "expect": "k6 status",
+          "hint": "Try: k6 status"
+        },
+        {
+          "instruction": "The error rate is climbing. Scale down to 20 VUs to see if the API recovers.",
+          "expect": "k6 scale 20",
+          "hint": "Try: k6 scale 20"
+        },
+        {
+          "instruction": "API recovered. Pause the test to investigate before resuming.",
+          "expect": "k6 pause",
+          "hint": "Try: k6 pause"
+        },
+        {
+          "instruction": "Investigation done — the payment service was the bottleneck. Resume the test.",
+          "expect": "k6 resume",
+          "hint": "Try: k6 resume"
+        },
+        {
+          "instruction": "Archive the test script for reproducibility and upload to k6 Cloud.",
+          "expect": "k6 cloud script.js",
+          "hint": "Try: k6 cloud script.js"
+        }
+      ]
+    }
+  ],
+  "commands": {
+    "help": "Available commands:\n  k6 run <script>                — Run a load test script\n  k6 run --vus N --duration Xs   — Run with N virtual users for X seconds\n  k6 run --out <output>          — Export results (json, csv, influxdb)\n  k6 run --tag key=value         — Tag a test run for filtering\n  k6 run --env KEY=VALUE         — Pass environment variables to script\n  k6 run --http-debug            — Show HTTP request/response details\n  k6 run --summary-trend-stats   — Customise end-of-test summary stats\n  k6 run --no-thresholds         — Run without threshold evaluation\n  k6 cloud <script>              — Run test on k6 Cloud\n  k6 cloud login                 — Authenticate with k6 Cloud\n  k6 inspect <script>            — Show test script metadata\n  k6 archive <script>            — Create a test archive bundle\n  k6 convert <har>               — Convert HAR file to k6 script\n  k6 version                     — Show k6 version\n  k6 status                      — Show status of running test\n  k6 stats                       — Show live metrics of running test\n  k6 pause                       — Pause a running test\n  k6 resume                      — Resume a paused test\n  k6 scale <vus>                 — Change VU count of running test\n\n  scenario                       — Start a guided lab\n  clear                          — Clear the terminal\n  help                           — Show this help",
+    "k6 version": "k6 v0.52.0 (go1.22.5, linux/amd64)",
+    "k6 inspect script.js": "{\n  \"options\": {\n    \"vus\": 10,\n    \"duration\": \"30s\",\n    \"thresholds\": {\n      \"http_req_duration\": [\"p(95)<500\"],\n      \"http_req_failed\": [\"rate<0.01\"]\n    }\n  },\n  \"imports\": [\"k6/http\", \"k6/check\"],\n  \"endpoints\": [\n    \"POST https://api.example.com/v1/payments/initiate\",\n    \"GET  https://api.example.com/v1/payments/{id}/status\",\n    \"GET  https://api.example.com/v1/accounts/balance\"\n  ]\n}",
+    "k6 run script.js": "         /\\      |‾‾| /‾‾/   /‾‾/\n        /  \\     |  |/  /   /  /\n       /    \\    |     (   /   ‾‾\\\n      /  ‾‾  \\   |  |\\  \\ |  (‾)  |\n     / __ /\\__\\  |__| \\__\\ \\_____/ .io\n\n  execution: local\n     script: script.js\n     output: -\n\n  scenarios: (100.00%) 1 scenario, 10 max VUs, 1m0s max duration\n           default: 10 looping VUs for 30s (gracefulStop: 30s)\n\nrunning (0m30.0s), 00/10 VUs, 2847 complete iterations\ndefault ✓ [======================================] 10 VUs  30s\n\n     ✓ payment initiated successfully\n     ✓ status code is 200\n     ✓ response time < 500ms\n\n     checks.........................: 100.00% ✓ 8541  ✗ 0\n     data_received..................: 12 MB   398 kB/s\n     data_sent......................: 3.2 MB  107 kB/s\n     http_req_blocked...............: avg=2.1ms   min=1µs    med=3µs    max=142ms  p(90)=5µs    p(95)=8µs\n     http_req_connecting............: avg=1.8ms   min=0s     med=0s     max=138ms  p(90)=0s     p(95)=0s\n     http_req_duration..............: avg=89.2ms  min=42ms   med=78ms   max=487ms  p(90)=156ms  p(95)=212ms\n       { expected_response:true }...: avg=89.2ms  min=42ms   med=78ms   max=487ms  p(90)=156ms  p(95)=212ms\n     http_req_failed................: 0.00%   ✓ 0     ✗ 8541\n     http_req_receiving.............: avg=0.3ms   min=0.1ms  med=0.2ms  max=12ms   p(90)=0.5ms  p(95)=0.7ms\n     http_req_sending...............: avg=0.1ms   min=0.02ms med=0.05ms max=8ms    p(90)=0.1ms  p(95)=0.2ms\n     http_req_tls_handshaking.......: avg=1.2ms   min=0s     med=0s     max=98ms   p(90)=0s     p(95)=0s\n     http_req_waiting...............: avg=88.8ms  min=41ms   med=77ms   max=485ms  p(90)=155ms  p(95)=211ms\n     http_reqs......................: 8541    284.7/s\n     iteration_duration.............: avg=312ms   min=156ms  med=278ms  max=1.42s  p(90)=489ms  p(95)=587ms\n     iterations.....................: 2847    94.9/s\n     vus............................: 10      min=10  max=10\n     vus_max........................: 10      min=10  max=10\n\n  ✓ http_req_duration..............: p(95)=212ms < 500ms\n  ✓ http_req_failed................: 0.00% < 1.00%",
+    "k6 run --vus 50 --duration 30s script.js": "         /\\      |‾‾| /‾‾/   /‾‾/\n        /  \\     |  |/  /   /  /\n       /    \\    |     (   /   ‾‾\\\n      /  ‾‾  \\   |  |\\  \\ |  (‾)  |\n     / __ /\\__\\  |__| \\__\\ \\_____/ .io\n\n  execution: local\n     script: script.js\n     output: -\n\n  scenarios: (100.00%) 1 scenario, 50 max VUs, 1m0s max duration\n           default: 50 looping VUs for 30s (gracefulStop: 30s)\n\nrunning (0m30.0s), 00/50 VUs, 9823 complete iterations\ndefault ✓ [======================================] 50 VUs  30s\n\n     ✓ payment initiated successfully\n     ✓ status code is 200\n     ✗ response time < 500ms\n      ↳  94% — ✓ 27701 / ✗ 1768\n\n     checks.........................: 98.02%  ✓ 56872 ✗ 1768\n     data_received..................: 58 MB   1.9 MB/s\n     data_sent......................: 16 MB   533 kB/s\n     http_req_blocked...............: avg=1.8ms   min=1µs    med=3µs    max=198ms  p(90)=5µs    p(95)=7µs\n     http_req_connecting............: avg=1.5ms   min=0s     med=0s     max=192ms  p(90)=0s     p(95)=0s\n     http_req_duration..............: avg=148ms   min=38ms   med=118ms  max=1.89s  p(90)=278ms  p(95)=320ms\n       { expected_response:true }...: avg=142ms   min=38ms   med=112ms  max=1.89s  p(90)=265ms  p(95)=308ms\n     http_req_failed................: 0.42%   ✓ 124   ✗ 29345\n     http_req_receiving.............: avg=0.4ms   min=0.1ms  med=0.2ms  max=18ms   p(90)=0.6ms  p(95)=0.9ms\n     http_req_sending...............: avg=0.1ms   min=0.02ms med=0.05ms max=12ms   p(90)=0.1ms  p(95)=0.2ms\n     http_req_tls_handshaking.......: avg=0.9ms   min=0s     med=0s     max=112ms  p(90)=0s     p(95)=0s\n     http_req_waiting...............: avg=147ms   min=37ms   med=117ms  max=1.88s  p(90)=277ms  p(95)=319ms\n     http_reqs......................: 29469   982.3/s\n     iteration_duration.............: avg=452ms   min=198ms  med=389ms  max=2.85s  p(90)=712ms  p(95)=845ms\n     iterations.....................: 9823    327.4/s\n     vus............................: 50      min=50  max=50\n     vus_max........................: 50      min=50  max=50\n\n  ✓ http_req_duration..............: p(95)=320ms < 500ms\n  ✗ http_req_failed................: 0.42% > 1.00%\n    threshold crossed — 124 failed requests out of 29469",
+    "k6 run --tag testid=smoke script.js": "         /\\      |‾‾| /‾‾/   /‾‾/\n        /  \\     |  |/  /   /  /\n       /    \\    |     (   /   ‾‾\\\n      /  ‾‾  \\   |  |\\  \\ |  (‾)  |\n     / __ /\\__\\  |__| \\__\\ \\_____/ .io\n\n  execution: local\n     script: script.js\n     output: -\n  tags:     testid=smoke\n\n  scenarios: (100.00%) 1 scenario, 10 max VUs, 1m0s max duration\n           default: 10 looping VUs for 30s (gracefulStop: 30s)\n\nrunning (0m30.0s), 00/10 VUs, 2912 complete iterations\ndefault ✓ [======================================] 10 VUs  30s\n\n     ✓ payment initiated successfully\n     ✓ status code is 200\n     ✓ response time < 500ms\n\n     checks.........................: 100.00% ✓ 8736  ✗ 0\n     http_req_duration..............: avg=85ms   min=40ms   med=74ms   max=465ms  p(90)=148ms  p(95)=198ms\n     http_req_failed................: 0.00%   ✓ 0     ✗ 8736\n     http_reqs......................: 8736    291.2/s\n     iterations.....................: 2912    97.1/s\n\n  ✓ http_req_duration..............: p(95)=198ms < 500ms\n  ✓ http_req_failed................: 0.00% < 1.00%\n\n  [smoke test PASSED — all thresholds within SLA]",
+    "k6 run --out json=results.json script.js": "         /\\      |‾‾| /‾‾/   /‾‾/\n        /  \\     |  |/  /   /  /\n       /    \\    |     (   /   ‾‾\\\n      /  ‾‾  \\   |  |\\  \\ |  (‾)  |\n     / __ /\\__\\  |__| \\__\\ \\_____/ .io\n\n  execution: local\n     script: script.js\n     output: json (results.json)\n\n  scenarios: (100.00%) 1 scenario, 10 max VUs, 1m0s max duration\n           default: 10 looping VUs for 30s (gracefulStop: 30s)\n\nrunning (0m30.0s), 00/10 VUs, 2847 complete iterations\ndefault ✓ [======================================] 10 VUs  30s\n\n     ✓ payment initiated successfully\n     ✓ status code is 200\n\n     http_req_duration..............: avg=89ms   min=42ms   med=78ms   max=487ms  p(90)=156ms  p(95)=212ms\n     http_req_failed................: 0.00%   ✓ 0     ✗ 8541\n     http_reqs......................: 8541    284.7/s\n     iterations.....................: 2847    94.9/s\n\n  ✓ http_req_duration..............: p(95)=212ms < 500ms\n  ✓ http_req_failed................: 0.00% < 1.00%\n\n  output: results written to results.json (2.4 MB, 8541 data points)",
+    "k6 run --out csv=results.csv script.js": "         /\\      |‾‾| /‾‾/   /‾‾/\n        /  \\     |  |/  /   /  /\n       /    \\    |     (   /   ‾‾\\\n      /  ‾‾  \\   |  |\\  \\ |  (‾)  |\n     / __ /\\__\\  |__| \\__\\ \\_____/ .io\n\n  execution: local\n     script: script.js\n     output: csv (results.csv)\n\n  scenarios: (100.00%) 1 scenario, 10 max VUs, 1m0s max duration\n           default: 10 looping VUs for 30s (gracefulStop: 30s)\n\nrunning (0m30.0s), 00/10 VUs, 2847 complete iterations\ndefault ✓ [======================================] 10 VUs  30s\n\n     http_req_duration..............: avg=89ms   min=42ms   med=78ms   max=487ms  p(90)=156ms  p(95)=212ms\n     http_req_failed................: 0.00%   ✓ 0     ✗ 8541\n     http_reqs......................: 8541    284.7/s\n     iterations.....................: 2847    94.9/s\n\n  output: results written to results.csv (1.8 MB, 8541 rows)",
+    "k6 run --out influxdb=http://localhost:8086/k6 script.js": "         /\\      |‾‾| /‾‾/   /‾‾/\n        /  \\     |  |/  /   /  /\n       /    \\    |     (   /   ‾‾\\\n      /  ‾‾  \\   |  |\\  \\ |  (‾)  |\n     / __ /\\__\\  |__| \\__\\ \\_____/ .io\n\n  execution: local\n     script: script.js\n     output: influxdb (http://localhost:8086/k6)\n\n  scenarios: (100.00%) 1 scenario, 10 max VUs, 1m0s max duration\n           default: 10 looping VUs for 30s (gracefulStop: 30s)\n\nrunning (0m30.0s), 00/10 VUs, 2847 complete iterations\ndefault ✓ [======================================] 10 VUs  30s\n\n     http_req_duration..............: avg=91ms   min=43ms   med=80ms   max=492ms  p(90)=158ms  p(95)=215ms\n     http_req_failed................: 0.00%   ✓ 0     ✗ 8541\n     http_reqs......................: 8541    284.7/s\n     iterations.....................: 2847    94.9/s\n\n  output: 8541 metrics flushed to InfluxDB at http://localhost:8086/k6\n  tip: import the k6 Grafana dashboard (ID 2587) to visualise results",
+    "k6 run --http-debug script.js": "         /\\      |‾‾| /‾‾/   /‾‾/\n        /  \\     |  |/  /   /  /\n       /    \\    |     (   /   ‾‾\\\n      /  ‾‾  \\   |  |\\  \\ |  (‾)  |\n     / __ /\\__\\  |__| \\__\\ \\_____/ .io\n\n  execution: local\n     script: script.js\n     output: -\n\n  [HTTP DEBUG]\n  > POST /v1/payments/initiate HTTP/1.1\n  > Host: api.example.com\n  > Content-Type: application/json\n  > X-Request-ID: txn-20260602-001\n  > Authorization: Bearer ***\n  >\n  > {\"amount\":5000,\"currency\":\"INR\",\"account\":\"SAVINGS-0042\"}\n  >\n  < HTTP/1.1 200 OK\n  < Content-Type: application/json\n  < X-Correlation-ID: corr-8f3a2b1c\n  < X-RateLimit-Remaining: 98\n  < Strict-Transport-Security: max-age=31536000\n  <\n  < {\"txn_id\":\"PAY-29384756\",\"status\":\"initiated\",\"eta_ms\":1200}\n\n  [... 8540 more requests ...]\n\n     http_req_duration..............: avg=89ms   min=42ms   med=78ms   max=487ms  p(90)=156ms  p(95)=212ms\n     http_req_failed................: 0.00%   ✓ 0     ✗ 8541\n     http_reqs......................: 8541    284.7/s",
+    "k6 run --summary-trend-stats script.js": "         /\\      |‾‾| /‾‾/   /‾‾/\n        /  \\     |  |/  /   /  /\n       /    \\    |     (   /   ‾‾\\\n      /  ‾‾  \\   |  |\\  \\ |  (‾)  |\n     / __ /\\__\\  |__| \\__\\ \\_____/ .io\n\n  execution: local\n     script: script.js\n     output: -\n  summary-trend-stats: avg,min,med,max,p(90),p(95),p(99)\n\n  scenarios: (100.00%) 1 scenario, 10 max VUs, 1m0s max duration\n           default: 10 looping VUs for 30s (gracefulStop: 30s)\n\nrunning (0m30.0s), 00/10 VUs, 2847 complete iterations\ndefault ✓ [======================================] 10 VUs  30s\n\n     http_req_duration..: avg=89ms  min=42ms  med=78ms  max=487ms  p(90)=156ms  p(95)=212ms  p(99)=398ms\n     http_req_waiting...: avg=88ms  min=41ms  med=77ms  max=485ms  p(90)=155ms  p(95)=211ms  p(99)=396ms\n     iteration_duration.: avg=312ms min=156ms med=278ms max=1.42s  p(90)=489ms  p(95)=587ms  p(99)=978ms\n\n  custom stats: p(99) added — useful for SLA compliance reporting",
+    "k6 run --no-thresholds script.js": "         /\\      |‾‾| /‾‾/   /‾‾/\n        /  \\     |  |/  /   /  /\n       /    \\    |     (   /   ‾‾\\\n      /  ‾‾  \\   |  |\\  \\ |  (‾)  |\n     / __ /\\__\\  |__| \\__\\ \\_____/ .io\n\n  execution: local\n     script: script.js\n     output: -\n  thresholds: disabled\n\n  scenarios: (100.00%) 1 scenario, 10 max VUs, 1m0s max duration\n           default: 10 looping VUs for 30s (gracefulStop: 30s)\n\nrunning (0m30.0s), 00/10 VUs, 2847 complete iterations\ndefault ✓ [======================================] 10 VUs  30s\n\n     http_req_duration..............: avg=89ms   min=42ms   med=78ms   max=487ms  p(90)=156ms  p(95)=212ms\n     http_req_failed................: 0.00%   ✓ 0     ✗ 8541\n     http_reqs......................: 8541    284.7/s\n     iterations.....................: 2847    94.9/s\n\n  [thresholds skipped — no pass/fail evaluation performed]",
+    "k6 run --env BASE_URL=https://api.example.com script.js": "         /\\      |‾‾| /‾‾/   /‾‾/\n        /  \\     |  |/  /   /  /\n       /    \\    |     (   /   ‾‾\\\n      /  ‾‾  \\   |  |\\  \\ |  (‾)  |\n     / __ /\\__\\  |__| \\__\\ \\_____/ .io\n\n  execution: local\n     script: script.js\n     output: -\n  env:      BASE_URL=https://api.example.com\n\n  scenarios: (100.00%) 1 scenario, 10 max VUs, 1m0s max duration\n           default: 10 looping VUs for 30s (gracefulStop: 30s)\n\nrunning (0m30.0s), 00/10 VUs, 2812 complete iterations\ndefault ✓ [======================================] 10 VUs  30s\n\n     http_req_duration..............: avg=92ms   min=44ms   med=81ms   max=498ms  p(90)=162ms  p(95)=218ms\n     http_req_failed................: 0.00%   ✓ 0     ✗ 8436\n     http_reqs......................: 8436    281.2/s\n     iterations.....................: 2812    93.7/s\n\n  ✓ http_req_duration..............: p(95)=218ms < 500ms\n  ✓ http_req_failed................: 0.00% < 1.00%",
+    "k6 run --env BASE_URL=https://api.example.com stages-test.js": "         /\\      |‾‾| /‾‾/   /‾‾/\n        /  \\     |  |/  /   /  /\n       /    \\    |     (   /   ‾‾\\\n      /  ‾‾  \\   |  |\\  \\ |  (‾)  |\n     / __ /\\__\\  |__| \\__\\ \\_____/ .io\n\n  execution: local\n     script: stages-test.js\n     output: -\n  env:      BASE_URL=https://api.example.com\n\n  scenarios: (100.00%) 1 scenario, 200 max VUs, 5m30s max duration\n           default: Up to 200 looping VUs for 5m0s over 4 stages\n                    (gracefulRampDown: 30s, gracefulStop: 30s)\n\n  stages:\n    ┌─ stage 1: ramp 0→50 VUs over 1m\n    ├─ stage 2: hold 50 VUs for 2m\n    ├─ stage 3: ramp 50→200 VUs over 1m     ⚠️ errors spike at ~150 VUs\n    └─ stage 4: ramp 200→0 VUs over 1m\n\nrunning (5m00.0s), 000/200 VUs, 48291 complete iterations\ndefault ✓ [======================================] 000/200 VUs  5m0s\n\n     ✗ payment initiated successfully\n      ↳  92% — ✓ 133444 / ✗ 11528\n     ✗ status code is 200\n      ↳  93% — ✓ 134612 / ✗ 10360\n\n     http_req_duration..............: avg=245ms   min=38ms   med=189ms  max=4.82s  p(90)=512ms  p(95)=845ms\n       { expected_response:true }...: avg=178ms   min=38ms   med=142ms  max=2.1s   p(90)=342ms  p(95)=478ms\n     http_req_failed................: 7.12%   ✓ 10360  ✗ 134612\n     http_reqs......................: 144972  483.2/s\n     iterations.....................: 48291   161.0/s\n     vus............................: 1       min=1   max=200\n     vus_max........................: 200     min=200 max=200\n\n  ✗ http_req_duration..............: p(95)=845ms > 500ms  FAILED\n  ✗ http_req_failed................: 7.12% > 1.00%  FAILED\n\n  ⚠️ Breaking point identified at ~150 VUs — payment-service returned 503",
+    "k6 run stages-test.js": "         /\\      |‾‾| /‾‾/   /‾‾/\n        /  \\     |  |/  /   /  /\n       /    \\    |     (   /   ‾‾\\\n      /  ‾‾  \\   |  |\\  \\ |  (‾)  |\n     / __ /\\__\\  |__| \\__\\ \\_____/ .io\n\n  execution: local\n     script: stages-test.js\n     output: -\n\n  scenarios: (100.00%) 1 scenario, 200 max VUs, 5m30s max duration\n           default: Up to 200 looping VUs for 5m0s over 4 stages\n                    (gracefulRampDown: 30s, gracefulStop: 30s)\n\n  stages:\n    ┌─ stage 1: ramp 0→50 VUs over 1m\n    ├─ stage 2: hold 50 VUs for 2m\n    ├─ stage 3: ramp 50→200 VUs over 1m     ⚠️ errors spike at ~150 VUs\n    └─ stage 4: ramp 200→0 VUs over 1m\n\nrunning (5m00.0s), 000/200 VUs, 47856 complete iterations\ndefault ✓ [======================================] 000/200 VUs  5m0s\n\n     ✗ payment initiated successfully\n      ↳  91% — ✓ 130647 / ✗ 12921\n     ✗ status code is 200\n      ↳  92% — ✓ 131904 / ✗ 11664\n\n     http_req_duration..............: avg=258ms   min=39ms   med=195ms  max=5.12s  p(90)=534ms  p(95)=892ms\n       { expected_response:true }...: avg=182ms   min=39ms   med=148ms  max=2.3s   p(90)=356ms  p(95)=492ms\n     http_req_failed................: 8.12%   ✓ 11664  ✗ 131904\n     http_reqs......................: 143568  478.6/s\n     iterations.....................: 47856   159.5/s\n     vus............................: 1       min=1   max=200\n     vus_max........................: 200     min=200 max=200\n\n  ✗ http_req_duration..............: p(95)=892ms > 500ms  FAILED\n  ✗ http_req_failed................: 8.12% > 1.00%  FAILED\n\n  ⚠️ Breaking point identified at ~150 VUs — payment-service returned 503",
+    "k6 cloud script.js": "         /\\      |‾‾| /‾‾/   /‾‾/\n        /  \\     |  |/  /   /  /\n       /    \\    |     (   /   ‾‾\\\n      /  ‾‾  \\   |  |\\  \\ |  (‾)  |\n     / __ /\\__\\  |__| \\__\\ \\_____/ .io\n\n  execution: cloud\n     script: script.js\n     output: https://app.k6.io/runs/4827391\n\n  uploading script and dependencies...\n  test uploaded successfully\n\n  cloud run started: https://app.k6.io/runs/4827391\n  status: initialising load zones (Mumbai, Singapore)\n  status: running (10 VUs, 30s duration)\n  status: finished\n\n  results:\n     http_req_duration..............: avg=94ms   min=45ms   med=82ms   max=512ms  p(90)=168ms  p(95)=224ms\n     http_req_failed................: 0.00%   ✓ 0     ✗ 8234\n     http_reqs......................: 8234    274.5/s\n\n  ✓ all thresholds passed\n  view full results: https://app.k6.io/runs/4827391",
+    "k6 cloud login": "  k6 Cloud authentication\n  Enter your API token (from https://app.k6.io/account/api-token):\n  Token: ************************************\n\n  ✓ Successfully authenticated as: sre-team@example-bank.com\n  Organisation: Example Bank — Performance Engineering\n  Token saved to: /home/k6/.config/k6/cloud.json",
+    "k6 archive script.js": "  archiving script and dependencies...\n\n  archive created: script.tar\n  contents:\n    - script.js (2.4 KB)\n    - helpers/auth.js (0.8 KB)\n    - data/accounts.json (1.2 KB)\n  total size: 4.4 KB\n\n  tip: use 'k6 run script.tar' or 'k6 cloud script.tar' to run from archive",
+    "k6 convert har_file.har": "  converting HAR file to k6 script...\n\n  input:  har_file.har (48 requests captured)\n  output: har_file.js\n\n  conversion summary:\n    - 48 HTTP requests extracted\n    - 12 unique endpoints identified\n    - 3 POST requests with body payloads\n    - cookies and headers preserved\n    - sleep() calls added between requests (matching original timing)\n\n  ⚠️ review the generated script:\n    - replace hardcoded tokens with dynamic auth\n    - parameterise test data (account IDs, amounts)\n    - add checks() for response validation\n    - add thresholds for SLA enforcement",
+    "k6 pause": "  ✓ test paused\n  status: paused at iteration 14823 (50 VUs idle)\n  tip: use 'k6 resume' to continue, 'k6 stats' to check current metrics",
+    "k6 resume": "  ✓ test resumed\n  status: running (50 VUs active)\n  resuming from iteration 14823...",
+    "k6 status": "  status:     running\n  script:     stages-test.js\n  duration:   2m34s / 5m00s (51.3%)\n  vus:        142 (ramping)\n  iterations: 28456 completed\n  http_reqs:  85368 total (553.2/s)\n  errors:     1247 (1.46%)\n  thresholds: 1/2 passing\n    ✓ http_req_duration p(95) < 500ms: 478ms\n    ✗ http_req_failed rate < 1%: 1.46%",
+    "k6 stats": "  live metrics (last 10s window):\n\n  http_req_duration:\n    avg=198ms  min=42ms  med=156ms  max=2.1s  p(90)=389ms  p(95)=478ms  p(99)=1.24s\n\n  http_req_failed:     1.46%  (18/1234)\n  http_reqs:           1234   (123.4/s)\n  iterations:          412    (41.2/s)\n  vus:                 142    (ramping)\n  data_received:       4.2 MB (420 kB/s)\n  data_sent:           1.1 MB (110 kB/s)\n\n  active checks:\n    ✓ payment initiated:  98.5%\n    ✓ status code 200:    98.5%\n    ✗ response < 500ms:   87.2%\n\n  top slow endpoints (p95):\n    POST /v1/payments/initiate    — 478ms\n    GET  /v1/payments/{id}/status — 312ms\n    GET  /v1/accounts/balance     — 89ms",
+    "k6 scale 20": "  ✓ scaling VUs: 142 → 20\n  ramping down 122 VUs gracefully (30s graceful stop)...\n  status: 20 VUs active\n\n  tip: monitor recovery with 'k6 stats'",
+    "k6 run --vus 100 --duration 60s script.js": "         /\\      |‾‾| /‾‾/   /‾‾/\n        /  \\     |  |/  /   /  /\n       /    \\    |     (   /   ‾‾\\\n      /  ‾‾  \\   |  |\\  \\ |  (‾)  |\n     / __ /\\__\\  |__| \\__\\ \\_____/ .io\n\n  execution: local\n     script: script.js\n     output: -\n\n  scenarios: (100.00%) 1 scenario, 100 max VUs, 1m30s max duration\n           default: 100 looping VUs for 1m0s (gracefulStop: 30s)\n\nrunning (1m00.0s), 000/100 VUs, 18456 complete iterations\ndefault ✓ [======================================] 100 VUs  1m0s\n\n     ✗ payment initiated successfully\n      ↳  96% — ✓ 53155 / ✗ 2213\n     ✗ status code is 200\n      ↳  97% — ✓ 53712 / ✗ 1656\n\n     http_req_duration..............: avg=312ms   min=35ms   med=245ms  max=3.8s   p(90)=589ms  p(95)=812ms\n       { expected_response:true }...: avg=268ms   min=35ms   med=212ms  max=2.4s   p(90)=498ms  p(95)=678ms\n     http_req_failed................: 2.99%   ✓ 1656   ✗ 53712\n     http_reqs......................: 55368   922.8/s\n     iterations.....................: 18456   307.6/s\n     vus............................: 100     min=100  max=100\n     vus_max........................: 100     min=100  max=100\n\n  ✗ http_req_duration..............: p(95)=812ms > 500ms  FAILED\n  ✗ http_req_failed................: 2.99% > 1.00%  FAILED",
+    "k6 run --vus 10 --duration 60s script.js": "         /\\      |‾‾| /‾‾/   /‾‾/\n        /  \\     |  |/  /   /  /\n       /    \\    |     (   /   ‾‾\\\n      /  ‾‾  \\   |  |\\  \\ |  (‾)  |\n     / __ /\\__\\  |__| \\__\\ \\_____/ .io\n\n  execution: local\n     script: script.js\n     output: -\n\n  scenarios: (100.00%) 1 scenario, 10 max VUs, 1m30s max duration\n           default: 10 looping VUs for 1m0s (gracefulStop: 30s)\n\nrunning (1m00.0s), 00/10 VUs, 5694 complete iterations\ndefault ✓ [======================================] 10 VUs  1m0s\n\n     ✓ payment initiated successfully\n     ✓ status code is 200\n     ✓ response time < 500ms\n\n     http_req_duration..............: avg=87ms   min=40ms   med=76ms   max=478ms  p(90)=152ms  p(95)=208ms\n     http_req_failed................: 0.00%   ✓ 0     ✗ 17082\n     http_reqs......................: 17082   284.7/s\n     iterations.....................: 5694    94.9/s\n\n  ✓ http_req_duration..............: p(95)=208ms < 500ms\n  ✓ http_req_failed................: 0.00% < 1.00%",
+    "k6 run --vus 200 --duration 30s script.js": "         /\\      |‾‾| /‾‾/   /‾‾/\n        /  \\     |  |/  /   /  /\n       /    \\    |     (   /   ‾‾\\\n      /  ‾‾  \\   |  |\\  \\ |  (‾)  |\n     / __ /\\__\\  |__| \\__\\ \\_____/ .io\n\n  execution: local\n     script: script.js\n     output: -\n\n  scenarios: (100.00%) 1 scenario, 200 max VUs, 1m0s max duration\n           default: 200 looping VUs for 30s (gracefulStop: 30s)\n\nrunning (0m30.0s), 000/200 VUs, 12034 complete iterations\ndefault ✓ [======================================] 200 VUs  30s\n\n     ✗ payment initiated successfully\n      ↳  84% — ✓ 30325 / ✗ 5777\n     ✗ status code is 200\n      ↳  86% — ✓ 31043 / ✗ 5059\n\n     http_req_duration..............: avg=478ms   min=34ms   med=398ms  max=8.2s   p(90)=912ms  p(95)=1.45s\n       { expected_response:true }...: avg=342ms   min=34ms   med=278ms  max=3.1s   p(90)=612ms  p(95)=878ms\n     http_req_failed................: 14.01%  ✓ 5059   ✗ 31043\n     http_reqs......................: 36102   1203.4/s\n     iterations.....................: 12034   401.1/s\n     vus............................: 200     min=200  max=200\n     vus_max........................: 200     min=200  max=200\n\n  ✗ http_req_duration..............: p(95)=1.45s > 500ms  FAILED\n  ✗ http_req_failed................: 14.01% > 1.00%  FAILED\n\n  ⚠️ severe degradation: payment-service connection pool exhausted at 200 VUs",
+    "k6 run --out json=results.json --out influxdb=http://localhost:8086/k6 script.js": "         /\\      |‾‾| /‾‾/   /‾‾/\n        /  \\     |  |/  /   /  /\n       /    \\    |     (   /   ‾‾\\\n      /  ‾‾  \\   |  |\\  \\ |  (‾)  |\n     / __ /\\__\\  |__| \\__\\ \\_____/ .io\n\n  execution: local\n     script: script.js\n     output: json (results.json), influxdb (http://localhost:8086/k6)\n\n  scenarios: (100.00%) 1 scenario, 10 max VUs, 1m0s max duration\n           default: 10 looping VUs for 30s (gracefulStop: 30s)\n\nrunning (0m30.0s), 00/10 VUs, 2847 complete iterations\ndefault ✓ [======================================] 10 VUs  30s\n\n     http_req_duration..............: avg=89ms   min=42ms   med=78ms   max=487ms  p(90)=156ms  p(95)=212ms\n     http_req_failed................: 0.00%   ✓ 0     ✗ 8541\n     http_reqs......................: 8541    284.7/s\n\n  output: results.json (2.4 MB) + InfluxDB (8541 metrics flushed)",
+    "k6 run --duration 5m script.js": "         /\\      |‾‾| /‾‾/   /‾‾/\n        /  \\     |  |/  /   /  /\n       /    \\    |     (   /   ‾‾\\\n      /  ‾‾  \\   |  |\\  \\ |  (‾)  |\n     / __ /\\__\\  |__| \\__\\ \\_____/ .io\n\n  execution: local\n     script: script.js\n     output: -\n\n  scenarios: (100.00%) 1 scenario, 10 max VUs, 5m30s max duration\n           default: 10 looping VUs for 5m0s (gracefulStop: 30s)\n\nrunning (5m00.0s), 00/10 VUs, 28470 complete iterations\ndefault ✓ [======================================] 10 VUs  5m0s\n\n     ✓ payment initiated successfully\n     ✓ status code is 200\n\n     http_req_duration..............: avg=91ms   min=38ms   med=79ms   max=512ms  p(90)=158ms  p(95)=215ms\n     http_req_failed................: 0.00%   ✓ 0     ✗ 85410\n     http_reqs......................: 85410   284.7/s\n     iterations.....................: 28470   94.9/s\n\n  ✓ http_req_duration..............: p(95)=215ms < 500ms\n  ✓ http_req_failed................: 0.00% < 1.00%",
+    "k6 scale 50": "  ✓ scaling VUs: 10 → 50\n  ramping up 40 additional VUs...\n  status: 50 VUs active",
+    "k6 scale 100": "  ✓ scaling VUs: 50 → 100\n  ramping up 50 additional VUs...\n  status: 100 VUs active",
+    "k6 scale 200": "  ✓ scaling VUs: 100 → 200\n  ramping up 100 additional VUs...\n  status: 200 VUs active\n\n  ⚠️ warning: approaching system resource limits — monitor CPU and memory",
+    "k6 inspect stages-test.js": "{\n  \"options\": {\n    \"stages\": [\n      { \"duration\": \"1m\", \"target\": 50 },\n      { \"duration\": \"2m\", \"target\": 50 },\n      { \"duration\": \"1m\", \"target\": 200 },\n      { \"duration\": \"1m\", \"target\": 0 }\n    ],\n    \"thresholds\": {\n      \"http_req_duration\": [\"p(95)<500\"],\n      \"http_req_failed\": [\"rate<0.01\"]\n    }\n  },\n  \"imports\": [\"k6/http\", \"k6/check\", \"k6/metrics\"],\n  \"endpoints\": [\n    \"POST https://api.example.com/v1/payments/initiate\",\n    \"GET  https://api.example.com/v1/payments/{id}/status\",\n    \"POST https://api.example.com/v1/orders/process\",\n    \"GET  https://api.example.com/v1/accounts/balance\"\n  ]\n}",
+    "k6 archive stages-test.js": "  archiving script and dependencies...\n\n  archive created: stages-test.tar\n  contents:\n    - stages-test.js (3.1 KB)\n    - helpers/auth.js (0.8 KB)\n    - helpers/payments.js (1.4 KB)\n    - data/accounts.json (1.2 KB)\n    - data/orders.json (0.9 KB)\n  total size: 7.4 KB",
+    "k6 cloud stages-test.js": "         /\\      |‾‾| /‾‾/   /‾‾/\n        /  \\     |  |/  /   /  /\n       /    \\    |     (   /   ‾‾\\\n      /  ‾‾  \\   |  |\\  \\ |  (‾)  |\n     / __ /\\__\\  |__| \\__\\ \\_____/ .io\n\n  execution: cloud\n     script: stages-test.js\n     output: https://app.k6.io/runs/4827445\n\n  uploading script and dependencies...\n  test uploaded successfully\n\n  cloud run started: https://app.k6.io/runs/4827445\n  load zones: Mumbai (50%), Singapore (50%)\n  stages: 4 (ramp 0→50, hold 50, ramp 50→200, ramp 200→0)\n  status: finished\n\n  results:\n     http_req_duration..............: avg=234ms  p(95)=812ms\n     http_req_failed................: 6.8%\n\n  ✗ thresholds failed — review at: https://app.k6.io/runs/4827445",
+    "k6 run --iterations 100 script.js": "         /\\      |‾‾| /‾‾/   /‾‾/\n        /  \\     |  |/  /   /  /\n       /    \\    |     (   /   ‾‾\\\n      /  ‾‾  \\   |  |\\  \\ |  (‾)  |\n     / __ /\\__\\  |__| \\__\\ \\_____/ .io\n\n  execution: local\n     script: script.js\n     output: -\n\n  scenarios: (100.00%) 1 scenario, 1 max VUs, 10m0s max duration\n           default: 100 iterations shared among 1 VUs (maxDuration: 10m0s)\n\nrunning (0m32.1s), 0/1 VUs, 100 complete iterations\ndefault ✓ [======================================] 1 VUs  0m32.1s/10m0s  100/100 shared iters\n\n     ✓ payment initiated successfully\n     ✓ status code is 200\n\n     http_req_duration..............: avg=82ms   min=38ms   med=72ms   max=342ms  p(90)=138ms  p(95)=189ms\n     http_req_failed................: 0.00%   ✓ 0     ✗ 300\n     http_reqs......................: 300     9.3/s\n     iterations.....................: 100     3.1/s\n\n  ✓ all thresholds passed",
+    "k6 run --compatibility-mode=base script.js": "         /\\      |‾‾| /‾‾/   /‾‾/\n        /  \\     |  |/  /   /  /\n       /    \\    |     (   /   ‾‾\\\n      /  ‾‾  \\   |  |\\  \\ |  (‾)  |\n     / __ /\\__\\  |__| \\__\\ \\_____/ .io\n\n  execution: local\n     script: script.js\n     mode: base (no Babel transpilation — faster startup)\n\n  scenarios: (100.00%) 1 scenario, 10 max VUs, 1m0s max duration\n\nrunning (0m30.0s), 00/10 VUs, 2892 complete iterations\ndefault ✓ [======================================] 10 VUs  30s\n\n     http_req_duration..............: avg=87ms   min=40ms   med=76ms   max=468ms  p(90)=150ms  p(95)=205ms\n     http_reqs......................: 8676    289.2/s\n\n  tip: base mode skips Babel — use when script is already ES5 compatible",
+    "k6 run --linger script.js": "  running test with --linger flag...\n  test execution completed but k6 will keep running.\n  use the REST API (localhost:6565) to interact with the engine.\n\n  endpoints:\n    GET  /v1/status    — current test status\n    GET  /v1/metrics   — all collected metrics\n    PATCH /v1/status   — pause/resume/stop\n    PATCH /v1/setup    — scale VUs\n\n  press Ctrl+C to stop k6",
+    "scenario": "Available scenarios:\n  1. run-and-analyze      — Run a Load Test and Analyze Results\n  2. progressive-load     — Progressive Load Testing\n\nType 'scenario <id>' to start a guided lab."
+  },
+  "reference": [
+    {
+      "group": "Running Tests",
+      "commands": [
+        {
+          "cmd": "k6 run script.js",
+          "desc": "run with defaults"
+        },
+        {
+          "cmd": "k6 run --vus 50 --duration 30s script.js",
+          "desc": "set VUs and duration"
+        },
+        {
+          "cmd": "k6 run --iterations 100 script.js",
+          "desc": "fixed iteration count"
+        },
+        {
+          "cmd": "k6 run --env BASE_URL=https://api.example.com script.js",
+          "desc": "pass env vars"
+        },
+        {
+          "cmd": "k6 run --tag testid=smoke script.js",
+          "desc": "tag test run"
+        },
+        {
+          "cmd": "k6 run --http-debug script.js",
+          "desc": "show HTTP details"
+        },
+        {
+          "cmd": "k6 run --no-thresholds script.js",
+          "desc": "skip threshold checks"
+        }
+      ]
+    },
+    {
+      "group": "Output & Export",
+      "commands": [
+        {
+          "cmd": "k6 run --out json=results.json script.js",
+          "desc": "export to JSON"
+        },
+        {
+          "cmd": "k6 run --out csv=results.csv script.js",
+          "desc": "export to CSV"
+        },
+        {
+          "cmd": "k6 run --out influxdb=http://localhost:8086/k6 script.js",
+          "desc": "stream to InfluxDB"
+        },
+        {
+          "cmd": "k6 run --summary-trend-stats script.js",
+          "desc": "custom summary stats"
+        }
+      ]
+    },
+    {
+      "group": "Cloud Testing",
+      "commands": [
+        {
+          "cmd": "k6 cloud script.js",
+          "desc": "run on k6 Cloud"
+        },
+        {
+          "cmd": "k6 cloud login",
+          "desc": "authenticate"
+        },
+        {
+          "cmd": "k6 cloud stages-test.js",
+          "desc": "cloud staged test"
+        }
+      ]
+    },
+    {
+      "group": "Script Management",
+      "commands": [
+        {
+          "cmd": "k6 inspect script.js",
+          "desc": "show script metadata"
+        },
+        {
+          "cmd": "k6 archive script.js",
+          "desc": "create test bundle"
+        },
+        {
+          "cmd": "k6 convert har_file.har",
+          "desc": "HAR to k6 script"
+        },
+        {
+          "cmd": "k6 version",
+          "desc": "show version"
+        }
+      ]
+    },
+    {
+      "group": "Live Test Control",
+      "commands": [
+        {
+          "cmd": "k6 status",
+          "desc": "running test status"
+        },
+        {
+          "cmd": "k6 stats",
+          "desc": "live metrics"
+        },
+        {
+          "cmd": "k6 pause",
+          "desc": "pause test"
+        },
+        {
+          "cmd": "k6 resume",
+          "desc": "resume test"
+        },
+        {
+          "cmd": "k6 scale 20",
+          "desc": "scale VUs down"
+        },
+        {
+          "cmd": "k6 scale 100",
+          "desc": "scale VUs up"
+        }
+      ]
+    },
+    {
+      "group": "Load Profiles",
+      "commands": [
+        {
+          "cmd": "k6 run --vus 10 --duration 60s script.js",
+          "desc": "smoke test"
+        },
+        {
+          "cmd": "k6 run --vus 100 --duration 60s script.js",
+          "desc": "load test"
+        },
+        {
+          "cmd": "k6 run --vus 200 --duration 30s script.js",
+          "desc": "stress test"
+        },
+        {
+          "cmd": "k6 run stages-test.js",
+          "desc": "staged ramp-up"
+        },
+        {
+          "cmd": "k6 run --duration 5m script.js",
+          "desc": "soak test (5m)"
+        }
+      ]
+    },
+    {
+      "group": "Advanced Options",
+      "commands": [
+        {
+          "cmd": "k6 run --compatibility-mode=base script.js",
+          "desc": "skip Babel (faster)"
+        },
+        {
+          "cmd": "k6 run --linger script.js",
+          "desc": "keep running after test"
+        },
+        {
+          "cmd": "k6 run --out json=results.json --out influxdb=http://localhost:8086/k6 script.js",
+          "desc": "multi-output"
+        }
+      ]
+    },
+    {
+      "group": "Scenarios",
+      "commands": [
+        {
+          "cmd": "scenario run-and-analyze",
+          "desc": "run + export results"
+        },
+        {
+          "cmd": "scenario progressive-load",
+          "desc": "staged load + control"
+        }
+      ]
+    }
+  ]
+}

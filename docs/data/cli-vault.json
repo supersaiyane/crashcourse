@@ -1,0 +1,344 @@
+{
+  "id": "vault",
+  "prompt": "vault@secrets:~$",
+  "welcome": "Welcome to the HashiCorp Vault CLI Playground.\nType commands to explore a simulated Vault server.\nType 'help' for available commands, 'scenario' for guided labs.\n",
+  "scenarios": [
+    {
+      "id": "store-rotate-credentials",
+      "title": "Store and Rotate Database Credentials",
+      "steps": [
+        {
+          "instruction": "First, check that Vault is running and unsealed.",
+          "expect": "vault status",
+          "hint": "Try: vault status"
+        },
+        {
+          "instruction": "Enable the KV version 2 secrets engine at the path 'secret/'.",
+          "expect": "vault secrets enable -path=secret kv-v2",
+          "hint": "Try: vault secrets enable -path=secret kv-v2"
+        },
+        {
+          "instruction": "Store the database credentials for the payments service.",
+          "expect": "vault kv put secret/payments/db username=payments_svc password=S3cur3P@ss!2026",
+          "hint": "Try: vault kv put secret/payments/db username=payments_svc password=S3cur3P@ss!2026"
+        },
+        {
+          "instruction": "Read back the credentials to verify they were stored correctly.",
+          "expect": "vault kv get secret/payments/db",
+          "hint": "Try: vault kv get secret/payments/db"
+        },
+        {
+          "instruction": "Rotate the password by writing a new version of the secret.",
+          "expect": "vault kv put secret/payments/db username=payments_svc password=R0tated#NewP@ss!2026",
+          "hint": "Try: vault kv put secret/payments/db username=payments_svc password=R0tated#NewP@ss!2026"
+        },
+        {
+          "instruction": "Check the metadata to see both versions are tracked.",
+          "expect": "vault kv metadata get secret/payments/db",
+          "hint": "Try: vault kv metadata get secret/payments/db"
+        },
+        {
+          "instruction": "Create a policy that gives the payments service read-only access to its secrets.",
+          "expect": "vault policy write payments-read -",
+          "hint": "Try: vault policy write payments-read -"
+        },
+        {
+          "instruction": "Verify the policy was created by listing all policies.",
+          "expect": "vault policy list",
+          "hint": "Try: vault policy list"
+        }
+      ]
+    },
+    {
+      "id": "unseal-after-restart",
+      "title": "Unseal Vault After Restart",
+      "steps": [
+        {
+          "instruction": "Vault has just restarted. Check its current seal status.",
+          "expect": "vault status",
+          "hint": "Try: vault status"
+        },
+        {
+          "instruction": "Vault is sealed. Begin unsealing with the first key share.",
+          "expect": "vault operator unseal gR3at+Key1/Unseal+ShareABCDEFGH1234567890abc=",
+          "hint": "Try: vault operator unseal gR3at+Key1/Unseal+ShareABCDEFGH1234567890abc="
+        },
+        {
+          "instruction": "Continue unsealing with the second key share.",
+          "expect": "vault operator unseal s3cOnd+Key2/Unseal+ShareIJKLMNOP1234567890def=",
+          "hint": "Try: vault operator unseal s3cOnd+Key2/Unseal+ShareIJKLMNOP1234567890def="
+        },
+        {
+          "instruction": "Provide the third and final key share to complete the unseal.",
+          "expect": "vault operator unseal th1Rd+Key3/Unseal+ShareQRSTUVWX1234567890ghi=",
+          "hint": "Try: vault operator unseal th1Rd+Key3/Unseal+ShareQRSTUVWX1234567890ghi="
+        },
+        {
+          "instruction": "Verify Vault is now unsealed and operational.",
+          "expect": "vault status",
+          "hint": "Try: vault status"
+        },
+        {
+          "instruction": "Check which audit devices are enabled to confirm logging is active.",
+          "expect": "vault audit list",
+          "hint": "Try: vault audit list"
+        },
+        {
+          "instruction": "Check the Raft cluster peers to confirm all nodes are healthy.",
+          "expect": "vault operator raft list-peers",
+          "hint": "Try: vault operator raft list-peers"
+        },
+        {
+          "instruction": "Authenticate with the root token to resume operations.",
+          "expect": "vault login hvs.CAESIJz8xG7kL2pN9vR5qW3mY8bA4fH6jT0uX1cE7gD2wK",
+          "hint": "Try: vault login hvs.CAESIJz8xG7kL2pN9vR5qW3mY8bA4fH6jT0uX1cE7gD2wK"
+        }
+      ]
+    }
+  ],
+  "commands": {
+    "help": "Available commands:\n  vault status                   — Show seal status and cluster info\n  vault operator unseal          — Unseal Vault with a key share\n  vault operator seal            — Seal the Vault\n  vault operator init            — Initialize a new Vault cluster\n  vault operator raft list-peers — List Raft cluster members\n  vault secrets list             — List enabled secrets engines\n  vault secrets enable           — Enable a secrets engine\n  vault secrets disable          — Disable a secrets engine\n  vault kv put                   — Write a secret\n  vault kv get                   — Read a secret\n  vault kv list                  — List secrets at a path\n  vault kv delete                — Delete a secret version\n  vault kv metadata get          — Get secret metadata/versions\n  vault kv rollback              — Roll back to a previous version\n  vault auth list                — List enabled auth methods\n  vault auth enable              — Enable an auth method\n  vault login                    — Authenticate to Vault\n  vault token lookup             — Inspect current token\n  vault token create             — Create a new token\n  vault token revoke             — Revoke a token\n  vault policy list              — List policies\n  vault policy read              — Read a policy\n  vault policy write             — Write a policy\n  vault policy delete            — Delete a policy\n  vault audit list               — List enabled audit devices\n  vault audit enable             — Enable an audit device\n  vault lease list               — List active leases\n  vault lease renew              — Renew a lease\n  vault lease revoke             — Revoke a lease\n  vault server -dev              — Start in development mode\n\n  scenario                       — Start a guided lab\n  clear                          — Clear the terminal\n  help                           — Show this help",
+    "vault status": "Key                     Value\n---                     -----\nSeal Type               shamir\nInitialized             true\nSealed                  false\nTotal Shares            5\nThreshold               3\nVersion                 1.15.4\nBuild Date              2026-01-20T10:45:01Z\nStorage Type            raft\nCluster Name            vault-cluster-prod\nCluster ID             3a7b9c1d-4e5f-6a7b-8c9d-0e1f2a3b4c5d\nHA Enabled              true\nHA Cluster              https://vault-0.vault-internal:8201\nHA Mode                 active\nActive Since            2026-06-01T03:22:15.847Z\nRaft Committed Index    4892\nRaft Applied Index      4892",
+    "vault operator init": "Unseal Key 1: gR3at+Key1/Unseal+ShareABCDEFGH1234567890abc=\nUnseal Key 2: s3cOnd+Key2/Unseal+ShareIJKLMNOP1234567890def=\nUnseal Key 3: th1Rd+Key3/Unseal+ShareQRSTUVWX1234567890ghi=\nUnseal Key 4: f0uRth+Key4/Unseal+ShareYZABCDEF1234567890jkl=\nUnseal Key 5: f1fTh+Key5/Unseal+ShareGHIJKLMN1234567890mno=\n\nInitial Root Token: hvs.CAESIJz8xG7kL2pN9vR5qW3mY8bA4fH6jT0uX1cE7gD2wK\n\nVault initialized with 5 key shares and a key threshold of 3.\nPlease securely distribute the key shares. When the Vault is re-sealed,\nrestarted, or stopped, you must supply at least 3 of these keys to unseal\nit before it can start servicing requests.\n\nVault does not store the generated root key. Without at least 3 keys to\nreconstruct the root key, Vault will remain permanently sealed!\n\nIt is possible to generate new unseal keys, provided you have a quorum of\nexisting unseal keys shares. See \"vault operator rekey\" for more information.",
+    "vault operator unseal gR3at+Key1/Unseal+ShareABCDEFGH1234567890abc=": "Key                Value\n---                -----\nSeal Type          shamir\nInitialized        true\nSealed             true\nTotal Shares       5\nThreshold          3\nUnseal Progress    1/3\nUnseal Nonce       a1b2c3d4-e5f6-7890-abcd-ef1234567890\nVersion            1.15.4\nBuild Date         2026-01-20T10:45:01Z\nStorage Type       raft\nHA Enabled         true",
+    "vault operator unseal s3cOnd+Key2/Unseal+ShareIJKLMNOP1234567890def=": "Key                Value\n---                -----\nSeal Type          shamir\nInitialized        true\nSealed             true\nTotal Shares       5\nThreshold          3\nUnseal Progress    2/3\nUnseal Nonce       a1b2c3d4-e5f6-7890-abcd-ef1234567890\nVersion            1.15.4\nBuild Date         2026-01-20T10:45:01Z\nStorage Type       raft\nHA Enabled         true",
+    "vault operator unseal th1Rd+Key3/Unseal+ShareQRSTUVWX1234567890ghi=": "Key                     Value\n---                     -----\nSeal Type               shamir\nInitialized             true\nSealed                  false\nTotal Shares            5\nThreshold               3\nVersion                 1.15.4\nBuild Date              2026-01-20T10:45:01Z\nStorage Type            raft\nCluster Name            vault-cluster-prod\nCluster ID             3a7b9c1d-4e5f-6a7b-8c9d-0e1f2a3b4c5d\nHA Enabled              true\nHA Cluster              https://vault-0.vault-internal:8201\nHA Mode                 active",
+    "vault operator seal": "Success! Vault is sealed.",
+    "vault operator raft list-peers": "Node         Address                        State       Voter\n----         -------                        -----       -----\nvault-0      vault-0.vault-internal:8201    leader      true\nvault-1      vault-1.vault-internal:8201    follower    true\nvault-2      vault-2.vault-internal:8201    follower    true",
+    "vault server -dev": "==> Vault server configuration:\n\n             Api Address: http://127.0.0.1:8200\n                     Cgo: disabled\n         Cluster Address: https://127.0.0.1:8201\n   Environment Variables: VAULT_DEV_ROOT_TOKEN_ID\n              Go Version: go1.22.1\n              Listener 1: tcp (addr: \"127.0.0.1:8200\", cluster address: \"127.0.0.1:8201\", max_request_duration: \"1m30s\", tls: \"disabled\")\n               Log Level: info\n                   Mlock: supported: false, enabled: false\n           Recovery Mode: false\n                 Storage: inmem\n                 Version: Vault v1.15.4\n             Version Sha: abc123def456789\n\n==> Vault server started! Log data will stream in below:\n\nWARNING! dev mode is enabled! In this mode, Vault runs entirely in-memory\nand starts unsealed with a single unseal key. Do not run Vault in dev mode\nin production!\n\nThe unseal key and root token are displayed below in case you want to\nseal/unseal the Vault or re-authenticate.\n\nUnseal Key: d3vM0d3+K3y/OnlyForDevelopment1234567890ABCDE=\nRoot Token: hvs.dev-only-token-not-for-production\n\nDevelopment mode should NOT be used in production installations!",
+    "vault secrets list": "Path          Type         Accessor              Description\n----          ----         --------              -----------\ncubbyhole/    cubbyhole    cubbyhole_a1b2c3d4    per-token private secret storage\nidentity/     identity     identity_e5f6a7b8     identity store\nsecret/       kv           kv_c9d0e1f2           key/value secret storage\nsys/          system       system_a3b4c5d6       system endpoints for config/control\ntransit/      transit      transit_g7h8i9j0      encryption as a service",
+    "vault secrets enable -path=secret kv-v2": "Success! Enabled the kv-v2 secrets engine at: secret/",
+    "vault secrets enable -path=transit transit": "Success! Enabled the transit secrets engine at: transit/",
+    "vault secrets enable -path=database database": "Success! Enabled the database secrets engine at: database/",
+    "vault secrets enable -path=pki pki": "Success! Enabled the pki secrets engine at: pki/",
+    "vault secrets disable secret/": "Success! Disabled the secrets engine (if it existed) at: secret/",
+    "vault kv put secret/payments/db username=payments_svc password=S3cur3P@ss!2026": "========= Secret Path =========\nsecret/data/payments/db\n\n======= Metadata =======\nKey                Value\n---                -----\ncreated_time       2026-06-02T14:30:22.847Z\ncustom_metadata    <nil>\ndeletion_time      n/a\ndestroyed          false\nversion            1",
+    "vault kv put secret/payments/db username=payments_svc password=R0tated#NewP@ss!2026": "========= Secret Path =========\nsecret/data/payments/db\n\n======= Metadata =======\nKey                Value\n---                -----\ncreated_time       2026-06-02T15:45:10.123Z\ncustom_metadata    <nil>\ndeletion_time      n/a\ndestroyed          false\nversion            2",
+    "vault kv put secret/app/config api_key=sk-prod-7Gx9Kp2mN4qR8vW1 region=ap-south-1 tier=premium": "========= Secret Path =========\nsecret/data/app/config\n\n======= Metadata =======\nKey                Value\n---                -----\ncreated_time       2026-06-02T09:15:33.456Z\ncustom_metadata    <nil>\ndeletion_time      n/a\ndestroyed          false\nversion            1",
+    "vault kv get secret/payments/db": "========= Secret Path =========\nsecret/data/payments/db\n\n======= Metadata =======\nKey                Value\n---                -----\ncreated_time       2026-06-02T15:45:10.123Z\ncustom_metadata    <nil>\ndeletion_time      n/a\ndestroyed          false\nversion            2\n\n====== Data ======\nKey         Value\n---         -----\npassword    R0tated#NewP@ss!2026\nusername    payments_svc",
+    "vault kv get -version=1 secret/payments/db": "========= Secret Path =========\nsecret/data/payments/db\n\n======= Metadata =======\nKey                Value\n---                -----\ncreated_time       2026-06-02T14:30:22.847Z\ncustom_metadata    <nil>\ndeletion_time      n/a\ndestroyed          false\nversion            1\n\n====== Data ======\nKey         Value\n---         -----\npassword    S3cur3P@ss!2026\nusername    payments_svc",
+    "vault kv get secret/app/config": "========= Secret Path =========\nsecret/data/app/config\n\n======= Metadata =======\nKey                Value\n---                -----\ncreated_time       2026-06-02T09:15:33.456Z\ncustom_metadata    <nil>\ndeletion_time      n/a\ndestroyed          false\nversion            1\n\n====== Data ======\nKey         Value\n---         -----\napi_key     sk-prod-7Gx9Kp2mN4qR8vW1\nregion      ap-south-1\ntier        premium",
+    "vault kv get -field=password secret/payments/db": "R0tated#NewP@ss!2026",
+    "vault kv list secret/": "Keys\n----\napp/\npayments/\nservices/",
+    "vault kv list secret/payments/": "Keys\n----\ndb\napi-gateway\nredis",
+    "vault kv list secret/services/": "Keys\n----\nauth-service\nnotification-service\nreporting-service",
+    "vault kv delete secret/payments/db": "Success! Data deleted (if it existed) at: secret/data/payments/db",
+    "vault kv metadata get secret/payments/db": "========= Metadata Path =========\nsecret/metadata/payments/db\n\n========== Metadata ==========\nKey                     Value\n---                     -----\ncas_required            false\ncreated_time            2026-06-02T14:30:22.847Z\ncurrent_version         2\ncustom_metadata         <nil>\ndelete_version_after    0s\nmax_versions            0\noldest_version          0\nupdated_time            2026-06-02T15:45:10.123Z\n\n====== Version 1 ======\nKey              Value\n---              -----\ncreated_time     2026-06-02T14:30:22.847Z\ndeletion_time    n/a\ndestroyed        false\n\n====== Version 2 ======\nKey              Value\n---              -----\ncreated_time     2026-06-02T15:45:10.123Z\ndeletion_time    n/a\ndestroyed        false",
+    "vault kv rollback -version=1 secret/payments/db": "Key                Value\n---                -----\ncreated_time       2026-06-02T16:02:44.789Z\ncustom_metadata    <nil>\ndeletion_time      n/a\ndestroyed          false\nversion            3",
+    "vault auth list": "Path           Type        Accessor                  Description\n----           ----        --------                  -----------\napprole/       approle     auth_approle_a1b2c3d4     n/a\nkubernetes/    kubernetes  auth_kubernetes_e5f6a7b8  n/a\ntoken/         token       auth_token_c9d0e1f2       token based credentials\nuserpass/      userpass    auth_userpass_g3h4i5j6    n/a",
+    "vault auth enable approle": "Success! Enabled approle auth method at: approle/",
+    "vault auth enable kubernetes": "Success! Enabled kubernetes auth method at: kubernetes/",
+    "vault auth enable userpass": "Success! Enabled userpass auth method at: userpass/",
+    "vault login hvs.CAESIJz8xG7kL2pN9vR5qW3mY8bA4fH6jT0uX1cE7gD2wK": "Success! You are now authenticated. The token information displayed below\nis already stored in the token helper. You do NOT need to run \"vault login\"\nagain. Future Vault requests will automatically use this token.\n\nKey                  Value\n---                  -----\ntoken                hvs.CAESIJz8xG7kL2pN9vR5qW3mY8bA4fH6jT0uX1cE7gD2wK\ntoken_accessor       8Xb4gT2nK9mP1qR5vW7yA3cE\ntoken_duration       \u221e\ntoken_renewable      false\ntoken_policies       [\"root\"]\nidentity_policies    []\npolicies             [\"root\"]",
+    "vault login -method=userpass username=admin": "Success! You are now authenticated. The token information displayed below\nis already stored in the token helper.\n\nKey                    Value\n---                    -----\ntoken                  hvs.CAESI_userpass_admin_token_abc123\ntoken_accessor         7Yc3fR1nL8kP0qS4vW6xA2bD\ntoken_duration         768h\ntoken_renewable        true\ntoken_policies         [\"admin-policy\" \"default\"]\nidentity_policies      [\"admin-group-policy\"]\npolicies               [\"admin-policy\" \"admin-group-policy\" \"default\"]",
+    "vault token lookup": "Key                 Value\n---                 -----\naccessor            8Xb4gT2nK9mP1qR5vW7yA3cE\ncreation_time       1717315335\ncreation_ttl        0\ndisplay_name        token\nentity_id           n/a\nexpire_time         <nil>\nexplicit_max_ttl    0\nid                  hvs.CAESIJz8xG7kL2pN9vR5qW3mY8bA4fH6jT0uX1cE7gD2wK\nissue_time          2026-06-02T08:22:15.847Z\nmeta                <nil>\nnum_uses            0\norphan              true\npath                auth/token/root\npolicies            [\"root\"]\nrenewable           false\nttl                 0\ntype                service",
+    "vault token create -policy=payments-read -ttl=24h": "Key                  Value\n---                  -----\ntoken                hvs.CAESIJ_payments_read_token_xyz789\ntoken_accessor       4Kd9eP3mL7nQ2rT6wX8zA1bC\ntoken_duration       24h\ntoken_renewable      true\ntoken_policies       [\"default\" \"payments-read\"]\nidentity_policies    []\npolicies             [\"default\" \"payments-read\"]",
+    "vault token create -policy=admin-policy -ttl=8h -display-name=ci-deploy": "Key                  Value\n---                  -----\ntoken                hvs.CAESIJ_ci_deploy_token_def456\ntoken_accessor       2Hb7cN1kJ5mP8qR4vW6xA9eF\ntoken_duration       8h\ntoken_renewable      true\ntoken_policies       [\"admin-policy\" \"default\"]\nidentity_policies    []\npolicies             [\"admin-policy\" \"default\"]",
+    "vault token revoke hvs.CAESIJ_payments_read_token_xyz789": "Success! Revoked token (and all children)",
+    "vault token revoke -accessor 4Kd9eP3mL7nQ2rT6wX8zA1bC": "Success! Revoked token (and all children)",
+    "vault policy list": "default\nadmin-policy\npayments-read\ncicd-deploy\ndb-rotate\nmonitoring-read",
+    "vault policy read payments-read": "# Policy: payments-read\n# Grants read-only access to payments secrets\n\npath \"secret/data/payments/*\" {\n  capabilities = [\"read\", \"list\"]\n}\n\npath \"secret/metadata/payments/*\" {\n  capabilities = [\"read\", \"list\"]\n}",
+    "vault policy read admin-policy": "# Policy: admin-policy\n# Full admin access for platform team\n\npath \"secret/*\" {\n  capabilities = [\"create\", \"read\", \"update\", \"delete\", \"list\"]\n}\n\npath \"sys/policies/*\" {\n  capabilities = [\"create\", \"read\", \"update\", \"delete\", \"list\"]\n}\n\npath \"auth/*\" {\n  capabilities = [\"create\", \"read\", \"update\", \"delete\", \"list\", \"sudo\"]\n}\n\npath \"sys/health\" {\n  capabilities = [\"read\", \"sudo\"]\n}",
+    "vault policy read cicd-deploy": "# Policy: cicd-deploy\n# CI/CD pipeline access - read secrets, manage leases\n\npath \"secret/data/services/*\" {\n  capabilities = [\"read\", \"list\"]\n}\n\npath \"secret/data/app/config\" {\n  capabilities = [\"read\"]\n}\n\npath \"sys/leases/renew\" {\n  capabilities = [\"update\"]\n}\n\npath \"transit/encrypt/deploy-key\" {\n  capabilities = [\"update\"]\n}\n\npath \"transit/decrypt/deploy-key\" {\n  capabilities = [\"update\"]\n}",
+    "vault policy read db-rotate": "# Policy: db-rotate\n# Database credential rotation\n\npath \"database/creds/payments-db\" {\n  capabilities = [\"read\"]\n}\n\npath \"database/rotate-root/payments-db\" {\n  capabilities = [\"update\"]\n}\n\npath \"sys/leases/revoke\" {\n  capabilities = [\"update\"]\n}",
+    "vault policy read monitoring-read": "# Policy: monitoring-read\n# Prometheus/Grafana metrics scraping\n\npath \"sys/metrics\" {\n  capabilities = [\"read\"]\n}\n\npath \"sys/health\" {\n  capabilities = [\"read\"]\n}\n\npath \"sys/seal-status\" {\n  capabilities = [\"read\"]\n}",
+    "vault policy write payments-read -": "Success! Uploaded policy: payments-read",
+    "vault policy delete monitoring-read": "Success! Deleted policy: monitoring-read",
+    "vault audit list": "Path       Type    Description\n----       ----    -----------\nfile/      file    Audit log to /vault/logs/audit.log\nsyslog/    syslog  Audit log to syslog",
+    "vault audit enable file file_path=/vault/logs/audit.log": "Success! Enabled the file audit device at: file/",
+    "vault audit enable syslog": "Success! Enabled the syslog audit device at: syslog/",
+    "vault lease list": "WARNING! This endpoint is not available in all Vault versions.\n\nKeys\n----\nauth/token/create/4Kd9eP3mL7nQ2rT6wX8zA1bC\ndatabase/creds/payments-db/7Rl3sN9kP2mQ5tW8xZ1aB4cD\ndatabase/creds/payments-db/9Xf6gH2jK4lM7nR0qS3vY5wE",
+    "vault lease renew database/creds/payments-db/7Rl3sN9kP2mQ5tW8xZ1aB4cD": "Key                Value\n---                -----\nlease_id           database/creds/payments-db/7Rl3sN9kP2mQ5tW8xZ1aB4cD\nlease_duration     1h\nlease_renewable    true",
+    "vault lease revoke database/creds/payments-db/7Rl3sN9kP2mQ5tW8xZ1aB4cD": "All revocation operations queued successfully!",
+    "vault lease revoke -prefix database/creds/payments-db": "All revocation operations queued successfully!",
+    "scenario": "Available scenarios:\n  1. store-rotate-credentials  — Store and Rotate Database Credentials\n  2. unseal-after-restart      — Unseal Vault After Restart\n\nType 'scenario <id>' to start a guided lab.",
+    "scenario store-rotate-credentials": "Starting scenario: Store and Rotate Database Credentials\n\nStep 1/8: First, check that Vault is running and unsealed.\nHint: Try: vault status",
+    "scenario unseal-after-restart": "Starting scenario: Unseal Vault After Restart\n\nStep 1/8: Vault has just restarted. Check its current seal status.\nHint: Try: vault status"
+  },
+  "reference": [
+    {
+      "group": "Status & Cluster",
+      "commands": [
+        {
+          "cmd": "vault status",
+          "desc": "seal status & cluster info"
+        },
+        {
+          "cmd": "vault operator init",
+          "desc": "initialize new cluster"
+        },
+        {
+          "cmd": "vault operator unseal <key>",
+          "desc": "provide unseal key share"
+        },
+        {
+          "cmd": "vault operator seal",
+          "desc": "seal the vault"
+        },
+        {
+          "cmd": "vault operator raft list-peers",
+          "desc": "Raft cluster members"
+        },
+        {
+          "cmd": "vault server -dev",
+          "desc": "start dev mode server"
+        }
+      ]
+    },
+    {
+      "group": "KV Secrets",
+      "commands": [
+        {
+          "cmd": "vault kv put secret/path key=value",
+          "desc": "write a secret"
+        },
+        {
+          "cmd": "vault kv get secret/path",
+          "desc": "read a secret"
+        },
+        {
+          "cmd": "vault kv get -field=key secret/path",
+          "desc": "read single field"
+        },
+        {
+          "cmd": "vault kv list secret/",
+          "desc": "list secrets at path"
+        },
+        {
+          "cmd": "vault kv delete secret/path",
+          "desc": "soft-delete version"
+        },
+        {
+          "cmd": "vault kv metadata get secret/path",
+          "desc": "version history"
+        },
+        {
+          "cmd": "vault kv rollback -version=N secret/path",
+          "desc": "rollback to version"
+        }
+      ]
+    },
+    {
+      "group": "Secrets Engines",
+      "commands": [
+        {
+          "cmd": "vault secrets list",
+          "desc": "list enabled engines"
+        },
+        {
+          "cmd": "vault secrets enable -path=X type",
+          "desc": "enable engine"
+        },
+        {
+          "cmd": "vault secrets disable path/",
+          "desc": "disable engine"
+        }
+      ]
+    },
+    {
+      "group": "Authentication",
+      "commands": [
+        {
+          "cmd": "vault auth list",
+          "desc": "list auth methods"
+        },
+        {
+          "cmd": "vault auth enable method",
+          "desc": "enable auth method"
+        },
+        {
+          "cmd": "vault login <token>",
+          "desc": "authenticate with token"
+        },
+        {
+          "cmd": "vault login -method=userpass username=X",
+          "desc": "authenticate with userpass"
+        }
+      ]
+    },
+    {
+      "group": "Tokens",
+      "commands": [
+        {
+          "cmd": "vault token lookup",
+          "desc": "inspect current token"
+        },
+        {
+          "cmd": "vault token create -policy=X -ttl=24h",
+          "desc": "create scoped token"
+        },
+        {
+          "cmd": "vault token revoke <token>",
+          "desc": "revoke a token"
+        },
+        {
+          "cmd": "vault token revoke -accessor <acc>",
+          "desc": "revoke by accessor"
+        }
+      ]
+    },
+    {
+      "group": "Policies",
+      "commands": [
+        {
+          "cmd": "vault policy list",
+          "desc": "list all policies"
+        },
+        {
+          "cmd": "vault policy read name",
+          "desc": "view policy HCL"
+        },
+        {
+          "cmd": "vault policy write name -",
+          "desc": "write policy from stdin"
+        },
+        {
+          "cmd": "vault policy delete name",
+          "desc": "delete a policy"
+        }
+      ]
+    },
+    {
+      "group": "Audit & Leases",
+      "commands": [
+        {
+          "cmd": "vault audit list",
+          "desc": "list audit devices"
+        },
+        {
+          "cmd": "vault audit enable file file_path=/path",
+          "desc": "enable file audit"
+        },
+        {
+          "cmd": "vault lease list",
+          "desc": "list active leases"
+        },
+        {
+          "cmd": "vault lease renew <lease-id>",
+          "desc": "renew a lease"
+        },
+        {
+          "cmd": "vault lease revoke <lease-id>",
+          "desc": "revoke a lease"
+        },
+        {
+          "cmd": "vault lease revoke -prefix path/",
+          "desc": "revoke all under prefix"
+        }
+      ]
+    },
+    {
+      "group": "Scenarios",
+      "commands": [
+        {
+          "cmd": "scenario store-rotate-credentials",
+          "desc": "store & rotate DB creds"
+        },
+        {
+          "cmd": "scenario unseal-after-restart",
+          "desc": "unseal after restart"
+        }
+      ]
+    }
+  ]
+}

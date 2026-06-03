@@ -1,0 +1,479 @@
+{
+  "id": "vim",
+  "prompt": "vim@editor:~$",
+  "welcome": "Welcome to the Vim CLI Playground.\nType commands to explore a simulated Vim editing environment.\nType 'help' for available commands, 'scenario' for guided labs.\n",
+  "scenarios": [
+    {
+      "id": "edit-config",
+      "title": "Edit a Config File Efficiently",
+      "steps": [
+        {
+          "instruction": "Open the Nginx configuration file for editing.",
+          "expect": "vim /etc/nginx/nginx.conf",
+          "hint": "Try: vim /etc/nginx/nginx.conf"
+        },
+        {
+          "instruction": "Jump to the end of the file to see the last settings.",
+          "expect": "G",
+          "hint": "Try: G (go to last line)"
+        },
+        {
+          "instruction": "Now jump back to the top of the file.",
+          "expect": "gg",
+          "hint": "Try: gg (go to first line)"
+        },
+        {
+          "instruction": "Search for the 'worker_processes' directive.",
+          "expect": "/worker_processes",
+          "hint": "Try: /worker_processes"
+        },
+        {
+          "instruction": "Replace 'auto' with '4' on the current line.",
+          "expect": ":s/auto/4/g",
+          "hint": "Try: :s/auto/4/g"
+        },
+        {
+          "instruction": "Turn on line numbers to see where you are.",
+          "expect": ":set number",
+          "hint": "Try: :set number"
+        },
+        {
+          "instruction": "Replace all occurrences of 'listen 80' with 'listen 8080' across the entire file.",
+          "expect": ":%s/listen 80/listen 8080/g",
+          "hint": "Try: :%s/listen 80/listen 8080/g"
+        },
+        {
+          "instruction": "Save the file and quit Vim.",
+          "expect": ":wq",
+          "hint": "Try: :wq"
+        }
+      ]
+    },
+    {
+      "id": "multi-file-macros",
+      "title": "Multi-file Editing and Macros",
+      "steps": [
+        {
+          "instruction": "Open three configuration files at once using Vim.",
+          "expect": "vim app.conf db.conf cache.conf",
+          "hint": "Try: vim app.conf db.conf cache.conf"
+        },
+        {
+          "instruction": "List all open buffers to see the loaded files.",
+          "expect": ":buffers",
+          "hint": "Try: :buffers"
+        },
+        {
+          "instruction": "Start recording a macro into register 'a' that will add a comment header to the file.",
+          "expect": "qa",
+          "hint": "Try: qa (start recording into register a)"
+        },
+        {
+          "instruction": "Go to the top of the file, open a new line above, and type a comment header. Then stop recording.",
+          "expect": "ggO# Config updated 2026-06-02<Esc>q",
+          "hint": "Try: ggO# Config updated 2026-06-02<Esc>q"
+        },
+        {
+          "instruction": "Switch to the next buffer (db.conf).",
+          "expect": ":bn",
+          "hint": "Try: :bn (next buffer)"
+        },
+        {
+          "instruction": "Play the macro stored in register 'a' to apply the same header.",
+          "expect": "@a",
+          "hint": "Try: @a (play macro from register a)"
+        },
+        {
+          "instruction": "Switch to the last buffer (cache.conf) and apply the macro again.",
+          "expect": ":bn",
+          "hint": "Try: :bn (next buffer)"
+        },
+        {
+          "instruction": "Save all open buffers and quit.",
+          "expect": ":wqa",
+          "hint": "Try: :wqa (write all and quit)"
+        }
+      ]
+    }
+  ],
+  "commands": {
+    "help": "Available commands:\n  vim <file>                — Open file for editing\n  :w                       — Save (write) current file\n  :q                       — Quit (fails if unsaved changes)\n  :wq                      — Save and quit\n  :q!                      — Quit without saving\n  :e <file>                — Open another file\n  :vs                      — Vertical split\n  :sp                      — Horizontal split\n  :tabnew                  — Open new tab\n  :bn / :bp                — Next/previous buffer\n  :buffers                 — List open buffers\n  /pattern                 — Search forward\n  ?pattern                 — Search backward\n  :s/old/new/g             — Replace on current line\n  :%s/old/new/g            — Replace in entire file\n  dd / yy / p              — Delete/yank/paste line\n  u / Ctrl+r               — Undo/redo\n  qa / @a                  — Record/play macro\n  :help                    — Open Vim help\n\n  scenario                 — Start a guided lab\n  clear                    — Clear the terminal\n  help                     — Show this help",
+    "vim /etc/nginx/nginx.conf": "\"nginx.conf\" 42 lines, 1.2K\n\n  1 # /etc/nginx/nginx.conf\n  2 user nginx;\n  3 worker_processes auto;\n  4 error_log /var/log/nginx/error.log warn;\n  5 pid /run/nginx.pid;\n  6\n  7 events {\n  8     worker_connections 1024;\n  9 }\n 10\n 11 http {\n 12     include       /etc/nginx/mime.types;\n 13     default_type  application/octet-stream;\n 14     sendfile      on;\n 15     keepalive_timeout 65;\n 16\n 17     server {\n 18         listen 80;\n 19         server_name app.example.com;\n 20         root /var/www/html;\n 21     }\n 22 }",
+    "vim app.conf": "\"app.conf\" 18 lines, 420B\n\n  1 # Application Configuration\n  2 app_name=myservice\n  3 app_port=8080\n  4 app_env=production\n  5 log_level=info\n  6 max_connections=100\n  7 timeout=30s\n  8 retry_count=3",
+    "vim db.conf": "\"db.conf\" 12 lines, 310B\n\n  1 # Database Configuration\n  2 db_host=10.0.1.42\n  3 db_port=5432\n  4 db_name=production\n  5 db_user=app_user\n  6 db_pool_size=20\n  7 db_timeout=10s",
+    "vim cache.conf": "\"cache.conf\" 10 lines, 280B\n\n  1 # Cache Configuration\n  2 cache_host=10.0.2.18\n  3 cache_port=6379\n  4 cache_ttl=300\n  5 cache_max_memory=256mb\n  6 cache_eviction=lru",
+    "vim app.conf db.conf cache.conf": "3 files to edit\n\"app.conf\" 18 lines, 420B\n\n  1 # Application Configuration\n  2 app_name=myservice\n  3 app_port=8080\n  4 app_env=production\n  5 log_level=info\n  6 max_connections=100\n  7 timeout=30s\n  8 retry_count=3",
+    "vim server.py": "\"server.py\" 35 lines, 890B\n\n  1 #!/usr/bin/env python3\n  2 from flask import Flask, jsonify\n  3 import os\n  4\n  5 app = Flask(__name__)\n  6\n  7 @app.route('/health')\n  8 def health():\n  9     return jsonify({\"status\": \"ok\"})\n 10\n 11 @app.route('/api/users')\n 12 def get_users():\n 13     return jsonify([\"alice\", \"bob\", \"charlie\"])\n 14\n 15 if __name__ == '__main__':\n 16     port = int(os.environ.get('PORT', 5000))\n 17     app.run(host='0.0.0.0', port=port)",
+    "vim ~/.vimrc": "\"~/.vimrc\" 22 lines, 540B\n\n  1 \" Vim configuration\n  2 set nocompatible\n  3 syntax on\n  4 set number\n  5 set relativenumber\n  6 set tabstop=4\n  7 set shiftwidth=4\n  8 set expandtab\n  9 set autoindent\n 10 set smartindent\n 11 set hlsearch\n 12 set incsearch\n 13 set ignorecase\n 14 set smartcase\n 15 set wildmenu\n 16 set ruler\n 17 set laststatus=2\n 18 set backspace=indent,eol,start\n 19 set clipboard=unnamedplus\n 20 colorscheme desert\n 21 \" End of .vimrc",
+    ":w": "\"nginx.conf\" 42L, 1.2K written",
+    ":q": "(exits Vim — returning to shell)",
+    ":wq": "\"nginx.conf\" 42L, 1.2K written\n(exits Vim)",
+    ":q!": "(exits Vim without saving — all unsaved changes lost)",
+    "ZZ": "\"nginx.conf\" 42L, 1.2K written\n(exits Vim — equivalent to :wq)",
+    ":wqa": "\"app.conf\" 19L written\n\"db.conf\" 13L written\n\"cache.conf\" 11L written\n(exits Vim — all buffers saved)",
+    ":e server.py": "\"server.py\" 35 lines, 890B\n\n  1 #!/usr/bin/env python3\n  2 from flask import Flask, jsonify\n  3 import os\n  4\n  5 app = Flask(__name__)\n  6\n  7 @app.route('/health')\n  8 def health():\n  9     return jsonify({\"status\": \"ok\"})",
+    ":e ~/.vimrc": "\"~/.vimrc\" 22 lines, 540B\n\n  1 \" Vim configuration\n  2 set nocompatible\n  3 syntax on\n  4 set number\n  5 set relativenumber",
+    ":vs": "[Window split vertically]\n\n  │  1 # nginx.conf          │  1 # nginx.conf\n  │  2 user nginx;           │  2 user nginx;\n  │  3 worker_processes auto;│  3 worker_processes auto;\n  │  4 error_log ...         │  4 error_log ...\n  │                          │\n  ─────────────────────────────────────────────────",
+    ":sp": "[Window split horizontally]\n\n  1 # nginx.conf\n  2 user nginx;\n  3 worker_processes auto;\n  ─────────────────────────\n  1 # nginx.conf\n  2 user nginx;\n  3 worker_processes auto;",
+    ":tabnew": "[New tab opened]\nTab 1: nginx.conf | Tab 2: [No Name] (active)",
+    ":bn": "[Buffer switched: next]\nNow editing: db.conf (buffer 2 of 3)",
+    ":bp": "[Buffer switched: previous]\nNow editing: app.conf (buffer 1 of 3)",
+    ":buffers": "  1 %a   \"app.conf\"              line 1\n  2      \"db.conf\"               line 1\n  3      \"cache.conf\"            line 1",
+    ":ls": "  1 %a   \"app.conf\"              line 1\n  2      \"db.conf\"               line 1\n  3      \"cache.conf\"            line 1",
+    "/worker_processes": "/worker_processes\nCursor moved to line 3: worker_processes auto;",
+    "/server_name": "/server_name\nCursor moved to line 19: server_name app.example.com;",
+    "/listen": "/listen\nCursor moved to line 18: listen 80;",
+    "?error_log": "?error_log\nSearch backward — cursor moved to line 4: error_log /var/log/nginx/error.log warn;",
+    "?server": "?server\nSearch backward — cursor moved to line 17: server {",
+    ":s/auto/4/g": ":s/auto/4/g\nLine 3: worker_processes 4;   (1 substitution on current line)",
+    ":s/80/8080/g": ":s/80/8080/g\nLine 18: listen 8080;   (1 substitution on current line)",
+    ":%s/listen 80/listen 8080/g": ":%s/listen 80/listen 8080/g\n1 substitution on 1 line",
+    ":%s/old/new/g": ":%s/old/new/g\nE486: Pattern not found: old",
+    ":%s/info/debug/g": ":%s/info/debug/g\n2 substitutions on 2 lines",
+    ":%s/production/staging/g": ":%s/production/staging/g\n3 substitutions on 3 lines",
+    ":set number": ":set number\n(Line numbers now visible on the left margin)",
+    ":set nonumber": ":set nonumber\n(Line numbers hidden)",
+    ":set paste": ":set paste\n(Paste mode ON — auto-indent disabled for clean pasting)",
+    ":set nopaste": ":set nopaste\n(Paste mode OFF — auto-indent re-enabled)",
+    ":set syntax=yaml": ":set syntax=yaml\n(Syntax highlighting changed to YAML)",
+    ":set syntax=python": ":set syntax=python\n(Syntax highlighting changed to Python)",
+    ":noh": ":noh\n(Search highlighting cleared)",
+    "dd": "dd\n(Deleted current line — stored in default register)",
+    "3dd": "3dd\n(Deleted 3 lines starting from cursor — stored in default register)",
+    "yy": "yy\n(Yanked/copied current line to default register)",
+    "3yy": "3yy\n(Yanked 3 lines starting from cursor)",
+    "p": "p\n(Pasted content from default register below current line)",
+    "P": "P\n(Pasted content from default register above current line)",
+    "u": "u\n(Undo: last change reverted)\n1 change; line 3: worker_processes auto;",
+    "Ctrl+r": "Ctrl+r\n(Redo: undone change re-applied)\n1 change; line 3: worker_processes 4;",
+    "gg": "gg\n(Cursor moved to line 1, column 1 — top of file)",
+    "G": "G\n(Cursor moved to line 42 — bottom of file)",
+    "0": "0\n(Cursor moved to beginning of current line)",
+    "$": "$\n(Cursor moved to end of current line)",
+    "w": "w\n(Cursor moved forward one word)",
+    "b": "b\n(Cursor moved backward one word)",
+    "5w": "5w\n(Cursor moved forward 5 words)",
+    "5b": "5b\n(Cursor moved backward 5 words)",
+    "ci\"": "ci\"\n(Changed inner quotes — deleted text between quotes, entered Insert mode)\nReady to type replacement text...",
+    "di(": "di(\n(Deleted inner parentheses — removed content between ( and ) )",
+    "viw": "viw\n(Visual mode: selected inner word under cursor)\nHighlighted: worker_processes",
+    ".": ".\n(Repeated last change — e.g., if last action was dd, another line deleted)",
+    ":reg": ":reg\nType Name Content\n  l  \"\"   worker_processes auto;\\n\n  l  \"0   worker_processes auto;\\n\n  l  \"1   listen 80;\\n\n  l  \"a   ggO# Config updated 2026-06-02^[q\n  l  \"-   auto",
+    "qa": "qa\n(Recording macro into register 'a' — type commands, then 'q' to stop)",
+    "q": "q\n(Stopped recording macro)",
+    "@a": "@a\n(Executed macro from register 'a')\n— Applied: jump to top, insert comment header line",
+    "@@": "@@\n(Repeated last macro execution)\n— Applied: jump to top, insert comment header line",
+    "5@a": "5@a\n(Executed macro 'a' five times)",
+    ":norm": ":norm\nUsage: :norm[al] {commands}\nExample: :%norm I#   (prepend # to every line)",
+    ":%norm I# ": ":%norm I# \n(Prepended '# ' to every line in the file — 42 lines changed)",
+    ":g/pattern/d": ":g/pattern/d\nE486: Pattern not found: pattern",
+    ":g/^$/d": ":g/^$/d\n(Deleted all blank lines — 5 lines removed)",
+    ":g/^#/d": ":g/^#/d\n(Deleted all comment lines starting with # — 3 lines removed)",
+    ":r !date": ":r !date\nMon Jun  2 10:30:45 IST 2026\n(Output inserted below cursor)",
+    ":r !whoami": ":r !whoami\nnginx\n(Output inserted below cursor)",
+    ":r !cat /etc/hostname": ":r !cat /etc/hostname\nprod-web-01\n(Output inserted below cursor)",
+    ":!ls": ":!ls\napp.conf  cache.conf  db.conf  nginx.conf  server.py\n\nPress ENTER or type command to continue",
+    ":!date": ":!date\nMon Jun  2 10:30:45 IST 2026\n\nPress ENTER or type command to continue",
+    ":!pwd": ":!pwd\n/etc/nginx\n\nPress ENTER or type command to continue",
+    ":!cat %": ":!cat %\n(Displays current file content in shell — press Enter to return to Vim)",
+    ":help": ":help\n*help.txt*    For Vim version 9.1\n\nMOVING AROUND                                 *navigation*\n  h j k l        — left, down, up, right\n  w b e           — word forward, back, end\n  0 $ ^           — line start, end, first non-blank\n  gg G            — file start, file end\n  Ctrl+f Ctrl+b   — page down, page up\n  /pattern ?patt  — search forward, backward\n\nEDITING\n  i a o O         — insert mode (at/after/below/above)\n  x dd dw         — delete char, line, word\n  yy p P          — yank line, paste below/above\n  u Ctrl+r        — undo, redo\n  .               — repeat last change\n\nPress :q to close help",
+    ":marks": ":marks\nmark line  col file/text\n '    5    0   app_env=production\n a    1    0   # Application Configuration\n b   12    0   # Database Configuration\n 0    3    4   worker_processes auto;\n [    1    0   # Application Configuration\n ]   18    0   retry_count=3",
+    ":jumps": ":jumps\n jump line  col file/text\n   4    1    0 # Application Configuration\n   3   42    0 }\n   2    3    0 worker_processes auto;\n   1   18    0     listen 80;\n>  0    3    0 worker_processes 4;",
+    "v": "v\n(Visual mode — character selection started. Move cursor to select text.)",
+    "V": "V\n(Visual Line mode — entire lines selected. Move up/down to expand selection.)",
+    "Ctrl+v": "Ctrl+v\n(Visual Block mode — rectangular column selection started.\n Move cursor to select a block region across multiple lines.)",
+    "gv": "gv\n(Re-select the last visual selection)",
+    "ggO# Config updated 2026-06-02<Esc>q": "(Macro recorded: jumped to top, inserted header line, returned to normal mode, stopped recording)\nLine 1: # Config updated 2026-06-02",
+    ":set hlsearch": ":set hlsearch\n(Search matches will be highlighted)",
+    ":set nohlsearch": ":set nohlsearch\n(Search highlighting permanently disabled)",
+    ":set relativenumber": ":set relativenumber\n(Relative line numbers now shown — useful for jump counts)",
+    ":set wrap": ":set wrap\n(Long lines now wrap visually)",
+    ":set nowrap": ":set nowrap\n(Long lines extend off-screen — horizontal scroll needed)",
+    "xp": "xp\n(Swapped two characters under and after cursor — common typo fix)",
+    "J": "J\n(Joined current line with the line below, separated by space)",
+    ">>": ">>\n(Indented current line one shiftwidth to the right)",
+    "<<": "<<\n(Unindented current line one shiftwidth to the left)",
+    "ggVG": "ggVG\n(Selected entire file in Visual Line mode — all 42 lines highlighted)",
+    ":%y": ":%y\n(Yanked entire file contents to default register — 42 lines yanked)",
+    ":earlier 5m": ":earlier 5m\n(File reverted to state from 5 minutes ago — 3 changes undone)",
+    ":later 5m": ":later 5m\n(File moved forward to state 5 minutes later — 3 changes re-applied)",
+    "da\"": "da\"\n(Deleted around quotes — removed quotes and content between them)",
+    "ca(": "ca(\n(Changed around parentheses — deleted parens and content, entered Insert mode)",
+    "yi{": "yi{\n(Yanked inner braces — copied content between { and } to register)",
+    "*": "*\n(Searched forward for word under cursor — jumped to next occurrence)",
+    "#": "#\n(Searched backward for word under cursor — jumped to previous occurrence)",
+    ":w !sudo tee %": ":w !sudo tee %\n(Saved file with sudo privileges — useful when you forgot to open with sudo)",
+    ":%!sort": ":%!sort\n(Sorted all lines in the file alphabetically — 42 lines filtered)",
+    ":10,20s/foo/bar/g": ":10,20s/foo/bar/g\n(Replaced 'foo' with 'bar' on lines 10-20)"
+  },
+  "reference": [
+    {
+      "group": "Opening & Closing",
+      "commands": [
+        {
+          "cmd": "vim <file>",
+          "desc": "open file for editing"
+        },
+        {
+          "cmd": "vim file1 file2 file3",
+          "desc": "open multiple files as buffers"
+        },
+        {
+          "cmd": ":w",
+          "desc": "save current file"
+        },
+        {
+          "cmd": ":q",
+          "desc": "quit (fails if unsaved)"
+        },
+        {
+          "cmd": ":wq",
+          "desc": "save and quit"
+        },
+        {
+          "cmd": "ZZ",
+          "desc": "save and quit (normal mode shortcut)"
+        },
+        {
+          "cmd": ":q!",
+          "desc": "force quit without saving"
+        },
+        {
+          "cmd": ":wqa",
+          "desc": "save all buffers and quit"
+        },
+        {
+          "cmd": ":e <file>",
+          "desc": "open another file"
+        }
+      ]
+    },
+    {
+      "group": "Navigation",
+      "commands": [
+        {
+          "cmd": "gg",
+          "desc": "go to first line"
+        },
+        {
+          "cmd": "G",
+          "desc": "go to last line"
+        },
+        {
+          "cmd": "0",
+          "desc": "go to start of line"
+        },
+        {
+          "cmd": "$",
+          "desc": "go to end of line"
+        },
+        {
+          "cmd": "w / b",
+          "desc": "forward / backward one word"
+        },
+        {
+          "cmd": "Ctrl+f / Ctrl+b",
+          "desc": "page down / page up"
+        },
+        {
+          "cmd": ":jumps",
+          "desc": "show jump list"
+        },
+        {
+          "cmd": ":marks",
+          "desc": "show all marks"
+        }
+      ]
+    },
+    {
+      "group": "Search & Replace",
+      "commands": [
+        {
+          "cmd": "/pattern",
+          "desc": "search forward"
+        },
+        {
+          "cmd": "?pattern",
+          "desc": "search backward"
+        },
+        {
+          "cmd": "* / #",
+          "desc": "search word under cursor forward/back"
+        },
+        {
+          "cmd": ":s/old/new/g",
+          "desc": "replace on current line"
+        },
+        {
+          "cmd": ":%s/old/new/g",
+          "desc": "replace in entire file"
+        },
+        {
+          "cmd": ":10,20s/old/new/g",
+          "desc": "replace on lines 10-20"
+        },
+        {
+          "cmd": ":noh",
+          "desc": "clear search highlighting"
+        }
+      ]
+    },
+    {
+      "group": "Editing & Text Objects",
+      "commands": [
+        {
+          "cmd": "dd / yy / p",
+          "desc": "delete / yank / paste line"
+        },
+        {
+          "cmd": "u / Ctrl+r",
+          "desc": "undo / redo"
+        },
+        {
+          "cmd": ".",
+          "desc": "repeat last change"
+        },
+        {
+          "cmd": "ci\"",
+          "desc": "change inside quotes"
+        },
+        {
+          "cmd": "di(",
+          "desc": "delete inside parentheses"
+        },
+        {
+          "cmd": "viw",
+          "desc": "visual select inner word"
+        },
+        {
+          "cmd": ">> / <<",
+          "desc": "indent / unindent line"
+        },
+        {
+          "cmd": "J",
+          "desc": "join current line with next"
+        }
+      ]
+    },
+    {
+      "group": "Visual Mode",
+      "commands": [
+        {
+          "cmd": "v",
+          "desc": "character-wise visual mode"
+        },
+        {
+          "cmd": "V",
+          "desc": "line-wise visual mode"
+        },
+        {
+          "cmd": "Ctrl+v",
+          "desc": "block (column) visual mode"
+        },
+        {
+          "cmd": "gv",
+          "desc": "re-select last selection"
+        },
+        {
+          "cmd": "ggVG",
+          "desc": "select entire file"
+        }
+      ]
+    },
+    {
+      "group": "Buffers, Windows & Tabs",
+      "commands": [
+        {
+          "cmd": ":buffers / :ls",
+          "desc": "list open buffers"
+        },
+        {
+          "cmd": ":bn / :bp",
+          "desc": "next / previous buffer"
+        },
+        {
+          "cmd": ":vs",
+          "desc": "vertical split"
+        },
+        {
+          "cmd": ":sp",
+          "desc": "horizontal split"
+        },
+        {
+          "cmd": ":tabnew",
+          "desc": "open new tab"
+        }
+      ]
+    },
+    {
+      "group": "Macros & Advanced",
+      "commands": [
+        {
+          "cmd": "qa ... q",
+          "desc": "record macro into register a"
+        },
+        {
+          "cmd": "@a",
+          "desc": "play macro from register a"
+        },
+        {
+          "cmd": "@@",
+          "desc": "repeat last macro"
+        },
+        {
+          "cmd": ":norm {cmds}",
+          "desc": "run normal-mode cmds on range"
+        },
+        {
+          "cmd": ":g/pattern/d",
+          "desc": "delete all lines matching pattern"
+        },
+        {
+          "cmd": ":reg",
+          "desc": "show register contents"
+        },
+        {
+          "cmd": ":r !command",
+          "desc": "insert command output below cursor"
+        },
+        {
+          "cmd": ":!command",
+          "desc": "run shell command"
+        }
+      ]
+    },
+    {
+      "group": "Settings & Help",
+      "commands": [
+        {
+          "cmd": ":set number",
+          "desc": "show line numbers"
+        },
+        {
+          "cmd": ":set nonumber",
+          "desc": "hide line numbers"
+        },
+        {
+          "cmd": ":set paste",
+          "desc": "paste mode (disable auto-indent)"
+        },
+        {
+          "cmd": ":set syntax=yaml",
+          "desc": "change syntax highlighting"
+        },
+        {
+          "cmd": ":help",
+          "desc": "open Vim help"
+        },
+        {
+          "cmd": ":earlier 5m",
+          "desc": "revert file to 5 minutes ago"
+        },
+        {
+          "cmd": ":later 5m",
+          "desc": "move forward in undo history"
+        }
+      ]
+    }
+  ]
+}

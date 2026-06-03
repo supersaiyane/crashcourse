@@ -1,0 +1,256 @@
+{
+  "id": "podman",
+  "prompt": "podman@devbox:~$",
+  "welcome": "Welcome to the Podman CLI Playground.\nType commands to explore rootless containers, pods, and systemd integration.\nType 'help' for available commands, 'scenario' for guided labs.\n",
+  "scenarios": [
+    {
+      "id": "rootless-pod",
+      "title": "Run a Rootless Multi-Container Pod",
+      "steps": [
+        {
+          "instruction": "Create a new pod named 'webapp' that exposes port 8080 on the host.",
+          "expect": "podman pod create --name webapp -p 8080:80",
+          "hint": "Try: podman pod create --name webapp -p 8080:80"
+        },
+        {
+          "instruction": "Add an nginx container to the pod to serve as the frontend.",
+          "expect": "podman run -d --pod webapp --name web nginx:alpine",
+          "hint": "Try: podman run -d --pod webapp --name web nginx:alpine"
+        },
+        {
+          "instruction": "Add a redis container to the same pod for caching (containers in a pod share localhost).",
+          "expect": "podman run -d --pod webapp --name cache redis:7-alpine",
+          "hint": "Try: podman run -d --pod webapp --name cache redis:7-alpine"
+        },
+        {
+          "instruction": "List all pods to verify 'webapp' is running with its containers.",
+          "expect": "podman pod list",
+          "hint": "Try: podman pod list"
+        },
+        {
+          "instruction": "Inspect the pod to see its network configuration and container IDs.",
+          "expect": "podman pod inspect webapp",
+          "hint": "Try: podman pod inspect webapp"
+        },
+        {
+          "instruction": "Check that both containers inside the pod are healthy.",
+          "expect": "podman ps --pod --filter pod=webapp",
+          "hint": "Try: podman ps --pod --filter pod=webapp"
+        },
+        {
+          "instruction": "Stop the entire pod (all containers stop together).",
+          "expect": "podman pod stop webapp",
+          "hint": "Try: podman pod stop webapp"
+        },
+        {
+          "instruction": "Remove the pod and all its containers in one command.",
+          "expect": "podman pod rm webapp",
+          "hint": "Try: podman pod rm webapp"
+        }
+      ]
+    },
+    {
+      "id": "build-push-systemd",
+      "title": "Build and Push to Registry",
+      "steps": [
+        {
+          "instruction": "Build a container image from the Containerfile in the current directory, tagging it for your registry.",
+          "expect": "podman build -t registry.example.com/myapp:v1.0 .",
+          "hint": "Try: podman build -t registry.example.com/myapp:v1.0 ."
+        },
+        {
+          "instruction": "List local images to confirm the build succeeded.",
+          "expect": "podman images",
+          "hint": "Try: podman images"
+        },
+        {
+          "instruction": "Tag the image with a 'latest' alias for convenience.",
+          "expect": "podman tag registry.example.com/myapp:v1.0 registry.example.com/myapp:latest",
+          "hint": "Try: podman tag registry.example.com/myapp:v1.0 registry.example.com/myapp:latest"
+        },
+        {
+          "instruction": "Log in to the container registry before pushing.",
+          "expect": "podman login registry.example.com",
+          "hint": "Try: podman login registry.example.com"
+        },
+        {
+          "instruction": "Push the versioned image to the registry.",
+          "expect": "podman push registry.example.com/myapp:v1.0",
+          "hint": "Try: podman push registry.example.com/myapp:v1.0"
+        },
+        {
+          "instruction": "Run the image locally to verify it works before generating a service.",
+          "expect": "podman run -d --name myapp -p 8080:8080 registry.example.com/myapp:v1.0",
+          "hint": "Try: podman run -d --name myapp -p 8080:8080 registry.example.com/myapp:v1.0"
+        },
+        {
+          "instruction": "Generate a systemd unit file so the container starts on boot (rootless, user service).",
+          "expect": "podman generate systemd --new --name myapp --files",
+          "hint": "Try: podman generate systemd --new --name myapp --files"
+        },
+        {
+          "instruction": "Clean up: stop and remove the test container.",
+          "expect": "podman stop myapp && podman rm myapp",
+          "hint": "Try: podman stop myapp && podman rm myapp"
+        }
+      ]
+    }
+  ],
+  "commands": {
+    "help": "Available commands:\n  podman ps                      \u2014 List running containers\n  podman ps -a                   \u2014 List all containers (including stopped)\n  podman images                  \u2014 List local images\n  podman run                     \u2014 Create and start a container\n  podman build                   \u2014 Build image from Containerfile\n  podman pull                    \u2014 Pull image from registry\n  podman push                    \u2014 Push image to registry\n  podman tag                     \u2014 Add tag to an image\n  podman logs                    \u2014 View container logs\n  podman inspect                 \u2014 Show container/image/pod details\n  podman exec                    \u2014 Execute command in running container\n  podman stop/start/rm           \u2014 Container lifecycle\n  podman rmi                     \u2014 Remove image\n  podman pod create/list/rm      \u2014 Pod management\n  podman generate systemd        \u2014 Generate systemd unit files\n  podman generate kube           \u2014 Generate Kubernetes YAML\n  podman play kube               \u2014 Deploy from Kubernetes YAML\n  podman network ls/create       \u2014 Network management\n  podman volume ls/create        \u2014 Volume management\n  podman system prune/df         \u2014 Disk and cleanup\n  podman login/logout            \u2014 Registry authentication\n  podman stats                   \u2014 Live resource usage\n  podman top                     \u2014 Processes in container\n  podman healthcheck run         \u2014 Execute container healthcheck\n\n  scenario                       \u2014 Start a guided lab\n  clear                          \u2014 Clear the terminal\n  help                           \u2014 Show this help",
+    "podman version": "Client:       Podman Engine\nVersion:      5.3.1\nAPI Version:  5.3.1\nGo Version:   go1.22.5\nBuilt:        Thu May 15 2026\nOS/Arch:      linux/amd64",
+    "podman info": "host:\n  arch: amd64\n  buildahVersion: 1.38.0\n  cgroupControllers:\n  - memory\n  - pids\n  cgroupManager: systemd\n  cgroupVersion: v2\n  conmon:\n    version: 'conmon version 2.1.12'\n  os: linux\n  rootless: true\n  security:\n    rootless: true\n    seccompEnabled: true\n    selinuxEnabled: false\nregistries:\n  search:\n  - docker.io\n  - quay.io\nstore:\n  graphDriverName: overlay\n  graphRoot: /home/user/.local/share/containers/storage\n  runRoot: /run/user/1000/containers\n  volumePath: /home/user/.local/share/containers/storage/volumes",
+    "podman ps": "CONTAINER ID  IMAGE                                    COMMAND               STATUS         PORTS                 NAMES\na1b2c3d4e5f6  docker.io/library/nginx:alpine           nginx -g daemon o...  Up 2 hours     0.0.0.0:8080->80/tcp  web\nf6e5d4c3b2a1  docker.io/library/redis:7-alpine         redis-server          Up 2 hours                           cache\n7a8b9c0d1e2f  registry.example.com/myapp:v1.0          /app/server           Up 45 minutes  0.0.0.0:9090->8080    myapp",
+    "podman ps -a": "CONTAINER ID  IMAGE                                    COMMAND               STATUS                     PORTS                 NAMES\na1b2c3d4e5f6  docker.io/library/nginx:alpine           nginx -g daemon o...  Up 2 hours                 0.0.0.0:8080->80/tcp  web\nf6e5d4c3b2a1  docker.io/library/redis:7-alpine         redis-server          Up 2 hours                                       cache\n7a8b9c0d1e2f  registry.example.com/myapp:v1.0          /app/server           Up 45 minutes              0.0.0.0:9090->8080    myapp\nb3c4d5e6f7a8  docker.io/library/postgres:15            postgres              Exited (0) 3 hours ago                           old-db\nc5d6e7f8a9b0  docker.io/library/busybox:latest         sh                    Exited (0) 1 day ago                             debug-box",
+    "podman images": "REPOSITORY                          TAG       IMAGE ID      CREATED       SIZE\nregistry.example.com/myapp          v1.0      9f8e7d6c5b4a  2 hours ago   45.2 MB\nregistry.example.com/myapp          latest    9f8e7d6c5b4a  2 hours ago   45.2 MB\ndocker.io/library/nginx              alpine    3a4b5c6d7e8f  3 days ago    43.2 MB\ndocker.io/library/redis              7-alpine  1a2b3c4d5e6f  5 days ago    30.1 MB\ndocker.io/library/postgres           15        7f8e9d0c1b2a  1 week ago    412 MB\ndocker.io/library/busybox            latest    a9b8c7d6e5f4  2 weeks ago   4.26 MB",
+    "podman run -d --name web -p 8080:80 nginx:alpine": "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2",
+    "podman run -d --pod webapp --name web nginx:alpine": "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2",
+    "podman run -d --pod webapp --name cache redis:7-alpine": "f6e5d4c3b2a1f6e5d4c3b2a1f6e5d4c3b2a1f6e5d4c3b2a1f6e5d4c3b2a1f6e5",
+    "podman run -d --name myapp -p 8080:8080 registry.example.com/myapp:v1.0": "7a8b9c0d1e2f7a8b9c0d1e2f7a8b9c0d1e2f7a8b9c0d1e2f7a8b9c0d1e2f7a8b",
+    "podman run -it --rm busybox sh": "/ # (interactive shell session)",
+    "podman build -t registry.example.com/myapp:v1.0 .": "STEP 1/6: FROM golang:1.22-alpine AS builder\nSTEP 2/6: WORKDIR /app\nSTEP 3/6: COPY go.mod go.sum ./\nSTEP 4/6: RUN go mod download\nSTEP 5/6: COPY . .\nSTEP 6/6: RUN go build -o /app/server .\nSTEP 7/7: FROM alpine:3.19\n--> Using cache 9f8e7d6c5b4a\nSUCCESSFULLY TAGGED registry.example.com/myapp:v1.0\n9f8e7d6c5b4a3b2c1d0e9f8a7b6c5d4e3f2a1b0c9d8e7f6a5b4c3d2e1f0a9b8c",
+    "podman pull nginx:alpine": "Trying to pull docker.io/library/nginx:alpine...\nGetting image source signatures\nCopying blob sha256:a3ed95ca... done\nCopying config sha256:3a4b5c6... done\nWriting manifest to image destination\n3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b",
+    "podman push registry.example.com/myapp:v1.0": "Getting image source signatures\nCopying blob sha256:9f8e7d6c... done\nCopying blob sha256:a1b2c3d4... done\nCopying config sha256:9f8e7d... done\nWriting manifest to image destination\nStoring signatures",
+    "podman tag registry.example.com/myapp:v1.0 registry.example.com/myapp:latest": "",
+    "podman logs web": "172.16.0.1 - - [02/Jun/2026:10:15:00 +0000] \"GET / HTTP/1.1\" 200 615\n172.16.0.1 - - [02/Jun/2026:10:15:05 +0000] \"GET /healthz HTTP/1.1\" 200 2\n172.16.0.1 - - [02/Jun/2026:10:16:00 +0000] \"GET / HTTP/1.1\" 200 615\n172.16.0.1 - - [02/Jun/2026:10:16:30 +0000] \"GET /api/data HTTP/1.1\" 304 0",
+    "podman logs --tail 5 myapp": "2026-06-02T10:45:00Z INFO  server listening on :8080\n2026-06-02T10:45:01Z INFO  connected to database\n2026-06-02T10:45:30Z INFO  GET /healthz 200 1ms\n2026-06-02T10:46:00Z INFO  GET /api/users 200 12ms\n2026-06-02T10:46:15Z INFO  POST /api/orders 201 34ms",
+    "podman logs -f cache": "1:C 02 Jun 2026 10:12:00.123 * oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo\n1:C 02 Jun 2026 10:12:00.124 * Redis version=7.2.5, bits=64, commit=00000000\n1:M 02 Jun 2026 10:12:00.125 * Ready to accept connections tcp",
+    "podman inspect web": "[\n  {\n    \"Id\": \"a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6\",\n    \"Created\": \"2026-06-02T08:12:00.000000000Z\",\n    \"State\": {\n      \"Status\": \"running\",\n      \"Running\": true,\n      \"Pid\": 45231\n    },\n    \"Image\": \"docker.io/library/nginx:alpine\",\n    \"Name\": \"web\",\n    \"NetworkSettings\": {\n      \"IPAddress\": \"10.88.0.5\",\n      \"Ports\": {\n        \"80/tcp\": [{\"HostPort\": \"8080\"}]\n      }\n    },\n    \"Mounts\": [],\n    \"Config\": {\n      \"Healthcheck\": {\n        \"Test\": [\"CMD\", \"wget\", \"--spider\", \"http://localhost/healthz\"]\n      }\n    }\n  }\n]",
+    "podman inspect myapp": "[\n  {\n    \"Id\": \"7a8b9c0d1e2f7a8b9c0d1e2f7a8b9c0d\",\n    \"Created\": \"2026-06-02T09:30:00.000000000Z\",\n    \"State\": {\n      \"Status\": \"running\",\n      \"Running\": true,\n      \"Pid\": 46012\n    },\n    \"Image\": \"registry.example.com/myapp:v1.0\",\n    \"Name\": \"myapp\",\n    \"NetworkSettings\": {\n      \"IPAddress\": \"10.88.0.8\",\n      \"Ports\": {\n        \"8080/tcp\": [{\"HostPort\": \"9090\"}]\n      }\n    },\n    \"Config\": {\n      \"Env\": [\"DB_HOST=localhost\", \"DB_PORT=5432\", \"APP_ENV=production\"]\n    }\n  }\n]",
+    "podman exec -it web sh": "/ # (interactive shell in web container)",
+    "podman exec web cat /etc/nginx/nginx.conf": "worker_processes  auto;\nevents {\n    worker_connections  1024;\n}\nhttp {\n    server {\n        listen       80;\n        server_name  localhost;\n        location / {\n            root   /usr/share/nginx/html;\n            index  index.html;\n        }\n        location /healthz {\n            return 200 'ok';\n        }\n    }\n}",
+    "podman stop web": "web",
+    "podman stop myapp": "myapp",
+    "podman stop cache": "cache",
+    "podman stop myapp && podman rm myapp": "myapp\nmyapp",
+    "podman start web": "web",
+    "podman start myapp": "myapp",
+    "podman rm web": "web",
+    "podman rm myapp": "myapp",
+    "podman rm -f old-db": "old-db",
+    "podman rmi docker.io/library/busybox:latest": "Untagged: docker.io/library/busybox:latest\nDeleted: a9b8c7d6e5f4a9b8c7d6e5f4a9b8c7d6e5f4a9b8c7d6e5f4a9b8c7d6e5f4a9b8",
+    "podman rmi registry.example.com/myapp:v1.0": "Untagged: registry.example.com/myapp:v1.0\nDeleted: 9f8e7d6c5b4a9f8e7d6c5b4a9f8e7d6c5b4a9f8e7d6c5b4a9f8e7d6c5b4a9f8e",
+    "podman pod create --name webapp -p 8080:80": "e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2",
+    "podman pod list": "POD ID        NAME     STATUS   CREATED        INFRA ID      # OF CONTAINERS\ne1f2a3b4c5d6  webapp   Running  2 hours ago    d0e1f2a3b4c5  3",
+    "podman pod ls": "POD ID        NAME     STATUS   CREATED        INFRA ID      # OF CONTAINERS\ne1f2a3b4c5d6  webapp   Running  2 hours ago    d0e1f2a3b4c5  3",
+    "podman pod inspect webapp": "{\n  \"Id\": \"e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6\",\n  \"Name\": \"webapp\",\n  \"Created\": \"2026-06-02T08:10:00.000000000Z\",\n  \"State\": \"Running\",\n  \"NumContainers\": 3,\n  \"InfraContainerId\": \"d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5\",\n  \"SharedNamespaces\": [\"ipc\", \"net\", \"uts\"],\n  \"Containers\": [\n    {\"Id\": \"d0e1f2a3b4c5\", \"Name\": \"e1f2a3b4c5d6-infra\", \"State\": \"running\"},\n    {\"Id\": \"a1b2c3d4e5f6\", \"Name\": \"web\", \"State\": \"running\"},\n    {\"Id\": \"f6e5d4c3b2a1\", \"Name\": \"cache\", \"State\": \"running\"}\n  ],\n  \"InfraConfig\": {\n    \"PortBindings\": {\"80/tcp\": [{\"HostPort\": \"8080\"}]}\n  }\n}",
+    "podman pod start webapp": "e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6",
+    "podman pod stop webapp": "e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6",
+    "podman pod rm webapp": "e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6",
+    "podman pod rm -f webapp": "e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6",
+    "podman ps --pod --filter pod=webapp": "CONTAINER ID  IMAGE                              COMMAND               STATUS       POD ID        NAMES\nd0e1f2a3b4c5  localhost/podman-pause:5.3.1-0      /pause                Up 2 hours   e1f2a3b4c5d6  e1f2a3b4c5d6-infra\na1b2c3d4e5f6  docker.io/library/nginx:alpine     nginx -g daemon o...  Up 2 hours   e1f2a3b4c5d6  web\nf6e5d4c3b2a1  docker.io/library/redis:7-alpine   redis-server          Up 2 hours   e1f2a3b4c5d6  cache",
+    "podman generate systemd --new --name myapp --files": "/home/user/container-myapp.service\n\n# Generated systemd unit file:\n# [Unit]\n# Description=Podman container-myapp.service\n# Wants=network-online.target\n# After=network-online.target\n# RequiresMountsFor=%t/containers\n#\n# [Service]\n# Environment=PODMAN_SYSTEMD_UNIT=%n\n# Restart=on-failure\n# TimeoutStopSec=70\n# ExecStartPre=/bin/rm -f %t/%n.ctr-id\n# ExecStart=/usr/bin/podman run --cidfile=%t/%n.ctr-id --cgroups=no-conmon --rm --sdnotify=conmon -d --replace --name myapp -p 8080:8080 registry.example.com/myapp:v1.0\n# ExecStop=/usr/bin/podman stop --ignore --cidfile=%t/%n.ctr-id\n# ExecStopPost=/usr/bin/podman rm -f --ignore --cidfile=%t/%n.ctr-id\n# Type=notify\n# NotifyAccess=all\n#\n# [Install]\n# WantedBy=default.target",
+    "podman generate systemd --new --name webapp --files": "/home/user/pod-webapp.service\n/home/user/container-webapp-web.service\n/home/user/container-webapp-cache.service",
+    "podman generate kube webapp": "# Save this file and use it to deploy with 'podman play kube'\napiVersion: v1\nkind: Pod\nmetadata:\n  labels:\n    app: webapp\n  name: webapp\nspec:\n  containers:\n  - image: docker.io/library/nginx:alpine\n    name: web\n    ports:\n    - containerPort: 80\n      hostPort: 8080\n  - image: docker.io/library/redis:7-alpine\n    name: cache",
+    "podman play kube webapp.yaml": "Pod:\ne1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6\nContainers:\na1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6\nf6e5d4c3b2a1f6e5d4c3b2a1f6e5d4c3",
+    "podman system prune": "WARNING! This will remove:\n  - all stopped containers\n  - all networks not used by at least one container\n  - all dangling images\n  - all dangling build cache\n\nAre you sure you want to continue? [y/N] y\nDeleted Containers:\nb3c4d5e6f7a8\nc5d6e7f8a9b0\n\nDeleted Images:\nsha256:orphan1234...\n\nReclaimed space: 523.4 MB",
+    "podman system prune -a": "WARNING! This will remove:\n  - all stopped containers\n  - all networks not used by at least one container\n  - all images without at least one container associated\n  - all build cache\n\nAre you sure you want to continue? [y/N] y\nReclaimed space: 1.82 GB",
+    "podman system df": "TYPE           TOTAL    ACTIVE   SIZE      RECLAIMABLE\nImages         6        3        534.8MB   412MB (77%)\nContainers     5        3        12.4kB    8.2kB (66%)\nLocal Volumes  2        1        156.3MB   78.1MB (50%)",
+    "podman network ls": "NETWORK ID    NAME        DRIVER\n2f259bab93aa  podman      bridge\ncfe5eb55a6ef  webapp-net  bridge\n8a3c4b2d1e0f  backend     bridge",
+    "podman network create webapp-net": "cfe5eb55a6ef",
+    "podman network create --subnet 10.89.0.0/24 backend": "8a3c4b2d1e0f",
+    "podman network inspect webapp-net": "[\n  {\n    \"name\": \"webapp-net\",\n    \"id\": \"cfe5eb55a6ef\",\n    \"driver\": \"bridge\",\n    \"network_interface\": \"podman1\",\n    \"subnets\": [\n      {\"subnet\": \"10.88.1.0/24\", \"gateway\": \"10.88.1.1\"}\n    ],\n    \"dns_enabled\": true\n  }\n]",
+    "podman volume ls": "DRIVER   VOLUME NAME\nlocal    app-data\nlocal    postgres-data",
+    "podman volume create app-data": "app-data",
+    "podman volume create postgres-data": "postgres-data",
+    "podman volume inspect app-data": "[\n  {\n    \"Name\": \"app-data\",\n    \"Driver\": \"local\",\n    \"Mountpoint\": \"/home/user/.local/share/containers/storage/volumes/app-data/_data\",\n    \"CreatedAt\": \"2026-06-01T14:00:00.000000000Z\",\n    \"Labels\": {},\n    \"Scope\": \"local\"\n  }\n]",
+    "podman login registry.example.com": "Username: deploy-user\nPassword: ********\nLogin Succeeded!",
+    "podman logout registry.example.com": "Removed login credentials for registry.example.com",
+    "podman healthcheck run web": "healthy",
+    "podman healthcheck run myapp": "healthy",
+    "podman stats": "CONTAINER ID  NAME    CPU %   MEM USAGE / LIMIT     MEM %   NET I/O          BLOCK I/O        PIDS\na1b2c3d4e5f6  web     0.12%   12.45MiB / 7.768GiB   0.16%   1.2kB / 890B     0B / 4.1kB       3\nf6e5d4c3b2a1  cache   0.08%   8.91MiB / 7.768GiB    0.11%   540B / 320B      0B / 0B          5\n7a8b9c0d1e2f  myapp   0.45%   34.2MiB / 7.768GiB    0.43%   12.3kB / 8.7kB   4.1kB / 12.3kB   8",
+    "podman stats --no-stream": "CONTAINER ID  NAME    CPU %   MEM USAGE / LIMIT     MEM %   NET I/O          BLOCK I/O        PIDS\na1b2c3d4e5f6  web     0.12%   12.45MiB / 7.768GiB   0.16%   1.2kB / 890B     0B / 4.1kB       3\nf6e5d4c3b2a1  cache   0.08%   8.91MiB / 7.768GiB    0.11%   540B / 320B      0B / 0B          5\n7a8b9c0d1e2f  myapp   0.45%   34.2MiB / 7.768GiB    0.43%   12.3kB / 8.7kB   4.1kB / 12.3kB   8",
+    "podman top web": "USER    PID   PPID  %CPU  ELAPSED        COMMAND\nroot    1     0     0.1   2h12m30s       nginx: master process nginx -g daemon off;\nnginx   29    1     0.0   2h12m29s       nginx: worker process\nnginx   30    1     0.0   2h12m29s       nginx: worker process",
+    "podman top myapp": "USER    PID   PPID  %CPU  ELAPSED        COMMAND\nroot    1     0     0.4   45m12s         /app/server",
+    "podman top cache": "USER    PID   PPID  %CPU  ELAPSED        COMMAND\nredis   1     0     0.1   2h12m30s       redis-server *:6379",
+    "podman unshare cat /proc/self/uid_map": "         0       1000          1\n         1     100000      65536",
+    "podman machine list": "NAME        VM TYPE   CREATED      LAST UP      CPUS  MEMORY   DISK SIZE\npodman-default  qemu    2 weeks ago  Currently running  2    2GB      100GB",
+    "podman secret create db-password secret.txt": "a1b2c3d4e5f6",
+    "podman secret ls": "ID                         NAME          DRIVER    CREATED         UPDATED\na1b2c3d4e5f6a7b8c9d0e1f2  db-password   file      2 hours ago     2 hours ago"
+  },
+  "reference": [
+    {
+      "group": "Container Lifecycle",
+      "commands": [
+        { "cmd": "podman run -d --name web -p 8080:80 nginx:alpine", "desc": "run detached container" },
+        { "cmd": "podman ps", "desc": "list running containers" },
+        { "cmd": "podman ps -a", "desc": "list all containers" },
+        { "cmd": "podman stop web", "desc": "stop a container" },
+        { "cmd": "podman start web", "desc": "start stopped container" },
+        { "cmd": "podman rm web", "desc": "remove container" },
+        { "cmd": "podman rm -f old-db", "desc": "force remove" },
+        { "cmd": "podman logs web", "desc": "view logs" },
+        { "cmd": "podman exec -it web sh", "desc": "exec into container" }
+      ]
+    },
+    {
+      "group": "Images",
+      "commands": [
+        { "cmd": "podman images", "desc": "list local images" },
+        { "cmd": "podman build -t registry.example.com/myapp:v1.0 .", "desc": "build from Containerfile" },
+        { "cmd": "podman pull nginx:alpine", "desc": "pull from registry" },
+        { "cmd": "podman push registry.example.com/myapp:v1.0", "desc": "push to registry" },
+        { "cmd": "podman tag registry.example.com/myapp:v1.0 registry.example.com/myapp:latest", "desc": "tag image" },
+        { "cmd": "podman rmi docker.io/library/busybox:latest", "desc": "remove image" }
+      ]
+    },
+    {
+      "group": "Pods (Podman-specific)",
+      "commands": [
+        { "cmd": "podman pod create --name webapp -p 8080:80", "desc": "create pod with port" },
+        { "cmd": "podman pod list", "desc": "list all pods" },
+        { "cmd": "podman pod inspect webapp", "desc": "pod details" },
+        { "cmd": "podman pod start webapp", "desc": "start pod" },
+        { "cmd": "podman pod stop webapp", "desc": "stop pod" },
+        { "cmd": "podman pod rm webapp", "desc": "remove pod" },
+        { "cmd": "podman ps --pod --filter pod=webapp", "desc": "containers in pod" }
+      ]
+    },
+    {
+      "group": "Systemd & Kube Generation",
+      "commands": [
+        { "cmd": "podman generate systemd --new --name myapp --files", "desc": "generate systemd unit" },
+        { "cmd": "podman generate kube webapp", "desc": "export pod as K8s YAML" },
+        { "cmd": "podman play kube webapp.yaml", "desc": "deploy from K8s YAML" }
+      ]
+    },
+    {
+      "group": "Networking & Volumes",
+      "commands": [
+        { "cmd": "podman network ls", "desc": "list networks" },
+        { "cmd": "podman network create webapp-net", "desc": "create network" },
+        { "cmd": "podman network create --subnet 10.89.0.0/24 backend", "desc": "create with subnet" },
+        { "cmd": "podman volume ls", "desc": "list volumes" },
+        { "cmd": "podman volume create app-data", "desc": "create volume" }
+      ]
+    },
+    {
+      "group": "System & Monitoring",
+      "commands": [
+        { "cmd": "podman system df", "desc": "disk usage" },
+        { "cmd": "podman system prune", "desc": "clean stopped/dangling" },
+        { "cmd": "podman stats --no-stream", "desc": "resource usage snapshot" },
+        { "cmd": "podman top web", "desc": "processes in container" },
+        { "cmd": "podman healthcheck run web", "desc": "run healthcheck" },
+        { "cmd": "podman info", "desc": "system configuration" },
+        { "cmd": "podman version", "desc": "version info" }
+      ]
+    },
+    {
+      "group": "Registry & Secrets",
+      "commands": [
+        { "cmd": "podman login registry.example.com", "desc": "authenticate to registry" },
+        { "cmd": "podman logout registry.example.com", "desc": "remove credentials" },
+        { "cmd": "podman secret create db-password secret.txt", "desc": "create secret" },
+        { "cmd": "podman secret ls", "desc": "list secrets" }
+      ]
+    },
+    {
+      "group": "Scenarios",
+      "commands": [
+        { "cmd": "scenario rootless-pod", "desc": "multi-container pod lab" },
+        { "cmd": "scenario build-push-systemd", "desc": "build, push & systemd" }
+      ]
+    }
+  ]
+}

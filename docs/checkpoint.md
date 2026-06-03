@@ -41,45 +41,19 @@
 | 2026-06-02 12:15 | Terminal Demo widget + Kubernetes 18 commands | Done | Typed char-by-char renderer, IntersectionObserver, SW refresh fix | docs/js/app.js:341-372, containers/Kubernetes.md:270 |
 | 2026-06-02 12:30 | Terminal demos — containers/ batch | Done | All 9 containers/ courses with 8-15 production commands each | containers/*.md |
 | 2026-06-02 12:45 | Hypothes.is + Giscus integration | Done | Inline highlights + GitHub Discussions comments per course. Discussions enabled on repo. | docs/index.html:224,255, docs/js/app.js:397-430 |
+| 2026-06-03 07:30 | Wave 3: CLI Playgrounds — Tier 1 complete (all 8) | Done | 8 CLI JSON files (489 total commands, 16 scenarios). app.js updated with cliMap for per-tool routing. Tools: Kubernetes, Docker, Terraform, Git, Linux, Bash, Helm, Ansible | docs/data/cli-*.json, docs/js/app.js:837-856 |
+| 2026-06-03 08:00 | Wave 3: CLI Playgrounds — Tier 2 complete (all 10) | Done | 10 CLI JSON files (754 total commands, 20 scenarios). cliMap expanded. Tools: Prometheus, PostgreSQL, Redis, AWS, Vault, ArgoCD, tmux, jq/yq, DNS-curl-dig, Kafka | docs/data/cli-*.json, docs/js/app.js:849-858 |
+| 2026-06-03 08:15 | Wave 3: CLI Playgrounds — Tier 3 complete (all 12) | Done | 12 CLI JSON files (569 commands, 24 scenarios). cliMap expanded to 30 tools. Tools: Vim, systemd, Trivy, Kustomize, Tekton, GitLab-CI, Podman, containerd-nerdctl, Pulumi, Flux, OPA, k6 | docs/data/cli-*.json, docs/js/app.js:849-864 |
 
 ## Next Session Resume Vector
 
-- 153 courses across 20 categories — Wave 1 complete, Wave 2 #4/#5/#7/#8 complete
-- Wave 1 completed features (all 100%):
-  - Progress Tracker & Bookmarks: DONE (153/153)
-  - Recommended Learning Resources: DONE (153/153)
-  - Interview Questions: DONE (153/153)
-  - Mermaid Architecture Diagrams: DONE (153/153)
-- Wave 2 completed features:
-  - Quiz & Flashcards: DONE (153/153)
-  - Comparison Matrices: DONE (153/153)
-  - Terminal Demo: DONE (153/153). Typed char-by-char, IntersectionObserver.
-  - Inline Highlights (Hypothes.is): DONE — embedded via script tag
-  - Comments (Giscus): DONE — GitHub Discussions per course. Giscus app installed.
-- Wave 2 fully complete — all 5 features at 100%
-- How to Use page: docs/how-to-use.md (route: #/how-to-use)
-- Private repo support: entire repo deployed to Pages, relative MD_BASE, root redirect
-- README: features section added between "Why this exists" and "Index"
-- CLI Playground: Wave 3 #9 prototype on containers/ courses
-  - xterm.js terminal with 40+ kubectl commands
-  - 2 guided scenarios: "Debug CrashLoopBackOff" (8 steps) + "Deploy, Scale, Update" (7 steps)
-  - Free-play mode, tab autocomplete, command history
-  - Loader in app.js fetches cli-{catId}.json — add more courses by creating cli-{category}.json files
-  - Split view: terminal (left) + command reference panel (right, 7 groups, 33 clickable commands)
-  - Click any command in reference panel → auto-types into terminal
-  - To add next — Tier 1 (8 courses, must-have):
-    1. Kubernetes — DONE (cli-containers.json, 40+ cmds, 2 scenarios, split view)
-    2. Docker — docker run/build/compose/stats/system
-    3. Terraform — terraform init/plan/apply/state/import
-    4. Git — git log/rebase/bisect/stash/reflog
-    5. Linux — ps/top/ss/df/journalctl/dmesg/lsof
-    6. Bash — for/awk/sed/grep/find/xargs piping
-    7. Helm — helm install/upgrade/rollback/template/history
-    8. Ansible — ansible-playbook/vault/inventory/adhoc
-  - Tier 2 (6 courses, high value): Prometheus, PostgreSQL, Redis, AWS, Vault, ArgoCD
-  - Tier 3 (skip): design/, product/, career/, interview/, patterns/ — not CLI-centric
-- PWA fixes: SW v2 bypasses external origins (fixes refresh 404), cache bust v3
-- Wave 3 (CLI playground, project walkthroughs) not started
-- TODO.txt has 48 project walkthroughs (33 + 15 industry case studies)
+- 153 courses across 20 categories — Waves 1 & 2 fully complete
+- Wave 3 CLI Playground — ALL TIERS COMPLETE (30 tools, 1812 commands, 60 scenarios):
+  - Tier 1 (8): Kubernetes, Docker, Terraform, Git, Linux, Bash, Helm, Ansible
+  - Tier 2 (10): Prometheus, PostgreSQL, Redis, AWS, Vault, ArgoCD, tmux, jq/yq, DNS-curl-dig, Kafka
+  - Tier 3 (12): Vim, systemd, Trivy, Kustomize, Tekton, GitLab-CI, Podman, containerd-nerdctl, Pulumi, Flux, OPA, k6
+  - app.js cliMap at line 849 routes 30 filenames→JSON
+  - 31 JSON files in docs/data/cli-*.json (~645KB total)
+- Wave 3: 48 project walkthroughs not started (TODO.txt)
 - dsa.txt has full plan for separate DSA repo (25 courses, Python, FAANG-focused)
 - Site live at https://supersaiyane.github.io/crashcourse/

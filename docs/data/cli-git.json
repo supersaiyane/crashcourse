@@ -1,0 +1,332 @@
+{
+  "id": "git",
+  "prompt": "dev@repo:~/payment-service$",
+  "welcome": "Welcome to the Git CLI Playground.\nType commands to explore a simulated payment-service repository.\nType 'help' for available commands, 'scenario' for guided labs.\n",
+  "scenarios": [
+    {
+      "id": "bisect-bad-merge",
+      "title": "Fix a Bad Merge with Bisect",
+      "steps": [
+        {
+          "instruction": "A regression broke the payment validation endpoint. Start by checking the recent commit history.",
+          "expect": "git log --oneline",
+          "hint": "Try: git log --oneline"
+        },
+        {
+          "instruction": "The bug was reported after the last release. Start a bisect session to find which commit introduced it.",
+          "expect": "git bisect start",
+          "hint": "Try: git bisect start"
+        },
+        {
+          "instruction": "Mark the current HEAD as bad — the bug exists here.",
+          "expect": "git bisect bad",
+          "hint": "Try: git bisect bad"
+        },
+        {
+          "instruction": "Tag v1.1.0 was the last known good release. Mark it as good.",
+          "expect": "git bisect good v1.1.0",
+          "hint": "Try: git bisect good v1.1.0"
+        },
+        {
+          "instruction": "Git has checked out a midpoint commit. Check which commit you are on.",
+          "expect": "git log --oneline -1",
+          "hint": "Try: git log --oneline -1"
+        },
+        {
+          "instruction": "After testing, this commit is good. Mark it.",
+          "expect": "git bisect good",
+          "hint": "Try: git bisect good"
+        },
+        {
+          "instruction": "Git narrows the range. After testing this one, it is the bad commit. Mark it.",
+          "expect": "git bisect bad",
+          "hint": "Try: git bisect bad"
+        },
+        {
+          "instruction": "Bisect found the offending commit. End the bisect session and return to your branch.",
+          "expect": "git bisect reset",
+          "hint": "Try: git bisect reset"
+        }
+      ]
+    },
+    {
+      "id": "cleanup-feature-branch",
+      "title": "Clean Up Feature Branch Before PR",
+      "steps": [
+        {
+          "instruction": "You are on feature/payments with messy commits. First check the branch status.",
+          "expect": "git status",
+          "hint": "Try: git status"
+        },
+        {
+          "instruction": "See how your branch diverges from main.",
+          "expect": "git log --oneline --graph --all",
+          "hint": "Try: git log --oneline --graph --all"
+        },
+        {
+          "instruction": "Fetch the latest changes from origin to make sure main is up to date.",
+          "expect": "git fetch origin",
+          "hint": "Try: git fetch origin"
+        },
+        {
+          "instruction": "Rebase your feature branch onto main to get a linear history.",
+          "expect": "git rebase main",
+          "hint": "Try: git rebase main"
+        },
+        {
+          "instruction": "Now squash your last 3 commits into one clean commit using interactive rebase.",
+          "expect": "git rebase -i HEAD~3",
+          "hint": "Try: git rebase -i HEAD~3"
+        },
+        {
+          "instruction": "Check the log to confirm your commits are squashed into one.",
+          "expect": "git log --oneline",
+          "hint": "Try: git log --oneline"
+        },
+        {
+          "instruction": "Amend the commit message to follow conventional commits.",
+          "expect": "git commit --amend",
+          "hint": "Try: git commit --amend"
+        },
+        {
+          "instruction": "Force-push the cleaned-up branch to origin safely.",
+          "expect": "git push --force-with-lease",
+          "hint": "Try: git push --force-with-lease"
+        }
+      ]
+    }
+  ],
+  "commands": {
+    "help": "Available commands:\n  git status                     — working tree status\n  git diff [options]             — show changes (--staged, --stat, HEAD~N)\n  git log [options]              — commit history (--oneline, --graph, --author, -p)\n  git branch [options]           — list, create, delete branches\n  git checkout / git switch      — switch branches or restore files\n  git merge [branch]             — merge a branch into current\n  git rebase [branch]            — rebase current branch onto another\n  git stash [subcommand]         — stash working changes\n  git remote -v                  — list remotes\n  git fetch / pull / push        — sync with remote\n  git reset [options]            — undo commits (--soft, --hard)\n  git revert HEAD                — create a revert commit\n  git restore [file]             — discard working changes\n  git bisect [subcommand]        — binary search for bad commit\n  git reflog                     — reference log history\n  git cherry-pick [hash]         — apply a commit from another branch\n  git tag [options]              — manage tags\n  git blame [file]               — line-by-line authorship\n  git shortlog -sn               — contributor summary\n  git config --list              — show configuration\n\n  scenario                       — start a guided lab\n  clear                          — clear the terminal\n  help                           — show this help",
+
+    "git status": "On branch feature/payments\nYour branch is ahead of 'origin/feature/payments' by 2 commits.\n  (use \"git push\" to publish your local commits)\n\nChanges not staged for commit:\n  (use \"git add <file>...\" to update what will be committed)\n  (use \"git restore <file>...\" to discard changes in working directory)\n\n\tmodified:   src/services/payment.service.ts\n\tmodified:   src/validators/amount.validator.ts\n\nUntracked files:\n  (use \"git add <file>...\" to include in what will be committed)\n\n\tsrc/services/refund.service.ts\n\nno changes added to commit (use \"git add\" and/or \"git commit -a\")",
+
+    "git diff": "diff --git a/src/services/payment.service.ts b/src/services/payment.service.ts\nindex 8a3d4e1..f7b2c9a 100644\n--- a/src/services/payment.service.ts\n+++ b/src/services/payment.service.ts\n@@ -42,7 +42,9 @@ export class PaymentService {\n   async processPayment(order: Order): Promise<PaymentResult> {\n     const validated = await this.validator.validate(order.amount);\n-    if (!validated) throw new PaymentError('Invalid amount');\n+    if (!validated) {\n+      throw new PaymentError('Invalid amount', { orderId: order.id, amount: order.amount });\n+    }\n     const txn = await this.gateway.charge(order.amount, order.currency);\n     await this.ledger.record(txn);\n@@ -58,6 +60,12 @@ export class PaymentService {\n     return { transactionId: txn.id, status: 'completed' };\n   }\n+\n+  async refundPayment(txnId: string, amount: number): Promise<RefundResult> {\n+    const original = await this.ledger.findTransaction(txnId);\n+    if (!original) throw new PaymentError('Transaction not found');\n+    return this.gateway.refund(txnId, amount);\n+  }\n }\ndiff --git a/src/validators/amount.validator.ts b/src/validators/amount.validator.ts\nindex 2c1d3e4..9a8b7c6 100644\n--- a/src/validators/amount.validator.ts\n+++ b/src/validators/amount.validator.ts\n@@ -11,6 +11,8 @@ export class AmountValidator {\n   validate(amount: number): boolean {\n     if (amount <= 0) return false;\n     if (amount > this.MAX_AMOUNT) return false;\n+    // Reject amounts with more than 2 decimal places\n+    if (Math.round(amount * 100) !== amount * 100) return false;\n     return true;\n   }\n }",
+
+    "git diff --staged": "diff --git a/src/controllers/payment.controller.ts b/src/controllers/payment.controller.ts\nindex 4e5f6a7..b8c9d0e 100644\n--- a/src/controllers/payment.controller.ts\n+++ b/src/controllers/payment.controller.ts\n@@ -28,6 +28,15 @@ export class PaymentController {\n       res.status(500).json({ error: 'Payment processing failed' });\n     }\n   }\n+\n+  async handleRefund(req: Request, res: Response): Promise<void> {\n+    try {\n+      const { transactionId, amount } = req.body;\n+      const result = await this.paymentService.refundPayment(transactionId, amount);\n+      res.status(200).json(result);\n+    } catch (error) {\n+      res.status(500).json({ error: 'Refund processing failed' });\n+    }\n+  }\n }",
+
+    "git diff HEAD~3": "diff --git a/src/services/payment.service.ts b/src/services/payment.service.ts\nindex 1a2b3c4..f7b2c9a 100644\n--- a/src/services/payment.service.ts\n+++ b/src/services/payment.service.ts\n@@ -42,7 +42,9 @@ export class PaymentService {\n-    if (!validated) throw new PaymentError('Invalid amount');\n+    if (!validated) {\n+      throw new PaymentError('Invalid amount', { orderId: order.id, amount: order.amount });\n+    }\n@@ -58,6 +60,18 @@\n+  async refundPayment(txnId: string, amount: number): Promise<RefundResult> {\n+    const original = await this.ledger.findTransaction(txnId);\n+    if (!original) throw new PaymentError('Transaction not found');\n+    return this.gateway.refund(txnId, amount);\n+  }\n+\ndiff --git a/src/validators/amount.validator.ts b/src/validators/amount.validator.ts\n+    if (Math.round(amount * 100) !== amount * 100) return false;\ndiff --git a/tests/payment.service.test.ts b/tests/payment.service.test.ts\n+  describe('refundPayment', () => {\n+    it('should refund a valid transaction', async () => { ... });\n+    it('should reject unknown transaction', async () => { ... });\n+  });\ndiff --git a/src/routes/payment.routes.ts b/src/routes/payment.routes.ts\n+  router.post('/refund', controller.handleRefund);",
+
+    "git diff --stat": " src/services/payment.service.ts    | 12 +++++++++---\n src/validators/amount.validator.ts  |  4 +++-\n 2 files changed, 12 insertions(+), 4 deletions(-)",
+
+    "git log": "commit a4f8e2d (HEAD -> feature/payments, origin/feature/payments)\nAuthor: Priya Sharma <priya@fintech.com>\nDate:   Mon Jun 2 09:45:12 2026 +0530\n\n    feat: add refund endpoint to payment controller\n\ncommit 7c3b1a9\nAuthor: Rahul Mehta <rahul@fintech.com>\nDate:   Sun Jun 1 17:22:08 2026 +0530\n\n    fix: reject amounts with excessive decimal places\n\ncommit e5d9f0c\nAuthor: Priya Sharma <priya@fintech.com>\nDate:   Sun Jun 1 14:10:33 2026 +0530\n\n    refactor: improve payment error messages with context\n\ncommit b2a6d8e (tag: v1.2.0, origin/main, main)\nAuthor: John Carter <john@fintech.com>\nDate:   Sat May 31 11:00:00 2026 +0530\n\n    chore: bump version to 1.2.0\n\ncommit 9f1c4b7\nAuthor: Rahul Mehta <rahul@fintech.com>\nDate:   Fri May 30 16:45:22 2026 +0530\n\n    feat: add transaction ledger integration\n\ncommit 3e7a2d5\nAuthor: Anika Patel <anika@fintech.com>\nDate:   Fri May 30 10:30:15 2026 +0530\n\n    fix: handle currency conversion rounding errors\n\ncommit 1d8c6f3\nAuthor: John Carter <john@fintech.com>\nDate:   Thu May 29 14:20:44 2026 +0530\n\n    feat: add multi-currency support to gateway\n\ncommit 5b4e9a1 (tag: v1.1.0)\nAuthor: Priya Sharma <priya@fintech.com>\nDate:   Wed May 28 09:15:00 2026 +0530\n\n    chore: release v1.1.0\n\ncommit 8a2f7c6\nAuthor: Rahul Mehta <rahul@fintech.com>\nDate:   Tue May 27 18:00:33 2026 +0530\n\n    feat: implement payment retry with exponential backoff\n\ncommit d6c3e8b\nAuthor: Anika Patel <anika@fintech.com>\nDate:   Tue May 27 11:45:10 2026 +0530\n\n    fix: prevent duplicate transaction IDs on concurrent requests\n\ncommit f4a1b9d\nAuthor: John Carter <john@fintech.com>\nDate:   Mon May 26 15:30:00 2026 +0530\n\n    refactor: extract gateway interface for testability\n\ncommit c7e5d2a (tag: v1.0.0)\nAuthor: Priya Sharma <priya@fintech.com>\nDate:   Sun May 25 10:00:00 2026 +0530\n\n    chore: initial release v1.0.0",
+
+    "git log --oneline": "a4f8e2d (HEAD -> feature/payments) feat: add refund endpoint to payment controller\n7c3b1a9 fix: reject amounts with excessive decimal places\ne5d9f0c refactor: improve payment error messages with context\nb2a6d8e (tag: v1.2.0, origin/main, main) chore: bump version to 1.2.0\n9f1c4b7 feat: add transaction ledger integration\n3e7a2d5 fix: handle currency conversion rounding errors\n1d8c6f3 feat: add multi-currency support to gateway\n5b4e9a1 (tag: v1.1.0) chore: release v1.1.0\n8a2f7c6 feat: implement payment retry with exponential backoff\nd6c3e8b fix: prevent duplicate transaction IDs on concurrent requests\nf4a1b9d refactor: extract gateway interface for testability\nc7e5d2a (tag: v1.0.0) chore: initial release v1.0.0",
+
+    "git log --oneline --graph --all": "* a4f8e2d (HEAD -> feature/payments) feat: add refund endpoint to payment controller\n* 7c3b1a9 fix: reject amounts with excessive decimal places\n* e5d9f0c refactor: improve payment error messages with context\n| * d1f4a8c (origin/feature/auth) feat: add JWT refresh token rotation\n| * 6b2e9c7 feat: implement RBAC middleware\n|/\n* b2a6d8e (tag: v1.2.0, origin/main, main) chore: bump version to 1.2.0\n* 9f1c4b7 feat: add transaction ledger integration\n* 3e7a2d5 fix: handle currency conversion rounding errors\n*   1d8c6f3 feat: add multi-currency support to gateway\n|\\  \n| * a9c2e4f fix: gateway timeout on slow networks\n|/\n* 5b4e9a1 (tag: v1.1.0) chore: release v1.1.0\n* 8a2f7c6 feat: implement payment retry with exponential backoff\n* d6c3e8b fix: prevent duplicate transaction IDs on concurrent requests\n* f4a1b9d refactor: extract gateway interface for testability\n* c7e5d2a (tag: v1.0.0) chore: initial release v1.0.0",
+
+    "git log --author=\"John\"": "commit 1d8c6f3\nAuthor: John Carter <john@fintech.com>\nDate:   Thu May 29 14:20:44 2026 +0530\n\n    feat: add multi-currency support to gateway\n\ncommit f4a1b9d\nAuthor: John Carter <john@fintech.com>\nDate:   Mon May 26 15:30:00 2026 +0530\n\n    refactor: extract gateway interface for testability\n\ncommit b2a6d8e\nAuthor: John Carter <john@fintech.com>\nDate:   Sat May 31 11:00:00 2026 +0530\n\n    chore: bump version to 1.2.0",
+
+    "git log -p -1": "commit a4f8e2d (HEAD -> feature/payments)\nAuthor: Priya Sharma <priya@fintech.com>\nDate:   Mon Jun 2 09:45:12 2026 +0530\n\n    feat: add refund endpoint to payment controller\n\ndiff --git a/src/controllers/payment.controller.ts b/src/controllers/payment.controller.ts\nindex 4e5f6a7..b8c9d0e 100644\n--- a/src/controllers/payment.controller.ts\n+++ b/src/controllers/payment.controller.ts\n@@ -28,6 +28,15 @@ export class PaymentController {\n       res.status(500).json({ error: 'Payment processing failed' });\n     }\n   }\n+\n+  async handleRefund(req: Request, res: Response): Promise<void> {\n+    try {\n+      const { transactionId, amount } = req.body;\n+      const result = await this.paymentService.refundPayment(transactionId, amount);\n+      res.status(200).json(result);\n+    } catch (error) {\n+      res.status(500).json({ error: 'Refund processing failed' });\n+    }\n+  }\n }\ndiff --git a/src/routes/payment.routes.ts b/src/routes/payment.routes.ts\nindex 3a4b5c6..7d8e9f0 100644\n--- a/src/routes/payment.routes.ts\n+++ b/src/routes/payment.routes.ts\n@@ -8,4 +8,5 @@ const controller = new PaymentController();\n router.post('/process', controller.handlePayment);\n router.get('/status/:id', controller.getPaymentStatus);\n+router.post('/refund', controller.handleRefund);\n \n export default router;",
+
+    "git log --oneline -1": "9f1c4b7 feat: add transaction ledger integration",
+
+    "git branch": "  feature/auth\n* feature/payments\n  main",
+
+    "git branch -a": "  feature/auth\n* feature/payments\n  main\n  remotes/origin/HEAD -> origin/main\n  remotes/origin/feature/auth\n  remotes/origin/feature/payments\n  remotes/origin/hotfix/currency-fix\n  remotes/origin/main\n  remotes/origin/release/v1.2.0",
+
+    "git branch -d feature/auth": "Deleted branch feature/auth (was d1f4a8c).",
+
+    "git checkout main": "Switched to branch 'main'\nYour branch is up to date with 'origin/main'.",
+
+    "git checkout -b feature/payments": "Switched to a new branch 'feature/payments'",
+
+    "git switch main": "Switched to branch 'main'\nYour branch is up to date with 'origin/main'.",
+
+    "git switch -c feature/notifications": "Switched to a new branch 'feature/notifications'",
+
+    "git merge feature/payments": "Updating b2a6d8e..a4f8e2d\nFast-forward\n src/controllers/payment.controller.ts | 15 +++++++++++++++\n src/routes/payment.routes.ts          |  1 +\n src/services/payment.service.ts       | 12 +++++++++---\n src/validators/amount.validator.ts    |  4 +++-\n 4 files changed, 28 insertions(+), 4 deletions(-)",
+
+    "git merge --no-ff feature/payments": "Merge made by the 'ort' strategy.\n src/controllers/payment.controller.ts | 15 +++++++++++++++\n src/routes/payment.routes.ts          |  1 +\n src/services/payment.service.ts       | 12 +++++++++---\n src/validators/amount.validator.ts    |  4 +++-\n 4 files changed, 28 insertions(+), 4 deletions(-)",
+
+    "git merge feature/auth": "Auto-merging src/middleware/auth.middleware.ts\nCONFLICT (content): Merge conflict in src/middleware/auth.middleware.ts\nAutomatic merge failed; fix conflicts and then commit the result.",
+
+    "git rebase main": "Successfully rebased and updated refs/heads/feature/payments.\nFirst, rewinding head to replay your work on top of it...\nApplying: refactor: improve payment error messages with context\nApplying: fix: reject amounts with excessive decimal places\nApplying: feat: add refund endpoint to payment controller",
+
+    "git rebase -i HEAD~3": "pick e5d9f0c refactor: improve payment error messages with context\npick 7c3b1a9 fix: reject amounts with excessive decimal places\npick a4f8e2d feat: add refund endpoint to payment controller\n\n# Rebase b2a6d8e..a4f8e2d onto b2a6d8e (3 commands)\n#\n# Commands:\n# p, pick   = use commit\n# r, reword = use commit, but edit the commit message\n# e, edit   = use commit, but stop for amending\n# s, squash = use commit, but meld into previous commit\n# f, fixup  = like \"squash\", but discard this commit's log message\n# d, drop   = remove commit\n#\n# If you remove a line here, THAT COMMIT WILL BE LOST.\n\n[detached HEAD 2f8a1b3] feat: add refund support with improved validation\n Date: Sun Jun 1 14:10:33 2026 +0530\n 5 files changed, 32 insertions(+), 4 deletions(-)\nSuccessfully rebased and updated refs/heads/feature/payments.",
+
+    "git rebase --abort": "Successfully aborted rebase.",
+
+    "git rebase --continue": "Applying: fix: reject amounts with excessive decimal places\nApplying: feat: add refund endpoint to payment controller\nSuccessfully rebased and updated refs/heads/feature/payments.",
+
+    "git stash": "Saved working directory and index state WIP on feature/payments: a4f8e2d feat: add refund endpoint to payment controller",
+
+    "git stash list": "stash@{0}: WIP on feature/payments: a4f8e2d feat: add refund endpoint to payment controller\nstash@{1}: WIP on main: b2a6d8e chore: bump version to 1.2.0\nstash@{2}: On feature/auth: wip auth middleware cleanup",
+
+    "git stash pop": "On branch feature/payments\nChanges not staged for commit:\n  (use \"git add <file>...\" to update what will be committed)\n  (use \"git restore <file>...\" to discard changes in working directory)\n\n\tmodified:   src/services/payment.service.ts\n\tmodified:   src/validators/amount.validator.ts\n\nDropped refs/stash@{0} (a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2)",
+
+    "git stash show -p": "diff --git a/src/services/payment.service.ts b/src/services/payment.service.ts\nindex 8a3d4e1..f7b2c9a 100644\n--- a/src/services/payment.service.ts\n+++ b/src/services/payment.service.ts\n@@ -42,7 +42,9 @@ export class PaymentService {\n   async processPayment(order: Order): Promise<PaymentResult> {\n-    if (!validated) throw new PaymentError('Invalid amount');\n+    if (!validated) {\n+      throw new PaymentError('Invalid amount', { orderId: order.id, amount: order.amount });\n+    }\ndiff --git a/src/validators/amount.validator.ts b/src/validators/amount.validator.ts\n@@ -11,6 +11,8 @@\n+    // Reject amounts with more than 2 decimal places\n+    if (Math.round(amount * 100) !== amount * 100) return false;",
+
+    "git stash drop": "Dropped refs/stash@{0} (a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2)",
+
+    "git remote -v": "origin\tgit@github.com:fintech-corp/payment-service.git (fetch)\norigin\tgit@github.com:fintech-corp/payment-service.git (push)",
+
+    "git fetch origin": "remote: Enumerating objects: 42, done.\nremote: Counting objects: 100% (42/42), done.\nremote: Compressing objects: 100% (28/28), done.\nremote: Total 42 (delta 18), reused 31 (delta 12), pack-reused 0\nFrom github.com:fintech-corp/payment-service\n   b2a6d8e..c9d3f1a  main               -> origin/main\n * [new branch]      hotfix/currency-fix -> origin/hotfix/currency-fix\n   d1f4a8c..e2a5b7d  feature/auth       -> origin/feature/auth",
+
+    "git pull origin main": "remote: Enumerating objects: 8, done.\nremote: Counting objects: 100% (8/8), done.\nremote: Compressing objects: 100% (4/4), done.\nFrom github.com:fintech-corp/payment-service\n * branch            main       -> FETCH_HEAD\n   b2a6d8e..c9d3f1a  main       -> origin/main\nUpdating b2a6d8e..c9d3f1a\nFast-forward\n src/config/database.ts | 3 ++-\n package.json           | 2 +-\n 2 files changed, 3 insertions(+), 2 deletions(-)",
+
+    "git push origin feature/payments": "Enumerating objects: 14, done.\nCounting objects: 100% (14/14), done.\nDelta compression using up to 8 threads\nCompressing objects: 100% (10/10), done.\nWriting objects: 100% (10/10), 2.18 KiB | 2.18 MiB/s, done.\nTotal 10 (delta 6), reused 0 (delta 0), pack-reused 0\nremote: Resolving deltas: 100% (6/6), completed with 3 local objects.\nTo github.com:fintech-corp/payment-service.git\n   b2a6d8e..a4f8e2d  feature/payments -> feature/payments",
+
+    "git push --force-with-lease": "Enumerating objects: 8, done.\nCounting objects: 100% (8/8), done.\nDelta compression using up to 8 threads\nCompressing objects: 100% (5/5), done.\nWriting objects: 100% (5/5), 1.42 KiB | 1.42 MiB/s, done.\nTotal 5 (delta 3), reused 0 (delta 0), pack-reused 0\nremote: Resolving deltas: 100% (3/3), completed with 2 local objects.\nTo github.com:fintech-corp/payment-service.git\n + a4f8e2d...2f8a1b3 feature/payments -> feature/payments (forced update)",
+
+    "git reset --soft HEAD~1": "HEAD is now at 7c3b1a9 fix: reject amounts with excessive decimal places\n(Changes from the undone commit are now staged)",
+
+    "git reset --hard HEAD~1": "HEAD is now at 7c3b1a9 fix: reject amounts with excessive decimal places",
+
+    "git revert HEAD": "Revert \"feat: add refund endpoint to payment controller\"\n\nThis reverts commit a4f8e2d.\n\n[feature/payments 3c9d1e4] Revert \"feat: add refund endpoint to payment controller\"\n 2 files changed, 4 deletions(-), 15 insertions(-)",
+
+    "git restore src/services/payment.service.ts": "Updated 1 path from the index",
+
+    "git restore --staged src/controllers/payment.controller.ts": "Unstaged changes after reset:\nM\tsrc/controllers/payment.controller.ts",
+
+    "git checkout -- src/services/payment.service.ts": "Updated 1 path from the index",
+
+    "git bisect start": "status: waiting for both good and bad commits",
+
+    "git bisect bad": "status: waiting for good commit(s), bad commit known",
+
+    "git bisect good": "Bisecting: 1 revision left to test after this (roughly 1 step)\n[3e7a2d5] fix: handle currency conversion rounding errors",
+
+    "git bisect good v1.1.0": "Bisecting: 2 revisions left to test after this (roughly 2 steps)\n[9f1c4b7] feat: add transaction ledger integration",
+
+    "git bisect reset": "Previous HEAD position was 3e7a2d5 fix: handle currency conversion rounding errors\nSwitched to branch 'feature/payments'",
+
+    "git reflog": "a4f8e2d (HEAD -> feature/payments) HEAD@{0}: commit: feat: add refund endpoint to payment controller\n7c3b1a9 HEAD@{1}: commit: fix: reject amounts with excessive decimal places\ne5d9f0c HEAD@{2}: commit: refactor: improve payment error messages with context\nb2a6d8e (tag: v1.2.0, origin/main, main) HEAD@{3}: checkout: moving from main to feature/payments\nb2a6d8e HEAD@{4}: merge feature/ledger: Fast-forward\n5b4e9a1 (tag: v1.1.0) HEAD@{5}: checkout: moving from feature/ledger to main\n9f1c4b7 HEAD@{6}: commit: feat: add transaction ledger integration\n3e7a2d5 HEAD@{7}: commit: fix: handle currency conversion rounding errors\n1d8c6f3 HEAD@{8}: commit: feat: add multi-currency support to gateway\n5b4e9a1 HEAD@{9}: checkout: moving from main to feature/ledger\n5b4e9a1 HEAD@{10}: merge feature/retry: Fast-forward\nc7e5d2a (tag: v1.0.0) HEAD@{11}: commit: chore: initial release v1.0.0",
+
+    "git cherry-pick 8a2f7c6": "cherry-pick 8a2f7c6 feat: implement payment retry with exponential backoff\n[feature/payments 4e7b2a9] feat: implement payment retry with exponential backoff\n Date: Tue May 27 18:00:33 2026 +0530\n 2 files changed, 34 insertions(+)",
+
+    "git tag": "v1.0.0\nv1.1.0\nv1.2.0",
+
+    "git tag -a v1.3.0 -m \"Release 1.3.0: refund support\"": "tag 'v1.3.0' created at a4f8e2d",
+
+    "git tag -l \"v1.*\"": "v1.0.0\nv1.1.0\nv1.2.0",
+
+    "git blame src/services/payment.service.ts": "f4a1b9d (John Carter   2026-05-26 15:30:00 +0530  1) import { PaymentGateway } from '../gateways/payment.gateway';\nf4a1b9d (John Carter   2026-05-26 15:30:00 +0530  2) import { Ledger } from '../ledger/ledger';\nf4a1b9d (John Carter   2026-05-26 15:30:00 +0530  3) import { PaymentError } from '../errors/payment.error';\nc7e5d2a (Priya Sharma  2026-05-25 10:00:00 +0530  4) import { AmountValidator } from '../validators/amount.validator';\nc7e5d2a (Priya Sharma  2026-05-25 10:00:00 +0530  5) \nc7e5d2a (Priya Sharma  2026-05-25 10:00:00 +0530  6) export class PaymentService {\nf4a1b9d (John Carter   2026-05-26 15:30:00 +0530  7)   private gateway: PaymentGateway;\n9f1c4b7 (Rahul Mehta   2026-05-30 16:45:22 +0530  8)   private ledger: Ledger;\nc7e5d2a (Priya Sharma  2026-05-25 10:00:00 +0530  9)   private validator: AmountValidator;\nc7e5d2a (Priya Sharma  2026-05-25 10:00:00 +0530 10) \nc7e5d2a (Priya Sharma  2026-05-25 10:00:00 +0530 11)   constructor(gateway: PaymentGateway, ledger: Ledger) {\nf4a1b9d (John Carter   2026-05-26 15:30:00 +0530 12)     this.gateway = gateway;\n9f1c4b7 (Rahul Mehta   2026-05-30 16:45:22 +0530 13)     this.ledger = ledger;\nc7e5d2a (Priya Sharma  2026-05-25 10:00:00 +0530 14)     this.validator = new AmountValidator();\nc7e5d2a (Priya Sharma  2026-05-25 10:00:00 +0530 15)   }\ne5d9f0c (Priya Sharma  2026-06-01 14:10:33 +0530 16) \ne5d9f0c (Priya Sharma  2026-06-01 14:10:33 +0530 17)   async processPayment(order: Order): Promise<PaymentResult> {\ne5d9f0c (Priya Sharma  2026-06-01 14:10:33 +0530 18)     const validated = await this.validator.validate(order.amount);\ne5d9f0c (Priya Sharma  2026-06-01 14:10:33 +0530 19)     if (!validated) {\ne5d9f0c (Priya Sharma  2026-06-01 14:10:33 +0530 20)       throw new PaymentError('Invalid amount', { orderId: order.id });\ne5d9f0c (Priya Sharma  2026-06-01 14:10:33 +0530 21)     }\na4f8e2d (Priya Sharma  2026-06-02 09:45:12 +0530 22) \na4f8e2d (Priya Sharma  2026-06-02 09:45:12 +0530 23)   async refundPayment(txnId: string, amount: number): Promise<RefundResult> {\na4f8e2d (Priya Sharma  2026-06-02 09:45:12 +0530 24)     const original = await this.ledger.findTransaction(txnId);\na4f8e2d (Priya Sharma  2026-06-02 09:45:12 +0530 25)     if (!original) throw new PaymentError('Transaction not found');\na4f8e2d (Priya Sharma  2026-06-02 09:45:12 +0530 26)     return this.gateway.refund(txnId, amount);\na4f8e2d (Priya Sharma  2026-06-02 09:45:12 +0530 27)   }\nc7e5d2a (Priya Sharma  2026-05-25 10:00:00 +0530 28) }",
+
+    "git shortlog -sn": "     5  Priya Sharma\n     4  Rahul Mehta\n     3  John Carter\n     2  Anika Patel",
+
+    "git config --list": "user.name=Priya Sharma\nuser.email=priya@fintech.com\ncore.editor=vim\ncore.autocrlf=input\ncore.repositoryformatversion=0\ninit.defaultbranch=main\npush.default=current\npull.rebase=true\nmerge.conflictstyle=diff3\nremote.origin.url=git@github.com:fintech-corp/payment-service.git\nremote.origin.fetch=+refs/heads/*:refs/remotes/origin/*\nbranch.main.remote=origin\nbranch.main.merge=refs/heads/main\nbranch.feature/payments.remote=origin\nbranch.feature/payments.merge=refs/heads/feature/payments",
+
+    "git show HEAD": "commit a4f8e2d (HEAD -> feature/payments)\nAuthor: Priya Sharma <priya@fintech.com>\nDate:   Mon Jun 2 09:45:12 2026 +0530\n\n    feat: add refund endpoint to payment controller\n\ndiff --git a/src/controllers/payment.controller.ts b/src/controllers/payment.controller.ts\nindex 4e5f6a7..b8c9d0e 100644\n--- a/src/controllers/payment.controller.ts\n+++ b/src/controllers/payment.controller.ts\n@@ -28,6 +28,15 @@\n+  async handleRefund(req: Request, res: Response): Promise<void> {\n+    try {\n+      const { transactionId, amount } = req.body;\n+      const result = await this.paymentService.refundPayment(transactionId, amount);\n+      res.status(200).json(result);\n+    } catch (error) {\n+      res.status(500).json({ error: 'Refund processing failed' });\n+    }\n+  }",
+
+    "git commit --amend": "[feature/payments 2f8a1b3] feat: add refund support with improved validation\n Date: Mon Jun 2 09:45:12 2026 +0530\n 5 files changed, 32 insertions(+), 4 deletions(-)",
+
+    "git add src/services/payment.service.ts": "",
+
+    "git add .": "",
+
+    "git commit -m \"feat: add refund support\"": "[feature/payments 5a3b2c1] feat: add refund support\n 3 files changed, 28 insertions(+), 4 deletions(-)\n create mode 100644 src/services/refund.service.ts",
+
+    "git log --oneline --graph": "* a4f8e2d (HEAD -> feature/payments) feat: add refund endpoint to payment controller\n* 7c3b1a9 fix: reject amounts with excessive decimal places\n* e5d9f0c refactor: improve payment error messages with context\n* b2a6d8e (tag: v1.2.0, origin/main, main) chore: bump version to 1.2.0\n* 9f1c4b7 feat: add transaction ledger integration\n* 3e7a2d5 fix: handle currency conversion rounding errors\n* 1d8c6f3 feat: add multi-currency support to gateway\n* 5b4e9a1 (tag: v1.1.0) chore: release v1.1.0\n* 8a2f7c6 feat: implement payment retry with exponential backoff\n* d6c3e8b fix: prevent duplicate transaction IDs on concurrent requests\n* f4a1b9d refactor: extract gateway interface for testability\n* c7e5d2a (tag: v1.0.0) chore: initial release v1.0.0",
+
+    "git log --oneline -5": "a4f8e2d (HEAD -> feature/payments) feat: add refund endpoint to payment controller\n7c3b1a9 fix: reject amounts with excessive decimal places\ne5d9f0c refactor: improve payment error messages with context\nb2a6d8e (tag: v1.2.0, origin/main, main) chore: bump version to 1.2.0\n9f1c4b7 feat: add transaction ledger integration",
+
+    "git log --pretty=format:\"%h %an %s\" -5": "a4f8e2d Priya Sharma feat: add refund endpoint to payment controller\n7c3b1a9 Rahul Mehta fix: reject amounts with excessive decimal places\ne5d9f0c Priya Sharma refactor: improve payment error messages with context\nb2a6d8e John Carter chore: bump version to 1.2.0\n9f1c4b7 Rahul Mehta feat: add transaction ledger integration",
+
+    "git stash save \"wip: refund validation\"": "Saved working directory and index state On feature/payments: wip: refund validation",
+
+    "git stash show": " src/services/payment.service.ts   | 8 +++++---\n src/validators/amount.validator.ts | 4 +++-\n 2 files changed, 8 insertions(+), 4 deletions(-)",
+
+    "git merge --abort": "Merge aborted successfully.",
+
+    "git clean -n": "Would remove src/services/refund.service.ts",
+
+    "git clean -fd": "Removing src/services/refund.service.ts",
+
+    "git diff main..feature/payments": "diff --git a/src/controllers/payment.controller.ts b/src/controllers/payment.controller.ts\nindex 4e5f6a7..b8c9d0e 100644\n--- a/src/controllers/payment.controller.ts\n+++ b/src/controllers/payment.controller.ts\n@@ -28,6 +28,15 @@\n+  async handleRefund(req: Request, res: Response): Promise<void> {\n+    try {\n+      const { transactionId, amount } = req.body;\n+      const result = await this.paymentService.refundPayment(transactionId, amount);\n+      res.status(200).json(result);\n+    } catch (error) {\n+      res.status(500).json({ error: 'Refund processing failed' });\n+    }\n+  }\ndiff --git a/src/services/payment.service.ts b/src/services/payment.service.ts\n+  async refundPayment(txnId: string, amount: number): Promise<RefundResult> {\n+    const original = await this.ledger.findTransaction(txnId);\n+    if (!original) throw new PaymentError('Transaction not found');\n+    return this.gateway.refund(txnId, amount);\n+  }\ndiff --git a/src/validators/amount.validator.ts b/src/validators/amount.validator.ts\n+    if (Math.round(amount * 100) !== amount * 100) return false;\ndiff --git a/src/routes/payment.routes.ts b/src/routes/payment.routes.ts\n+router.post('/refund', controller.handleRefund);",
+
+    "git diff main..feature/payments --stat": " src/controllers/payment.controller.ts | 15 +++++++++++++++\n src/routes/payment.routes.ts          |  1 +\n src/services/payment.service.ts       | 12 +++++++++---\n src/validators/amount.validator.ts    |  4 +++-\n 4 files changed, 28 insertions(+), 4 deletions(-)",
+
+    "git whatchanged --oneline -3": "a4f8e2d feat: add refund endpoint to payment controller\n:100644 100644 4e5f... b8c9... M\tsrc/controllers/payment.controller.ts\n:100644 100644 3a4b... 7d8e... M\tsrc/routes/payment.routes.ts\n7c3b1a9 fix: reject amounts with excessive decimal places\n:100644 100644 2c1d... 9a8b... M\tsrc/validators/amount.validator.ts\ne5d9f0c refactor: improve payment error messages with context\n:100644 100644 8a3d... f7b2... M\tsrc/services/payment.service.ts"
+  },
+  "reference": [
+    {
+      "group": "Status & Diff",
+      "commands": [
+        { "cmd": "git status", "desc": "working tree status" },
+        { "cmd": "git diff", "desc": "unstaged changes" },
+        { "cmd": "git diff --staged", "desc": "staged changes" },
+        { "cmd": "git diff --stat", "desc": "change summary" },
+        { "cmd": "git diff HEAD~3", "desc": "diff against 3 commits ago" },
+        { "cmd": "git diff main..feature/payments", "desc": "branch comparison" }
+      ]
+    },
+    {
+      "group": "History & Log",
+      "commands": [
+        { "cmd": "git log --oneline", "desc": "compact log" },
+        { "cmd": "git log --oneline --graph --all", "desc": "visual branch graph" },
+        { "cmd": "git log --author=\"John\"", "desc": "filter by author" },
+        { "cmd": "git log -p -1", "desc": "last commit with diff" },
+        { "cmd": "git reflog", "desc": "reference log (undo safety net)" },
+        { "cmd": "git blame src/services/payment.service.ts", "desc": "line-by-line authorship" },
+        { "cmd": "git shortlog -sn", "desc": "contributor summary" }
+      ]
+    },
+    {
+      "group": "Branches",
+      "commands": [
+        { "cmd": "git branch", "desc": "list local branches" },
+        { "cmd": "git branch -a", "desc": "list all branches" },
+        { "cmd": "git checkout -b feature/payments", "desc": "create & switch branch" },
+        { "cmd": "git switch main", "desc": "switch branch" },
+        { "cmd": "git branch -d feature/auth", "desc": "delete merged branch" },
+        { "cmd": "git merge --no-ff feature/payments", "desc": "merge with commit" }
+      ]
+    },
+    {
+      "group": "Rebase",
+      "commands": [
+        { "cmd": "git rebase main", "desc": "rebase onto main" },
+        { "cmd": "git rebase -i HEAD~3", "desc": "interactive rebase (squash)" },
+        { "cmd": "git rebase --abort", "desc": "abort rebase" },
+        { "cmd": "git rebase --continue", "desc": "continue after conflict" }
+      ]
+    },
+    {
+      "group": "Stash",
+      "commands": [
+        { "cmd": "git stash", "desc": "stash working changes" },
+        { "cmd": "git stash list", "desc": "list stashes" },
+        { "cmd": "git stash pop", "desc": "apply & drop latest stash" },
+        { "cmd": "git stash show -p", "desc": "show stash diff" },
+        { "cmd": "git stash drop", "desc": "drop latest stash" }
+      ]
+    },
+    {
+      "group": "Remote & Sync",
+      "commands": [
+        { "cmd": "git remote -v", "desc": "list remotes" },
+        { "cmd": "git fetch origin", "desc": "fetch remote changes" },
+        { "cmd": "git pull origin main", "desc": "pull main branch" },
+        { "cmd": "git push origin feature/payments", "desc": "push feature branch" },
+        { "cmd": "git push --force-with-lease", "desc": "safe force push" },
+        { "cmd": "git config --list", "desc": "show git configuration" }
+      ]
+    },
+    {
+      "group": "Undo & Restore",
+      "commands": [
+        { "cmd": "git reset --soft HEAD~1", "desc": "undo commit, keep staged" },
+        { "cmd": "git reset --hard HEAD~1", "desc": "undo commit, discard all" },
+        { "cmd": "git revert HEAD", "desc": "revert last commit (safe)" },
+        { "cmd": "git restore src/services/payment.service.ts", "desc": "discard working changes" },
+        { "cmd": "git checkout -- src/services/payment.service.ts", "desc": "restore file (legacy)" }
+      ]
+    },
+    {
+      "group": "Advanced",
+      "commands": [
+        { "cmd": "git bisect start", "desc": "start binary search" },
+        { "cmd": "git bisect bad", "desc": "mark current as bad" },
+        { "cmd": "git bisect good v1.1.0", "desc": "mark tag as good" },
+        { "cmd": "git bisect reset", "desc": "end bisect session" },
+        { "cmd": "git cherry-pick 8a2f7c6", "desc": "apply specific commit" },
+        { "cmd": "git tag -a v1.3.0 -m \"Release 1.3.0: refund support\"", "desc": "create annotated tag" },
+        { "cmd": "git tag", "desc": "list tags" },
+        { "cmd": "scenario bisect-bad-merge", "desc": "guided: find regression" },
+        { "cmd": "scenario cleanup-feature-branch", "desc": "guided: clean up for PR" }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,315 @@
+{
+  "id": "flux",
+  "prompt": "flux@gitops:~$",
+  "welcome": "Welcome to the Flux CD CLI Playground.\nType commands to explore a simulated GitOps environment.\nType 'help' for available commands, 'scenario' for guided labs.\n",
+  "scenarios": [
+    {
+      "id": "bootstrap-and-deploy",
+      "title": "Bootstrap and Deploy with Flux",
+      "steps": [
+        {
+          "instruction": "First, check that your cluster meets the prerequisites for Flux.",
+          "expect": "flux check --pre",
+          "hint": "Try: flux check --pre"
+        },
+        {
+          "instruction": "Prerequisites pass. Bootstrap Flux with your GitHub repository.",
+          "expect": "flux bootstrap github --owner=acme-corp --repository=fleet-infra --branch=main --path=clusters/production --personal",
+          "hint": "Try: flux bootstrap github --owner=acme-corp --repository=fleet-infra --branch=main --path=clusters/production --personal"
+        },
+        {
+          "instruction": "Good, Flux is installed. Verify that all Flux components are healthy.",
+          "expect": "flux check",
+          "hint": "Try: flux check"
+        },
+        {
+          "instruction": "Now create a GitRepository source pointing to your application repo.",
+          "expect": "flux create source git webapp --url=https://github.com/acme-corp/webapp --branch=main --interval=1m",
+          "hint": "Try: flux create source git webapp --url=https://github.com/acme-corp/webapp --branch=main --interval=1m"
+        },
+        {
+          "instruction": "Create a Kustomization to deploy the app from the source.",
+          "expect": "flux create kustomization webapp --source=GitRepository/webapp --path=./deploy/production --prune=true --interval=5m",
+          "hint": "Try: flux create kustomization webapp --source=GitRepository/webapp --path=./deploy/production --prune=true --interval=5m"
+        },
+        {
+          "instruction": "Verify the source was picked up and has a revision.",
+          "expect": "flux get sources git",
+          "hint": "Try: flux get sources git"
+        },
+        {
+          "instruction": "Check that the kustomization reconciled successfully.",
+          "expect": "flux get kustomizations",
+          "hint": "Try: flux get kustomizations"
+        },
+        {
+          "instruction": "Force an immediate reconciliation of the git source to pull latest changes.",
+          "expect": "flux reconcile source git webapp",
+          "hint": "Try: flux reconcile source git webapp"
+        }
+      ]
+    },
+    {
+      "id": "troubleshoot-reconciliation",
+      "title": "Troubleshoot a Failed Reconciliation",
+      "steps": [
+        {
+          "instruction": "Something is wrong in the cluster. Get an overview of all Flux resources.",
+          "expect": "flux get all",
+          "hint": "Try: flux get all"
+        },
+        {
+          "instruction": "The payments kustomization shows 'Not Ready'. Check recent Flux events for clues.",
+          "expect": "flux events",
+          "hint": "Try: flux events"
+        },
+        {
+          "instruction": "The events show a validation error. Check the Flux logs for more detail.",
+          "expect": "flux logs",
+          "hint": "Try: flux logs"
+        },
+        {
+          "instruction": "You need to fix the manifest in Git. Suspend the kustomization to stop retries while you fix it.",
+          "expect": "flux suspend kustomization payments",
+          "hint": "Try: flux suspend kustomization payments"
+        },
+        {
+          "instruction": "You've pushed the fix to Git. Resume the kustomization.",
+          "expect": "flux resume kustomization payments",
+          "hint": "Try: flux resume kustomization payments"
+        },
+        {
+          "instruction": "Force an immediate reconciliation of the source to pick up your fix.",
+          "expect": "flux reconcile source git flux-system",
+          "hint": "Try: flux reconcile source git flux-system"
+        },
+        {
+          "instruction": "Now force the kustomization to reconcile with the updated source.",
+          "expect": "flux reconcile kustomization payments",
+          "hint": "Try: flux reconcile kustomization payments"
+        },
+        {
+          "instruction": "Verify everything is healthy again.",
+          "expect": "flux get all",
+          "hint": "Try: flux get all"
+        }
+      ]
+    }
+  ],
+  "commands": {
+    "help": "Available commands:\n  flux check [--pre]                  — Check Flux prerequisites or installation\n  flux bootstrap [github|gitlab]      — Install Flux and configure GitOps\n  flux get [resource]                 — List Flux resources (all, sources git, sources helm, kustomizations, helmreleases)\n  flux create source [git|helm]       — Create a source resource\n  flux create kustomization           — Create a Kustomization resource\n  flux create helmrelease             — Create a HelmRelease resource\n  flux reconcile [resource]           — Trigger immediate reconciliation\n  flux suspend [resource]             — Suspend reconciliation\n  flux resume [resource]              — Resume reconciliation\n  flux delete [resource]              — Delete a Flux resource\n  flux export [resource]              — Export resource as YAML\n  flux logs                           — View Flux controller logs\n  flux events                         — View Flux events\n  flux stats                          — View Flux resource statistics\n  flux tree kustomization             — Show resource tree\n  flux version                        — Show Flux version\n  flux uninstall                      — Remove Flux from the cluster\n\n  scenario                            — Start a guided lab\n  clear                               — Clear the terminal\n  help                                — Show this help",
+    "flux version": "flux: v2.4.0\nflux-controller: v2.4.0\nsource-controller: v1.4.1\nkustomize-controller: v1.4.0\nhelm-controller: v1.1.0\nnotification-controller: v1.4.0\nimage-reflector-controller: v0.33.0\nimage-automation-controller: v0.39.0",
+    "flux check --pre": "► checking prerequisites\n✔ Kubernetes 1.29.3 >=1.28.0-0\n✔ kubectl 1.29.3 >=1.28.0-0\n✔ Flux 2.4.0 >=2.0.0-0\n► checking cluster connectivity\n✔ cluster connection: ok\n► checking permissions\n✔ can create namespaces: yes\n✔ can create cluster roles: yes\n► all prerequisites checks passed",
+    "flux check": "► checking prerequisites\n✔ Kubernetes 1.29.3 >=1.28.0-0\n► checking controllers\n✔ source-controller: healthy\n  ► v1.4.1\n✔ kustomize-controller: healthy\n  ► v1.4.0\n✔ helm-controller: healthy\n  ► v1.1.0\n✔ notification-controller: healthy\n  ► v1.4.0\n► checking crds\n✔ gitrepositories.source.toolkit.fluxcd.io/v1\n✔ helmrepositories.source.toolkit.fluxcd.io/v1\n✔ kustomizations.kustomize.toolkit.fluxcd.io/v1\n✔ helmreleases.helm.toolkit.fluxcd.io/v2\n► all checks passed",
+    "flux bootstrap github --owner=acme-corp --repository=fleet-infra --branch=main --path=clusters/production --personal": "► connecting to github.com\n✔ repository \"https://github.com/acme-corp/fleet-infra\" confirmed\n► cloning branch \"main\" from Git repository\n✔ cloned repository\n► generating component manifests\n✔ generated component manifests\n► committing Flux manifests to \"main\"\n► pushing component manifests\n✔ pushed component manifests to \"https://github.com/acme-corp/fleet-infra.git\"\n► installing components in \"flux-system\" namespace\n✔ installed components\n► confirming components are healthy\n✔ source-controller: deployment ready\n✔ kustomize-controller: deployment ready\n✔ helm-controller: deployment ready\n✔ notification-controller: deployment ready\n✔ all components are healthy\n► bootstrapping complete",
+    "flux bootstrap gitlab --owner=acme-corp --repository=fleet-infra --branch=main --path=clusters/production --personal": "► connecting to gitlab.com\n✔ repository \"https://gitlab.com/acme-corp/fleet-infra\" confirmed\n► cloning branch \"main\" from Git repository\n✔ cloned repository\n► generating component manifests\n✔ generated component manifests\n► committing Flux manifests to \"main\"\n► pushing component manifests\n✔ pushed component manifests to \"https://gitlab.com/acme-corp/fleet-infra.git\"\n► installing components in \"flux-system\" namespace\n✔ installed components\n► confirming components are healthy\n✔ source-controller: deployment ready\n✔ kustomize-controller: deployment ready\n✔ helm-controller: deployment ready\n✔ notification-controller: deployment ready\n✔ all components are healthy\n► bootstrapping complete",
+    "flux get all": "NAME                          REVISION          SUSPENDED  READY  MESSAGE\ngitrepository/flux-system     main@sha1:a3b4c5d  False      True   stored artifact for revision 'main@sha1:a3b4c5d'\ngitrepository/webapp          main@sha1:e7f8a9b  False      True   stored artifact for revision 'main@sha1:e7f8a9b'\ngitrepository/payments-api    main@sha1:c2d3e4f  False      True   stored artifact for revision 'main@sha1:c2d3e4f'\n\nNAME                                  REVISION  SUSPENDED  READY  MESSAGE\nhelmrepository/bitnami                          False      True   stored artifact: revision 'sha256:9a8b7c6d'\nhelmrepository/ingress-nginx                    False      True   stored artifact: revision 'sha256:f1e2d3c4'\n\nNAME                              REVISION          SUSPENDED  READY  MESSAGE\nkustomization/flux-system         main@sha1:a3b4c5d  False      True   Applied revision: main@sha1:a3b4c5d\nkustomization/webapp              main@sha1:e7f8a9b  False      True   Applied revision: main@sha1:e7f8a9b\nkustomization/payments            main@sha1:c2d3e4f  False      False  validation failed: Deployment/payments-api: spec.replicas must be >= 0\nkustomization/monitoring          main@sha1:a3b4c5d  False      True   Applied revision: main@sha1:a3b4c5d\n\nNAME                              REVISION  SUSPENDED  READY  MESSAGE\nhelmrelease/ingress-nginx         4.11.3    False      True   Helm install succeeded for release ingress-nginx/ingress-nginx.v1\nhelmrelease/redis                 19.6.4    False      True   Helm upgrade succeeded for release production/redis.v3\nhelmrelease/cert-manager          1.16.1    False      True   Helm install succeeded for release cert-manager/cert-manager.v1",
+    "flux get sources git": "NAME              REVISION          SUSPENDED  READY  MESSAGE\nflux-system       main@sha1:a3b4c5d  False      True   stored artifact for revision 'main@sha1:a3b4c5d'\nwebapp            main@sha1:e7f8a9b  False      True   stored artifact for revision 'main@sha1:e7f8a9b'\npayments-api      main@sha1:c2d3e4f  False      True   stored artifact for revision 'main@sha1:c2d3e4f'",
+    "flux get sources helm": "NAME              REVISION            SUSPENDED  READY  MESSAGE\nbitnami                               False      True   stored artifact: revision 'sha256:9a8b7c6d'\ningress-nginx                         False      True   stored artifact: revision 'sha256:f1e2d3c4'",
+    "flux get kustomizations": "NAME              REVISION          SUSPENDED  READY  MESSAGE\nflux-system       main@sha1:a3b4c5d  False      True   Applied revision: main@sha1:a3b4c5d\nwebapp            main@sha1:e7f8a9b  False      True   Applied revision: main@sha1:e7f8a9b\npayments          main@sha1:c2d3e4f  False      False  validation failed: Deployment/payments-api: spec.replicas must be >= 0\nmonitoring        main@sha1:a3b4c5d  False      True   Applied revision: main@sha1:a3b4c5d",
+    "flux get helmreleases": "NAME              REVISION  SUSPENDED  READY  MESSAGE\ningress-nginx     4.11.3    False      True   Helm install succeeded for release ingress-nginx/ingress-nginx.v1\nredis             19.6.4    False      True   Helm upgrade succeeded for release production/redis.v3\ncert-manager      1.16.1    False      True   Helm install succeeded for release cert-manager/cert-manager.v1",
+    "flux reconcile source git webapp": "► annotating GitRepository webapp in flux-system namespace\n✔ GitRepository annotated\n◎ waiting for GitRepository reconciliation\n✔ fetched revision main@sha1:f1a2b3c\n✔ GitRepository reconciliation completed",
+    "flux reconcile source git flux-system": "► annotating GitRepository flux-system in flux-system namespace\n✔ GitRepository annotated\n◎ waiting for GitRepository reconciliation\n✔ fetched revision main@sha1:d4e5f6a\n✔ GitRepository reconciliation completed",
+    "flux reconcile source git payments-api": "► annotating GitRepository payments-api in flux-system namespace\n✔ GitRepository annotated\n◎ waiting for GitRepository reconciliation\n✔ fetched revision main@sha1:b7c8d9e\n✔ GitRepository reconciliation completed",
+    "flux reconcile kustomization webapp": "► annotating Kustomization webapp in flux-system namespace\n✔ Kustomization annotated\n◎ waiting for Kustomization reconciliation\n✔ applied revision main@sha1:f1a2b3c\n✔ Kustomization reconciliation completed",
+    "flux reconcile kustomization payments": "► annotating Kustomization payments in flux-system namespace\n✔ Kustomization annotated\n◎ waiting for Kustomization reconciliation\n✔ applied revision main@sha1:b7c8d9e\n✔ Kustomization reconciliation completed",
+    "flux reconcile kustomization flux-system": "► annotating Kustomization flux-system in flux-system namespace\n✔ Kustomization annotated\n◎ waiting for Kustomization reconciliation\n✔ applied revision main@sha1:d4e5f6a\n✔ Kustomization reconciliation completed",
+    "flux reconcile kustomization monitoring": "► annotating Kustomization monitoring in flux-system namespace\n✔ Kustomization annotated\n◎ waiting for Kustomization reconciliation\n✔ applied revision main@sha1:d4e5f6a\n✔ Kustomization reconciliation completed",
+    "flux reconcile helmrelease ingress-nginx": "► annotating HelmRelease ingress-nginx in flux-system namespace\n✔ HelmRelease annotated\n◎ waiting for HelmRelease reconciliation\n✔ applied revision 4.11.3\n✔ HelmRelease reconciliation completed",
+    "flux reconcile helmrelease redis": "► annotating HelmRelease redis in flux-system namespace\n✔ HelmRelease annotated\n◎ waiting for HelmRelease reconciliation\n✔ applied revision 19.6.4\n✔ HelmRelease reconciliation completed",
+    "flux reconcile helmrelease cert-manager": "► annotating HelmRelease cert-manager in flux-system namespace\n✔ HelmRelease annotated\n◎ waiting for HelmRelease reconciliation\n✔ applied revision 1.16.1\n✔ HelmRelease reconciliation completed",
+    "flux suspend kustomization payments": "► suspending kustomization payments in flux-system namespace\n✔ kustomization suspended",
+    "flux suspend kustomization webapp": "► suspending kustomization webapp in flux-system namespace\n✔ kustomization suspended",
+    "flux resume kustomization payments": "► resuming kustomization payments in flux-system namespace\n✔ kustomization resumed\n◎ waiting for Kustomization reconciliation\n✔ Kustomization reconciliation completed",
+    "flux resume kustomization webapp": "► resuming kustomization webapp in flux-system namespace\n✔ kustomization resumed\n◎ waiting for Kustomization reconciliation\n✔ Kustomization reconciliation completed",
+    "flux create source git webapp --url=https://github.com/acme-corp/webapp --branch=main --interval=1m": "✔ source created\n► applying GitRepository\n✔ GitRepository updated\n◎ waiting for GitRepository reconciliation\n✔ fetched revision: main@sha1:e7f8a9b\n✔ GitRepository source \"webapp\" is ready",
+    "flux create source git payments-api --url=https://github.com/acme-corp/payments-api --branch=main --interval=1m": "✔ source created\n► applying GitRepository\n✔ GitRepository updated\n◎ waiting for GitRepository reconciliation\n✔ fetched revision: main@sha1:c2d3e4f\n✔ GitRepository source \"payments-api\" is ready",
+    "flux create source helm bitnami --url=https://charts.bitnami.com/bitnami --interval=10m": "✔ source created\n► applying HelmRepository\n✔ HelmRepository updated\n◎ waiting for HelmRepository reconciliation\n✔ fetched revision: sha256:9a8b7c6d\n✔ HelmRepository source \"bitnami\" is ready",
+    "flux create kustomization webapp --source=GitRepository/webapp --path=./deploy/production --prune=true --interval=5m": "✔ kustomization created\n► applying Kustomization\n✔ Kustomization updated\n◎ waiting for Kustomization reconciliation\n✔ applied revision main@sha1:e7f8a9b\n✔ Kustomization \"webapp\" is ready",
+    "flux create kustomization payments --source=GitRepository/payments-api --path=./deploy/production --prune=true --interval=5m": "✔ kustomization created\n► applying Kustomization\n✔ Kustomization updated\n◎ waiting for Kustomization reconciliation\n✔ applied revision main@sha1:c2d3e4f\n✔ Kustomization \"payments\" is ready",
+    "flux create helmrelease ingress-nginx --source=HelmRepository/ingress-nginx --chart=ingress-nginx --target-namespace=ingress-nginx --interval=10m": "✔ helmrelease created\n► applying HelmRelease\n✔ HelmRelease updated\n◎ waiting for HelmRelease reconciliation\n✔ Helm install succeeded\n✔ HelmRelease \"ingress-nginx\" is ready",
+    "flux create helmrelease redis --source=HelmRepository/bitnami --chart=redis --target-namespace=production --interval=10m": "✔ helmrelease created\n► applying HelmRelease\n✔ HelmRelease updated\n◎ waiting for HelmRelease reconciliation\n✔ Helm install succeeded\n✔ HelmRelease \"redis\" is ready",
+    "flux delete source git webapp": "Are you sure you want to delete this source git: y\n► deleting source git webapp in flux-system namespace\n✔ source git deleted",
+    "flux delete source git payments-api": "Are you sure you want to delete this source git: y\n► deleting source git payments-api in flux-system namespace\n✔ source git deleted",
+    "flux delete kustomization webapp": "Are you sure you want to delete this kustomization: y\n► deleting kustomization webapp in flux-system namespace\n✔ kustomization deleted",
+    "flux delete kustomization payments": "Are you sure you want to delete this kustomization: y\n► deleting kustomization payments in flux-system namespace\n✔ kustomization deleted",
+    "flux export source git webapp": "---\napiVersion: source.toolkit.fluxcd.io/v1\nkind: GitRepository\nmetadata:\n  name: webapp\n  namespace: flux-system\nspec:\n  interval: 1m0s\n  ref:\n    branch: main\n  url: https://github.com/acme-corp/webapp",
+    "flux export source git flux-system": "---\napiVersion: source.toolkit.fluxcd.io/v1\nkind: GitRepository\nmetadata:\n  name: flux-system\n  namespace: flux-system\nspec:\n  interval: 1m0s\n  ref:\n    branch: main\n  secretRef:\n    name: flux-system\n  url: ssh://git@github.com/acme-corp/fleet-infra",
+    "flux export kustomization webapp": "---\napiVersion: kustomize.toolkit.fluxcd.io/v1\nkind: Kustomization\nmetadata:\n  name: webapp\n  namespace: flux-system\nspec:\n  interval: 5m0s\n  path: ./deploy/production\n  prune: true\n  sourceRef:\n    kind: GitRepository\n    name: webapp\n  targetNamespace: production",
+    "flux export kustomization payments": "---\napiVersion: kustomize.toolkit.fluxcd.io/v1\nkind: Kustomization\nmetadata:\n  name: payments\n  namespace: flux-system\nspec:\n  interval: 5m0s\n  path: ./deploy/production\n  prune: true\n  sourceRef:\n    kind: GitRepository\n    name: payments-api\n  targetNamespace: production",
+    "flux logs": "2026-06-02T10:30:15Z source-controller     INFO  GitRepository/flux-system   stored artifact for revision 'main@sha1:a3b4c5d'\n2026-06-02T10:30:18Z source-controller     INFO  GitRepository/webapp        stored artifact for revision 'main@sha1:e7f8a9b'\n2026-06-02T10:30:22Z source-controller     INFO  GitRepository/payments-api  stored artifact for revision 'main@sha1:c2d3e4f'\n2026-06-02T10:30:25Z kustomize-controller  INFO  Kustomization/flux-system   Applied revision: main@sha1:a3b4c5d\n2026-06-02T10:30:28Z kustomize-controller  INFO  Kustomization/webapp        Applied revision: main@sha1:e7f8a9b\n2026-06-02T10:30:30Z kustomize-controller  ERROR Kustomization/payments      validation failed: Deployment/payments-api: spec.replicas must be >= 0\n2026-06-02T10:30:32Z kustomize-controller  INFO  Kustomization/monitoring    Applied revision: main@sha1:a3b4c5d\n2026-06-02T10:30:35Z helm-controller       INFO  HelmRelease/ingress-nginx   Helm install succeeded for release ingress-nginx/ingress-nginx.v1\n2026-06-02T10:30:38Z helm-controller       INFO  HelmRelease/redis           Helm upgrade succeeded for release production/redis.v3\n2026-06-02T10:30:40Z helm-controller       INFO  HelmRelease/cert-manager    Helm install succeeded for release cert-manager/cert-manager.v1",
+    "flux events": "LAST SEEN  TYPE     REASON           OBJECT                        MESSAGE\n2m         Normal   ReconcileSucc    GitRepository/flux-system     stored artifact for revision 'main@sha1:a3b4c5d'\n2m         Normal   ReconcileSucc    GitRepository/webapp          stored artifact for revision 'main@sha1:e7f8a9b'\n2m         Normal   ReconcileSucc    GitRepository/payments-api    stored artifact for revision 'main@sha1:c2d3e4f'\n3m         Normal   ReconcileSucc    Kustomization/flux-system     Applied revision: main@sha1:a3b4c5d\n3m         Normal   ReconcileSucc    Kustomization/webapp          Applied revision: main@sha1:e7f8a9b\n3m         Warning  ReconcileFailed  Kustomization/payments        validation failed: Deployment/payments-api: spec.replicas must be >= 0\n4m         Normal   ReconcileSucc    Kustomization/monitoring      Applied revision: main@sha1:a3b4c5d\n5m         Normal   InstallSucc      HelmRelease/ingress-nginx     Helm install succeeded\n5m         Normal   UpgradeSucc      HelmRelease/redis             Helm upgrade succeeded\n5m         Normal   InstallSucc      HelmRelease/cert-manager      Helm install succeeded",
+    "flux stats": "RESOURCE              READY  NOT READY  SUSPENDED  TOTAL\nGitRepository         3      0          0          3\nHelmRepository        2      0          0          2\nKustomization         3      1          0          4\nHelmRelease           3      0          0          3\n───────────────────────────────────────────────────────\nTotal                 11     1          0          12",
+    "flux tree kustomization webapp": "Kustomization/flux-system/webapp\n├── Namespace/production\n├── Deployment/production/webapp-frontend\n│   └── ReplicaSet/production/webapp-frontend-7d4b8c6f5\n│       ├── Pod/production/webapp-frontend-7d4b8c6f5-x2k9n\n│       └── Pod/production/webapp-frontend-7d4b8c6f5-p8m3w\n├── Deployment/production/webapp-backend\n│   └── ReplicaSet/production/webapp-backend-5f8b9c4d7\n│       └── Pod/production/webapp-backend-5f8b9c4d7-k7j4r\n├── Service/production/webapp-frontend\n├── Service/production/webapp-backend\n├── ConfigMap/production/webapp-config\n└── Ingress/production/webapp-ingress",
+    "flux tree kustomization payments": "Kustomization/flux-system/payments\n├── Namespace/production\n├── Deployment/production/payments-api\n│   └── ReplicaSet/production/payments-api-6c9a8b3d2\n│       └── Pod/production/payments-api-6c9a8b3d2-n5v1x\n├── Service/production/payments-api\n├── ConfigMap/production/payments-config\n└── Secret/production/payments-db-credentials",
+    "flux tree kustomization flux-system": "Kustomization/flux-system/flux-system\n├── Namespace/flux-system\n├── Deployment/flux-system/source-controller\n├── Deployment/flux-system/kustomize-controller\n├── Deployment/flux-system/helm-controller\n├── Deployment/flux-system/notification-controller\n├── ServiceAccount/flux-system/source-controller\n├── ServiceAccount/flux-system/kustomize-controller\n├── ServiceAccount/flux-system/helm-controller\n└── ServiceAccount/flux-system/notification-controller",
+    "flux tree kustomization monitoring": "Kustomization/flux-system/monitoring\n├── Namespace/monitoring\n├── Deployment/monitoring/prometheus\n├── Deployment/monitoring/grafana\n├── Service/monitoring/prometheus\n├── Service/monitoring/grafana\n├── ConfigMap/monitoring/prometheus-config\n├── ConfigMap/monitoring/grafana-dashboards\n└── ServiceAccount/monitoring/prometheus",
+    "flux uninstall": "► deleting components in flux-system namespace\n✔ Deployment/flux-system/source-controller deleted\n✔ Deployment/flux-system/kustomize-controller deleted\n✔ Deployment/flux-system/helm-controller deleted\n✔ Deployment/flux-system/notification-controller deleted\n✔ CustomResourceDefinition/gitrepositories.source.toolkit.fluxcd.io deleted\n✔ CustomResourceDefinition/kustomizations.kustomize.toolkit.fluxcd.io deleted\n✔ CustomResourceDefinition/helmreleases.helm.toolkit.fluxcd.io deleted\n✔ CustomResourceDefinition/helmrepositories.source.toolkit.fluxcd.io deleted\n✔ Namespace/flux-system deleted\n✔ uninstall finished"
+  },
+  "reference": [
+    {
+      "group": "Setup & Status",
+      "commands": [
+        {
+          "cmd": "flux check --pre",
+          "desc": "check prerequisites"
+        },
+        {
+          "cmd": "flux check",
+          "desc": "verify installation"
+        },
+        {
+          "cmd": "flux version",
+          "desc": "show versions"
+        },
+        {
+          "cmd": "flux stats",
+          "desc": "resource statistics"
+        },
+        {
+          "cmd": "flux uninstall",
+          "desc": "remove Flux"
+        }
+      ]
+    },
+    {
+      "group": "Bootstrap",
+      "commands": [
+        {
+          "cmd": "flux bootstrap github --owner=acme-corp --repository=fleet-infra --branch=main --path=clusters/production --personal",
+          "desc": "bootstrap GitHub"
+        },
+        {
+          "cmd": "flux bootstrap gitlab --owner=acme-corp --repository=fleet-infra --branch=main --path=clusters/production --personal",
+          "desc": "bootstrap GitLab"
+        }
+      ]
+    },
+    {
+      "group": "Sources",
+      "commands": [
+        {
+          "cmd": "flux get sources git",
+          "desc": "list git sources"
+        },
+        {
+          "cmd": "flux get sources helm",
+          "desc": "list helm repos"
+        },
+        {
+          "cmd": "flux create source git webapp --url=https://github.com/acme-corp/webapp --branch=main --interval=1m",
+          "desc": "create git source"
+        },
+        {
+          "cmd": "flux create source helm bitnami --url=https://charts.bitnami.com/bitnami --interval=10m",
+          "desc": "create helm source"
+        },
+        {
+          "cmd": "flux delete source git webapp",
+          "desc": "delete git source"
+        },
+        {
+          "cmd": "flux export source git webapp",
+          "desc": "export as YAML"
+        }
+      ]
+    },
+    {
+      "group": "Kustomizations",
+      "commands": [
+        {
+          "cmd": "flux get kustomizations",
+          "desc": "list kustomizations"
+        },
+        {
+          "cmd": "flux create kustomization webapp --source=GitRepository/webapp --path=./deploy/production --prune=true --interval=5m",
+          "desc": "create kustomization"
+        },
+        {
+          "cmd": "flux delete kustomization webapp",
+          "desc": "delete kustomization"
+        },
+        {
+          "cmd": "flux export kustomization webapp",
+          "desc": "export as YAML"
+        },
+        {
+          "cmd": "flux tree kustomization webapp",
+          "desc": "show resource tree"
+        }
+      ]
+    },
+    {
+      "group": "Helm Releases",
+      "commands": [
+        {
+          "cmd": "flux get helmreleases",
+          "desc": "list helm releases"
+        },
+        {
+          "cmd": "flux create helmrelease redis --source=HelmRepository/bitnami --chart=redis --target-namespace=production --interval=10m",
+          "desc": "create helm release"
+        },
+        {
+          "cmd": "flux reconcile helmrelease redis",
+          "desc": "reconcile release"
+        }
+      ]
+    },
+    {
+      "group": "Reconciliation",
+      "commands": [
+        {
+          "cmd": "flux reconcile source git webapp",
+          "desc": "reconcile git source"
+        },
+        {
+          "cmd": "flux reconcile kustomization webapp",
+          "desc": "reconcile kustomization"
+        },
+        {
+          "cmd": "flux reconcile helmrelease ingress-nginx",
+          "desc": "reconcile helm release"
+        },
+        {
+          "cmd": "flux suspend kustomization payments",
+          "desc": "suspend reconciliation"
+        },
+        {
+          "cmd": "flux resume kustomization payments",
+          "desc": "resume reconciliation"
+        }
+      ]
+    },
+    {
+      "group": "Observability & Debug",
+      "commands": [
+        {
+          "cmd": "flux get all",
+          "desc": "all resources overview"
+        },
+        {
+          "cmd": "flux logs",
+          "desc": "controller logs"
+        },
+        {
+          "cmd": "flux events",
+          "desc": "recent events"
+        }
+      ]
+    },
+    {
+      "group": "Scenarios",
+      "commands": [
+        {
+          "cmd": "scenario bootstrap-and-deploy",
+          "desc": "bootstrap + deploy"
+        },
+        {
+          "cmd": "scenario troubleshoot-reconciliation",
+          "desc": "fix failed reconcile"
+        }
+      ]
+    }
+  ]
+}

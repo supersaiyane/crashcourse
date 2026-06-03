@@ -1,0 +1,253 @@
+{
+  "id": "linux",
+  "prompt": "sre@prod-web-01:~$",
+  "welcome": "Welcome to the Linux CLI Playground.\nSimulated Ubuntu 22.04 production web server running nginx + Node.js app.\nType 'help' for available commands, 'scenario' for guided labs.\n",
+  "scenarios": [
+    {
+      "id": "high-cpu",
+      "title": "Investigate High CPU Usage",
+      "steps": [
+        {
+          "instruction": "Check system uptime and load averages first.",
+          "expect": "uptime",
+          "hint": "Try: uptime"
+        },
+        {
+          "instruction": "Load is 12.4 on a 4-core box — that's 3x overloaded. List processes sorted by CPU.",
+          "expect": "ps aux --sort=-%cpu",
+          "hint": "Try: ps aux --sort=-%cpu"
+        },
+        {
+          "instruction": "A node process is eating 98% CPU. Check how much memory the system has available.",
+          "expect": "free -h",
+          "hint": "Try: free -h"
+        },
+        {
+          "instruction": "Memory looks OK. Check what that specific node process is doing.",
+          "expect": "top -b -n1",
+          "hint": "Try: top -b -n1"
+        },
+        {
+          "instruction": "Check disk I/O — maybe the process is thrashing.",
+          "expect": "iostat",
+          "hint": "Try: iostat"
+        },
+        {
+          "instruction": "Check if the node app is writing excessive logs.",
+          "expect": "ls -lh /var/log/app/",
+          "hint": "Try: ls -lh /var/log/app/"
+        },
+        {
+          "instruction": "The error.log is 4.2GB! Check the nginx service status to see the bigger picture.",
+          "expect": "systemctl status nginx",
+          "hint": "Try: systemctl status nginx"
+        },
+        {
+          "instruction": "Restart the node app service to recover.",
+          "expect": "systemctl restart node-app",
+          "hint": "Try: systemctl restart node-app"
+        }
+      ]
+    },
+    {
+      "id": "disk-full",
+      "title": "Troubleshoot Disk Full Alert",
+      "steps": [
+        {
+          "instruction": "Check disk usage across all filesystems.",
+          "expect": "df -h",
+          "hint": "Try: df -h"
+        },
+        {
+          "instruction": "Root filesystem is at 97%! Find what's eating space in /var.",
+          "expect": "du -sh /var/*",
+          "hint": "Try: du -sh /var/*"
+        },
+        {
+          "instruction": "/var/log is 18GB. Find the biggest log files.",
+          "expect": "du -sh /var/log/*",
+          "hint": "Try: du -sh /var/log/*"
+        },
+        {
+          "instruction": "Find files larger than 100MB anywhere on the system.",
+          "expect": "find / -type f -size +100M",
+          "hint": "Try: find / -type f -size +100M"
+        },
+        {
+          "instruction": "Find old log files (older than 30 days) that can be safely removed.",
+          "expect": "find /var/log -name \"*.log\" -mtime +30",
+          "hint": "Try: find /var/log -name \"*.log\" -mtime +30"
+        },
+        {
+          "instruction": "Check what processes have deleted files still open (holding disk space).",
+          "expect": "lsof +L1",
+          "hint": "Try: lsof +L1"
+        },
+        {
+          "instruction": "Check the journal logs size too.",
+          "expect": "journalctl --disk-usage",
+          "hint": "Try: journalctl --disk-usage"
+        },
+        {
+          "instruction": "Vacuum old journal logs to free space.",
+          "expect": "journalctl --vacuum-size=500M",
+          "hint": "Try: journalctl --vacuum-size=500M"
+        }
+      ]
+    }
+  ],
+  "commands": {
+    "help": "Available commands:\n  ps aux                     — List all processes\n  top / htop                 — Process monitor\n  kill / pkill               — Send signals to processes\n  df -h                      — Disk filesystem usage\n  du -sh                     — Directory size\n  free -h                    — Memory usage\n  uptime                     — System uptime + load\n  uname -a                   — Kernel info\n  lscpu                      — CPU info\n  ls -la                     — List files with details\n  find                       — Search for files\n  tail / head                — View file start/end\n  ss -tlnp                   — Network sockets\n  ip addr / ip route         — Network config\n  systemctl                  — Service management\n  journalctl                 — System logs\n  dmesg                      — Kernel messages\n  chmod / chown              — Permissions\n  lsblk / mount              — Block devices\n  iostat / vmstat            — I/O and VM stats\n  curl / ping / dig          — Network utilities\n  whoami / id                — User info\n  lsof                       — Open files\n\n  scenario                   — Start a guided lab\n  clear                      — Clear the terminal\n  help                       — Show this help",
+    "uname -a": "Linux prod-web-01 5.15.0-91-generic #101-Ubuntu SMP Tue Nov 14 13:30:08 UTC 2023 x86_64 x86_64 x86_64 GNU/Linux",
+    "uptime": " 10:15:32 up 94 days, 3:22,  2 users,  load average: 12.45, 8.32, 4.18",
+    "hostnamectl": " Static hostname: prod-web-01\n       Icon name: computer-vm\n         Chassis: vm\n      Machine ID: a1b2c3d4e5f6a7b8c9d1e2f3a4b5c6d7\n Operating System: Ubuntu 22.04.3 LTS\n           Kernel: Linux 5.15.0-91-generic\n     Architecture: x86_64\n  Hardware Vendor: Amazon EC2\n   Hardware Model: m5.xlarge",
+    "cat /etc/os-release": "NAME=\"Ubuntu\"\nVERSION=\"22.04.3 LTS (Jammy Jellyfish)\"\nID=ubuntu\nID_LIKE=debian\nVERSION_ID=\"22.04\"\nVERSION_CODENAME=jammy\nPRETTY_NAME=\"Ubuntu 22.04.3 LTS\"",
+    "lscpu": "Architecture:            x86_64\nCPU(s):                  4\nThread(s) per core:      2\nCore(s) per socket:      2\nSocket(s):               1\nModel name:              Intel(R) Xeon(R) Platinum 8259CL CPU @ 2.50GHz\nCPU MHz:                 2499.998\nL1d cache:               64 KiB\nL1i cache:               64 KiB\nL2 cache:                2 MiB\nL3 cache:                35.75 MiB",
+    "free -h": "               total        used        free      shared  buff/cache   available\nMem:            15Gi       11Gi       512Mi       256Mi       3.8Gi       3.5Gi\nSwap:          2.0Gi       1.2Gi       820Mi",
+    "df -h": "Filesystem      Size  Used Avail Use% Mounted on\n/dev/xvda1       50G   48G  1.5G  97% /\ntmpfs           7.8G     0  7.8G   0% /dev/shm\n/dev/xvdf       100G   42G   58G  42% /data\ntmpfs           7.8G  1.2M  7.8G   1% /run",
+    "du -sh /var/*": "4.0K\t/var/backups\n312M\t/var/cache\n18G\t/var/log\n2.1G\t/var/lib\n4.0K\t/var/local\n0\t/var/lock\n4.0K\t/var/mail\n4.0K\t/var/opt\n0\t/var/run\n56K\t/var/spool\n128K\t/var/tmp",
+    "du -sh /var/log/*": "4.2G\t/var/log/app\n1.8G\t/var/log/nginx\n890M\t/var/log/journal\n45M\t/var/log/syslog\n12M\t/var/log/auth.log\n8.5M\t/var/log/kern.log\n6.2M\t/var/log/dpkg.log\n2.1M\t/var/log/apt\n156K\t/var/log/cloud-init.log\n89K\t/var/log/wtmp\n34K\t/var/log/lastlog",
+    "lsblk": "NAME    MAJ:MIN RM   SIZE RO TYPE MOUNTPOINTS\nxvda    202:0    0    50G  0 disk\n├─xvda1 202:1    0    50G  0 part /\n└─xvda2 202:2    0     1M  0 part\nxvdf    202:80   0   100G  0 disk /data",
+    "mount": "/dev/xvda1 on / type ext4 (rw,relatime)\ntmpfs on /dev/shm type tmpfs (rw,nosuid,nodev)\n/dev/xvdf on /data type ext4 (rw,relatime)\nproc on /proc type proc (rw,nosuid,nodev,noexec,relatime)\nsysfs on /sys type sysfs (rw,nosuid,nodev,noexec,relatime)",
+    "ps aux": "USER         PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND\nroot           1  0.0  0.0 167684 11904 ?        Ss   Mar01   1:23 /sbin/init\nroot         412  0.0  0.1  72316 22528 ?        Ss   Mar01   0:45 /lib/systemd/systemd-journald\nroot         845  0.0  0.0   6812  3072 ?        Ss   Mar01   0:12 /usr/sbin/sshd -D\nwww-data    1234  0.3  0.8 142896 134144 ?       S    Jun01  12:34 nginx: worker process\nwww-data    1235  0.3  0.8 142896 131072 ?       S    Jun01  12:28 nginx: worker process\nnode        2345 98.2  4.5 1289456 737280 ?      Rl   10:00  15:32 node /app/server.js\nnode        2567  2.1  1.2 456789 196608 ?       Sl   10:00   3:45 node /app/worker.js\npostgres    3456  1.2  2.3 389120 376832 ?       Ss   Mar01  45:12 /usr/lib/postgresql/15/bin/postgres\nredis       4567  0.5  0.2  65432  28672 ?       Ssl  Mar01   8:23 redis-server *:6379\nroot        5678  0.0  0.0  12345   3584 pts/0   Ss   10:12   0:00 -bash\nroot        5789  0.0  0.0  13456   3840 pts/0   R+   10:15   0:00 ps aux",
+    "ps aux --sort=-%cpu": "USER         PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND\nnode        2345 98.2  4.5 1289456 737280 ?      Rl   10:00  15:32 node /app/server.js\nnode        2567  2.1  1.2 456789 196608 ?       Sl   10:00   3:45 node /app/worker.js\npostgres    3456  1.2  2.3 389120 376832 ?       Ss   Mar01  45:12 /usr/lib/postgresql/15/bin/postgres\nredis       4567  0.5  0.2  65432  28672 ?       Ssl  Mar01   8:23 redis-server *:6379\nwww-data    1234  0.3  0.8 142896 134144 ?       S    Jun01  12:34 nginx: worker process\nwww-data    1235  0.3  0.8 142896 131072 ?       S    Jun01  12:28 nginx: worker process\nroot           1  0.0  0.0 167684 11904 ?        Ss   Mar01   1:23 /sbin/init",
+    "ps aux --sort=-%mem": "USER         PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND\nnode        2345 98.2  4.5 1289456 737280 ?      Rl   10:00  15:32 node /app/server.js\npostgres    3456  1.2  2.3 389120 376832 ?       Ss   Mar01  45:12 /usr/lib/postgresql/15/bin/postgres\nnode        2567  2.1  1.2 456789 196608 ?       Sl   10:00   3:45 node /app/worker.js\nwww-data    1234  0.3  0.8 142896 134144 ?       S    Jun01  12:34 nginx: worker process",
+    "top -b -n1": "top - 10:15:32 up 94 days,  3:22,  2 users,  load average: 12.45, 8.32, 4.18\nTasks: 142 total,   2 running, 140 sleeping,   0 stopped,   0 zombie\n%Cpu(s): 78.2 us,  5.1 sy,  0.0 ni, 15.4 id,  0.8 wa,  0.0 hi,  0.5 si\nMiB Mem :  15987.3 total,   512.0 free, 11264.0 used,  4211.3 buff/cache\nMiB Swap:   2048.0 total,   820.0 free,  1228.0 used.  3584.0 avail Mem\n\n    PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND\n   2345 node      20   0 1289456 737280  12288 R  98.2   4.5  15:32.45 node\n   2567 node      20   0  456789 196608   8192 S   2.1   1.2   3:45.12 node\n   3456 postgres  20   0  389120 376832  32768 S   1.2   2.3  45:12.89 postgres\n   4567 redis     20   0   65432  28672   4096 S   0.5   0.2   8:23.45 redis-server\n   1234 www-data  20   0  142896 134144   6144 S   0.3   0.8  12:34.56 nginx",
+    "htop": "  CPU[||||||||||||||||||||||||||||||||||||||||96.5%]   Tasks: 142, 312 thr; 2 running\n  Mem[|||||||||||||||||||||||||||||   11.0G/15.6G]   Load average: 12.45 8.32 4.18\n  Swp[||||||||||                      1.2G/2.0G]   Uptime: 94 days, 3:22:15\n\n    PID USER      PRI  NI  VIRT   RES   SHR S CPU%  MEM%   TIME+  Command\n   2345 node       20   0 1.23G  720M  12M R 98.2   4.5  15:32 node /app/server.js\n   2567 node       20   0  446M  192M  8M  S  2.1   1.2   3:45 node /app/worker.js\n   3456 postgres   20   0  380M  368M  32M S  1.2   2.3  45:12 postgres\n   4567 redis      20   0   64M   28M  4M  S  0.5   0.2   8:23 redis-server *:6379\n   1234 www-data   20   0  140M  131M  6M  S  0.3   0.8  12:34 nginx: worker",
+    "kill 2345": "(signal sent to process 2345)",
+    "kill -9 2345": "(SIGKILL sent to process 2345 — force terminated)",
+    "pkill -f \"node /app/server.js\"": "(signal sent to matching processes)",
+    "pgrep -la node": "2345 node /app/server.js\n2567 node /app/worker.js",
+    "ls -la": "total 48\ndrwxr-xr-x  6 root root  4096 Jun  2 10:00 .\ndrwxr-xr-x 24 root root  4096 Mar  1 06:00 ..\n-rw-------  1 root root  1245 Jun  2 10:12 .bash_history\n-rw-r--r--  1 root root   220 Mar  1 06:00 .bash_logout\n-rw-r--r--  1 root root  3771 Mar  1 06:00 .bashrc\ndrwx------  2 root root  4096 Mar  1 06:00 .ssh\ndrwxr-xr-x  3 root root  4096 Jun  1 08:00 scripts\n-rwxr-xr-x  1 root root  2345 Jun  1 08:00 deploy.sh\n-rw-r--r--  1 root root   456 May 30 12:00 .env",
+    "ls -la /var/log": "total 6892\ndrwxrwxr-x  8 root   syslog  4096 Jun  2 10:00 .\ndrwxr-xr-x 14 root   root    4096 Mar  1 06:00 ..\ndrwxr-xr-x  2 node   node    4096 Jun  2 10:15 app\n-rw-r-----  1 syslog adm    45M   Jun  2 10:15 syslog\n-rw-r-----  1 syslog adm    12M   Jun  2 09:00 auth.log\n-rw-r-----  1 root   adm    8.5M  Jun  1 23:59 kern.log\ndrwxr-xr-x  2 root   root    4096 Jun  2 00:00 nginx\ndrwxr-x---  2 root   systemd-journal 4096 Jun  2 10:00 journal",
+    "ls -lh /var/log/app/": "total 4.3G\n-rw-r--r-- 1 node node 4.2G Jun  2 10:15 error.log\n-rw-r--r-- 1 node node  89M Jun  2 10:15 access.log\n-rw-r--r-- 1 node node  12M Jun  1 00:00 error.log.1\n-rw-r--r-- 1 node node 5.6M Jun  1 00:00 access.log.1",
+    "find / -type f -size +100M": "/var/log/app/error.log (4.2G)\n/var/log/nginx/access.log (1.2G)\n/var/log/nginx/error.log (645M)\n/var/lib/postgresql/15/main/base/16384/16421 (512M)\n/var/log/journal/a1b2c3d4/system.journal (890M)\n/data/backups/db-2026-05-01.sql.gz (234M)\n/data/backups/db-2026-04-01.sql.gz (228M)",
+    "find /var/log -name \"*.log\" -mtime +30": "/var/log/app/error.log.3\n/var/log/app/access.log.3\n/var/log/nginx/access.log.2\n/var/log/nginx/error.log.2\n/var/log/apt/term.log\n/var/log/cloud-init.log",
+    "find /tmp -type f -mtime +7": "/tmp/node-cache-2345/session-abc123\n/tmp/node-cache-2345/session-def456\n/tmp/nginx-proxy-cache/stale-12345\n/tmp/pg_stat_tmp/old_snapshot",
+    "tail -f /var/log/syslog": "Jun  2 10:15:30 prod-web-01 systemd[1]: node-app.service: Main process exited, code=killed, status=9/KILL\nJun  2 10:15:30 prod-web-01 systemd[1]: node-app.service: Failed with result 'signal'.\nJun  2 10:15:31 prod-web-01 systemd[1]: node-app.service: Scheduled restart job.\nJun  2 10:15:31 prod-web-01 systemd[1]: Started Node.js Application Server.\nJun  2 10:15:32 prod-web-01 node[6789]: INFO  Starting server v2.1.0 on :8080",
+    "tail -20 /var/log/app/error.log": "2026-06-02T10:15:28Z ERROR [req-45678] Unhandled promise rejection: heap out of memory\n2026-06-02T10:15:28Z ERROR [req-45679] Response timeout after 30000ms for /api/v1/reports\n2026-06-02T10:15:29Z ERROR [req-45680] FATAL ERROR: Reached heap limit Allocation failed\n2026-06-02T10:15:29Z ERROR [req-45681] Unhandled promise rejection: heap out of memory\n2026-06-02T10:15:30Z ERROR [req-45682] Response timeout after 30000ms for /api/v1/reports",
+    "head -20 /etc/nginx/nginx.conf": "user www-data;\nworker_processes auto;\npid /run/nginx.pid;\ninclude /etc/nginx/modules-enabled/*.conf;\n\nevents {\n    worker_connections 1024;\n}\n\nhttp {\n    sendfile on;\n    tcp_nopush on;\n    types_hash_max_size 2048;\n    server_tokens off;\n\n    include /etc/nginx/mime.types;\n    default_type application/octet-stream;\n\n    access_log /var/log/nginx/access.log;\n    error_log /var/log/nginx/error.log;",
+    "ss -tlnp": "State    Recv-Q   Send-Q   Local Address:Port    Peer Address:Port   Process\nLISTEN   0        511      0.0.0.0:443           0.0.0.0:*           users:((\"nginx\",pid=1234,fd=6))\nLISTEN   0        511      0.0.0.0:80            0.0.0.0:*           users:((\"nginx\",pid=1234,fd=7))\nLISTEN   0        128      0.0.0.0:8080          0.0.0.0:*           users:((\"node\",pid=2345,fd=18))\nLISTEN   0        128      0.0.0.0:22            0.0.0.0:*           users:((\"sshd\",pid=845,fd=3))\nLISTEN   0        244      127.0.0.1:5432        0.0.0.0:*           users:((\"postgres\",pid=3456,fd=5))\nLISTEN   0        511      0.0.0.0:6379          0.0.0.0:*           users:((\"redis-server\",pid=4567,fd=6))",
+    "ss -tuln": "Netid  State    Recv-Q   Send-Q   Local Address:Port    Peer Address:Port\ntcp    LISTEN   0        511      0.0.0.0:443           0.0.0.0:*\ntcp    LISTEN   0        511      0.0.0.0:80            0.0.0.0:*\ntcp    LISTEN   0        128      0.0.0.0:8080          0.0.0.0:*\ntcp    LISTEN   0        128      0.0.0.0:22            0.0.0.0:*\ntcp    LISTEN   0        244      127.0.0.1:5432        0.0.0.0:*\ntcp    LISTEN   0        511      0.0.0.0:6379          0.0.0.0:*\nudp    UNCONN   0        0        127.0.0.53:53          0.0.0.0:*",
+    "netstat -tlnp": "Proto Recv-Q Send-Q Local Address     Foreign Address   State       PID/Program\ntcp        0      0 0.0.0.0:443       0.0.0.0:*         LISTEN      1234/nginx\ntcp        0      0 0.0.0.0:80        0.0.0.0:*         LISTEN      1234/nginx\ntcp        0      0 0.0.0.0:8080      0.0.0.0:*         LISTEN      2345/node\ntcp        0      0 0.0.0.0:22        0.0.0.0:*         LISTEN      845/sshd\ntcp        0      0 127.0.0.1:5432    0.0.0.0:*         LISTEN      3456/postgres\ntcp        0      0 0.0.0.0:6379      0.0.0.0:*         LISTEN      4567/redis-server",
+    "ip addr": "1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536\n    link/loopback 00:00:00:00:00:00\n    inet 127.0.0.1/8 scope host lo\n    inet6 ::1/128 scope host\n2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 9001\n    link/ether 0a:1b:2c:3d:4e:5f\n    inet 10.0.1.42/24 brd 10.0.1.255 scope global dynamic eth0\n    inet6 fe80::81b:2cff:fe3d:4e5f/64 scope link",
+    "ip route": "default via 10.0.1.1 dev eth0 proto dhcp src 10.0.1.42 metric 100\n10.0.1.0/24 dev eth0 proto kernel scope link src 10.0.1.42\n169.254.169.254 via 10.0.1.1 dev eth0 proto dhcp src 10.0.1.42 metric 100",
+    "curl localhost:8080/healthz": "{\"status\":\"healthy\",\"uptime\":\"3d2h\",\"version\":\"v2.1.0\",\"db\":\"connected\",\"redis\":\"connected\"}",
+    "curl -I localhost:8080": "HTTP/1.1 200 OK\nContent-Type: application/json\nX-Request-Id: req-12345\nX-Response-Time: 12ms\nDate: Mon, 02 Jun 2026 10:15:32 GMT\nContent-Length: 89",
+    "ping -c 4 8.8.8.8": "PING 8.8.8.8 (8.8.8.8) 56(84) bytes of data.\n64 bytes from 8.8.8.8: icmp_seq=1 ttl=118 time=1.23 ms\n64 bytes from 8.8.8.8: icmp_seq=2 ttl=118 time=1.19 ms\n64 bytes from 8.8.8.8: icmp_seq=3 ttl=118 time=1.21 ms\n64 bytes from 8.8.8.8: icmp_seq=4 ttl=118 time=1.18 ms\n\n--- 8.8.8.8 ping statistics ---\n4 packets transmitted, 4 received, 0% packet loss, time 3004ms\nrtt min/avg/max/mdev = 1.180/1.202/1.230/0.020 ms",
+    "dig example.com": ";; ANSWER SECTION:\nexample.com.          86400   IN      A       93.184.216.34\n\n;; Query time: 12 msec\n;; SERVER: 10.0.0.2#53(10.0.0.2)\n;; WHEN: Mon Jun 02 10:15:32 UTC 2026\n;; MSG SIZE  rcvd: 56",
+    "traceroute 8.8.8.8": "traceroute to 8.8.8.8 (8.8.8.8), 30 hops max, 60 byte packets\n 1  10.0.1.1 (10.0.1.1)  0.234 ms  0.198 ms  0.187 ms\n 2  100.64.0.1 (100.64.0.1)  0.567 ms  0.543 ms  0.521 ms\n 3  52.93.28.78 (52.93.28.78)  1.023 ms  0.998 ms  0.987 ms\n 4  8.8.8.8 (8.8.8.8)  1.234 ms  1.198 ms  1.187 ms",
+    "systemctl status nginx": "● nginx.service - A high performance web server\n     Loaded: loaded (/lib/systemd/system/nginx.service; enabled; vendor preset: enabled)\n     Active: active (running) since Sat 2026-06-01 06:00:00 UTC; 1 day ago\n       Docs: man:nginx(8)\n    Process: 1230 ExecStartPre=/usr/sbin/nginx -t -q -g daemon on; (code=exited, status=0/SUCCESS)\n   Main PID: 1232 (nginx)\n      Tasks: 5 (limit: 18979)\n     Memory: 268.0M\n        CPU: 25min 2.345s\n     CGroup: /system.slice/nginx.service\n             ├─1232 \"nginx: master process /usr/sbin/nginx\"\n             ├─1234 \"nginx: worker process\"\n             └─1235 \"nginx: worker process\"",
+    "systemctl status node-app": "● node-app.service - Node.js Application Server\n     Loaded: loaded (/etc/systemd/system/node-app.service; enabled)\n     Active: active (running) since Mon 2026-06-02 10:00:00 UTC; 15min ago\n   Main PID: 2345 (node)\n      Tasks: 18 (limit: 18979)\n     Memory: 720.0M (high: 1.0G limit: 1.5G)\n        CPU: 15min 32.450s\n     CGroup: /system.slice/node-app.service\n             ├─2345 node /app/server.js\n             └─2567 node /app/worker.js",
+    "systemctl restart node-app": "node-app.service restarted successfully",
+    "systemctl restart nginx": "nginx.service restarted successfully",
+    "systemctl list-units --failed": "  UNIT                    LOAD   ACTIVE SUB    DESCRIPTION\n● logrotate.service       loaded failed failed Rotate log files\n● certbot-renew.timer     loaded failed failed Certbot renewal timer\n\nLOADED: 2 units listed.",
+    "systemctl enable node-app": "Created symlink /etc/systemd/system/multi-user.target.wants/node-app.service → /etc/systemd/system/node-app.service.",
+    "journalctl -u nginx --since \"1 hour ago\"": "Jun 02 09:15:32 prod-web-01 nginx[1232]: 10.0.2.15 \"GET /api/v1/users\" 200\nJun 02 09:45:12 prod-web-01 nginx[1232]: 10.0.3.22 \"POST /api/v1/orders\" 201\nJun 02 10:00:01 prod-web-01 nginx[1232]: 10.0.2.15 \"GET /api/v1/reports\" 504\nJun 02 10:12:45 prod-web-01 nginx[1232]: 10.0.1.8 \"GET /healthz\" 200\nJun 02 10:15:32 prod-web-01 nginx[1232]: 10.0.2.15 \"GET /api/v1/users\" 200",
+    "journalctl -fu nginx": "Jun 02 10:15:32 prod-web-01 nginx[1232]: 10.0.2.15 \"GET /api/v1/users\" 200\nJun 02 10:15:33 prod-web-01 nginx[1232]: 10.0.2.15 \"POST /api/v1/orders\" 201\n(following — press Ctrl+C to stop)",
+    "journalctl --disk-usage": "Archived and active journals take up 890.0M in the file system.",
+    "journalctl --vacuum-size=500M": "Vacuuming done, freed 390.0M of archived journals from /var/log/journal/a1b2c3d4.",
+    "dmesg --level=err": "[    0.000000] ACPI Error: Namespace lookup failure, AE_NOT_FOUND\n[86400.123456] EXT4-fs error (device xvda1): ext4_find_entry:1234: inode #567890: comm node: reading directory lblock 0\n[172800.234567] Out of memory: Killed process 1890 (node) total-vm:2048000kB, anon-rss:1536000kB",
+    "dmesg | tail -10": "[345600.123] eth0: renamed from ens5\n[345600.456] EXT4-fs (xvda1): mounted filesystem with ordered data mode\n[345600.789] systemd[1]: Started Node.js Application Server.\n[345601.012] node[2345]: Listening on port 8080\n[345601.234] systemd[1]: Started nginx - A high performance web server.",
+    "last": "root     pts/0        10.0.5.100       Mon Jun  2 10:12   still logged in\nroot     pts/1        10.0.5.100       Mon Jun  2 08:00 - 09:30  (01:30)\nubuntu   pts/0        10.0.5.101       Sun Jun  1 14:00 - 16:00  (02:00)\nroot     pts/0        10.0.5.100       Sat May 31 22:00 - 23:45  (01:45)\n\nwtmp begins Thu Mar  1 06:00:00 2026",
+    "lastlog": "Username         Port     From             Latest\nroot             pts/0    10.0.5.100       Mon Jun  2 10:12:00 +0000 2026\nubuntu           pts/0    10.0.5.101       Sun Jun  1 14:00:00 +0000 2026\nnginx                                       **Never logged in**\nnode                                         **Never logged in**\npostgres                                     **Never logged in**",
+    "vmstat 1 3": "procs -----------memory---------- ---swap-- -----io---- -system-- ------cpu-----\n r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st\n 4  0 1228800 524288 262144 3670016   2    8    45   120 3456 8901 78  5 15  1  1\n 3  1 1228800 520192 262144 3674112   0    0    12   234 3567 9012 75  6 17  1  1\n 4  0 1228800 516096 262144 3678208   0    4    23    89 3678 9123 80  4 14  1  1",
+    "iostat": "Linux 5.15.0-91-generic (prod-web-01)   06/02/2026      _x86_64_\n\navg-cpu:  %user   %nice %system %iowait  %steal   %idle\n          78.23    0.00    5.12    0.84    1.02   14.79\n\nDevice             tps    kB_read/s    kB_wrtn/s    kB_dscd/s    kB_read    kB_wrtn    kB_dscd\nxvda             45.23        12.45       234.56         0.00   10234567   192345678          0\nxvdf              8.12         5.67        89.01         0.00    4567890    72345678          0",
+    "lsof +L1": "COMMAND   PID   USER   FD   TYPE DEVICE SIZE/OFF NLINK NODE NAME\nnode     2345   node   12w  REG  202,1  2.1G     0  1234 /var/log/app/error.log.old (deleted)\nnginx    1234 www-data  8w  REG  202,1  456M     0  5678 /var/log/nginx/access.log.1 (deleted)",
+    "lsof -i :8080": "COMMAND  PID USER   FD   TYPE DEVICE SIZE/OFF NODE NAME\nnode    2345 node   18u  IPv4 123456      0t0  TCP *:http-alt (LISTEN)\nnode    2345 node   19u  IPv4 123457      0t0  TCP 10.0.1.42:http-alt->10.0.2.15:54321 (ESTABLISHED)",
+    "whoami": "root",
+    "id": "uid=0(root) gid=0(root) groups=0(root)",
+    "id node": "uid=1001(node) gid=1001(node) groups=1001(node)",
+    "groups": "root",
+    "chmod 755 deploy.sh": "(permissions changed: rwxr-xr-x)",
+    "chown node:node /app/config.yaml": "(ownership changed to node:node)",
+    "stat /var/log/app/error.log": "  File: /var/log/app/error.log\n  Size: 4509715456  Blocks: 8808432    IO Block: 4096   regular file\nDevice: ca01h/51713d   Inode: 1234567     Links: 1\nAccess: (0644/-rw-r--r--)  Uid: ( 1001/    node)   Gid: ( 1001/    node)\nAccess: 2026-06-02 10:15:30.000000000 +0000\nModify: 2026-06-02 10:15:30.000000000 +0000\nChange: 2026-06-02 10:15:30.000000000 +0000\n Birth: 2026-06-01 00:00:00.000000000 +0000",
+    "wc -l /var/log/app/error.log": "4523890 /var/log/app/error.log"
+  },
+  "reference": [
+    {
+      "group": "System Info",
+      "commands": [
+        { "cmd": "uname -a", "desc": "kernel info" },
+        { "cmd": "uptime", "desc": "uptime + load" },
+        { "cmd": "hostnamectl", "desc": "hostname + OS" },
+        { "cmd": "lscpu", "desc": "CPU details" },
+        { "cmd": "free -h", "desc": "memory usage" },
+        { "cmd": "cat /etc/os-release", "desc": "OS version" }
+      ]
+    },
+    {
+      "group": "Processes",
+      "commands": [
+        { "cmd": "ps aux", "desc": "all processes" },
+        { "cmd": "ps aux --sort=-%cpu", "desc": "sort by CPU" },
+        { "cmd": "top -b -n1", "desc": "process snapshot" },
+        { "cmd": "htop", "desc": "interactive monitor" },
+        { "cmd": "pgrep -la node", "desc": "find by name" },
+        { "cmd": "kill 2345", "desc": "send signal" },
+        { "cmd": "kill -9 2345", "desc": "force kill" }
+      ]
+    },
+    {
+      "group": "Disk & Files",
+      "commands": [
+        { "cmd": "df -h", "desc": "filesystem usage" },
+        { "cmd": "du -sh /var/*", "desc": "directory sizes" },
+        { "cmd": "lsblk", "desc": "block devices" },
+        { "cmd": "ls -la", "desc": "list files" },
+        { "cmd": "find / -type f -size +100M", "desc": "large files" },
+        { "cmd": "find /var/log -name \"*.log\" -mtime +30", "desc": "old logs" },
+        { "cmd": "stat /var/log/app/error.log", "desc": "file details" }
+      ]
+    },
+    {
+      "group": "Network",
+      "commands": [
+        { "cmd": "ss -tlnp", "desc": "listening ports" },
+        { "cmd": "ip addr", "desc": "IP addresses" },
+        { "cmd": "ip route", "desc": "routing table" },
+        { "cmd": "curl localhost:8080/healthz", "desc": "health check" },
+        { "cmd": "ping -c 4 8.8.8.8", "desc": "connectivity" },
+        { "cmd": "dig example.com", "desc": "DNS lookup" },
+        { "cmd": "lsof -i :8080", "desc": "port users" }
+      ]
+    },
+    {
+      "group": "Services",
+      "commands": [
+        { "cmd": "systemctl status nginx", "desc": "service status" },
+        { "cmd": "systemctl status node-app", "desc": "app status" },
+        { "cmd": "systemctl restart node-app", "desc": "restart service" },
+        { "cmd": "systemctl list-units --failed", "desc": "failed units" },
+        { "cmd": "systemctl enable node-app", "desc": "enable on boot" }
+      ]
+    },
+    {
+      "group": "Logs",
+      "commands": [
+        { "cmd": "journalctl -u nginx --since \"1 hour ago\"", "desc": "service logs" },
+        { "cmd": "journalctl --disk-usage", "desc": "journal size" },
+        { "cmd": "journalctl --vacuum-size=500M", "desc": "clean journals" },
+        { "cmd": "tail -f /var/log/syslog", "desc": "follow syslog" },
+        { "cmd": "tail -20 /var/log/app/error.log", "desc": "recent errors" },
+        { "cmd": "dmesg --level=err", "desc": "kernel errors" },
+        { "cmd": "last", "desc": "login history" }
+      ]
+    },
+    {
+      "group": "Performance",
+      "commands": [
+        { "cmd": "vmstat 1 3", "desc": "VM statistics" },
+        { "cmd": "iostat", "desc": "I/O stats" },
+        { "cmd": "lsof +L1", "desc": "deleted open files" }
+      ]
+    },
+    {
+      "group": "Scenarios",
+      "commands": [
+        { "cmd": "scenario high-cpu", "desc": "debug CPU spike" },
+        { "cmd": "scenario disk-full", "desc": "fix disk alert" }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,395 @@
+{
+  "id": "ansible",
+  "prompt": "ansible@control:~/playbooks$",
+  "welcome": "Welcome to the Ansible CLI Playground.\nType commands to explore a simulated Ansible control node.\nType 'help' for available commands, 'scenario' for guided labs.\n",
+  "scenarios": [
+    {
+      "id": "configure-web-fleet",
+      "title": "Configure Web Servers Fleet",
+      "steps": [
+        {
+          "instruction": "First, check connectivity to all hosts in your inventory.",
+          "expect": "ansible all -m ping",
+          "hint": "Try: ansible all -m ping"
+        },
+        {
+          "instruction": "Good — web-03 is unreachable. Check just the webservers group to confirm.",
+          "expect": "ansible webservers -m ping",
+          "hint": "Try: ansible webservers -m ping"
+        },
+        {
+          "instruction": "Let's see the full inventory graph to understand our host groups.",
+          "expect": "ansible-inventory --graph",
+          "hint": "Try: ansible-inventory --graph"
+        },
+        {
+          "instruction": "Run the deploy playbook in check mode first to preview changes without applying them.",
+          "expect": "ansible-playbook deploy.yml --check",
+          "hint": "Try: ansible-playbook deploy.yml --check"
+        },
+        {
+          "instruction": "Looks safe. Now run the actual deployment across all hosts.",
+          "expect": "ansible-playbook deploy.yml",
+          "hint": "Try: ansible-playbook deploy.yml"
+        },
+        {
+          "instruction": "web-03 failed. Run the playbook again targeting only that host to retry.",
+          "expect": "ansible-playbook deploy.yml --limit web-03",
+          "hint": "Try: ansible-playbook deploy.yml --limit web-03"
+        },
+        {
+          "instruction": "Still failing — check web-03's facts to diagnose the issue.",
+          "expect": "ansible all -m setup --limit web-03",
+          "hint": "Try: ansible all -m setup --limit web-03"
+        },
+        {
+          "instruction": "The host is back. Verify all webservers are responding with an uptime check.",
+          "expect": "ansible webservers -m shell -a \"uptime\"",
+          "hint": "Try: ansible webservers -m shell -a \"uptime\""
+        }
+      ]
+    },
+    {
+      "id": "manage-vault-secrets",
+      "title": "Manage Secrets with Ansible Vault",
+      "steps": [
+        {
+          "instruction": "Create a new encrypted vault file to store production secrets.",
+          "expect": "ansible-vault create secrets.yml",
+          "hint": "Try: ansible-vault create secrets.yml"
+        },
+        {
+          "instruction": "Now encrypt an existing variables file that contains plain-text credentials.",
+          "expect": "ansible-vault encrypt vars/prod.yml",
+          "hint": "Try: ansible-vault encrypt vars/prod.yml"
+        },
+        {
+          "instruction": "View the encrypted file to confirm it's protected.",
+          "expect": "ansible-vault edit secrets.yml",
+          "hint": "Try: ansible-vault edit secrets.yml"
+        },
+        {
+          "instruction": "Run the deploy playbook, providing the vault password at the prompt.",
+          "expect": "ansible-playbook deploy.yml --ask-vault-pass",
+          "hint": "Try: ansible-playbook deploy.yml --ask-vault-pass"
+        },
+        {
+          "instruction": "Security audit requires a password rotation. Rekey the vault file with a new password.",
+          "expect": "ansible-vault rekey secrets.yml",
+          "hint": "Try: ansible-vault rekey secrets.yml"
+        },
+        {
+          "instruction": "Decrypt the prod vars file temporarily to update a value.",
+          "expect": "ansible-vault decrypt vars/prod.yml",
+          "hint": "Try: ansible-vault decrypt vars/prod.yml"
+        },
+        {
+          "instruction": "Re-encrypt the file after editing.",
+          "expect": "ansible-vault encrypt vars/prod.yml",
+          "hint": "Try: ansible-vault encrypt vars/prod.yml"
+        }
+      ]
+    }
+  ],
+  "commands": {
+    "help": "Available commands:\n  ansible [group] -m [module]       — Run ad-hoc commands on hosts\n  ansible-playbook [file.yml]       — Execute a playbook\n  ansible-vault [action] [file]     — Manage encrypted files\n  ansible-inventory [options]       — Inspect inventory\n  ansible-galaxy [action]           — Manage roles and collections\n  ansible-config [action]           — View configuration\n  ansible-doc [module]              — Module documentation\n  ansible-lint [file.yml]           — Lint playbooks\n  ansible --version                 — Show version info\n\n  scenario                          — Start a guided lab\n  clear                             — Clear the terminal\n  help                              — Show this help",
+
+    "ansible --version": "ansible [core 2.16.3]\n  config file = /etc/ansible/ansible.cfg\n  configured module search path = ['/home/ansible/.ansible/plugins/modules']\n  ansible python module location = /usr/lib/python3.11/site-packages/ansible\n  ansible collection location = /home/ansible/.ansible/collections\n  executable location = /usr/bin/ansible\n  python version = 3.11.6\n  jinja version = 3.1.3\n  libyaml = True",
+
+    "ansible all -m ping": "web-01 | SUCCESS => {\n    \"changed\": false,\n    \"ping\": \"pong\"\n}\nweb-02 | SUCCESS => {\n    \"changed\": false,\n    \"ping\": \"pong\"\n}\nweb-03 | UNREACHABLE! => {\n    \"changed\": false,\n    \"msg\": \"Failed to connect to the host via ssh: ssh: connect to host 10.0.1.53 port 22: Connection timed out\",\n    \"unreachable\": true\n}\ndb-01 | SUCCESS => {\n    \"changed\": false,\n    \"ping\": \"pong\"\n}\ndb-02 | SUCCESS => {\n    \"changed\": false,\n    \"ping\": \"pong\"\n}\nlb-01 | SUCCESS => {\n    \"changed\": false,\n    \"ping\": \"pong\"\n}",
+
+    "ansible webservers -m ping": "web-01 | SUCCESS => {\n    \"changed\": false,\n    \"ping\": \"pong\"\n}\nweb-02 | SUCCESS => {\n    \"changed\": false,\n    \"ping\": \"pong\"\n}\nweb-03 | UNREACHABLE! => {\n    \"changed\": false,\n    \"msg\": \"Failed to connect to the host via ssh: ssh: connect to host 10.0.1.53 port 22: Connection timed out\",\n    \"unreachable\": true\n}",
+
+    "ansible dbservers -m ping": "db-01 | SUCCESS => {\n    \"changed\": false,\n    \"ping\": \"pong\"\n}\ndb-02 | SUCCESS => {\n    \"changed\": false,\n    \"ping\": \"pong\"\n}",
+
+    "ansible loadbalancers -m ping": "lb-01 | SUCCESS => {\n    \"changed\": false,\n    \"ping\": \"pong\"\n}",
+
+    "ansible webservers -m shell -a \"uptime\"": "web-01 | CHANGED | rc=0 >>\n 14:23:15 up 45 days,  6:12,  1 user,  load average: 0.32, 0.28, 0.25\nweb-02 | CHANGED | rc=0 >>\n 14:23:15 up 45 days,  6:10,  1 user,  load average: 0.18, 0.22, 0.20\nweb-03 | CHANGED | rc=0 >>\n 14:23:16 up  0 days,  0:08,  1 user,  load average: 0.85, 0.42, 0.19",
+
+    "ansible dbservers -m service -a \"name=postgresql state=restarted\"": "db-01 | CHANGED => {\n    \"changed\": true,\n    \"name\": \"postgresql\",\n    \"state\": \"started\",\n    \"status\": {\n        \"ActiveState\": \"active\",\n        \"SubState\": \"running\"\n    }\n}\ndb-02 | CHANGED => {\n    \"changed\": true,\n    \"name\": \"postgresql\",\n    \"state\": \"started\",\n    \"status\": {\n        \"ActiveState\": \"active\",\n        \"SubState\": \"running\"\n    }\n}",
+
+    "ansible all -m setup --limit web-01": "web-01 | SUCCESS => {\n    \"ansible_facts\": {\n        \"ansible_hostname\": \"web-01\",\n        \"ansible_fqdn\": \"web-01.prod.internal\",\n        \"ansible_distribution\": \"Ubuntu\",\n        \"ansible_distribution_version\": \"22.04\",\n        \"ansible_os_family\": \"Debian\",\n        \"ansible_kernel\": \"5.15.0-91-generic\",\n        \"ansible_architecture\": \"x86_64\",\n        \"ansible_processor_vcpus\": 4,\n        \"ansible_memtotal_mb\": 8192,\n        \"ansible_memfree_mb\": 2456,\n        \"ansible_default_ipv4\": {\n            \"address\": \"10.0.1.51\",\n            \"interface\": \"eth0\",\n            \"gateway\": \"10.0.1.1\"\n        },\n        \"ansible_uptime_seconds\": 3888720\n    },\n    \"changed\": false\n}",
+
+    "ansible all -m setup --limit web-03": "web-03 | SUCCESS => {\n    \"ansible_facts\": {\n        \"ansible_hostname\": \"web-03\",\n        \"ansible_fqdn\": \"web-03.prod.internal\",\n        \"ansible_distribution\": \"Ubuntu\",\n        \"ansible_distribution_version\": \"22.04\",\n        \"ansible_os_family\": \"Debian\",\n        \"ansible_kernel\": \"5.15.0-91-generic\",\n        \"ansible_architecture\": \"x86_64\",\n        \"ansible_processor_vcpus\": 4,\n        \"ansible_memtotal_mb\": 8192,\n        \"ansible_memfree_mb\": 6834,\n        \"ansible_default_ipv4\": {\n            \"address\": \"10.0.1.53\",\n            \"interface\": \"eth0\",\n            \"gateway\": \"10.0.1.1\"\n        },\n        \"ansible_uptime_seconds\": 480\n    },\n    \"changed\": false\n}",
+
+    "ansible all -m copy -a \"src=app.conf dest=/etc/app/app.conf\"": "web-01 | CHANGED => {\n    \"changed\": true,\n    \"checksum\": \"a3f2b8c1d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9\",\n    \"dest\": \"/etc/app/app.conf\",\n    \"gid\": 0,\n    \"group\": \"root\",\n    \"mode\": \"0644\",\n    \"owner\": \"root\",\n    \"size\": 1284,\n    \"src\": \"/home/ansible/.ansible/tmp/ansible-tmp-1717344000/source\",\n    \"state\": \"file\"\n}\nweb-02 | CHANGED => {\n    \"changed\": true,\n    \"checksum\": \"a3f2b8c1d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9\",\n    \"dest\": \"/etc/app/app.conf\",\n    \"gid\": 0,\n    \"group\": \"root\",\n    \"mode\": \"0644\",\n    \"owner\": \"root\",\n    \"size\": 1284,\n    \"state\": \"file\"\n}\nweb-03 | CHANGED => {\n    \"changed\": true,\n    \"checksum\": \"a3f2b8c1d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9\",\n    \"dest\": \"/etc/app/app.conf\",\n    \"gid\": 0,\n    \"group\": \"root\",\n    \"mode\": \"0644\",\n    \"owner\": \"root\",\n    \"size\": 1284,\n    \"state\": \"file\"\n}\ndb-01 | CHANGED => {\n    \"changed\": true,\n    \"checksum\": \"a3f2b8c1d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9\",\n    \"dest\": \"/etc/app/app.conf\",\n    \"gid\": 0,\n    \"group\": \"root\",\n    \"mode\": \"0644\",\n    \"owner\": \"root\",\n    \"size\": 1284,\n    \"state\": \"file\"\n}\ndb-02 | CHANGED => {\n    \"changed\": true,\n    \"checksum\": \"a3f2b8c1d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9\",\n    \"dest\": \"/etc/app/app.conf\",\n    \"gid\": 0,\n    \"group\": \"root\",\n    \"mode\": \"0644\",\n    \"owner\": \"root\",\n    \"size\": 1284,\n    \"state\": \"file\"\n}\nlb-01 | CHANGED => {\n    \"changed\": true,\n    \"checksum\": \"a3f2b8c1d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9\",\n    \"dest\": \"/etc/app/app.conf\",\n    \"gid\": 0,\n    \"group\": \"root\",\n    \"mode\": \"0644\",\n    \"owner\": \"root\",\n    \"size\": 1284,\n    \"state\": \"file\"\n}",
+
+    "ansible all -m apt -a \"name=nginx state=present\"": "web-01 | SUCCESS => {\n    \"changed\": false,\n    \"cache_update_time\": 1717344000,\n    \"cache_valid_time\": 0,\n    \"msg\": \"nginx is already the newest version (1.24.0-1ubuntu1).\"\n}\nweb-02 | SUCCESS => {\n    \"changed\": false,\n    \"msg\": \"nginx is already the newest version (1.24.0-1ubuntu1).\"\n}\nweb-03 | CHANGED => {\n    \"changed\": true,\n    \"msg\": \"The following NEW packages will be installed: nginx\",\n    \"stderr\": \"\",\n    \"stdout\": \"Setting up nginx (1.24.0-1ubuntu1) ...\"\n}\ndb-01 | CHANGED => {\n    \"changed\": true,\n    \"msg\": \"The following NEW packages will be installed: nginx\",\n    \"stderr\": \"\",\n    \"stdout\": \"Setting up nginx (1.24.0-1ubuntu1) ...\"\n}\ndb-02 | CHANGED => {\n    \"changed\": true,\n    \"msg\": \"The following NEW packages will be installed: nginx\",\n    \"stderr\": \"\",\n    \"stdout\": \"Setting up nginx (1.24.0-1ubuntu1) ...\"\n}\nlb-01 | SUCCESS => {\n    \"changed\": false,\n    \"msg\": \"nginx is already the newest version (1.24.0-1ubuntu1).\"\n}",
+
+    "ansible-playbook deploy.yml": "PLAY [Deploy application to webservers] ****************************************\n\nTASK [Gathering Facts] *********************************************************\nok: [web-01]\nok: [web-02]\nfatal: [web-03]: UNREACHABLE! => {\"changed\": false, \"msg\": \"Failed to connect to the host via ssh\", \"unreachable\": true}\n\nTASK [Install required packages] ***********************************************\nok: [web-01]\nchanged: [web-02]\n\nTASK [Copy application config] *************************************************\nchanged: [web-01]\nchanged: [web-02]\n\nTASK [Deploy application binary] ***********************************************\nchanged: [web-01]\nchanged: [web-02]\n\nTASK [Restart application service] *********************************************\nchanged: [web-01]\nchanged: [web-02]\n\nTASK [Verify health endpoint] **************************************************\nok: [web-01]\nok: [web-02]\n\nPLAY [Configure database servers] **********************************************\n\nTASK [Gathering Facts] *********************************************************\nok: [db-01]\nok: [db-02]\n\nTASK [Ensure PostgreSQL is running] ********************************************\nok: [db-01]\nok: [db-02]\n\nTASK [Update pg_hba.conf] ******************************************************\nchanged: [db-01]\nchanged: [db-02]\n\nTASK [Reload PostgreSQL] *******************************************************\nchanged: [db-01]\nchanged: [db-02]\n\nPLAY RECAP *********************************************************************\nweb-01                     : ok=6    changed=3    unreachable=0    failed=0    skipped=0\nweb-02                     : ok=6    changed=4    unreachable=0    failed=0    skipped=0\nweb-03                     : ok=0    changed=0    unreachable=1    failed=0    skipped=0\ndb-01                      : ok=4    changed=2    unreachable=0    failed=0    skipped=0\ndb-02                      : ok=4    changed=2    unreachable=0    failed=0    skipped=0",
+
+    "ansible-playbook deploy.yml --check": "PLAY [Deploy application to webservers] ****************************************\n\nTASK [Gathering Facts] *********************************************************\nok: [web-01]\nok: [web-02]\nok: [web-03]\n\nTASK [Install required packages] ***********************************************\nok: [web-01]\nok: [web-02]\nchanged: [web-03]\n\nTASK [Copy application config] *************************************************\nchanged: [web-01]\nchanged: [web-02]\nchanged: [web-03]\n\nTASK [Deploy application binary] ***********************************************\nchanged: [web-01]\nchanged: [web-02]\nchanged: [web-03]\n\nTASK [Restart application service] *********************************************\nskipped: [web-01]\nskipped: [web-02]\nskipped: [web-03]\n\nTASK [Verify health endpoint] **************************************************\nskipped: [web-01]\nskipped: [web-02]\nskipped: [web-03]\n\nPLAY [Configure database servers] **********************************************\n\nTASK [Gathering Facts] *********************************************************\nok: [db-01]\nok: [db-02]\n\nTASK [Ensure PostgreSQL is running] ********************************************\nok: [db-01]\nok: [db-02]\n\nTASK [Update pg_hba.conf] ******************************************************\nchanged: [db-01]\nchanged: [db-02]\n\nTASK [Reload PostgreSQL] *******************************************************\nskipped: [db-01]\nskipped: [db-02]\n\nPLAY RECAP *********************************************************************\nweb-01                     : ok=4    changed=2    unreachable=0    failed=0    skipped=2\nweb-02                     : ok=4    changed=2    unreachable=0    failed=0    skipped=2\nweb-03                     : ok=4    changed=3    unreachable=0    failed=0    skipped=2\ndb-01                      : ok=3    changed=1    unreachable=0    failed=0    skipped=1\ndb-02                      : ok=3    changed=1    unreachable=0    failed=0    skipped=1",
+
+    "ansible-playbook deploy.yml --diff": "PLAY [Deploy application to webservers] ****************************************\n\nTASK [Gathering Facts] *********************************************************\nok: [web-01]\nok: [web-02]\nok: [web-03]\n\nTASK [Copy application config] *************************************************\n--- before: /etc/app/app.conf\n+++ after: /home/ansible/playbooks/files/app.conf\n@@ -1,5 +1,5 @@\n [app]\n-version = 2.2.0\n+version = 2.3.0\n listen = 0.0.0.0:8080\n-workers = 2\n+workers = 4\n log_level = info\n\nchanged: [web-01]\nchanged: [web-02]\nchanged: [web-03]\n\nTASK [Deploy application binary] ***********************************************\nchanged: [web-01]\nchanged: [web-02]\nchanged: [web-03]\n\nTASK [Restart application service] *********************************************\nchanged: [web-01]\nchanged: [web-02]\nchanged: [web-03]\n\nPLAY RECAP *********************************************************************\nweb-01                     : ok=4    changed=3    unreachable=0    failed=0    skipped=0\nweb-02                     : ok=4    changed=3    unreachable=0    failed=0    skipped=0\nweb-03                     : ok=4    changed=3    unreachable=0    failed=0    skipped=0",
+
+    "ansible-playbook deploy.yml --limit web-01": "PLAY [Deploy application to webservers] ****************************************\n\nTASK [Gathering Facts] *********************************************************\nok: [web-01]\n\nTASK [Install required packages] ***********************************************\nok: [web-01]\n\nTASK [Copy application config] *************************************************\nok: [web-01]\n\nTASK [Deploy application binary] ***********************************************\nok: [web-01]\n\nTASK [Restart application service] *********************************************\nok: [web-01]\n\nTASK [Verify health endpoint] **************************************************\nok: [web-01]\n\nPLAY RECAP *********************************************************************\nweb-01                     : ok=6    changed=0    unreachable=0    failed=0    skipped=0",
+
+    "ansible-playbook deploy.yml --limit web-03": "PLAY [Deploy application to webservers] ****************************************\n\nTASK [Gathering Facts] *********************************************************\nok: [web-03]\n\nTASK [Install required packages] ***********************************************\nchanged: [web-03]\n\nTASK [Copy application config] *************************************************\nchanged: [web-03]\n\nTASK [Deploy application binary] ***********************************************\nchanged: [web-03]\n\nTASK [Restart application service] *********************************************\nchanged: [web-03]\n\nTASK [Verify health endpoint] **************************************************\nok: [web-03]\n\nPLAY RECAP *********************************************************************\nweb-03                     : ok=6    changed=4    unreachable=0    failed=0    skipped=0",
+
+    "ansible-playbook deploy.yml --tags deploy": "PLAY [Deploy application to webservers] ****************************************\n\nTASK [Deploy application binary] ***********************************************\nchanged: [web-01]\nchanged: [web-02]\nchanged: [web-03]\n\nTASK [Restart application service] *********************************************\nchanged: [web-01]\nchanged: [web-02]\nchanged: [web-03]\n\nPLAY RECAP *********************************************************************\nweb-01                     : ok=2    changed=2    unreachable=0    failed=0    skipped=0\nweb-02                     : ok=2    changed=2    unreachable=0    failed=0    skipped=0\nweb-03                     : ok=2    changed=2    unreachable=0    failed=0    skipped=0",
+
+    "ansible-playbook deploy.yml -e \"version=2.3.0\"": "PLAY [Deploy application to webservers] ****************************************\n\nTASK [Gathering Facts] *********************************************************\nok: [web-01]\nok: [web-02]\nok: [web-03]\n\nTASK [Install required packages] ***********************************************\nok: [web-01]\nok: [web-02]\nok: [web-03]\n\nTASK [Copy application config] *************************************************\nchanged: [web-01]\nchanged: [web-02]\nchanged: [web-03]\n\nTASK [Deploy application binary v2.3.0] ****************************************\nchanged: [web-01]\nchanged: [web-02]\nchanged: [web-03]\n\nTASK [Restart application service] *********************************************\nchanged: [web-01]\nchanged: [web-02]\nchanged: [web-03]\n\nTASK [Verify health endpoint] **************************************************\nok: [web-01]\nok: [web-02]\nok: [web-03]\n\nPLAY RECAP *********************************************************************\nweb-01                     : ok=6    changed=3    unreachable=0    failed=0    skipped=0\nweb-02                     : ok=6    changed=3    unreachable=0    failed=0    skipped=0\nweb-03                     : ok=6    changed=3    unreachable=0    failed=0    skipped=0",
+
+    "ansible-playbook deploy.yml --step": "PLAY [Deploy application to webservers] ****************************************\n\nTASK [Gathering Facts] *********************************************************\nPerform task: TASK: Gathering Facts (N)o/(y)es/(c)ontinue: y\nok: [web-01]\nok: [web-02]\nok: [web-03]\n\nTASK [Install required packages] ***********************************************\nPerform task: TASK: Install required packages (N)o/(y)es/(c)ontinue: y\nok: [web-01]\nok: [web-02]\nchanged: [web-03]\n\nTASK [Copy application config] *************************************************\nPerform task: TASK: Copy application config (N)o/(y)es/(c)ontinue: c\nchanged: [web-01]\nchanged: [web-02]\nchanged: [web-03]\n\nTASK [Deploy application binary] ***********************************************\nchanged: [web-01]\nchanged: [web-02]\nchanged: [web-03]\n\nTASK [Restart application service] *********************************************\nchanged: [web-01]\nchanged: [web-02]\nchanged: [web-03]\n\nTASK [Verify health endpoint] **************************************************\nok: [web-01]\nok: [web-02]\nok: [web-03]\n\nPLAY RECAP *********************************************************************\nweb-01                     : ok=6    changed=3    unreachable=0    failed=0    skipped=0\nweb-02                     : ok=6    changed=3    unreachable=0    failed=0    skipped=0\nweb-03                     : ok=6    changed=3    unreachable=0    failed=0    skipped=0",
+
+    "ansible-vault create secrets.yml": "New Vault password: ********\nConfirm New Vault password: ********\nCreation successful\nEncrypted file created: secrets.yml",
+
+    "ansible-vault encrypt vars/prod.yml": "New Vault password: ********\nConfirm New Vault password: ********\nEncryption successful\nEncrypted: vars/prod.yml",
+
+    "ansible-vault decrypt vars/prod.yml": "Vault password: ********\nDecryption successful\nDecrypted: vars/prod.yml",
+
+    "ansible-vault edit secrets.yml": "Vault password: ********\nEditing encrypted file: secrets.yml\n(opens $EDITOR with decrypted content, re-encrypts on save)",
+
+    "ansible-vault rekey secrets.yml": "Vault password (current): ********\nNew Vault password: ********\nConfirm New Vault password: ********\nRekey successful\nRekeyed: secrets.yml",
+
+    "ansible-playbook deploy.yml --ask-vault-pass": "Vault password: ********\n\nPLAY [Deploy application to webservers] ****************************************\n\nTASK [Gathering Facts] *********************************************************\nok: [web-01]\nok: [web-02]\nok: [web-03]\n\nTASK [Install required packages] ***********************************************\nok: [web-01]\nok: [web-02]\nok: [web-03]\n\nTASK [Copy application config] *************************************************\nok: [web-01]\nok: [web-02]\nok: [web-03]\n\nTASK [Deploy application binary] ***********************************************\nok: [web-01]\nok: [web-02]\nok: [web-03]\n\nTASK [Set database credentials from vault] *************************************\nchanged: [web-01]\nchanged: [web-02]\nchanged: [web-03]\n\nTASK [Restart application service] *********************************************\nchanged: [web-01]\nchanged: [web-02]\nchanged: [web-03]\n\nPLAY RECAP *********************************************************************\nweb-01                     : ok=6    changed=2    unreachable=0    failed=0    skipped=0\nweb-02                     : ok=6    changed=2    unreachable=0    failed=0    skipped=0\nweb-03                     : ok=6    changed=2    unreachable=0    failed=0    skipped=0",
+
+    "ansible-inventory --list": "{\n    \"_meta\": {\n        \"hostvars\": {\n            \"web-01\": {\n                \"ansible_host\": \"10.0.1.51\",\n                \"ansible_user\": \"deploy\",\n                \"http_port\": 8080\n            },\n            \"web-02\": {\n                \"ansible_host\": \"10.0.1.52\",\n                \"ansible_user\": \"deploy\",\n                \"http_port\": 8080\n            },\n            \"web-03\": {\n                \"ansible_host\": \"10.0.1.53\",\n                \"ansible_user\": \"deploy\",\n                \"http_port\": 8080\n            },\n            \"db-01\": {\n                \"ansible_host\": \"10.0.2.41\",\n                \"ansible_user\": \"deploy\",\n                \"postgresql_port\": 5432\n            },\n            \"db-02\": {\n                \"ansible_host\": \"10.0.2.42\",\n                \"ansible_user\": \"deploy\",\n                \"postgresql_port\": 5432\n            },\n            \"lb-01\": {\n                \"ansible_host\": \"10.0.3.10\",\n                \"ansible_user\": \"deploy\",\n                \"haproxy_port\": 443\n            }\n        }\n    },\n    \"all\": {\n        \"children\": [\"webservers\", \"dbservers\", \"loadbalancers\"]\n    },\n    \"webservers\": {\n        \"hosts\": [\"web-01\", \"web-02\", \"web-03\"]\n    },\n    \"dbservers\": {\n        \"hosts\": [\"db-01\", \"db-02\"]\n    },\n    \"loadbalancers\": {\n        \"hosts\": [\"lb-01\"]\n    }\n}",
+
+    "ansible-inventory --graph": "@all:\n  |--@webservers:\n  |  |--web-01\n  |  |--web-02\n  |  |--web-03\n  |--@dbservers:\n  |  |--db-01\n  |  |--db-02\n  |--@loadbalancers:\n  |  |--lb-01\n  |--@ungrouped:",
+
+    "ansible-inventory --host web-01": "{\n    \"ansible_host\": \"10.0.1.51\",\n    \"ansible_user\": \"deploy\",\n    \"http_port\": 8080\n}",
+
+    "ansible-inventory --host web-02": "{\n    \"ansible_host\": \"10.0.1.52\",\n    \"ansible_user\": \"deploy\",\n    \"http_port\": 8080\n}",
+
+    "ansible-inventory --host web-03": "{\n    \"ansible_host\": \"10.0.1.53\",\n    \"ansible_user\": \"deploy\",\n    \"http_port\": 8080\n}",
+
+    "ansible-inventory --host db-01": "{\n    \"ansible_host\": \"10.0.2.41\",\n    \"ansible_user\": \"deploy\",\n    \"postgresql_port\": 5432\n}",
+
+    "ansible-inventory --host db-02": "{\n    \"ansible_host\": \"10.0.2.42\",\n    \"ansible_user\": \"deploy\",\n    \"postgresql_port\": 5432\n}",
+
+    "ansible all --list-hosts": "  hosts (6):\n    web-01\n    web-02\n    web-03\n    db-01\n    db-02\n    lb-01",
+
+    "ansible webservers --list-hosts": "  hosts (3):\n    web-01\n    web-02\n    web-03",
+
+    "ansible dbservers --list-hosts": "  hosts (2):\n    db-01\n    db-02",
+
+    "ansible loadbalancers --list-hosts": "  hosts (1):\n    lb-01",
+
+    "ansible-galaxy init my_role": "- Role my_role was created successfully\n  my_role/\n  ├── README.md\n  ├── defaults/\n  │   └── main.yml\n  ├── files/\n  ├── handlers/\n  │   └── main.yml\n  ├── meta/\n  │   └── main.yml\n  ├── tasks/\n  │   └── main.yml\n  ├── templates/\n  ├── tests/\n  │   ├── inventory\n  │   └── test.yml\n  └── vars/\n      └── main.yml",
+
+    "ansible-galaxy install geerlingguy.nginx": "Starting galaxy role install process\n- downloading role 'nginx', owned by geerlingguy\n- downloading role from https://github.com/geerlingguy/ansible-role-nginx/archive/3.2.0.tar.gz\n- extracting geerlingguy.nginx to /home/ansible/.ansible/roles/geerlingguy.nginx\n- geerlingguy.nginx (3.2.0) was installed successfully",
+
+    "ansible-galaxy collection install community.general": "Starting galaxy collection install process\nProcess install dependency map\nStarting collection install process\nDownloading https://galaxy.ansible.com/api/v3/plugin/ansible/content/published/collections/artifacts/community-general-8.3.0.tar.gz\nInstalling 'community.general:8.3.0' to '/home/ansible/.ansible/collections/ansible_collections/community/general'\ncommunity.general:8.3.0 was installed successfully",
+
+    "ansible-galaxy list": "# /home/ansible/.ansible/roles\n- geerlingguy.nginx, 3.2.0\n- geerlingguy.docker, 7.1.0\n- geerlingguy.postgresql, 4.0.1\n- my_role, (unknown version)\n\n# /home/ansible/.ansible/collections/ansible_collections\nCollection              Version\n----------------------- -------\nansible.posix           1.5.4\ncommunity.general       8.3.0\ncommunity.postgresql    3.3.0\nansible.builtin         (built-in)",
+
+    "ansible-config dump": "ACTION_WARNINGS(default) = True\nANSIBLE_PIPELINING(/etc/ansible/ansible.cfg) = True\nCOLOR_CHANGED(default) = yellow\nCOLOR_DEBUG(default) = dark gray\nCOLOR_ERROR(default) = red\nCOLOR_OK(default) = green\nCOLOR_SKIP(default) = cyan\nCOLOR_UNREACHABLE(default) = bright red\nCOLOR_WARN(default) = purple\nDEFAULT_BECOME(default) = True\nDEFAULT_BECOME_METHOD(default) = sudo\nDEFAULT_FORKS(/etc/ansible/ansible.cfg) = 10\nDEFAULT_GATHERING(default) = implicit\nDEFAULT_HOST_LIST(/etc/ansible/ansible.cfg) = ['/home/ansible/playbooks/inventory/hosts.ini']\nDEFAULT_LOG_PATH(/etc/ansible/ansible.cfg) = /var/log/ansible.log\nDEFAULT_MANAGED_STR(default) = Ansible managed\nDEFAULT_MODULE_NAME(default) = command\nDEFAULT_REMOTE_TMP(default) = ~/.ansible/tmp\nDEFAULT_ROLES_PATH(default) = ['/home/ansible/.ansible/roles', '/usr/share/ansible/roles', '/etc/ansible/roles']\nDEFAULT_TIMEOUT(default) = 10\nDEFAULT_TRANSPORT(default) = ssh\nHOST_KEY_CHECKING(/etc/ansible/ansible.cfg) = False\nINTERPRETER_PYTHON(default) = auto\nRETRY_FILES_ENABLED(/etc/ansible/ansible.cfg) = False",
+
+    "ansible-doc -l | head": "ansible.builtin.add_host          Add a host (and alternatively a group) to the ansible-playbook in-memory inventory\nansible.builtin.apt               Manages apt-packages\nansible.builtin.apt_key           Add or remove an apt key\nansible.builtin.apt_repository    Add and remove APT repositories\nansible.builtin.assemble          Assemble configuration files from fragments\nansible.builtin.assert            Asserts given expressions are true\nansible.builtin.async_status      Obtain status of asynchronous task\nansible.builtin.blockinfile        Insert/update/remove a text block surrounded by marker lines\nansible.builtin.command           Execute commands on targets\nansible.builtin.copy              Copy files to remote locations\nansible.builtin.cron              Manage cron.d and crontab entries\nansible.builtin.debug             Print statements during execution\nansible.builtin.dnf               Manages packages with the dnf package manager\nansible.builtin.fail              Fail with custom message\nansible.builtin.fetch             Fetch files from remote nodes\nansible.builtin.file              Manage files and file properties\nansible.builtin.find              Return a list of files based on specific criteria\nansible.builtin.gather_facts      Gathers facts about remote hosts\nansible.builtin.get_url           Downloads files from HTTP, HTTPS, or FTP\nansible.builtin.git               Deploy software (or files) from git checkouts",
+
+    "ansible-doc apt": "  ansible.builtin.apt  —  Manages apt-packages\n\n  DESCRIPTION:\n      Manages apt packages (such as for Debian/Ubuntu).\n\n  OPTIONS:\n      name (required):\n          A list of package names to install, upgrade, or remove.\n          Type: list / elements=string\n\n      state:\n          Desired package state.\n          Choices: absent, build-dep, fixed, latest, present (default)\n\n      update_cache:\n          Run apt-get update before the operation.\n          Type: bool / Default: no\n\n      cache_valid_time:\n          Update apt cache if older than cache_valid_time seconds.\n          Type: int / Default: 0\n\n      force_apt_get:\n          Force usage of apt-get instead of aptitude.\n          Type: bool / Default: no\n\n      install_recommends:\n          Install recommended packages.\n          Type: bool / Default: null (use apt config)\n\n  EXAMPLES:\n      # Install the latest version of nginx\n      - name: Install nginx\n        ansible.builtin.apt:\n          name: nginx\n          state: present\n          update_cache: yes\n\n      # Remove a package\n      - name: Remove apache2\n        ansible.builtin.apt:\n          name: apache2\n          state: absent\n\n      # Install multiple packages\n      - name: Install packages\n        ansible.builtin.apt:\n          name:\n            - nginx\n            - postgresql\n            - redis-server\n          state: present\n\n  SEE ALSO: ansible.builtin.yum, ansible.builtin.dnf, ansible.builtin.package",
+
+    "ansible-lint deploy.yml": "Passed: 0 failure(s), 2 warning(s) on 1 files.\n\nWARNING  risky-shell-pipe: Piping commands via shell.\n  deploy.yml:34 Task/Handler: Check disk space\n\nWARNING  no-changed-when: Commands should not change things if nothing needs doing.\n  deploy.yml:42 Task/Handler: Run database migration\n\nRule Coverage:\n  Checked: yaml, command-instead-of-shell, risky-shell-pipe, no-changed-when,\n           name[missing], fqcn[action-core], jinja[spacing]\n  Passed: 5/7 rules\n  Warnings: 2",
+
+    "ansible all -m shell -a \"df -h /\"": "web-01 | CHANGED | rc=0 >>\nFilesystem      Size  Used Avail Use% Mounted on\n/dev/xvda1       50G   18G   30G  38% /\nweb-02 | CHANGED | rc=0 >>\nFilesystem      Size  Used Avail Use% Mounted on\n/dev/xvda1       50G   22G   26G  46% /\nweb-03 | CHANGED | rc=0 >>\nFilesystem      Size  Used Avail Use% Mounted on\n/dev/xvda1       50G   12G   36G  25% /\ndb-01 | CHANGED | rc=0 >>\nFilesystem      Size  Used Avail Use% Mounted on\n/dev/xvda1      100G   67G   31G  69% /\ndb-02 | CHANGED | rc=0 >>\nFilesystem      Size  Used Avail Use% Mounted on\n/dev/xvda1      100G   45G   53G  46% /\nlb-01 | CHANGED | rc=0 >>\nFilesystem      Size  Used Avail Use% Mounted on\n/dev/xvda1       30G    8G   21G  28% /",
+
+    "ansible all -m shell -a \"free -m\"": "web-01 | CHANGED | rc=0 >>\n              total        used        free      shared  buff/cache   available\nMem:           8192        3456        2456         128        2280        4408\nSwap:          2048          64        1984\nweb-02 | CHANGED | rc=0 >>\n              total        used        free      shared  buff/cache   available\nMem:           8192        4102        1890         156        2200        3734\nSwap:          2048         128        1920\nweb-03 | CHANGED | rc=0 >>\n              total        used        free      shared  buff/cache   available\nMem:           8192        1024        6834          32         334        6930\nSwap:          2048           0        2048\ndb-01 | CHANGED | rc=0 >>\n              total        used        free      shared  buff/cache   available\nMem:          16384       10240        2048         512        4096        5632\nSwap:          4096         256        3840\ndb-02 | CHANGED | rc=0 >>\n              total        used        free      shared  buff/cache   available\nMem:          16384        8192        4096         256        4096        7680\nSwap:          4096          64        4032\nlb-01 | CHANGED | rc=0 >>\n              total        used        free      shared  buff/cache   available\nMem:           4096        1536        1792          64         768        2304\nSwap:          1024           0        1024",
+
+    "ansible webservers -m service -a \"name=nginx state=restarted\"": "web-01 | CHANGED => {\n    \"changed\": true,\n    \"name\": \"nginx\",\n    \"state\": \"started\",\n    \"status\": {\n        \"ActiveState\": \"active\",\n        \"SubState\": \"running\"\n    }\n}\nweb-02 | CHANGED => {\n    \"changed\": true,\n    \"name\": \"nginx\",\n    \"state\": \"started\",\n    \"status\": {\n        \"ActiveState\": \"active\",\n        \"SubState\": \"running\"\n    }\n}\nweb-03 | CHANGED => {\n    \"changed\": true,\n    \"name\": \"nginx\",\n    \"state\": \"started\",\n    \"status\": {\n        \"ActiveState\": \"active\",\n        \"SubState\": \"running\"\n    }\n}",
+
+    "ansible dbservers -m shell -a \"systemctl status postgresql\"": "db-01 | CHANGED | rc=0 >>\n● postgresql.service - PostgreSQL RDBMS\n     Loaded: loaded (/lib/systemd/system/postgresql.service; enabled)\n     Active: active (exited) since Mon 2026-06-02 08:15:00 UTC; 6h ago\n   Main PID: 1842 (code=exited, status=0/SUCCESS)\n      Tasks: 12 (limit: 18743)\n     Memory: 256.0M\n        CPU: 1min 24.532s\ndb-02 | CHANGED | rc=0 >>\n● postgresql.service - PostgreSQL RDBMS\n     Loaded: loaded (/lib/systemd/system/postgresql.service; enabled)\n     Active: active (exited) since Mon 2026-06-02 08:15:02 UTC; 6h ago\n   Main PID: 1839 (code=exited, status=0/SUCCESS)\n      Tasks: 10 (limit: 18743)\n     Memory: 198.0M\n        CPU: 1min 12.891s"
+  },
+  "reference": [
+    {
+      "group": "Ad-hoc Commands",
+      "commands": [
+        {
+          "cmd": "ansible all -m ping",
+          "desc": "test connectivity"
+        },
+        {
+          "cmd": "ansible webservers -m shell -a \"uptime\"",
+          "desc": "run shell command"
+        },
+        {
+          "cmd": "ansible all -m setup --limit web-01",
+          "desc": "gather host facts"
+        },
+        {
+          "cmd": "ansible all -m copy -a \"src=app.conf dest=/etc/app/app.conf\"",
+          "desc": "copy files"
+        },
+        {
+          "cmd": "ansible all -m apt -a \"name=nginx state=present\"",
+          "desc": "install package"
+        },
+        {
+          "cmd": "ansible dbservers -m service -a \"name=postgresql state=restarted\"",
+          "desc": "restart service"
+        }
+      ]
+    },
+    {
+      "group": "Playbook Execution",
+      "commands": [
+        {
+          "cmd": "ansible-playbook deploy.yml",
+          "desc": "run playbook"
+        },
+        {
+          "cmd": "ansible-playbook deploy.yml --check",
+          "desc": "dry run (no changes)"
+        },
+        {
+          "cmd": "ansible-playbook deploy.yml --diff",
+          "desc": "show file changes"
+        },
+        {
+          "cmd": "ansible-playbook deploy.yml --limit web-01",
+          "desc": "target one host"
+        },
+        {
+          "cmd": "ansible-playbook deploy.yml --tags deploy",
+          "desc": "run tagged tasks"
+        },
+        {
+          "cmd": "ansible-playbook deploy.yml -e \"version=2.3.0\"",
+          "desc": "pass extra vars"
+        },
+        {
+          "cmd": "ansible-playbook deploy.yml --step",
+          "desc": "step through tasks"
+        }
+      ]
+    },
+    {
+      "group": "Vault (Secrets)",
+      "commands": [
+        {
+          "cmd": "ansible-vault create secrets.yml",
+          "desc": "create encrypted file"
+        },
+        {
+          "cmd": "ansible-vault encrypt vars/prod.yml",
+          "desc": "encrypt existing file"
+        },
+        {
+          "cmd": "ansible-vault decrypt vars/prod.yml",
+          "desc": "decrypt file"
+        },
+        {
+          "cmd": "ansible-vault edit secrets.yml",
+          "desc": "edit encrypted file"
+        },
+        {
+          "cmd": "ansible-vault rekey secrets.yml",
+          "desc": "change vault password"
+        },
+        {
+          "cmd": "ansible-playbook deploy.yml --ask-vault-pass",
+          "desc": "run with vault"
+        }
+      ]
+    },
+    {
+      "group": "Inventory",
+      "commands": [
+        {
+          "cmd": "ansible-inventory --list",
+          "desc": "full inventory JSON"
+        },
+        {
+          "cmd": "ansible-inventory --graph",
+          "desc": "tree view of groups"
+        },
+        {
+          "cmd": "ansible-inventory --host web-01",
+          "desc": "single host vars"
+        },
+        {
+          "cmd": "ansible all --list-hosts",
+          "desc": "list all hosts"
+        }
+      ]
+    },
+    {
+      "group": "Galaxy (Roles & Collections)",
+      "commands": [
+        {
+          "cmd": "ansible-galaxy init my_role",
+          "desc": "scaffold a new role"
+        },
+        {
+          "cmd": "ansible-galaxy install geerlingguy.nginx",
+          "desc": "install a role"
+        },
+        {
+          "cmd": "ansible-galaxy collection install community.general",
+          "desc": "install collection"
+        },
+        {
+          "cmd": "ansible-galaxy list",
+          "desc": "list installed"
+        }
+      ]
+    },
+    {
+      "group": "Config & Debugging",
+      "commands": [
+        {
+          "cmd": "ansible --version",
+          "desc": "version and paths"
+        },
+        {
+          "cmd": "ansible-config dump",
+          "desc": "active configuration"
+        },
+        {
+          "cmd": "ansible-doc -l | head",
+          "desc": "list all modules"
+        },
+        {
+          "cmd": "ansible-doc apt",
+          "desc": "module documentation"
+        },
+        {
+          "cmd": "ansible-lint deploy.yml",
+          "desc": "lint playbook"
+        }
+      ]
+    },
+    {
+      "group": "System Checks",
+      "commands": [
+        {
+          "cmd": "ansible all -m shell -a \"df -h /\"",
+          "desc": "disk usage"
+        },
+        {
+          "cmd": "ansible all -m shell -a \"free -m\"",
+          "desc": "memory usage"
+        },
+        {
+          "cmd": "ansible webservers -m service -a \"name=nginx state=restarted\"",
+          "desc": "restart nginx"
+        },
+        {
+          "cmd": "ansible dbservers -m shell -a \"systemctl status postgresql\"",
+          "desc": "check PostgreSQL"
+        }
+      ]
+    },
+    {
+      "group": "Host Groups",
+      "commands": [
+        {
+          "cmd": "ansible webservers -m ping",
+          "desc": "ping web servers"
+        },
+        {
+          "cmd": "ansible dbservers -m ping",
+          "desc": "ping db servers"
+        },
+        {
+          "cmd": "ansible loadbalancers -m ping",
+          "desc": "ping load balancers"
+        },
+        {
+          "cmd": "ansible webservers --list-hosts",
+          "desc": "list web hosts"
+        }
+      ]
+    }
+  ]
+}

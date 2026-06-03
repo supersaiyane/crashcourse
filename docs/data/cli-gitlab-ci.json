@@ -1,0 +1,379 @@
+{
+  "id": "gitlab-ci",
+  "prompt": "glab@devops:~/project$",
+  "welcome": "Welcome to the GitLab CI/CD CLI Playground.\nType commands to explore a simulated GitLab project with pipelines.\nType 'help' for available commands, 'scenario' for guided labs.\n",
+  "scenarios": [
+    {
+      "id": "debug-failing-pipeline",
+      "title": "Debug a Failing Pipeline",
+      "steps": [
+        {
+          "instruction": "First, check recent pipelines to find the failing one.",
+          "expect": "glab ci list",
+          "hint": "Try: glab ci list"
+        },
+        {
+          "instruction": "Pipeline #4821 failed. View its details to see which job broke.",
+          "expect": "glab ci view 4821",
+          "hint": "Try: glab ci view 4821"
+        },
+        {
+          "instruction": "The 'unit-test' job failed. Check its logs to see the error.",
+          "expect": "glab ci trace 4821 unit-test",
+          "hint": "Try: glab ci trace 4821 unit-test"
+        },
+        {
+          "instruction": "The test failed due to a missing DB_HOST variable. Check the CI variables.",
+          "expect": "glab variable list",
+          "hint": "Try: glab variable list"
+        },
+        {
+          "instruction": "DB_HOST is missing. Set it so the pipeline can connect to the test database.",
+          "expect": "glab variable set DB_HOST db-test.internal.example.com",
+          "hint": "Try: glab variable set DB_HOST db-test.internal.example.com"
+        },
+        {
+          "instruction": "Good. Now retry the failed pipeline to pick up the new variable.",
+          "expect": "glab ci retry 4821",
+          "hint": "Try: glab ci retry 4821"
+        },
+        {
+          "instruction": "Check the pipeline status to confirm it's passing now.",
+          "expect": "glab ci status 4821",
+          "hint": "Try: glab ci status 4821"
+        },
+        {
+          "instruction": "All green. View the pipeline in the browser to share with your team.",
+          "expect": "glab ci view 4821 --web",
+          "hint": "Try: glab ci view 4821 --web"
+        }
+      ]
+    },
+    {
+      "id": "setup-run-pipeline",
+      "title": "Set Up and Run a CI Pipeline",
+      "steps": [
+        {
+          "instruction": "Before pushing, validate the .gitlab-ci.yml syntax locally.",
+          "expect": "glab ci lint",
+          "hint": "Try: glab ci lint"
+        },
+        {
+          "instruction": "Good, the config is valid. Check the current auth status with GitLab.",
+          "expect": "glab auth status",
+          "hint": "Try: glab auth status"
+        },
+        {
+          "instruction": "Now trigger a new pipeline run on the main branch.",
+          "expect": "glab ci run --branch main",
+          "hint": "Try: glab ci run --branch main"
+        },
+        {
+          "instruction": "Pipeline #4822 started. Watch its status as it progresses.",
+          "expect": "glab ci status 4822",
+          "hint": "Try: glab ci status 4822"
+        },
+        {
+          "instruction": "The build and test stages passed. Check if artifacts were generated.",
+          "expect": "glab ci artifact download 4822 build",
+          "hint": "Try: glab ci artifact download 4822 build"
+        },
+        {
+          "instruction": "Artifacts downloaded. Now trigger a pipeline with a custom variable for deploy target.",
+          "expect": "glab ci run --branch main --variables DEPLOY_ENV=staging",
+          "hint": "Try: glab ci run --branch main --variables DEPLOY_ENV=staging"
+        },
+        {
+          "instruction": "Check the list of pipelines to see both runs.",
+          "expect": "glab ci list",
+          "hint": "Try: glab ci list"
+        },
+        {
+          "instruction": "The staging deploy pipeline is running. View the runner status to ensure capacity.",
+          "expect": "gitlab-runner status",
+          "hint": "Try: gitlab-runner status"
+        }
+      ]
+    }
+  ],
+  "commands": {
+    "help": "Available commands:\n  glab ci list                   \u2014 List recent pipelines\n  glab ci view <id>              \u2014 View pipeline details\n  glab ci status <id>            \u2014 Check pipeline status\n  glab ci run                    \u2014 Trigger a new pipeline\n  glab ci retry <id>             \u2014 Retry a failed pipeline\n  glab ci trace <id> <job>       \u2014 View job logs\n  glab ci lint                   \u2014 Validate .gitlab-ci.yml\n  glab ci get <id>               \u2014 Get pipeline JSON details\n  glab ci delete <id>            \u2014 Delete a pipeline\n  glab ci artifact               \u2014 Download job artifacts\n  glab mr list                   \u2014 List merge requests\n  glab mr create                 \u2014 Create a merge request\n  glab mr view <id>              \u2014 View merge request\n  glab mr merge <id>             \u2014 Merge a merge request\n  glab mr diff <id>              \u2014 View MR diff\n  glab issue list                \u2014 List issues\n  glab issue create              \u2014 Create an issue\n  glab issue view <id>           \u2014 View issue details\n  glab repo view                 \u2014 View repository info\n  glab repo clone                \u2014 Clone a repository\n  glab auth status               \u2014 Check authentication\n  glab variable list             \u2014 List CI/CD variables\n  glab variable set              \u2014 Set a CI/CD variable\n  glab variable delete           \u2014 Delete a CI/CD variable\n  gitlab-runner list             \u2014 List registered runners\n  gitlab-runner verify           \u2014 Verify runner connections\n  gitlab-runner status           \u2014 Check runner service status\n  gitlab-runner run              \u2014 Start a runner\n\n  scenario                       \u2014 Start a guided lab\n  clear                          \u2014 Clear the terminal\n  help                           \u2014 Show this help",
+    "glab ci list": "Showing pipelines for devops-team/payments-api (most recent first)\n\n#ID      STATUS    BRANCH            COMMIT                DURATION   CREATED\n#4822    running   main              feat: add cache TTL   --         2m ago\n#4821    failed    main              fix: db retry logic   4m 12s     25m ago\n#4820    success   main              chore: bump deps      6m 45s     2h ago\n#4819    success   feature/auth      feat: OIDC login      8m 03s     5h ago\n#4818    success   main              fix: rate limiter     5m 38s     1d ago\n#4817    canceled  feature/reports   feat: monthly PDF     --         1d ago\n#4816    success   main              ci: add SAST stage    7m 21s     2d ago",
+    "glab ci view 4821": "Pipeline #4821 \u2014 fix: db retry logic\n\nStatus:   failed\nBranch:   main\nCommit:   a3f7c92 \u2014 fix: db retry logic\nAuthor:   priya.sharma@example.com\nCreated:  25 minutes ago\nDuration: 4m 12s\n\nStages:\n  build          \u2713 passed    (1m 02s)\n  test           \u2717 failed    (2m 45s)\n  security-scan  \u25cb skipped\n  deploy-staging \u25cb skipped\n  deploy-prod    \u25cb skipped\n\nJobs:\n  build           \u2713 passed    runner: shared-runner-01    1m 02s\n  unit-test       \u2717 failed    runner: shared-runner-02    2m 45s\n  lint            \u2713 passed    runner: shared-runner-01    0m 25s\n  sast            \u25cb skipped\n  dependency-scan \u25cb skipped\n  deploy-staging  \u25cb skipped\n  deploy-prod     \u25cb skipped",
+    "glab ci view 4821 --web": "Opening https://gitlab.example.com/devops-team/payments-api/-/pipelines/4821 in your browser.",
+    "glab ci view 4820": "Pipeline #4820 \u2014 chore: bump deps\n\nStatus:   success\nBranch:   main\nCommit:   e1d4a08 \u2014 chore: bump deps\nAuthor:   ravi.kumar@example.com\nCreated:  2 hours ago\nDuration: 6m 45s\n\nStages:\n  build          \u2713 passed    (1m 10s)\n  test           \u2713 passed    (2m 30s)\n  security-scan  \u2713 passed    (1m 15s)\n  deploy-staging \u2713 passed    (1m 50s)\n  deploy-prod    \u25cb manual\n\nJobs:\n  build           \u2713 passed    runner: shared-runner-01    1m 10s\n  unit-test       \u2713 passed    runner: shared-runner-02    2m 05s\n  lint            \u2713 passed    runner: shared-runner-01    0m 25s\n  sast            \u2713 passed    runner: shared-runner-03    0m 48s\n  dependency-scan \u2713 passed    runner: shared-runner-02    0m 27s\n  deploy-staging  \u2713 passed    runner: deploy-runner-01    1m 50s\n  deploy-prod     \u25cb manual    (requires approval)",
+    "glab ci view 4822": "Pipeline #4822 \u2014 feat: add cache TTL\n\nStatus:   running\nBranch:   main\nCommit:   b8e2d17 \u2014 feat: add cache TTL\nAuthor:   priya.sharma@example.com\nCreated:  2 minutes ago\nDuration: --\n\nStages:\n  build          \u2713 passed    (0m 58s)\n  test           \u25cf running\n  security-scan  \u25cb pending\n  deploy-staging \u25cb pending\n  deploy-prod    \u25cb manual\n\nJobs:\n  build           \u2713 passed    runner: shared-runner-01    0m 58s\n  unit-test       \u25cf running   runner: shared-runner-02    --\n  lint            \u2713 passed    runner: shared-runner-03    0m 22s\n  sast            \u25cb pending\n  dependency-scan \u25cb pending\n  deploy-staging  \u25cb pending\n  deploy-prod     \u25cb manual",
+    "glab ci status 4821": "Pipeline #4821: failed\n\nStage        Job              Status    Duration\nbuild        build            passed    1m 02s\ntest         unit-test        failed    2m 45s\ntest         lint             passed    0m 25s\nsecurity     sast             skipped   --\nsecurity     dependency-scan  skipped   --\nstaging      deploy-staging   skipped   --\nproduction   deploy-prod      skipped   --\n\nFailed job: unit-test\nFailure reason: script_failure \u2014 exit code 1",
+    "glab ci status 4822": "Pipeline #4822: running\n\nStage        Job              Status    Duration\nbuild        build            passed    0m 58s\ntest         unit-test        running   1m 12s\ntest         lint             passed    0m 22s\nsecurity     sast             pending   --\nsecurity     dependency-scan  pending   --\nstaging      deploy-staging   pending   --\nproduction   deploy-prod      manual    --\n\nCurrent stage: test (2 of 5)",
+    "glab ci status 4820": "Pipeline #4820: success\n\nStage        Job              Status    Duration\nbuild        build            passed    1m 10s\ntest         unit-test        passed    2m 05s\ntest         lint             passed    0m 25s\nsecurity     sast             passed    0m 48s\nsecurity     dependency-scan  passed    0m 27s\nstaging      deploy-staging   passed    1m 50s\nproduction   deploy-prod      manual    --\n\nAll stages complete. deploy-prod awaiting manual trigger.",
+    "glab ci run": "Created pipeline #4823 on branch main\nhttps://gitlab.example.com/devops-team/payments-api/-/pipelines/4823",
+    "glab ci run --branch main": "Created pipeline #4822 on branch main\nhttps://gitlab.example.com/devops-team/payments-api/-/pipelines/4822",
+    "glab ci run --branch main --variables DEPLOY_ENV=staging": "Created pipeline #4823 on branch main with variables:\n  DEPLOY_ENV=staging\nhttps://gitlab.example.com/devops-team/payments-api/-/pipelines/4823",
+    "glab ci run --branch feature/auth": "Created pipeline #4824 on branch feature/auth\nhttps://gitlab.example.com/devops-team/payments-api/-/pipelines/4824",
+    "glab ci retry 4821": "Retrying pipeline #4821...\nRetrying failed job: unit-test\n\nPipeline #4821 restarted.\nhttps://gitlab.example.com/devops-team/payments-api/-/pipelines/4821",
+    "glab ci trace 4821 unit-test": "Job: unit-test (#58234)\nRunner: shared-runner-02 (linux, docker)\nDuration: 2m 45s\n\n$ docker pull postgres:15.6\nUsing cached image: postgres:15.6\n$ pip install -r requirements-test.txt\nInstalling collected packages: psycopg2, pytest, coverage...\nSuccessfully installed 12 packages\n$ python -m pytest tests/ --cov=app --cov-report=term\n\ncollected 47 items\n\ntests/test_auth.py ....                                  [ 8%]\ntests/test_payments.py ........                          [25%]\ntests/test_accounts.py ......                            [38%]\ntests/test_db_connection.py F                            [40%]\n\nFAILURE tests/test_db_connection.py::test_retry_on_disconnect\n  > ConnectionRefusedError: could not connect to server\n  > host=None, port=5432\n  > Environment variable DB_HOST is not set\n\n=== 1 failed, 18 passed in 2m 38s ===\n\nERROR: Job failed: exit code 1",
+    "glab ci trace 4821 build": "Job: build (#58233)\nRunner: shared-runner-01 (linux, docker)\nDuration: 1m 02s\n\n$ docker build -t payments-api:$CI_COMMIT_SHA .\nStep 1/8 : FROM python:3.12-slim\n ---> Using cache\nStep 2/8 : WORKDIR /app\n ---> Using cache\nStep 3/8 : COPY requirements.txt .\n ---> Using cache\nStep 4/8 : RUN pip install --no-cache-dir -r requirements.txt\n ---> 4a2b3c8d1e9f\nStep 5/8 : COPY . .\n ---> a1b2c3d4e5f6\nStep 6/8 : RUN python -m compileall app/\n ---> 7f8e9d0c1b2a\nStep 7/8 : EXPOSE 8000\nStep 8/8 : CMD [\"gunicorn\", \"app.main:app\", \"--bind\", \"0.0.0.0:8000\"]\nSuccessfully built 3e4f5a6b7c8d\nSuccessfully tagged payments-api:a3f7c92\n\n$ docker push registry.example.com/devops-team/payments-api:a3f7c92\nPushed to registry.example.com/devops-team/payments-api:a3f7c92\n\nJob succeeded",
+    "glab ci trace 4821 lint": "Job: lint (#58235)\nRunner: shared-runner-01 (linux, docker)\nDuration: 0m 25s\n\n$ pip install ruff\nSuccessfully installed ruff-0.5.2\n$ ruff check app/ tests/\nAll checks passed!\n\n$ ruff format --check app/ tests/\n47 files already formatted.\n\nJob succeeded",
+    "glab ci lint": "Syntax is correct.\n\nStages:\n  - build\n  - test\n  - security-scan\n  - deploy-staging\n  - deploy-production\n\nJobs:\n  build            (stage: build)\n  unit-test        (stage: test)\n  lint             (stage: test)\n  sast             (stage: security-scan)\n  dependency-scan  (stage: security-scan)\n  deploy-staging   (stage: deploy-staging)\n  deploy-prod      (stage: deploy-production, when: manual)\n\nWarnings: none",
+    "glab ci get 4821": "{\n  \"id\": 4821,\n  \"iid\": 4821,\n  \"project_id\": 142,\n  \"sha\": \"a3f7c92e8b1d4f6a3c5e7b9d2f4a6c8e0b2d4f6a\",\n  \"ref\": \"main\",\n  \"status\": \"failed\",\n  \"source\": \"push\",\n  \"created_at\": \"2026-06-02T09:35:00Z\",\n  \"updated_at\": \"2026-06-02T09:39:12Z\",\n  \"web_url\": \"https://gitlab.example.com/devops-team/payments-api/-/pipelines/4821\",\n  \"duration\": 252,\n  \"queued_duration\": 4,\n  \"user\": {\n    \"username\": \"priya.sharma\",\n    \"name\": \"Priya Sharma\"\n  },\n  \"detailed_status\": {\n    \"label\": \"failed\",\n    \"group\": \"failed\",\n    \"text\": \"failed\"\n  }\n}",
+    "glab ci delete 4817": "Pipeline #4817 deleted successfully.",
+    "glab ci artifact download 4822 build": "Downloading artifacts for job 'build' from pipeline #4822...\n  \u2192 build/payments-api.tar.gz (24.3 MB)\n  \u2192 build/checksums.sha256\nArtifacts saved to ./artifacts/4822/build/\n2 files downloaded.",
+    "glab ci artifact download 4820 build": "Downloading artifacts for job 'build' from pipeline #4820...\n  \u2192 build/payments-api.tar.gz (24.1 MB)\n  \u2192 build/checksums.sha256\nArtifacts saved to ./artifacts/4820/build/\n2 files downloaded.",
+    "glab ci artifact list 4820": "Artifacts for pipeline #4820:\n\nJob              Size       Expire\nbuild            24.1 MB    30 days\nunit-test        1.2 MB     7 days (coverage report)\nsast             0.4 MB     90 days (security report)\ndependency-scan  0.2 MB     90 days (dependency report)",
+    "glab ci cancel 4822": "Pipeline #4822 canceled.",
+    "glab ci trigger --branch main --token $TRIGGER_TOKEN": "Triggered pipeline #4825 on branch main via trigger token.\nhttps://gitlab.example.com/devops-team/payments-api/-/pipelines/4825",
+    "glab ci trigger --branch main --token $TRIGGER_TOKEN --variables DEPLOY_ENV=production": "Triggered pipeline #4826 on branch main via trigger token.\nVariables: DEPLOY_ENV=production\nhttps://gitlab.example.com/devops-team/payments-api/-/pipelines/4826",
+    "glab mr list": "Showing merge requests for devops-team/payments-api\n\n!321  OPEN    feat: OIDC login flow          feature/auth \u2192 main       priya.sharma    2h ago\n!320  MERGED  fix: rate limiter overflow     fix/rate-limit \u2192 main     ravi.kumar      1d ago\n!319  OPEN    feat: monthly PDF reports      feature/reports \u2192 main    ankit.verma     2d ago\n!318  MERGED  chore: upgrade FastAPI 0.112   chore/fastapi \u2192 main      priya.sharma    3d ago\n!317  CLOSED  refactor: payment gateway      refactor/pay \u2192 main       ravi.kumar      5d ago",
+    "glab mr list --state merged": "Showing merged merge requests for devops-team/payments-api\n\n!320  MERGED  fix: rate limiter overflow     fix/rate-limit \u2192 main     ravi.kumar      1d ago\n!318  MERGED  chore: upgrade FastAPI 0.112   chore/fastapi \u2192 main      priya.sharma    3d ago\n!315  MERGED  feat: batch processing API     feature/batch \u2192 main      ankit.verma     7d ago\n!312  MERGED  fix: auth token refresh        fix/auth \u2192 main           priya.sharma    10d ago",
+    "glab mr list --state open": "Showing open merge requests for devops-team/payments-api\n\n!321  OPEN    feat: OIDC login flow          feature/auth \u2192 main       priya.sharma    2h ago\n!319  OPEN    feat: monthly PDF reports      feature/reports \u2192 main    ankit.verma     2d ago",
+    "glab mr create": "Creating merge request...\n\nTitle: feat: add cache TTL configuration\nSource: feature/cache-ttl\nTarget: main\n\n!322 created: feat: add cache TTL configuration\nhttps://gitlab.example.com/devops-team/payments-api/-/merge_requests/322",
+    "glab mr create --title \"feat: add cache TTL\" --source feature/cache-ttl --target main": "Creating merge request...\n\n!322 created: feat: add cache TTL\nSource: feature/cache-ttl \u2192 main\nhttps://gitlab.example.com/devops-team/payments-api/-/merge_requests/322",
+    "glab mr view 321": "Merge Request !321 \u2014 feat: OIDC login flow\n\nStatus:     open\nAuthor:     priya.sharma\nSource:     feature/auth \u2192 main\nCreated:    2 hours ago\nUpdated:    1 hour ago\nApprovals:  1/2 required (ravi.kumar \u2713)\nPipeline:   #4819 \u2713 passed\nConflicts:  none\n\nDescription:\n  Adds OIDC-based SSO login for internal users.\n  Integrates with corporate IdP (Okta).\n  Includes token refresh and session management.\n\nLabels: feature, auth, security-review\nMilestone: v2.5.0",
+    "glab mr view 320": "Merge Request !320 \u2014 fix: rate limiter overflow\n\nStatus:     merged\nAuthor:     ravi.kumar\nSource:     fix/rate-limit \u2192 main\nMerged:     1 day ago by priya.sharma\nPipeline:   #4818 \u2713 passed\n\nDescription:\n  Fixed integer overflow in rate limiter when\n  request count exceeds 2^31 during month-end\n  salary processing spikes.",
+    "glab mr merge 321": "Merging !321 (feat: OIDC login flow) into main...\n\n\u26a0\ufe0f  Approval required: 1 more approval needed (2 required, 1 given).\nMerge blocked. Please get additional approval before merging.",
+    "glab mr diff 321": "diff --git a/app/auth/oidc.py b/app/auth/oidc.py\nnew file mode 100644\n--- /dev/null\n+++ b/app/auth/oidc.py\n@@ -0,0 +1,42 @@\n+from authlib.integrations.starlette_client import OAuth\n+from app.config import settings\n+\n+oauth = OAuth()\n+oauth.register(\n+    name=\"okta\",\n+    client_id=settings.OIDC_CLIENT_ID,\n+    client_secret=settings.OIDC_CLIENT_SECRET,\n+    server_metadata_url=settings.OIDC_DISCOVERY_URL,\n+    client_kwargs={\"scope\": \"openid profile email\"},\n+)\n\ndiff --git a/app/auth/session.py b/app/auth/session.py\n--- a/app/auth/session.py\n+++ b/app/auth/session.py\n@@ -12,6 +12,18 @@\n+async def refresh_token(token: dict) -> dict:\n+    \"\"\"Refresh OIDC token before expiry.\"\"\"\n+    async with httpx.AsyncClient() as client:\n+        response = await client.post(\n+            settings.OIDC_TOKEN_URL,\n+            data={\"grant_type\": \"refresh_token\", ...}\n+        )\n+    return response.json()\n\n3 files changed, 87 insertions(+), 4 deletions(-)",
+    "glab mr approve 321": "Merge request !321 approved by priya.sharma.\nApprovals: 2/2 required \u2713",
+    "glab mr note 321 --message \"LGTM, security review passed\"": "Comment added to !321:\n  priya.sharma: LGTM, security review passed",
+    "glab issue list": "Showing issues for devops-team/payments-api\n\n#892  OPEN    Pipeline timeout on large batch jobs        bug        priya.sharma   1d ago\n#891  OPEN    Add SAST scanning to CI pipeline            enhancement ravi.kumar    2d ago\n#890  CLOSED  Rate limiter integer overflow               bug        ankit.verma    3d ago\n#889  OPEN    Document CI/CD variable requirements        docs       priya.sharma   4d ago\n#888  OPEN    Implement OIDC SSO for internal users       feature    ravi.kumar     5d ago\n#887  CLOSED  Upgrade Python base image to 3.12           chore      ankit.verma    7d ago",
+    "glab issue list --label bug": "Showing issues with label 'bug' for devops-team/payments-api\n\n#892  OPEN    Pipeline timeout on large batch jobs        priority::high   1d ago\n#890  CLOSED  Rate limiter integer overflow               priority::high   3d ago",
+    "glab issue list --state open": "Showing open issues for devops-team/payments-api\n\n#892  OPEN    Pipeline timeout on large batch jobs        bug        1d ago\n#891  OPEN    Add SAST scanning to CI pipeline            enhancement 2d ago\n#889  OPEN    Document CI/CD variable requirements        docs       4d ago\n#888  OPEN    Implement OIDC SSO for internal users       feature    5d ago",
+    "glab issue create": "Creating issue...\n\nTitle: Fix pipeline variable validation\nLabels: bug, ci-cd\nAssignee: priya.sharma\n\n#893 created: Fix pipeline variable validation\nhttps://gitlab.example.com/devops-team/payments-api/-/issues/893",
+    "glab issue view 892": "Issue #892 \u2014 Pipeline timeout on large batch jobs\n\nStatus:     open\nAuthor:     priya.sharma\nCreated:    1 day ago\nLabels:     bug, ci-cd, priority::high\nMilestone:  v2.5.0\nAssignee:   ravi.kumar\n\nDescription:\n  The nightly batch processing pipeline times out when\n  processing end-of-month salary disbursement files.\n  Current job timeout is 30m but batch jobs need ~45m\n  during month-end peak (50K+ transactions).\n\n  Proposed fix: increase timeout for batch jobs or\n  implement chunked processing.\n\nComments: 3",
+    "glab issue view 891": "Issue #891 \u2014 Add SAST scanning to CI pipeline\n\nStatus:     open\nAuthor:     ravi.kumar\nCreated:    2 days ago\nLabels:     enhancement, security, ci-cd\nMilestone:  v2.5.0\nAssignee:   priya.sharma\n\nDescription:\n  Add Static Application Security Testing to our\n  CI pipeline using GitLab SAST templates.\n  Required for BFSI compliance audit Q3.",
+    "glab repo view": "devops-team/payments-api\n\nDescription:  Internal payments processing API for BFSI operations\nVisibility:   private\nDefault:      main\nCreated:      6 months ago\nLast push:    2 minutes ago\nStars:        12\nForks:        3\nLanguage:     Python (89%), Dockerfile (6%), Shell (5%)\n\nTopics:       payments, api, fintech, python, fastapi\nURL:          https://gitlab.example.com/devops-team/payments-api",
+    "glab repo clone devops-team/payments-api": "Cloning into 'payments-api'...\nremote: Enumerating objects: 1247, done.\nremote: Counting objects: 100% (1247/1247), done.\nremote: Compressing objects: 100% (892/892), done.\nReceiving objects: 100% (1247/1247), 3.2 MiB | 12.4 MiB/s, done.\nResolving deltas: 100% (634/634), done.",
+    "glab repo clone": "Error: repository argument required.\nUsage: glab repo clone <repo>\n\nExamples:\n  glab repo clone devops-team/payments-api\n  glab repo clone devops-team/payments-api --branch feature/auth",
+    "glab auth status": "gitlab.example.com:\n  \u2713 Logged in as priya.sharma\n  \u2713 Token: glpat-****...****7f2a\n  \u2713 Token scopes: api, read_user, read_repository, write_repository\n  \u2713 Git protocol: https\n  \u2713 API URL: https://gitlab.example.com/api/v4",
+    "glab variable list": "Showing CI/CD variables for devops-team/payments-api\n\nKEY                    PROTECTED   MASKED   SCOPE\nCI_REGISTRY_USER       true        false    *\nCI_REGISTRY_PASSWORD   true        true     *\nDEPLOY_TOKEN           true        true     production\nSENTRY_DSN             false       true     *\nSLACK_WEBHOOK_URL      false       true     *\nSTAGING_HOST           false       false    staging\nPROD_HOST              true        false    production\n\n7 variables (DB_HOST is NOT set \u2014 see issue #892)",
+    "glab variable set DB_HOST db-test.internal.example.com": "Variable DB_HOST set successfully.\n\nKEY       VALUE                           PROTECTED   MASKED   SCOPE\nDB_HOST   db-test.internal.example.com    false       false    *",
+    "glab variable set DB_HOST db-test.internal.example.com --protected --masked": "Variable DB_HOST set successfully.\n\nKEY       VALUE                           PROTECTED   MASKED   SCOPE\nDB_HOST   db-test.internal.example.com    true        true     *",
+    "glab variable delete DB_HOST": "Variable DB_HOST deleted successfully.",
+    "gitlab-runner list": "Listing configured runners:\n\nRunner                Token              URL                                   Executor\nshared-runner-01      glrt-****1a2b      https://gitlab.example.com/            docker\nshared-runner-02      glrt-****3c4d      https://gitlab.example.com/            docker\nshared-runner-03      glrt-****5e6f      https://gitlab.example.com/            docker\ndeploy-runner-01      glrt-****7g8h      https://gitlab.example.com/            shell\n\n4 runners registered.",
+    "gitlab-runner verify": "Verifying runner connections...\n\nRunner                Status          Last Contact\nshared-runner-01      alive           2s ago\nshared-runner-02      alive           1s ago\nshared-runner-03      alive           3s ago\ndeploy-runner-01      alive           5s ago\n\nAll 4 runners are alive and responding.",
+    "gitlab-runner status": "gitlab-runner: Service is running\n  Version:      17.1.0\n  Git revision: abc1234d\n  Built:        2026-05-15T10:00:00Z\n  OS/Arch:      linux/amd64\n  Concurrent:   4\n  Idle:         2 runners idle\n  Busy:         2 runners busy (shared-runner-02: unit-test, shared-runner-03: lint)",
+    "gitlab-runner run": "Starting multi-runner from /etc/gitlab-runner/config.toml...\nConfiguration loaded                  builds=0\nListen address not defined, metrics & debug endpoints disabled\nshared-runner-01  Registering runner... succeeded\nshared-runner-02  Registering runner... succeeded\nshared-runner-03  Registering runner... succeeded\ndeploy-runner-01  Registering runner... succeeded\n\nAll runners started. Waiting for jobs...",
+    "glab ci list --status failed": "Showing failed pipelines for devops-team/payments-api\n\n#ID      STATUS    BRANCH    COMMIT                DURATION   CREATED\n#4821    failed    main      fix: db retry logic   4m 12s     25m ago\n#4810    failed    main      feat: batch timeout   3m 55s     5d ago",
+    "glab ci list --status success": "Showing successful pipelines for devops-team/payments-api\n\n#ID      STATUS    BRANCH            COMMIT                DURATION   CREATED\n#4820    success   main              chore: bump deps      6m 45s     2h ago\n#4819    success   feature/auth      feat: OIDC login      8m 03s     5h ago\n#4818    success   main              fix: rate limiter     5m 38s     1d ago\n#4816    success   main              ci: add SAST stage    7m 21s     2d ago",
+    "glab schedule list": "Showing pipeline schedules for devops-team/payments-api\n\nID    Description                 Cron             Branch   Status    Next Run\n12    Nightly security scan       0 2 * * *        main     active    2026-06-03 02:00 UTC\n13    Weekly dependency audit     0 9 * * 1        main     active    2026-06-09 09:00 UTC\n14    Monthly compliance report   0 6 1 * *        main     active    2026-07-01 06:00 UTC",
+    "glab label list": "Showing labels for devops-team/payments-api\n\nbug              #d73a4a    Bug reports\nenhancement      #a2eeef    New features\nfeature          #0075ca    Feature requests\nci-cd            #e4e669    CI/CD related\nsecurity         #ee0701    Security issues\ndocs             #0e8a16    Documentation\nchore            #c5def5    Maintenance\npriority::high   #b60205    High priority\npriority::low    #fbca04    Low priority\nsecurity-review  #ee0701    Needs security review",
+    "glab milestone list": "Showing milestones for devops-team/payments-api\n\nID    Title    Due Date      Status   Open   Closed\n8     v2.5.0   2026-06-30    active   4      12\n7     v2.4.0   2026-05-31    closed   0      18\n6     v2.3.0   2026-04-30    closed   0      15"
+  },
+  "reference": [
+    {
+      "group": "Pipelines",
+      "commands": [
+        {
+          "cmd": "glab ci list",
+          "desc": "list recent pipelines"
+        },
+        {
+          "cmd": "glab ci list --status failed",
+          "desc": "show only failed"
+        },
+        {
+          "cmd": "glab ci view 4821",
+          "desc": "pipeline details"
+        },
+        {
+          "cmd": "glab ci status 4821",
+          "desc": "pipeline status"
+        },
+        {
+          "cmd": "glab ci get 4821",
+          "desc": "pipeline JSON"
+        },
+        {
+          "cmd": "glab ci run --branch main",
+          "desc": "trigger pipeline"
+        },
+        {
+          "cmd": "glab ci run --branch main --variables DEPLOY_ENV=staging",
+          "desc": "trigger with vars"
+        },
+        {
+          "cmd": "glab ci retry 4821",
+          "desc": "retry failed"
+        },
+        {
+          "cmd": "glab ci cancel 4822",
+          "desc": "cancel running"
+        },
+        {
+          "cmd": "glab ci delete 4817",
+          "desc": "delete pipeline"
+        }
+      ]
+    },
+    {
+      "group": "Jobs & Logs",
+      "commands": [
+        {
+          "cmd": "glab ci trace 4821 unit-test",
+          "desc": "view job logs"
+        },
+        {
+          "cmd": "glab ci trace 4821 build",
+          "desc": "view build logs"
+        },
+        {
+          "cmd": "glab ci lint",
+          "desc": "validate CI config"
+        },
+        {
+          "cmd": "glab ci artifact download 4822 build",
+          "desc": "download artifacts"
+        },
+        {
+          "cmd": "glab ci artifact list 4820",
+          "desc": "list artifacts"
+        }
+      ]
+    },
+    {
+      "group": "Variables & Schedules",
+      "commands": [
+        {
+          "cmd": "glab variable list",
+          "desc": "list CI variables"
+        },
+        {
+          "cmd": "glab variable set DB_HOST db-test.internal.example.com",
+          "desc": "set variable"
+        },
+        {
+          "cmd": "glab variable set DB_HOST db-test.internal.example.com --protected --masked",
+          "desc": "set protected+masked"
+        },
+        {
+          "cmd": "glab variable delete DB_HOST",
+          "desc": "delete variable"
+        },
+        {
+          "cmd": "glab schedule list",
+          "desc": "pipeline schedules"
+        }
+      ]
+    },
+    {
+      "group": "Merge Requests",
+      "commands": [
+        {
+          "cmd": "glab mr list",
+          "desc": "list all MRs"
+        },
+        {
+          "cmd": "glab mr list --state open",
+          "desc": "open MRs only"
+        },
+        {
+          "cmd": "glab mr list --state merged",
+          "desc": "merged MRs"
+        },
+        {
+          "cmd": "glab mr create",
+          "desc": "create MR"
+        },
+        {
+          "cmd": "glab mr view 321",
+          "desc": "MR details"
+        },
+        {
+          "cmd": "glab mr diff 321",
+          "desc": "MR diff"
+        },
+        {
+          "cmd": "glab mr merge 321",
+          "desc": "merge MR"
+        },
+        {
+          "cmd": "glab mr approve 321",
+          "desc": "approve MR"
+        }
+      ]
+    },
+    {
+      "group": "Issues",
+      "commands": [
+        {
+          "cmd": "glab issue list",
+          "desc": "list issues"
+        },
+        {
+          "cmd": "glab issue list --label bug",
+          "desc": "filter by label"
+        },
+        {
+          "cmd": "glab issue list --state open",
+          "desc": "open issues"
+        },
+        {
+          "cmd": "glab issue create",
+          "desc": "create issue"
+        },
+        {
+          "cmd": "glab issue view 892",
+          "desc": "issue details"
+        }
+      ]
+    },
+    {
+      "group": "Repository & Auth",
+      "commands": [
+        {
+          "cmd": "glab repo view",
+          "desc": "repo info"
+        },
+        {
+          "cmd": "glab repo clone devops-team/payments-api",
+          "desc": "clone repo"
+        },
+        {
+          "cmd": "glab auth status",
+          "desc": "auth check"
+        },
+        {
+          "cmd": "glab label list",
+          "desc": "list labels"
+        },
+        {
+          "cmd": "glab milestone list",
+          "desc": "list milestones"
+        }
+      ]
+    },
+    {
+      "group": "Runners",
+      "commands": [
+        {
+          "cmd": "gitlab-runner list",
+          "desc": "registered runners"
+        },
+        {
+          "cmd": "gitlab-runner verify",
+          "desc": "verify connections"
+        },
+        {
+          "cmd": "gitlab-runner status",
+          "desc": "service status"
+        },
+        {
+          "cmd": "gitlab-runner run",
+          "desc": "start runners"
+        }
+      ]
+    },
+    {
+      "group": "Scenarios",
+      "commands": [
+        {
+          "cmd": "scenario debug-failing-pipeline",
+          "desc": "debug a failed CI pipeline"
+        },
+        {
+          "cmd": "scenario setup-run-pipeline",
+          "desc": "set up and run CI"
+        }
+      ]
+    }
+  ]
+}

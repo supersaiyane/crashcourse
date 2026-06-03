@@ -1,0 +1,434 @@
+{
+  "id": "dns-curl-dig",
+  "prompt": "sre@debug:~$",
+  "welcome": "Welcome to the DNS / curl / dig CLI Playground.\nType commands to explore a simulated network debugging environment.\nType 'help' for available commands, 'scenario' for guided labs.\n",
+  "scenarios": [
+    {
+      "id": "dns-resolution-failure",
+      "title": "Troubleshoot DNS Resolution Failure",
+      "steps": [
+        {
+          "instruction": "Users report they cannot reach api.example.com. Start by querying the A record.",
+          "expect": "dig api.example.com",
+          "hint": "Try: dig api.example.com"
+        },
+        {
+          "instruction": "The ANSWER section is empty — NXDOMAIN. Check if the authoritative nameservers know about it.",
+          "expect": "dig api.example.com NS",
+          "hint": "Try: dig api.example.com NS"
+        },
+        {
+          "instruction": "Let's query a public resolver directly to rule out local DNS cache issues.",
+          "expect": "dig @8.8.8.8 api.example.com",
+          "hint": "Try: dig @8.8.8.8 api.example.com"
+        },
+        {
+          "instruction": "Still failing. Trace the full resolution path to find where it breaks.",
+          "expect": "dig +trace api.example.com",
+          "hint": "Try: dig +trace api.example.com"
+        },
+        {
+          "instruction": "The trace shows the .com TLD delegates to ns1.example.com, but that nameserver isn't responding. Verify with nslookup.",
+          "expect": "nslookup api.example.com ns1.example.com",
+          "hint": "Try: nslookup api.example.com ns1.example.com"
+        },
+        {
+          "instruction": "Connection timed out to ns1.example.com. Check if that nameserver is reachable on port 53.",
+          "expect": "nc -zv ns1.example.com 53",
+          "hint": "Try: nc -zv ns1.example.com 53"
+        },
+        {
+          "instruction": "Port 53 is unreachable — the nameserver is down. Check the SOA record via the backup nameserver to confirm zone config.",
+          "expect": "dig @ns2.example.com api.example.com SOA",
+          "hint": "Try: dig @ns2.example.com api.example.com SOA"
+        },
+        {
+          "instruction": "ns2 responds! The zone exists but ns1 is down. Verify the domain resolves via ns2.",
+          "expect": "dig @ns2.example.com api.example.com A",
+          "hint": "Try: dig @ns2.example.com api.example.com A"
+        }
+      ]
+    },
+    {
+      "id": "debug-api-502",
+      "title": "Debug an API 502 Error",
+      "steps": [
+        {
+          "instruction": "The monitoring dashboard shows 502 errors on https://api.example.com/health. Start with a verbose curl to see what's happening.",
+          "expect": "curl -v https://api.example.com/health",
+          "hint": "Try: curl -v https://api.example.com/health"
+        },
+        {
+          "instruction": "The response shows 502 Bad Gateway from the load balancer. Check if DNS is resolving correctly.",
+          "expect": "dig api.example.com A",
+          "hint": "Try: dig api.example.com A"
+        },
+        {
+          "instruction": "DNS resolves to 93.184.216.34. Check if the backend port is open.",
+          "expect": "nc -zv 93.184.216.34 443",
+          "hint": "Try: nc -zv 93.184.216.34 443"
+        },
+        {
+          "instruction": "Port 443 is open. Let's inspect the TLS certificate to rule out cert issues.",
+          "expect": "openssl s_client -connect api.example.com:443",
+          "hint": "Try: openssl s_client -connect api.example.com:443"
+        },
+        {
+          "instruction": "Certificate is valid. Let's check response timing to see where the delay is.",
+          "expect": "curl -o /dev/null -s -w \"%{http_code} %{time_total} %{time_connect} %{time_starttransfer}\" https://api.example.com/health",
+          "hint": "Try: curl -o /dev/null -s -w \"%{http_code} %{time_total} %{time_connect} %{time_starttransfer}\" https://api.example.com/health"
+        },
+        {
+          "instruction": "Connection is fast but time_starttransfer is 30s — the backend is timing out. Try hitting the backend directly bypassing the load balancer.",
+          "expect": "curl --resolve api.example.com:443:10.0.1.42 -v https://api.example.com/health",
+          "hint": "Try: curl --resolve api.example.com:443:10.0.1.42 -v https://api.example.com/health"
+        },
+        {
+          "instruction": "Direct backend also times out. The application itself is unhealthy. Check the other backend node.",
+          "expect": "curl --resolve api.example.com:443:10.0.2.18 -v https://api.example.com/health",
+          "hint": "Try: curl --resolve api.example.com:443:10.0.2.18 -v https://api.example.com/health"
+        },
+        {
+          "instruction": "Second backend responds with 200! The issue is isolated to 10.0.1.42. Confirm with a simple connectivity test.",
+          "expect": "ping -c 3 10.0.1.42",
+          "hint": "Try: ping -c 3 10.0.1.42"
+        }
+      ]
+    }
+  ],
+  "commands": {
+    "help": "Available commands:\n  dig [domain]                   — Query DNS records (A, MX, NS, SOA, PTR, ANY)\n  dig @[server] [domain]         — Query specific nameserver\n  dig +short / +trace            — Short output / trace resolution path\n  dig -x [IP]                    — Reverse DNS lookup (PTR)\n  nslookup [domain]              — Simple DNS lookup\n  curl [url]                     — Transfer data from URL\n  curl -v / -I / -X / -d / -H   — Verbose / headers-only / method / data / header\n  host [domain]                  — Simple DNS lookup\n  whois [domain]                 — Domain registration info\n  ping [host]                    — ICMP connectivity test\n  traceroute [host]              — Trace packet route\n  nc -zv [host] [port]           — Test TCP port connectivity\n  openssl s_client               — TLS/SSL connection test\n\n  scenario                       — Start a guided lab\n  clear                          — Clear the terminal\n  help                           — Show this help",
+
+    "dig example.com": ";; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 42531\n;; flags: qr rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 0, ADDITIONAL: 1\n\n;; QUESTION SECTION:\n;example.com.\t\t\tIN\tA\n\n;; ANSWER SECTION:\nexample.com.\t\t3600\tIN\tA\t93.184.216.34\n\n;; Query time: 12 msec\n;; SERVER: 127.0.0.53#53(127.0.0.53)\n;; WHEN: Mon Jun 02 10:30:00 IST 2026\n;; MSG SIZE  rcvd: 56",
+
+    "dig example.com A": ";; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 42531\n;; flags: qr rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 0, ADDITIONAL: 1\n\n;; QUESTION SECTION:\n;example.com.\t\t\tIN\tA\n\n;; ANSWER SECTION:\nexample.com.\t\t3600\tIN\tA\t93.184.216.34\n\n;; Query time: 12 msec\n;; SERVER: 127.0.0.53#53(127.0.0.53)\n;; WHEN: Mon Jun 02 10:30:00 IST 2026\n;; MSG SIZE  rcvd: 56",
+
+    "dig api.example.com": ";; ->>HEADER<<- opcode: QUERY, status: NXDOMAIN, id: 18273\n;; flags: qr rd ra; QUERY: 1, ANSWER: 0, AUTHORITY: 1, ADDITIONAL: 1\n\n;; QUESTION SECTION:\n;api.example.com.\t\t\tIN\tA\n\n;; AUTHORITY SECTION:\nexample.com.\t\t900\tIN\tSOA\tns1.example.com. admin.example.com. 2026060101 3600 900 604800 86400\n\n;; Query time: 45 msec\n;; SERVER: 127.0.0.53#53(127.0.0.53)\n;; WHEN: Mon Jun 02 10:31:00 IST 2026\n;; MSG SIZE  rcvd: 92",
+
+    "dig api.example.com A": ";; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 55102\n;; flags: qr rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 0, ADDITIONAL: 1\n\n;; QUESTION SECTION:\n;api.example.com.\t\t\tIN\tA\n\n;; ANSWER SECTION:\napi.example.com.\t\t300\tIN\tA\t93.184.216.34\n\n;; Query time: 8 msec\n;; SERVER: 127.0.0.53#53(127.0.0.53)\n;; WHEN: Mon Jun 02 10:32:00 IST 2026\n;; MSG SIZE  rcvd: 62",
+
+    "dig api.example.com NS": ";; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 33847\n;; flags: qr rd ra; QUERY: 1, ANSWER: 0, AUTHORITY: 1, ADDITIONAL: 1\n\n;; QUESTION SECTION:\n;api.example.com.\t\t\tIN\tNS\n\n;; AUTHORITY SECTION:\nexample.com.\t\t3600\tIN\tSOA\tns1.example.com. admin.example.com. 2026060101 3600 900 604800 86400\n\n;; Query time: 22 msec\n;; SERVER: 127.0.0.53#53(127.0.0.53)\n;; WHEN: Mon Jun 02 10:33:00 IST 2026\n;; MSG SIZE  rcvd: 95",
+
+    "dig example.com MX": ";; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 29184\n;; flags: qr rd ra; QUERY: 1, ANSWER: 3, AUTHORITY: 0, ADDITIONAL: 1\n\n;; QUESTION SECTION:\n;example.com.\t\t\tIN\tMX\n\n;; ANSWER SECTION:\nexample.com.\t\t3600\tIN\tMX\t10 mail1.example.com.\nexample.com.\t\t3600\tIN\tMX\t20 mail2.example.com.\nexample.com.\t\t3600\tIN\tMX\t30 mail-backup.example.com.\n\n;; Query time: 18 msec\n;; SERVER: 127.0.0.53#53(127.0.0.53)\n;; WHEN: Mon Jun 02 10:34:00 IST 2026\n;; MSG SIZE  rcvd: 108",
+
+    "dig example.com NS": ";; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 47291\n;; flags: qr rd ra; QUERY: 1, ANSWER: 2, AUTHORITY: 0, ADDITIONAL: 3\n\n;; QUESTION SECTION:\n;example.com.\t\t\tIN\tNS\n\n;; ANSWER SECTION:\nexample.com.\t\t86400\tIN\tNS\tns1.example.com.\nexample.com.\t\t86400\tIN\tNS\tns2.example.com.\n\n;; ADDITIONAL SECTION:\nns1.example.com.\t\t86400\tIN\tA\t198.51.100.1\nns2.example.com.\t\t86400\tIN\tA\t198.51.100.2\n\n;; Query time: 14 msec\n;; SERVER: 127.0.0.53#53(127.0.0.53)\n;; WHEN: Mon Jun 02 10:35:00 IST 2026\n;; MSG SIZE  rcvd: 112",
+
+    "dig @8.8.8.8 example.com": ";; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 61452\n;; flags: qr rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 0, ADDITIONAL: 1\n\n;; QUESTION SECTION:\n;example.com.\t\t\tIN\tA\n\n;; ANSWER SECTION:\nexample.com.\t\t3542\tIN\tA\t93.184.216.34\n\n;; Query time: 24 msec\n;; SERVER: 8.8.8.8#53(8.8.8.8)\n;; WHEN: Mon Jun 02 10:36:00 IST 2026\n;; MSG SIZE  rcvd: 56",
+
+    "dig @8.8.8.8 api.example.com": ";; ->>HEADER<<- opcode: QUERY, status: NXDOMAIN, id: 72019\n;; flags: qr rd ra; QUERY: 1, ANSWER: 0, AUTHORITY: 1, ADDITIONAL: 1\n\n;; QUESTION SECTION:\n;api.example.com.\t\t\tIN\tA\n\n;; AUTHORITY SECTION:\nexample.com.\t\t900\tIN\tSOA\tns1.example.com. admin.example.com. 2026060101 3600 900 604800 86400\n\n;; Query time: 38 msec\n;; SERVER: 8.8.8.8#53(8.8.8.8)\n;; WHEN: Mon Jun 02 10:37:00 IST 2026\n;; MSG SIZE  rcvd: 92",
+
+    "dig +short example.com": "93.184.216.34",
+
+    "dig +short api.example.com": "",
+
+    "dig +short example.com MX": "10 mail1.example.com.\n20 mail2.example.com.\n30 mail-backup.example.com.",
+
+    "dig +short example.com NS": "ns1.example.com.\nns2.example.com.",
+
+    "dig +trace example.com": ".\t\t\t518400\tIN\tNS\ta.root-servers.net.\n.\t\t\t518400\tIN\tNS\tb.root-servers.net.\n;; Received 239 bytes from 127.0.0.53#53 in 1 ms\n\ncom.\t\t\t172800\tIN\tNS\ta.gtld-servers.net.\ncom.\t\t\t172800\tIN\tNS\tb.gtld-servers.net.\n;; Received 164 bytes from 198.41.0.4#53(a.root-servers.net) in 22 ms\n\nexample.com.\t\t172800\tIN\tNS\tns1.example.com.\nexample.com.\t\t172800\tIN\tNS\tns2.example.com.\n;; Received 112 bytes from 192.5.6.30#53(a.gtld-servers.net) in 18 ms\n\nexample.com.\t\t3600\tIN\tA\t93.184.216.34\n;; Received 56 bytes from 198.51.100.1#53(ns1.example.com) in 12 ms",
+
+    "dig +trace api.example.com": ".\t\t\t518400\tIN\tNS\ta.root-servers.net.\n.\t\t\t518400\tIN\tNS\tb.root-servers.net.\n;; Received 239 bytes from 127.0.0.53#53 in 1 ms\n\ncom.\t\t\t172800\tIN\tNS\ta.gtld-servers.net.\ncom.\t\t\t172800\tIN\tNS\tb.gtld-servers.net.\n;; Received 164 bytes from 198.41.0.4#53(a.root-servers.net) in 22 ms\n\nexample.com.\t\t172800\tIN\tNS\tns1.example.com.\nexample.com.\t\t172800\tIN\tNS\tns2.example.com.\n;; Received 112 bytes from 192.5.6.30#53(a.gtld-servers.net) in 18 ms\n\n;; connection timed out; no servers could be reached\n;; Received 0 bytes from 198.51.100.1#53(ns1.example.com) in 5000 ms",
+
+    "dig -x 93.184.216.34": ";; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 38291\n;; flags: qr rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 0, ADDITIONAL: 1\n\n;; QUESTION SECTION:\n;34.216.184.93.in-addr.arpa.\tIN\tPTR\n\n;; ANSWER SECTION:\n34.216.184.93.in-addr.arpa. 3600 IN\tPTR\texample.com.\n\n;; Query time: 32 msec\n;; SERVER: 127.0.0.53#53(127.0.0.53)\n;; WHEN: Mon Jun 02 10:40:00 IST 2026\n;; MSG SIZE  rcvd: 82",
+
+    "dig example.com ANY": ";; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 51823\n;; flags: qr rd ra; QUERY: 1, ANSWER: 6, AUTHORITY: 0, ADDITIONAL: 1\n\n;; QUESTION SECTION:\n;example.com.\t\t\tIN\tANY\n\n;; ANSWER SECTION:\nexample.com.\t\t3600\tIN\tA\t93.184.216.34\nexample.com.\t\t3600\tIN\tAAAA\t2606:2800:220:1:248:1893:25c8:1946\nexample.com.\t\t86400\tIN\tNS\tns1.example.com.\nexample.com.\t\t86400\tIN\tNS\tns2.example.com.\nexample.com.\t\t3600\tIN\tMX\t10 mail1.example.com.\nexample.com.\t\t3600\tIN\tSOA\tns1.example.com. admin.example.com. 2026060101 3600 900 604800 86400\n\n;; Query time: 28 msec\n;; SERVER: 127.0.0.53#53(127.0.0.53)\n;; WHEN: Mon Jun 02 10:41:00 IST 2026\n;; MSG SIZE  rcvd: 245",
+
+    "dig example.com SOA": ";; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 44102\n;; flags: qr rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 0, ADDITIONAL: 1\n\n;; QUESTION SECTION:\n;example.com.\t\t\tIN\tSOA\n\n;; ANSWER SECTION:\nexample.com.\t\t3600\tIN\tSOA\tns1.example.com. admin.example.com. 2026060101 3600 900 604800 86400\n\n;; Query time: 10 msec\n;; SERVER: 127.0.0.53#53(127.0.0.53)\n;; WHEN: Mon Jun 02 10:42:00 IST 2026\n;; MSG SIZE  rcvd: 86",
+
+    "dig @ns2.example.com api.example.com SOA": ";; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 19384\n;; flags: qr aa rd; QUERY: 1, ANSWER: 1, AUTHORITY: 0, ADDITIONAL: 1\n\n;; QUESTION SECTION:\n;api.example.com.\t\t\tIN\tSOA\n\n;; ANSWER SECTION:\nexample.com.\t\t3600\tIN\tSOA\tns1.example.com. admin.example.com. 2026060101 3600 900 604800 86400\n\n;; Query time: 15 msec\n;; SERVER: 198.51.100.2#53(ns2.example.com)\n;; WHEN: Mon Jun 02 10:43:00 IST 2026\n;; MSG SIZE  rcvd: 92",
+
+    "dig @ns2.example.com api.example.com A": ";; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 82910\n;; flags: qr aa rd; QUERY: 1, ANSWER: 1, AUTHORITY: 2, ADDITIONAL: 1\n\n;; QUESTION SECTION:\n;api.example.com.\t\t\tIN\tA\n\n;; ANSWER SECTION:\napi.example.com.\t\t300\tIN\tA\t93.184.216.34\n\n;; AUTHORITY SECTION:\nexample.com.\t\t86400\tIN\tNS\tns1.example.com.\nexample.com.\t\t86400\tIN\tNS\tns2.example.com.\n\n;; Query time: 12 msec\n;; SERVER: 198.51.100.2#53(ns2.example.com)\n;; WHEN: Mon Jun 02 10:44:00 IST 2026\n;; MSG SIZE  rcvd: 108",
+
+    "dig example.com AAAA": ";; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 55821\n;; flags: qr rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 0, ADDITIONAL: 1\n\n;; QUESTION SECTION:\n;example.com.\t\t\tIN\tAAAA\n\n;; ANSWER SECTION:\nexample.com.\t\t3600\tIN\tAAAA\t2606:2800:220:1:248:1893:25c8:1946\n\n;; Query time: 15 msec\n;; SERVER: 127.0.0.53#53(127.0.0.53)\n;; WHEN: Mon Jun 02 10:45:00 IST 2026\n;; MSG SIZE  rcvd: 68",
+
+    "dig example.com TXT": ";; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 63291\n;; flags: qr rd ra; QUERY: 1, ANSWER: 2, AUTHORITY: 0, ADDITIONAL: 1\n\n;; QUESTION SECTION:\n;example.com.\t\t\tIN\tTXT\n\n;; ANSWER SECTION:\nexample.com.\t\t3600\tIN\tTXT\t\"v=spf1 include:_spf.example.com ~all\"\nexample.com.\t\t3600\tIN\tTXT\t\"google-site-verification=abc123def456\"\n\n;; Query time: 20 msec\n;; SERVER: 127.0.0.53#53(127.0.0.53)\n;; WHEN: Mon Jun 02 10:46:00 IST 2026\n;; MSG SIZE  rcvd: 142",
+
+    "nslookup example.com": "Server:\t\t127.0.0.53\nAddress:\t127.0.0.53#53\n\nNon-authoritative answer:\nName:\texample.com\nAddress: 93.184.216.34",
+
+    "nslookup api.example.com": "Server:\t\t127.0.0.53\nAddress:\t127.0.0.53#53\n\nNon-authoritative answer:\nName:\tapi.example.com\nAddress: 93.184.216.34",
+
+    "nslookup -type=MX example.com": "Server:\t\t127.0.0.53\nAddress:\t127.0.0.53#53\n\nNon-authoritative answer:\nexample.com\tmail exchanger = 10 mail1.example.com.\nexample.com\tmail exchanger = 20 mail2.example.com.\nexample.com\tmail exchanger = 30 mail-backup.example.com.",
+
+    "nslookup example.com 8.8.8.8": "Server:\t\t8.8.8.8\nAddress:\t8.8.8.8#53\n\nNon-authoritative answer:\nName:\texample.com\nAddress: 93.184.216.34",
+
+    "nslookup api.example.com ns1.example.com": ";; connection timed out; no servers could be reached",
+
+    "nslookup -type=NS example.com": "Server:\t\t127.0.0.53\nAddress:\t127.0.0.53#53\n\nNon-authoritative answer:\nexample.com\tnameserver = ns1.example.com.\nexample.com\tnameserver = ns2.example.com.",
+
+    "host example.com": "example.com has address 93.184.216.34\nexample.com has IPv6 address 2606:2800:220:1:248:1893:25c8:1946\nexample.com mail is handled by 10 mail1.example.com.\nexample.com mail is handled by 20 mail2.example.com.\nexample.com mail is handled by 30 mail-backup.example.com.",
+
+    "host api.example.com": "api.example.com has address 93.184.216.34",
+
+    "host 93.184.216.34": "34.216.184.93.in-addr.arpa domain name pointer example.com.",
+
+    "whois example.com": "Domain Name: EXAMPLE.COM\nRegistry Domain ID: 2336799_DOMAIN_COM-VRSN\nRegistrar: ICANN\nRegistrar URL: http://www.iana.org/domains/example\nUpdated Date: 2024-08-14T07:01:44Z\nCreation Date: 1995-08-14T04:00:00Z\nRegistry Expiry Date: 2025-08-13T04:00:00Z\nRegistrar: RESERVED-Internet Assigned Numbers Authority\nDomain Status: clientDeleteProhibited\nDomain Status: clientTransferProhibited\nDomain Status: clientUpdateProhibited\nName Server: NS1.EXAMPLE.COM\nName Server: NS2.EXAMPLE.COM\nDNSSEC: unsigned\n\n>>> Last update of whois database: 2026-06-02T05:00:00Z <<<",
+
+    "curl -v https://api.example.com/health": "* Trying 93.184.216.34:443...\n* Connected to api.example.com (93.184.216.34) port 443\n* ALPN: offers h2,http/1.1\n* TLSv1.3 (OUT), TLS handshake, Client hello (1):\n* TLSv1.3 (IN), TLS handshake, Server hello (2):\n* TLSv1.3 (IN), TLS handshake, Certificate (11):\n* TLSv1.3 (IN), TLS handshake, CERT verify (15):\n* TLSv1.3 (IN), TLS handshake, Finished (20):\n* TLSv1.3 (OUT), TLS handshake, Finished (20):\n* SSL connection using TLSv1.3 / TLS_AES_256_GCM_SHA384\n* Server certificate:\n*  subject: CN=api.example.com\n*  start date: Mar  1 00:00:00 2026 GMT\n*  expire date: Mar  1 23:59:59 2027 GMT\n*  issuer: C=US, O=DigiCert Inc, CN=DigiCert TLS RSA SHA256 2020 CA1\n*  SSL certificate verify ok.\n* using HTTP/2\n> GET /health HTTP/2\n> Host: api.example.com\n> User-Agent: curl/8.5.0\n> Accept: */*\n>\n< HTTP/2 502\n< server: nginx/1.25.4\n< date: Mon, 02 Jun 2026 10:30:00 GMT\n< content-type: text/html\n< content-length: 166\n<\n<html>\n<head><title>502 Bad Gateway</title></head>\n<body>\n<center><h1>502 Bad Gateway</h1></center>\n<center>nginx/1.25.4</center>\n</body>\n</html>",
+
+    "curl -I https://api.example.com/health": "HTTP/2 502\nserver: nginx/1.25.4\ndate: Mon, 02 Jun 2026 10:30:00 GMT\ncontent-type: text/html\ncontent-length: 166\nconnection: keep-alive",
+
+    "curl -I https://example.com": "HTTP/2 200\nserver: nginx/1.25.4\ndate: Mon, 02 Jun 2026 10:30:00 GMT\ncontent-type: text/html; charset=UTF-8\ncontent-length: 1256\ncache-control: max-age=604800\netag: \"3147526947+gzip\"\nx-request-id: a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+
+    "curl https://api.example.com/health": "<html>\n<head><title>502 Bad Gateway</title></head>\n<body>\n<center><h1>502 Bad Gateway</h1></center>\n<center>nginx/1.25.4</center>\n</body>\n</html>",
+
+    "curl -X POST -d '{\"key\":\"val\"}' -H \"Content-Type: application/json\" https://api.example.com/data": "{\"status\":\"created\",\"id\":\"abc-123\",\"timestamp\":\"2026-06-02T10:30:00Z\"}",
+
+    "curl -X POST -H \"Content-Type: application/json\" -d '{\"key\":\"val\"}' https://api.example.com/data": "{\"status\":\"created\",\"id\":\"abc-123\",\"timestamp\":\"2026-06-02T10:30:00Z\"}",
+
+    "curl -w \"%{http_code} %{time_total}\" -o /dev/null -s https://api.example.com/health": "502 30.042",
+
+    "curl -o /dev/null -s -w \"%{http_code} %{time_total} %{time_connect} %{time_starttransfer}\" https://api.example.com/health": "502 30.042 0.023 30.041",
+
+    "curl --resolve api.example.com:443:10.0.1.42 -v https://api.example.com/health": "* Added api.example.com:443:10.0.1.42 to DNS cache\n* Trying 10.0.1.42:443...\n* Connected to api.example.com (10.0.1.42) port 443\n* TLSv1.3 (OUT), TLS handshake, Client hello (1):\n* TLSv1.3 (IN), TLS handshake, Server hello (2):\n* SSL connection using TLSv1.3 / TLS_AES_256_GCM_SHA384\n* Server certificate:\n*  subject: CN=api.example.com\n*  SSL certificate verify ok.\n> GET /health HTTP/2\n> Host: api.example.com\n>\n* Operation timed out after 30000 milliseconds\n* Closing connection 0\ncurl: (28) Operation timed out after 30000 milliseconds with 0 bytes received",
+
+    "curl --resolve api.example.com:443:10.0.2.18 -v https://api.example.com/health": "* Added api.example.com:443:10.0.2.18 to DNS cache\n* Trying 10.0.2.18:443...\n* Connected to api.example.com (10.0.2.18) port 443\n* TLSv1.3 (OUT), TLS handshake, Client hello (1):\n* TLSv1.3 (IN), TLS handshake, Server hello (2):\n* SSL connection using TLSv1.3 / TLS_AES_256_GCM_SHA384\n* Server certificate:\n*  subject: CN=api.example.com\n*  SSL certificate verify ok.\n> GET /health HTTP/2\n> Host: api.example.com\n>\n< HTTP/2 200\n< content-type: application/json\n< date: Mon, 02 Jun 2026 10:35:00 GMT\n< x-request-id: f8e7d6c5-b4a3-2190-fedc-ba0987654321\n<\n{\"status\":\"healthy\",\"version\":\"v2.1.0\",\"uptime\":\"14d3h\",\"db\":\"connected\"}",
+
+    "curl -k https://api.example.com/health": "<html>\n<head><title>502 Bad Gateway</title></head>\n<body>\n<center><h1>502 Bad Gateway</h1></center>\n<center>nginx/1.25.4</center>\n</body>\n</html>",
+
+    "curl --connect-timeout 5 https://api.example.com/health": "<html>\n<head><title>502 Bad Gateway</title></head>\n<body>\n<center><h1>502 Bad Gateway</h1></center>\n<center>nginx/1.25.4</center>\n</body>\n</html>",
+
+    "curl -L http://example.com": "HTTP/1.1 301 Moved Permanently\nLocation: https://example.com/\n\n<!doctype html>\n<html>\n<head><title>Example Domain</title></head>\n<body>\n<h1>Example Domain</h1>\n<p>This domain is for use in illustrative examples in documents.</p>\n</body>\n</html>",
+
+    "curl --trace-ascii - https://api.example.com/health": "== Info: Trying 93.184.216.34:443...\n== Info: Connected to api.example.com (93.184.216.34) port 443\n=> Send SSL data, 512 bytes\n0000: 16 03 01 02 00 01 00 01 fc 03 03 ..client hello..\n<= Recv SSL data, 155 bytes\n0000: 16 03 03 00 7a 02 00 00 76 03 03 ..server hello..\n== Info: TLSv1.3 handshake complete\n=> Send header, 83 bytes\n0000: GET /health HTTP/2\n0018: Host: api.example.com\n002e: User-Agent: curl/8.5.0\n0046: Accept: */*\n<= Recv header, 15 bytes\n0000: HTTP/2 502\n<= Recv header, 24 bytes\n0000: server: nginx/1.25.4\n<= Recv data, 166 bytes\n0000: <html>..502 Bad Gateway..</html>",
+
+    "curl -v http://example.com": "* Trying 93.184.216.34:80...\n* Connected to example.com (93.184.216.34) port 80\n> GET / HTTP/1.1\n> Host: example.com\n> User-Agent: curl/8.5.0\n> Accept: */*\n>\n< HTTP/1.1 301 Moved Permanently\n< server: nginx/1.25.4\n< date: Mon, 02 Jun 2026 10:30:00 GMT\n< content-type: text/html\n< content-length: 162\n< location: https://example.com/\n<\n<html>\n<head><title>301 Moved Permanently</title></head>\n<body>\n<center><h1>301 Moved Permanently</h1></center>\n</body>\n</html>",
+
+    "curl -v https://example.com": "* Trying 93.184.216.34:443...\n* Connected to example.com (93.184.216.34) port 443\n* ALPN: offers h2,http/1.1\n* TLSv1.3 (OUT), TLS handshake, Client hello (1):\n* TLSv1.3 (IN), TLS handshake, Server hello (2):\n* TLSv1.3 (IN), TLS handshake, Certificate (11):\n* TLSv1.3 (IN), TLS handshake, Finished (20):\n* TLSv1.3 (OUT), TLS handshake, Finished (20):\n* SSL connection using TLSv1.3 / TLS_AES_256_GCM_SHA384\n* Server certificate:\n*  subject: CN=example.com\n*  start date: Jan 15 00:00:00 2026 GMT\n*  expire date: Jan 15 23:59:59 2027 GMT\n*  issuer: C=US, O=DigiCert Inc, CN=DigiCert TLS RSA SHA256 2020 CA1\n*  SSL certificate verify ok.\n* using HTTP/2\n> GET / HTTP/2\n> Host: example.com\n> User-Agent: curl/8.5.0\n> Accept: */*\n>\n< HTTP/2 200\n< server: nginx/1.25.4\n< date: Mon, 02 Jun 2026 10:30:00 GMT\n< content-type: text/html; charset=UTF-8\n< content-length: 1256\n< cache-control: max-age=604800\n<\n<!doctype html>\n<html><head><title>Example Domain</title></head>\n<body><h1>Example Domain</h1></body></html>",
+
+    "ping example.com": "PING example.com (93.184.216.34): 56 data bytes\n64 bytes from 93.184.216.34: icmp_seq=0 ttl=56 time=85.3 ms\n64 bytes from 93.184.216.34: icmp_seq=1 ttl=56 time=84.7 ms\n64 bytes from 93.184.216.34: icmp_seq=2 ttl=56 time=85.1 ms\n^C\n--- example.com ping statistics ---\n3 packets transmitted, 3 packets received, 0% packet loss\nround-trip min/avg/max/stddev = 84.7/85.0/85.3/0.3 ms",
+
+    "ping -c 3 example.com": "PING example.com (93.184.216.34): 56 data bytes\n64 bytes from 93.184.216.34: icmp_seq=0 ttl=56 time=85.3 ms\n64 bytes from 93.184.216.34: icmp_seq=1 ttl=56 time=84.7 ms\n64 bytes from 93.184.216.34: icmp_seq=2 ttl=56 time=85.1 ms\n\n--- example.com ping statistics ---\n3 packets transmitted, 3 packets received, 0% packet loss\nround-trip min/avg/max/stddev = 84.7/85.0/85.3/0.3 ms",
+
+    "ping -c 3 10.0.1.42": "PING 10.0.1.42 (10.0.1.42): 56 data bytes\n64 bytes from 10.0.1.42: icmp_seq=0 ttl=64 time=0.8 ms\n64 bytes from 10.0.1.42: icmp_seq=1 ttl=64 time=0.7 ms\n64 bytes from 10.0.1.42: icmp_seq=2 ttl=64 time=0.9 ms\n\n--- 10.0.1.42 ping statistics ---\n3 packets transmitted, 3 packets received, 0% packet loss\nround-trip min/avg/max/stddev = 0.7/0.8/0.9/0.1 ms",
+
+    "ping -c 3 10.0.2.18": "PING 10.0.2.18 (10.0.2.18): 56 data bytes\n64 bytes from 10.0.2.18: icmp_seq=0 ttl=64 time=0.6 ms\n64 bytes from 10.0.2.18: icmp_seq=1 ttl=64 time=0.5 ms\n64 bytes from 10.0.2.18: icmp_seq=2 ttl=64 time=0.7 ms\n\n--- 10.0.2.18 ping statistics ---\n3 packets transmitted, 3 packets received, 0% packet loss\nround-trip min/avg/max/stddev = 0.5/0.6/0.7/0.1 ms",
+
+    "traceroute example.com": "traceroute to example.com (93.184.216.34), 30 hops max, 60 byte packets\n 1  gateway (10.0.0.1)  0.5 ms  0.4 ms  0.4 ms\n 2  isp-router1.net (203.0.113.1)  2.1 ms  2.0 ms  2.1 ms\n 3  core-router.isp.net (203.0.113.5)  5.3 ms  5.2 ms  5.4 ms\n 4  peer-exchange.net (198.51.100.10)  12.8 ms  12.7 ms  12.9 ms\n 5  cdn-edge-01.example.com (93.184.216.1)  45.2 ms  45.1 ms  45.3 ms\n 6  example.com (93.184.216.34)  85.1 ms  85.0 ms  85.2 ms",
+
+    "traceroute api.example.com": "traceroute to api.example.com (93.184.216.34), 30 hops max, 60 byte packets\n 1  gateway (10.0.0.1)  0.5 ms  0.4 ms  0.4 ms\n 2  isp-router1.net (203.0.113.1)  2.1 ms  2.0 ms  2.1 ms\n 3  core-router.isp.net (203.0.113.5)  5.3 ms  5.2 ms  5.4 ms\n 4  peer-exchange.net (198.51.100.10)  12.8 ms  12.7 ms  12.9 ms\n 5  cdn-edge-01.example.com (93.184.216.1)  45.2 ms  45.1 ms  45.3 ms\n 6  api.example.com (93.184.216.34)  85.1 ms  85.0 ms  85.2 ms",
+
+    "nc -zv example.com 443": "Connection to example.com (93.184.216.34) port 443 [tcp/https] succeeded!",
+
+    "nc -zv example.com 80": "Connection to example.com (93.184.216.34) port 80 [tcp/http] succeeded!",
+
+    "nc -zv 93.184.216.34 443": "Connection to 93.184.216.34 port 443 [tcp/https] succeeded!",
+
+    "nc -zv 93.184.216.34 80": "Connection to 93.184.216.34 port 80 [tcp/http] succeeded!",
+
+    "nc -zv ns1.example.com 53": "nc: connect to ns1.example.com (198.51.100.1) port 53 (tcp) failed: Connection timed out",
+
+    "nc -zv ns2.example.com 53": "Connection to ns2.example.com (198.51.100.2) port 53 [tcp/domain] succeeded!",
+
+    "nc -zv 10.0.1.42 443": "Connection to 10.0.1.42 port 443 [tcp/https] succeeded!",
+
+    "nc -zv 10.0.1.42 8080": "Connection to 10.0.1.42 port 8080 [tcp/http-alt] succeeded!",
+
+    "nc -zv 10.0.2.18 443": "Connection to 10.0.2.18 port 443 [tcp/https] succeeded!",
+
+    "openssl s_client -connect api.example.com:443": "CONNECTED(00000003)\ndepth=2 C = US, O = DigiCert Inc, OU = www.digicert.com, CN = DigiCert Global Root G2\nverify return:1\ndepth=1 C = US, O = DigiCert Inc, CN = DigiCert TLS RSA SHA256 2020 CA1\nverify return:1\ndepth=0 CN = api.example.com\nverify return:1\n---\nCertificate chain\n 0 s:CN = api.example.com\n   i:C = US, O = DigiCert Inc, CN = DigiCert TLS RSA SHA256 2020 CA1\n   a:PKEY: rsaEncryption, 2048 bit\n   v:NotBefore: Mar  1 00:00:00 2026 GMT; NotAfter: Mar  1 23:59:59 2027 GMT\n 1 s:C = US, O = DigiCert Inc, CN = DigiCert TLS RSA SHA256 2020 CA1\n   i:C = US, O = DigiCert Inc, OU = www.digicert.com, CN = DigiCert Global Root G2\n---\nServer certificate\n-----BEGIN CERTIFICATE-----\nMIIF....(certificate data)....==\n-----END CERTIFICATE-----\nsubject=CN = api.example.com\nissuer=C = US, O = DigiCert Inc, CN = DigiCert TLS RSA SHA256 2020 CA1\n---\nSSL handshake has read 3421 bytes and written 392 bytes\nVerification: OK\n---\nNew, TLSv1.3, Cipher is TLS_AES_256_GCM_SHA384\nServer public key is 2048 bit\nProtocol  : TLSv1.3\nCipher    : TLS_AES_256_GCM_SHA384\nStart Time: 1717315800\nTimeout   : 7200 (sec)\nVerify return code: 0 (ok)\nExtended master secret: no\nMax Early Data: 0\n---",
+
+    "openssl s_client -connect example.com:443": "CONNECTED(00000003)\ndepth=2 C = US, O = DigiCert Inc, OU = www.digicert.com, CN = DigiCert Global Root G2\nverify return:1\ndepth=1 C = US, O = DigiCert Inc, CN = DigiCert TLS RSA SHA256 2020 CA1\nverify return:1\ndepth=0 CN = example.com\nverify return:1\n---\nCertificate chain\n 0 s:CN = example.com\n   i:C = US, O = DigiCert Inc, CN = DigiCert TLS RSA SHA256 2020 CA1\n   a:PKEY: rsaEncryption, 2048 bit\n   v:NotBefore: Jan 15 00:00:00 2026 GMT; NotAfter: Jan 15 23:59:59 2027 GMT\n 1 s:C = US, O = DigiCert Inc, CN = DigiCert TLS RSA SHA256 2020 CA1\n   i:C = US, O = DigiCert Inc, OU = www.digicert.com, CN = DigiCert Global Root G2\n---\nSSL handshake has read 3421 bytes and written 392 bytes\nVerification: OK\n---\nNew, TLSv1.3, Cipher is TLS_AES_256_GCM_SHA384\nProtocol  : TLSv1.3\nCipher    : TLS_AES_256_GCM_SHA384\nVerify return code: 0 (ok)\n---",
+
+    "mtr example.com": "                             My traceroute  [v0.95]\nsre@debug (10.0.0.5) -> example.com (93.184.216.34)   2026-06-02T10:30:00+0530\nKeys:  Help   Display mode   Restart statistics   Order of fields   quit\n                                  Packets               Pings\n Host                           Loss%   Snt   Last   Avg  Best  Wrst StDev\n 1. gateway (10.0.0.1)           0.0%    10    0.5   0.5   0.4   0.6   0.1\n 2. isp-router1.net (203.0.113.1) 0.0%  10    2.1   2.1   2.0   2.3   0.1\n 3. core-router.isp.net          0.0%    10    5.3   5.3   5.1   5.5   0.1\n 4. peer-exchange.net            0.0%    10   12.8  12.8  12.6  13.0   0.1\n 5. cdn-edge-01.example.com      0.0%    10   45.2  45.1  44.9  45.4   0.2\n 6. example.com (93.184.216.34)  0.0%    10   85.1  85.0  84.8  85.3   0.2",
+
+    "cat /etc/resolv.conf": "# Generated by NetworkManager\nnameserver 127.0.0.53\noptions edns0 trust-ad\nsearch example.internal",
+
+    "cat /etc/hosts": "127.0.0.1\tlocalhost\n::1\t\tlocalhost\n10.0.1.42\tbackend-1.internal\n10.0.2.18\tbackend-2.internal\n10.0.3.55\tdb-primary.internal",
+
+    "systemctl status systemd-resolved": "● systemd-resolved.service - Network Name Resolution\n     Loaded: loaded (/lib/systemd/system/systemd-resolved.service; enabled)\n     Active: active (running) since Mon 2026-06-01 00:00:00 IST; 1 day ago\n   Main PID: 1234 (systemd-resolve)\n     Status: \"Processing requests...\"\n      Tasks: 1 (limit: 4915)\n     Memory: 8.2M\n        CPU: 1.245s\n     CGroup: /system.slice/systemd-resolved.service\n             └─1234 /lib/systemd/systemd-resolved",
+
+    "resolvectl status": "Global\n         Protocols: +LLMNR +mDNS -DNSOverTLS DNSSEC=no/unsupported\n  resolv.conf mode: stub\nCurrent DNS Server: 10.0.0.2\n       DNS Servers: 10.0.0.2 8.8.8.8 8.8.4.4\n        DNS Domain: example.internal\n\nLink 2 (eth0)\n    Current Scopes: DNS LLMNR/IPv4 LLMNR/IPv6\n         Protocols: +DefaultRoute +LLMNR -mDNS -DNSOverTLS DNSSEC=no/unsupported\nCurrent DNS Server: 10.0.0.2\n       DNS Servers: 10.0.0.2",
+
+    "ss -tlnp | grep :53": "LISTEN  0  4096  127.0.0.53%lo:53  0.0.0.0:*  users:((\"systemd-resolve\",pid=1234,fd=13))"
+  },
+  "reference": [
+    {
+      "group": "dig — DNS Queries",
+      "commands": [
+        {
+          "cmd": "dig example.com",
+          "desc": "query A record"
+        },
+        {
+          "cmd": "dig example.com MX",
+          "desc": "mail exchange records"
+        },
+        {
+          "cmd": "dig example.com NS",
+          "desc": "nameservers"
+        },
+        {
+          "cmd": "dig example.com SOA",
+          "desc": "start of authority"
+        },
+        {
+          "cmd": "dig example.com TXT",
+          "desc": "TXT records (SPF, etc.)"
+        },
+        {
+          "cmd": "dig example.com ANY",
+          "desc": "all record types"
+        },
+        {
+          "cmd": "dig @8.8.8.8 example.com",
+          "desc": "query specific resolver"
+        },
+        {
+          "cmd": "dig +short example.com",
+          "desc": "concise answer only"
+        },
+        {
+          "cmd": "dig +trace example.com",
+          "desc": "trace resolution path"
+        },
+        {
+          "cmd": "dig -x 93.184.216.34",
+          "desc": "reverse lookup (PTR)"
+        }
+      ]
+    },
+    {
+      "group": "nslookup — Simple Lookups",
+      "commands": [
+        {
+          "cmd": "nslookup example.com",
+          "desc": "basic DNS lookup"
+        },
+        {
+          "cmd": "nslookup -type=MX example.com",
+          "desc": "MX record lookup"
+        },
+        {
+          "cmd": "nslookup -type=NS example.com",
+          "desc": "NS record lookup"
+        },
+        {
+          "cmd": "nslookup example.com 8.8.8.8",
+          "desc": "query specific server"
+        }
+      ]
+    },
+    {
+      "group": "curl — HTTP Requests",
+      "commands": [
+        {
+          "cmd": "curl -v https://api.example.com/health",
+          "desc": "verbose (show TLS + headers)"
+        },
+        {
+          "cmd": "curl -I https://api.example.com/health",
+          "desc": "headers only (HEAD)"
+        },
+        {
+          "cmd": "curl -X POST -d '{...}' -H \"Content-Type: application/json\" URL",
+          "desc": "POST JSON"
+        },
+        {
+          "cmd": "curl -o /dev/null -s -w \"%{http_code} %{time_total}\" URL",
+          "desc": "timing stats"
+        },
+        {
+          "cmd": "curl --resolve host:port:IP URL",
+          "desc": "bypass DNS"
+        },
+        {
+          "cmd": "curl -k URL",
+          "desc": "skip TLS verification"
+        },
+        {
+          "cmd": "curl -L URL",
+          "desc": "follow redirects"
+        },
+        {
+          "cmd": "curl --connect-timeout 5 URL",
+          "desc": "set timeout"
+        }
+      ]
+    },
+    {
+      "group": "Network Connectivity",
+      "commands": [
+        {
+          "cmd": "ping -c 3 example.com",
+          "desc": "ICMP reachability"
+        },
+        {
+          "cmd": "traceroute example.com",
+          "desc": "trace packet path"
+        },
+        {
+          "cmd": "mtr example.com",
+          "desc": "combined ping + traceroute"
+        },
+        {
+          "cmd": "nc -zv host port",
+          "desc": "test TCP port open"
+        }
+      ]
+    },
+    {
+      "group": "TLS & Certificates",
+      "commands": [
+        {
+          "cmd": "openssl s_client -connect api.example.com:443",
+          "desc": "inspect TLS cert chain"
+        },
+        {
+          "cmd": "curl -v https://... (look for SSL lines)",
+          "desc": "TLS handshake details"
+        },
+        {
+          "cmd": "curl --trace-ascii - URL",
+          "desc": "full request/response trace"
+        }
+      ]
+    },
+    {
+      "group": "Domain Info",
+      "commands": [
+        {
+          "cmd": "host example.com",
+          "desc": "quick A/MX lookup"
+        },
+        {
+          "cmd": "host 93.184.216.34",
+          "desc": "reverse lookup"
+        },
+        {
+          "cmd": "whois example.com",
+          "desc": "registration info"
+        }
+      ]
+    },
+    {
+      "group": "Local DNS Config",
+      "commands": [
+        {
+          "cmd": "cat /etc/resolv.conf",
+          "desc": "configured nameservers"
+        },
+        {
+          "cmd": "cat /etc/hosts",
+          "desc": "static host mappings"
+        },
+        {
+          "cmd": "resolvectl status",
+          "desc": "systemd-resolved info"
+        }
+      ]
+    },
+    {
+      "group": "Scenarios",
+      "commands": [
+        {
+          "cmd": "scenario dns-resolution-failure",
+          "desc": "troubleshoot DNS failure"
+        },
+        {
+          "cmd": "scenario debug-api-502",
+          "desc": "debug API 502 error"
+        }
+      ]
+    }
+  ]
+}

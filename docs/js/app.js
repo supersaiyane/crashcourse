@@ -397,7 +397,7 @@ async function renderReader(catId, filename) {
     loadGiscus(catId, filename);
 
     // Load CLI playground if available for this course
-    loadCLIPlayground(catId);
+    loadCLIPlayground(catId, filename);
 
     // Record reading history
     const courseKey = `${catId}/${filename}`;
@@ -834,7 +834,7 @@ async function renderHowToUse() {
 // ── CLI Playground loader ───────────────────────────────────────────────────
 let activePlayground = null;
 
-function loadCLIPlayground(catId) {
+function loadCLIPlayground(catId, filename) {
   const section = $id('cli-playground-section');
   const termDiv = $id('cli-terminal');
   if (!section || !termDiv) return;
@@ -846,8 +846,26 @@ function loadCLIPlayground(catId) {
     termDiv.innerHTML = '';
   }
 
-  // Check if CLI data exists for this category
-  const cliFile = `./data/cli-${catId}.json`;
+  // Map course filenames to their CLI playground JSON files
+  const cliMap = {
+    'Kubernetes.md': 'containers', 'Docker.md': 'docker',
+    'Terraform.md': 'terraform', 'Git.md': 'git',
+    'Linux.md': 'linux', 'Bash.md': 'bash',
+    'Helm.md': 'helm', 'Ansible.md': 'ansible',
+    'Prometheus.md': 'prometheus', 'PostgreSQL.md': 'postgresql',
+    'Redis.md': 'redis', 'AWS.md': 'aws',
+    'Vault.md': 'vault', 'ArgoCD.md': 'argocd',
+    'tmux.md': 'tmux', 'jq-yq.md': 'jq-yq',
+    'DNS-curl-dig.md': 'dns-curl-dig', 'Kafka.md': 'kafka',
+    'Vim.md': 'vim', 'systemd.md': 'systemd',
+    'Trivy.md': 'trivy', 'Kustomize.md': 'kustomize',
+    'Tekton.md': 'tekton', 'GitLab-CI.md': 'gitlab-ci',
+    'Podman.md': 'podman', 'containerd-nerdctl.md': 'containerd-nerdctl',
+    'Pulumi.md': 'pulumi', 'Flux.md': 'flux',
+    'OPA.md': 'opa', 'k6.md': 'k6'
+  };
+  const cliId = cliMap[filename] || catId;
+  const cliFile = `./data/cli-${cliId}.json`;
   fetch(cliFile).then(res => {
     if (!res.ok) {
       section.classList.add('hidden');

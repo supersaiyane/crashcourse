@@ -1,0 +1,361 @@
+{
+  "id": "kustomize",
+  "prompt": "kustomize@gitops:~/k8s$",
+  "welcome": "Welcome to the Kustomize CLI Playground.\nManage Kubernetes configurations with overlays — no templates, no forks.\nType 'help' for available commands, 'scenario' for guided labs.\n",
+  "scenarios": [
+    {
+      "id": "build-environment-overlays",
+      "title": "Build Environment-Specific Overlays",
+      "steps": [
+        {
+          "instruction": "Start by building the base kustomization to see what resources it produces.",
+          "expect": "kustomize build base",
+          "hint": "Try: kustomize build base"
+        },
+        {
+          "instruction": "Now build the production overlay to see environment-specific patches applied.",
+          "expect": "kustomize build overlays/production",
+          "hint": "Try: kustomize build overlays/production"
+        },
+        {
+          "instruction": "Set the replica count for the api deployment to 5 in the production overlay.",
+          "expect": "kustomize edit set replicas api=5",
+          "hint": "Try: kustomize edit set replicas api=5"
+        },
+        {
+          "instruction": "Update the container image to use the production tag v2.1.0.",
+          "expect": "kustomize edit set image myregistry/api:v2.1.0",
+          "hint": "Try: kustomize edit set image myregistry/api:v2.1.0"
+        },
+        {
+          "instruction": "Add a ConfigMap from a literal key-value pair for the environment.",
+          "expect": "kustomize edit add configmap app-config --from-literal=ENV=production",
+          "hint": "Try: kustomize edit add configmap app-config --from-literal=ENV=production"
+        },
+        {
+          "instruction": "Build the production overlay again to verify all patches are applied.",
+          "expect": "kustomize build overlays/production",
+          "hint": "Try: kustomize build overlays/production"
+        },
+        {
+          "instruction": "Compare the production output against what's currently deployed in the cluster.",
+          "expect": "kubectl diff -k overlays/production",
+          "hint": "Try: kubectl diff -k overlays/production"
+        },
+        {
+          "instruction": "Apply the production overlay to the cluster.",
+          "expect": "kubectl apply -k overlays/production",
+          "hint": "Try: kubectl apply -k overlays/production"
+        }
+      ]
+    },
+    {
+      "id": "manage-secrets-configmaps",
+      "title": "Manage Secrets and ConfigMaps",
+      "steps": [
+        {
+          "instruction": "Create a secret generator for database credentials using literals.",
+          "expect": "kustomize edit add secret db-credentials --from-literal=DB_USER=admin --from-literal=DB_PASS=s3cur3",
+          "hint": "Try: kustomize edit add secret db-credentials --from-literal=DB_USER=admin --from-literal=DB_PASS=s3cur3"
+        },
+        {
+          "instruction": "Add a ConfigMap from an env file containing application settings.",
+          "expect": "kustomize edit add configmap app-settings --from-file=config.env",
+          "hint": "Try: kustomize edit add configmap app-settings --from-file=config.env"
+        },
+        {
+          "instruction": "Set the namespace for all resources to 'payments'.",
+          "expect": "kustomize edit set namespace payments",
+          "hint": "Try: kustomize edit set namespace payments"
+        },
+        {
+          "instruction": "Add a common label to all resources for tracking.",
+          "expect": "kustomize edit set label app.kubernetes.io/part-of:payment-system",
+          "hint": "Try: kustomize edit set label app.kubernetes.io/part-of:payment-system"
+        },
+        {
+          "instruction": "Build the current directory to verify the generated secrets and configmaps.",
+          "expect": "kustomize build .",
+          "hint": "Try: kustomize build ."
+        },
+        {
+          "instruction": "View the resource tree to understand the structure.",
+          "expect": "kustomize cfg tree .",
+          "hint": "Try: kustomize cfg tree ."
+        },
+        {
+          "instruction": "Apply the kustomization directly using kubectl.",
+          "expect": "kubectl apply -k .",
+          "hint": "Try: kubectl apply -k ."
+        }
+      ]
+    }
+  ],
+  "commands": {
+    "help": "Available commands:\n  kustomize build [path]          — Render final YAML from kustomization\n  kustomize edit set image        — Set container image in kustomization\n  kustomize edit set namespace    — Set namespace for all resources\n  kustomize edit set replicas     — Set replica count for a workload\n  kustomize edit add resource     — Add a resource file reference\n  kustomize edit add patch        — Add a patch file reference\n  kustomize edit add configmap    — Generate a ConfigMap\n  kustomize edit add secret       — Generate a Secret\n  kustomize edit set label        — Set common labels\n  kustomize cfg tree              — Show resource hierarchy\n  kustomize cfg grep              — Search resources by field\n  kubectl apply -k [path]         — Apply a kustomization to the cluster\n  kubectl diff -k [path]          — Diff kustomization against live state\n  kustomize version               — Show kustomize version\n\n  scenario                        — Start a guided lab\n  clear                           — Clear the terminal\n  help                            — Show this help",
+    "kustomize version": "v5.4.2",
+    "kustomize build .": "apiVersion: v1\nkind: ConfigMap\nmetadata:\n  name: app-config-8k2m5d\n  namespace: payments\n  labels:\n    app: payment-api\n    app.kubernetes.io/part-of: payment-system\ndata:\n  ENV: production\n  LOG_LEVEL: info\n---\napiVersion: v1\nkind: Secret\nmetadata:\n  name: db-credentials-g7h4k2\n  namespace: payments\n  labels:\n    app: payment-api\n    app.kubernetes.io/part-of: payment-system\ntype: Opaque\ndata:\n  DB_USER: YWRtaW4=\n  DB_PASS: czNjdXIz\n---\napiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: payment-api\n  namespace: payments\n  labels:\n    app: payment-api\n    app.kubernetes.io/part-of: payment-system\nspec:\n  replicas: 3\n  selector:\n    matchLabels:\n      app: payment-api\n  template:\n    metadata:\n      labels:\n        app: payment-api\n    spec:\n      containers:\n      - name: api\n        image: myregistry/payment-api:v2.1.0\n        ports:\n        - containerPort: 8080\n        envFrom:\n        - configMapRef:\n            name: app-config-8k2m5d\n        - secretRef:\n            name: db-credentials-g7h4k2\n        resources:\n          requests:\n            cpu: 200m\n            memory: 256Mi\n          limits:\n            cpu: 500m\n            memory: 512Mi\n---\napiVersion: v1\nkind: Service\nmetadata:\n  name: payment-api\n  namespace: payments\n  labels:\n    app: payment-api\n    app.kubernetes.io/part-of: payment-system\nspec:\n  selector:\n    app: payment-api\n  ports:\n  - port: 8080\n    targetPort: 8080\n  type: ClusterIP",
+    "kustomize build base": "apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: api\n  labels:\n    app: api\nspec:\n  replicas: 1\n  selector:\n    matchLabels:\n      app: api\n  template:\n    metadata:\n      labels:\n        app: api\n    spec:\n      containers:\n      - name: api\n        image: myregistry/api:latest\n        ports:\n        - containerPort: 8080\n        resources:\n          requests:\n            cpu: 100m\n            memory: 128Mi\n          limits:\n            cpu: 250m\n            memory: 256Mi\n---\napiVersion: v1\nkind: Service\nmetadata:\n  name: api\n  labels:\n    app: api\nspec:\n  selector:\n    app: api\n  ports:\n  - port: 8080\n    targetPort: 8080\n  type: ClusterIP\n---\napiVersion: v1\nkind: ConfigMap\nmetadata:\n  name: api-config\ndata:\n  LOG_LEVEL: info\n  RATE_LIMIT: \"100\"",
+    "kustomize build overlays/production": "apiVersion: v1\nkind: ConfigMap\nmetadata:\n  name: api-config-9f7k3m\n  namespace: production\n  labels:\n    app: api\n    env: production\n    team: platform\ndata:\n  LOG_LEVEL: warn\n  RATE_LIMIT: \"5000\"\n  ENABLE_METRICS: \"true\"\n---\napiVersion: v1\nkind: ConfigMap\nmetadata:\n  name: app-config-d4h8j2\n  namespace: production\n  labels:\n    app: api\n    env: production\n    team: platform\ndata:\n  ENV: production\n---\napiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: api\n  namespace: production\n  labels:\n    app: api\n    env: production\n    team: platform\nspec:\n  replicas: 5\n  selector:\n    matchLabels:\n      app: api\n  template:\n    metadata:\n      labels:\n        app: api\n        env: production\n    spec:\n      containers:\n      - name: api\n        image: myregistry/api:v2.1.0\n        ports:\n        - containerPort: 8080\n        resources:\n          requests:\n            cpu: 500m\n            memory: 512Mi\n          limits:\n            cpu: \"1\"\n            memory: 1Gi\n        livenessProbe:\n          httpGet:\n            path: /healthz\n            port: 8080\n          initialDelaySeconds: 10\n          periodSeconds: 15\n        readinessProbe:\n          httpGet:\n            path: /readyz\n            port: 8080\n          initialDelaySeconds: 5\n          periodSeconds: 10\n        envFrom:\n        - configMapRef:\n            name: api-config-9f7k3m\n---\napiVersion: v1\nkind: Service\nmetadata:\n  name: api\n  namespace: production\n  labels:\n    app: api\n    env: production\n    team: platform\nspec:\n  selector:\n    app: api\n  ports:\n  - port: 8080\n    targetPort: 8080\n  type: ClusterIP\n---\napiVersion: autoscaling/v2\nkind: HorizontalPodAutoscaler\nmetadata:\n  name: api\n  namespace: production\n  labels:\n    app: api\n    env: production\nspec:\n  scaleTargetRef:\n    apiVersion: apps/v1\n    kind: Deployment\n    name: api\n  minReplicas: 5\n  maxReplicas: 20\n  metrics:\n  - type: Resource\n    resource:\n      name: cpu\n      target:\n        type: Utilization\n        averageUtilization: 70",
+    "kustomize build overlays/staging": "apiVersion: v1\nkind: ConfigMap\nmetadata:\n  name: api-config-b2m5k8\n  namespace: staging\n  labels:\n    app: api\n    env: staging\ndata:\n  LOG_LEVEL: debug\n  RATE_LIMIT: \"500\"\n  ENABLE_METRICS: \"true\"\n---\napiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: api\n  namespace: staging\n  labels:\n    app: api\n    env: staging\nspec:\n  replicas: 2\n  selector:\n    matchLabels:\n      app: api\n  template:\n    metadata:\n      labels:\n        app: api\n        env: staging\n    spec:\n      containers:\n      - name: api\n        image: myregistry/api:v2.2.0-rc1\n        ports:\n        - containerPort: 8080\n        resources:\n          requests:\n            cpu: 200m\n            memory: 256Mi\n          limits:\n            cpu: 500m\n            memory: 512Mi\n---\napiVersion: v1\nkind: Service\nmetadata:\n  name: api\n  namespace: staging\n  labels:\n    app: api\n    env: staging\nspec:\n  selector:\n    app: api\n  ports:\n  - port: 8080\n    targetPort: 8080\n  type: ClusterIP",
+    "kustomize edit set image myregistry/api:v2.1.0": "image \"myregistry/api\" set to \"myregistry/api:v2.1.0\" in kustomization.yaml",
+    "kustomize edit set image myregistry/api:v2.2.0": "image \"myregistry/api\" set to \"myregistry/api:v2.2.0\" in kustomization.yaml",
+    "kustomize edit set image myregistry/payment-api:v3.0.0": "image \"myregistry/payment-api\" set to \"myregistry/payment-api:v3.0.0\" in kustomization.yaml",
+    "kustomize edit set namespace production": "namespace \"production\" set in kustomization.yaml",
+    "kustomize edit set namespace staging": "namespace \"staging\" set in kustomization.yaml",
+    "kustomize edit set namespace payments": "namespace \"payments\" set in kustomization.yaml",
+    "kustomize edit set replicas api=5": "replicas for \"api\" set to 5 in kustomization.yaml",
+    "kustomize edit set replicas api=3": "replicas for \"api\" set to 3 in kustomization.yaml",
+    "kustomize edit set replicas api=10": "replicas for \"api\" set to 10 in kustomization.yaml",
+    "kustomize edit set replicas payment-api=5": "replicas for \"payment-api\" set to 5 in kustomization.yaml",
+    "kustomize edit add resource deployment.yaml": "resource \"deployment.yaml\" added to kustomization.yaml",
+    "kustomize edit add resource service.yaml": "resource \"service.yaml\" added to kustomization.yaml",
+    "kustomize edit add resource hpa.yaml": "resource \"hpa.yaml\" added to kustomization.yaml",
+    "kustomize edit add resource ingress.yaml": "resource \"ingress.yaml\" added to kustomization.yaml",
+    "kustomize edit add resource namespace.yaml": "resource \"namespace.yaml\" added to kustomization.yaml",
+    "kustomize edit add patch --path patch-replicas.yaml": "patch \"patch-replicas.yaml\" added to kustomization.yaml",
+    "kustomize edit add patch --path patch-resources.yaml": "patch \"patch-resources.yaml\" added to kustomization.yaml",
+    "kustomize edit add patch --path patch-probes.yaml": "patch \"patch-probes.yaml\" added to kustomization.yaml",
+    "kustomize edit add configmap app-config --from-literal=ENV=production": "configMap \"app-config\" added to kustomization.yaml\n  with literal: ENV=production",
+    "kustomize edit add configmap app-config --from-literal=ENV=staging": "configMap \"app-config\" added to kustomization.yaml\n  with literal: ENV=staging",
+    "kustomize edit add configmap app-settings --from-file=config.env": "configMap \"app-settings\" added to kustomization.yaml\n  with file: config.env",
+    "kustomize edit add configmap nginx-config --from-file=nginx.conf": "configMap \"nginx-config\" added to kustomization.yaml\n  with file: nginx.conf",
+    "kustomize edit add secret db-credentials --from-literal=DB_USER=admin --from-literal=DB_PASS=s3cur3": "secret \"db-credentials\" added to kustomization.yaml\n  with literal: DB_USER=admin\n  with literal: DB_PASS=s3cur3",
+    "kustomize edit add secret tls-cert --from-file=tls.crt --from-file=tls.key": "secret \"tls-cert\" added to kustomization.yaml\n  with file: tls.crt\n  with file: tls.key",
+    "kustomize edit add secret api-keys --from-literal=STRIPE_KEY=sk_live_xxx": "secret \"api-keys\" added to kustomization.yaml\n  with literal: STRIPE_KEY=sk_live_xxx",
+    "kustomize edit set label app.kubernetes.io/part-of:payment-system": "label \"app.kubernetes.io/part-of:payment-system\" set in kustomization.yaml",
+    "kustomize edit set label env:production": "label \"env:production\" set in kustomization.yaml",
+    "kustomize edit set label team:platform": "label \"team:platform\" set in kustomization.yaml",
+    "kustomize cfg tree .": ".\n├── [deployment.yaml]  Deployment api\n├── [service.yaml]  Service api\n├── [configmap.yaml]  ConfigMap api-config\n└── [kustomization.yaml]  Kustomization",
+    "kustomize cfg tree base": "base\n├── [deployment.yaml]  Deployment api\n├── [service.yaml]  Service api\n├── [configmap.yaml]  ConfigMap api-config\n└── [kustomization.yaml]  Kustomization",
+    "kustomize cfg tree overlays/production": "overlays/production\n├── [kustomization.yaml]  Kustomization\n├── [patch-replicas.yaml]  Deployment api (patch)\n├── [patch-resources.yaml]  Deployment api (patch)\n├── [patch-probes.yaml]  Deployment api (patch)\n└── [hpa.yaml]  HorizontalPodAutoscaler api",
+    "kustomize cfg tree overlays/staging": "overlays/staging\n├── [kustomization.yaml]  Kustomization\n├── [patch-replicas.yaml]  Deployment api (patch)\n└── [patch-resources.yaml]  Deployment api (patch)",
+    "kustomize cfg grep \"kind=Deployment\" .": "apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: api\n  labels:\n    app: api\nspec:\n  replicas: 1\n  selector:\n    matchLabels:\n      app: api\n  template:\n    metadata:\n      labels:\n        app: api\n    spec:\n      containers:\n      - name: api\n        image: myregistry/api:latest\n        ports:\n        - containerPort: 8080",
+    "kustomize cfg grep \"kind=Service\" .": "apiVersion: v1\nkind: Service\nmetadata:\n  name: api\n  labels:\n    app: api\nspec:\n  selector:\n    app: api\n  ports:\n  - port: 8080\n    targetPort: 8080\n  type: ClusterIP",
+    "kustomize cfg grep \"metadata.namespace=production\" overlays/production": "apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: api\n  namespace: production\n---\napiVersion: v1\nkind: Service\nmetadata:\n  name: api\n  namespace: production\n---\napiVersion: autoscaling/v2\nkind: HorizontalPodAutoscaler\nmetadata:\n  name: api\n  namespace: production",
+    "kubectl apply -k .": "configmap/app-config-8k2m5d created\nsecret/db-credentials-g7h4k2 created\ndeployment.apps/payment-api created\nservice/payment-api created",
+    "kubectl apply -k overlays/production": "configmap/api-config-9f7k3m configured\nconfigmap/app-config-d4h8j2 created\ndeployment.apps/api configured\nservice/api unchanged\nhorizontalpodautoscaler.autoscaling/api configured",
+    "kubectl apply -k overlays/staging": "configmap/api-config-b2m5k8 configured\ndeployment.apps/api configured\nservice/api unchanged",
+    "kubectl apply -k base": "configmap/api-config created\ndeployment.apps/api created\nservice/api created",
+    "kubectl diff -k overlays/production": "diff -u -N /tmp/LIVE/apps.v1.Deployment.production.api /tmp/MERGED/apps.v1.Deployment.production.api\n--- /tmp/LIVE/apps.v1.Deployment.production.api\n+++ /tmp/MERGED/apps.v1.Deployment.production.api\n@@ -6,7 +6,7 @@\n spec:\n-  replicas: 3\n+  replicas: 5\n   template:\n     spec:\n       containers:\n       - name: api\n-        image: myregistry/api:v2.0.0\n+        image: myregistry/api:v2.1.0\n         resources:\n           requests:\n-            cpu: 200m\n+            cpu: 500m",
+    "kubectl diff -k overlays/staging": "diff -u -N /tmp/LIVE/apps.v1.Deployment.staging.api /tmp/MERGED/apps.v1.Deployment.staging.api\n--- /tmp/LIVE/apps.v1.Deployment.staging.api\n+++ /tmp/MERGED/apps.v1.Deployment.staging.api\n@@ -6,7 +6,7 @@\n spec:\n   template:\n     spec:\n       containers:\n       - name: api\n-        image: myregistry/api:v2.1.0\n+        image: myregistry/api:v2.2.0-rc1",
+    "kubectl diff -k .": "diff -u -N /tmp/LIVE/apps.v1.Deployment.payments.payment-api /tmp/MERGED/apps.v1.Deployment.payments.payment-api\n--- /tmp/LIVE/apps.v1.Deployment.payments.payment-api\n+++ /tmp/MERGED/apps.v1.Deployment.payments.payment-api\n@@ -3,7 +3,7 @@\n metadata:\n   name: payment-api\n-  namespace: default\n+  namespace: payments",
+    "kustomize build . | kubectl apply -f -": "configmap/app-config-8k2m5d created\nsecret/db-credentials-g7h4k2 created\ndeployment.apps/payment-api created\nservice/payment-api created",
+    "kustomize build overlays/production | kubectl apply -f -": "configmap/api-config-9f7k3m configured\nconfigmap/app-config-d4h8j2 created\ndeployment.apps/api configured\nservice/api unchanged\nhorizontalpodautoscaler.autoscaling/api configured",
+    "kustomize build overlays/staging | kubectl apply -f -": "configmap/api-config-b2m5k8 configured\ndeployment.apps/api configured\nservice/api unchanged",
+    "kustomize edit add annotation note:deployed-by-ci": "annotation \"note:deployed-by-ci\" added to kustomization.yaml",
+    "kustomize edit set nameprefix prod-": "nameprefix \"prod-\" set in kustomization.yaml",
+    "kustomize edit set namesuffix -v2": "namesuffix \"-v2\" set in kustomization.yaml",
+    "kustomize edit fix": "kustomization.yaml fixed",
+    "kustomize edit remove resource deployment.yaml": "resource \"deployment.yaml\" removed from kustomization.yaml",
+    "kustomize edit remove patch --path patch-replicas.yaml": "patch \"patch-replicas.yaml\" removed from kustomization.yaml",
+    "cat kustomization.yaml": "apiVersion: kustomize.config.k8s.io/v1beta1\nkind: Kustomization\n\nresources:\n  - deployment.yaml\n  - service.yaml\n\nnameSpace: payments\n\nlabels:\n  - pairs:\n      app.kubernetes.io/part-of: payment-system\n\nconfigMapGenerator:\n  - name: app-config\n    literals:\n      - ENV=production\n      - LOG_LEVEL=info\n  - name: app-settings\n    files:\n      - config.env\n\nsecretGenerator:\n  - name: db-credentials\n    literals:\n      - DB_USER=admin\n      - DB_PASS=s3cur3\n\nimages:\n  - name: myregistry/api\n    newTag: v2.1.0\n\nreplicas:\n  - name: api\n    count: 5",
+    "cat base/kustomization.yaml": "apiVersion: kustomize.config.k8s.io/v1beta1\nkind: Kustomization\n\nresources:\n  - deployment.yaml\n  - service.yaml\n  - configmap.yaml",
+    "cat overlays/production/kustomization.yaml": "apiVersion: kustomize.config.k8s.io/v1beta1\nkind: Kustomization\n\nresources:\n  - ../../base\n  - hpa.yaml\n\nnameSpace: production\n\nlabels:\n  - pairs:\n      env: production\n      team: platform\n\npatches:\n  - path: patch-replicas.yaml\n  - path: patch-resources.yaml\n  - path: patch-probes.yaml\n\nconfigMapGenerator:\n  - name: app-config\n    literals:\n      - ENV=production\n    behavior: merge\n\nimages:\n  - name: myregistry/api\n    newTag: v2.1.0\n\nreplicas:\n  - name: api\n    count: 5",
+    "cat overlays/staging/kustomization.yaml": "apiVersion: kustomize.config.k8s.io/v1beta1\nkind: Kustomization\n\nresources:\n  - ../../base\n\nnameSpace: staging\n\nlabels:\n  - pairs:\n      env: staging\n\npatches:\n  - path: patch-replicas.yaml\n  - path: patch-resources.yaml\n\nimages:\n  - name: myregistry/api\n    newTag: v2.2.0-rc1\n\nreplicas:\n  - name: api\n    count: 2",
+    "ls": "base/\noverlays/\nkustomization.yaml\ndeployment.yaml\nservice.yaml\nconfig.env",
+    "ls base": "deployment.yaml\nservice.yaml\nconfigmap.yaml\nkustomization.yaml",
+    "ls overlays": "production/\nstaging/",
+    "ls overlays/production": "kustomization.yaml\npatch-replicas.yaml\npatch-resources.yaml\npatch-probes.yaml\nhpa.yaml",
+    "ls overlays/staging": "kustomization.yaml\npatch-replicas.yaml\npatch-resources.yaml",
+    "tree": ".\n├── base/\n│   ├── configmap.yaml\n│   ├── deployment.yaml\n│   ├── kustomization.yaml\n│   └── service.yaml\n├── overlays/\n│   ├── production/\n│   │   ├── hpa.yaml\n│   │   ├── kustomization.yaml\n│   │   ├── patch-probes.yaml\n│   │   ├── patch-replicas.yaml\n│   │   └── patch-resources.yaml\n│   └── staging/\n│       ├── kustomization.yaml\n│       ├── patch-replicas.yaml\n│       └── patch-resources.yaml\n├── config.env\n├── deployment.yaml\n├── kustomization.yaml\n└── service.yaml"
+  },
+  "reference": [
+    {
+      "group": "Build & Render",
+      "commands": [
+        {
+          "cmd": "kustomize build .",
+          "desc": "render current dir"
+        },
+        {
+          "cmd": "kustomize build base",
+          "desc": "render base resources"
+        },
+        {
+          "cmd": "kustomize build overlays/production",
+          "desc": "render production"
+        },
+        {
+          "cmd": "kustomize build overlays/staging",
+          "desc": "render staging"
+        },
+        {
+          "cmd": "kustomize build . | kubectl apply -f -",
+          "desc": "build and apply"
+        },
+        {
+          "cmd": "kustomize version",
+          "desc": "show version"
+        }
+      ]
+    },
+    {
+      "group": "Images & Replicas",
+      "commands": [
+        {
+          "cmd": "kustomize edit set image myregistry/api:v2.1.0",
+          "desc": "pin image tag"
+        },
+        {
+          "cmd": "kustomize edit set replicas api=5",
+          "desc": "set replica count"
+        },
+        {
+          "cmd": "kustomize edit set namespace production",
+          "desc": "set namespace"
+        },
+        {
+          "cmd": "kustomize edit set nameprefix prod-",
+          "desc": "add name prefix"
+        },
+        {
+          "cmd": "kustomize edit set namesuffix -v2",
+          "desc": "add name suffix"
+        },
+        {
+          "cmd": "kustomize edit set label env:production",
+          "desc": "set common label"
+        }
+      ]
+    },
+    {
+      "group": "Resources & Patches",
+      "commands": [
+        {
+          "cmd": "kustomize edit add resource deployment.yaml",
+          "desc": "add resource file"
+        },
+        {
+          "cmd": "kustomize edit add resource service.yaml",
+          "desc": "add service"
+        },
+        {
+          "cmd": "kustomize edit add patch --path patch-replicas.yaml",
+          "desc": "add strategic patch"
+        },
+        {
+          "cmd": "kustomize edit remove resource deployment.yaml",
+          "desc": "remove resource"
+        },
+        {
+          "cmd": "kustomize edit remove patch --path patch-replicas.yaml",
+          "desc": "remove patch"
+        }
+      ]
+    },
+    {
+      "group": "ConfigMaps & Secrets",
+      "commands": [
+        {
+          "cmd": "kustomize edit add configmap app-config --from-literal=ENV=production",
+          "desc": "configmap from literal"
+        },
+        {
+          "cmd": "kustomize edit add configmap app-settings --from-file=config.env",
+          "desc": "configmap from file"
+        },
+        {
+          "cmd": "kustomize edit add secret db-credentials --from-literal=DB_USER=admin --from-literal=DB_PASS=s3cur3",
+          "desc": "secret from literals"
+        },
+        {
+          "cmd": "kustomize edit add secret tls-cert --from-file=tls.crt --from-file=tls.key",
+          "desc": "secret from files"
+        }
+      ]
+    },
+    {
+      "group": "Inspect & Validate",
+      "commands": [
+        {
+          "cmd": "kustomize cfg tree .",
+          "desc": "resource tree"
+        },
+        {
+          "cmd": "kustomize cfg tree overlays/production",
+          "desc": "overlay tree"
+        },
+        {
+          "cmd": "kustomize cfg grep \"kind=Deployment\" .",
+          "desc": "filter deployments"
+        },
+        {
+          "cmd": "cat kustomization.yaml",
+          "desc": "view kustomization"
+        },
+        {
+          "cmd": "tree",
+          "desc": "directory structure"
+        }
+      ]
+    },
+    {
+      "group": "Apply & Diff",
+      "commands": [
+        {
+          "cmd": "kubectl apply -k .",
+          "desc": "apply kustomization"
+        },
+        {
+          "cmd": "kubectl apply -k overlays/production",
+          "desc": "apply production"
+        },
+        {
+          "cmd": "kubectl apply -k overlays/staging",
+          "desc": "apply staging"
+        },
+        {
+          "cmd": "kubectl diff -k overlays/production",
+          "desc": "diff against live"
+        },
+        {
+          "cmd": "kubectl diff -k overlays/staging",
+          "desc": "diff staging"
+        }
+      ]
+    },
+    {
+      "group": "View Files",
+      "commands": [
+        {
+          "cmd": "cat base/kustomization.yaml",
+          "desc": "base config"
+        },
+        {
+          "cmd": "cat overlays/production/kustomization.yaml",
+          "desc": "production overlay"
+        },
+        {
+          "cmd": "cat overlays/staging/kustomization.yaml",
+          "desc": "staging overlay"
+        },
+        {
+          "cmd": "ls",
+          "desc": "list current dir"
+        },
+        {
+          "cmd": "ls base",
+          "desc": "list base dir"
+        },
+        {
+          "cmd": "ls overlays",
+          "desc": "list overlays"
+        }
+      ]
+    },
+    {
+      "group": "Scenarios",
+      "commands": [
+        {
+          "cmd": "scenario build-environment-overlays",
+          "desc": "build env overlays"
+        },
+        {
+          "cmd": "scenario manage-secrets-configmaps",
+          "desc": "secrets & configmaps"
+        }
+      ]
+    }
+  ]
+}

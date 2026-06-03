@@ -1,0 +1,328 @@
+{
+  "id": "redis",
+  "prompt": "redis@cache-01:~$",
+  "welcome": "Welcome to the Redis CLI Playground.\nType commands to explore a simulated production cache server.\nType 'help' for available commands, 'scenario' for guided labs.\n",
+  "scenarios": [
+    {
+      "id": "diagnose-cache-performance",
+      "title": "Diagnose Cache Performance Issues",
+      "steps": [
+        {
+          "instruction": "First, check overall memory usage to see how the cache is doing.",
+          "expect": "INFO memory",
+          "hint": "Try: INFO memory"
+        },
+        {
+          "instruction": "Memory is at 4.1GB of 8GB. Check the slow log for expensive operations.",
+          "expect": "SLOWLOG GET 10",
+          "hint": "Try: SLOWLOG GET 10"
+        },
+        {
+          "instruction": "Several KEYS commands are showing up. Let's check how many slow queries have accumulated.",
+          "expect": "SLOWLOG LEN",
+          "hint": "Try: SLOWLOG LEN"
+        },
+        {
+          "instruction": "42 slow queries — too many. Let's identify hot keys by scanning the session namespace.",
+          "expect": "SCAN 0 MATCH session:* COUNT 100",
+          "hint": "Try: SCAN 0 MATCH session:* COUNT 100"
+        },
+        {
+          "instruction": "Lots of session keys. Check memory usage of a specific hot key.",
+          "expect": "MEMORY USAGE session:usr:10042",
+          "hint": "Try: MEMORY USAGE session:usr:10042"
+        },
+        {
+          "instruction": "2.4KB per session key. Let's check what the memory doctor recommends.",
+          "expect": "MEMORY DOCTOR",
+          "hint": "Try: MEMORY DOCTOR"
+        },
+        {
+          "instruction": "Doctor suggests peak memory is high. Check current maxmemory-policy to understand eviction behaviour.",
+          "expect": "CONFIG GET maxmemory-policy",
+          "hint": "Try: CONFIG GET maxmemory-policy"
+        },
+        {
+          "instruction": "Policy is 'noeviction' — that's risky for a cache. Switch to allkeys-lru to auto-evict stale keys.",
+          "expect": "CONFIG SET maxmemory-policy allkeys-lru",
+          "hint": "Try: CONFIG SET maxmemory-policy allkeys-lru"
+        }
+      ]
+    },
+    {
+      "id": "setup-monitor-replication",
+      "title": "Set Up and Monitor Replication",
+      "steps": [
+        {
+          "instruction": "Check the current replication status of this instance.",
+          "expect": "INFO replication",
+          "hint": "Try: INFO replication"
+        },
+        {
+          "instruction": "This is a master with one replica. Check the connected clients to see who's connected.",
+          "expect": "CLIENT LIST",
+          "hint": "Try: CLIENT LIST"
+        },
+        {
+          "instruction": "Good — one replica is connected. Let's check overall server info to confirm uptime and version.",
+          "expect": "INFO server",
+          "hint": "Try: INFO server"
+        },
+        {
+          "instruction": "Server is healthy. Check the keyspace to understand data distribution.",
+          "expect": "INFO keyspace",
+          "hint": "Try: INFO keyspace"
+        },
+        {
+          "instruction": "52,481 keys in db0. Let's verify the persistence configuration for disaster recovery.",
+          "expect": "CONFIG GET save",
+          "hint": "Try: CONFIG GET save"
+        },
+        {
+          "instruction": "RDB snapshots are configured. Trigger a background save to create a fresh snapshot before adding the new replica.",
+          "expect": "BGSAVE",
+          "hint": "Try: BGSAVE"
+        },
+        {
+          "instruction": "Background save started. Verify the last save timestamp to confirm it completed.",
+          "expect": "LASTSAVE",
+          "hint": "Try: LASTSAVE"
+        },
+        {
+          "instruction": "Now check overall statistics to confirm the replication throughput and ops/sec are healthy.",
+          "expect": "INFO stats",
+          "hint": "Try: INFO stats"
+        }
+      ]
+    }
+  ],
+  "commands": {
+    "help": "Available commands:\n  SET / GET / MGET / DEL         — String operations\n  HSET / HGETALL                 — Hash operations\n  LPUSH / LRANGE                 — List operations\n  SADD / SMEMBERS                — Set operations\n  ZADD / ZRANGE                  — Sorted set operations\n  EXISTS / TTL / EXPIRE / TYPE   — Key inspection\n  KEYS / SCAN                    — Key discovery\n  INFO [section]                 — Server information\n  CONFIG GET / CONFIG SET        — Runtime configuration\n  SLOWLOG GET / SLOWLOG LEN      — Slow query log\n  CLIENT LIST / CLIENT KILL      — Client management\n  MEMORY USAGE / DOCTOR / STATS  — Memory analysis\n  BGSAVE / LASTSAVE / BGREWRITEAOF — Persistence\n  CLUSTER INFO / CLUSTER NODES   — Cluster state\n  SUBSCRIBE / PUBLISH            — Pub/Sub\n  DBSIZE / MONITOR               — Diagnostics\n\n  scenario                       — Start a guided lab\n  clear                          — Clear the terminal\n  help                           — Show this help",
+    "PING": "PONG",
+    "DBSIZE": "(integer) 52481",
+    "INFO server": "# Server\nredis_version:7.2.4\nredis_git_sha1:00000000\nredis_git_dirty:0\nredis_build_id:abc123def456\nredis_mode:standalone\nos:Linux 5.15.0-91-generic x86_64\narch_bits:64\ntcp_port:6379\nuptime_in_seconds:7776000\nuptime_in_days:90\nhz:10\nconfigured_hz:10\nlru_clock:16485923\nexecutable:/usr/local/bin/redis-server\nconfig_file:/etc/redis/redis.conf\nio_threads_active:0",
+    "INFO memory": "# Memory\nused_memory:4404019200\nused_memory_human:4.10G\nused_memory_rss:4698144768\nused_memory_rss_human:4.37G\nused_memory_peak:5234491392\nused_memory_peak_human:4.87G\nused_memory_peak_perc:84.13%\nused_memory_overhead:892301456\nused_memory_dataset:3511717744\nused_memory_dataset_perc:79.72%\nmem_fragmentation_ratio:1.07\nmem_allocator:jemalloc-5.3.0\nactive_defrag_running:0\nlazyfree_pending_objects:0\nmaxmemory:8589934592\nmaxmemory_human:8.00G\nmaxmemory_policy:noeviction\nmem_clients_slaves:20512\nmem_clients_normal:414896\nmem_cluster_links:0",
+    "INFO replication": "# Replication\nrole:master\nconnected_slaves:1\nslave0:ip=10.0.2.55,port=6379,state=online,offset=285637492,lag=0\nmaster_failover_state:no-failover\nmaster_replid:8a3c4f5b6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a\nmaster_replid2:0000000000000000000000000000000000000000\nmaster_repl_offset:285637492\nsecond_repl_offset:-1\nrepl_backlog_active:1\nrepl_backlog_size:104857600\nrepl_backlog_first_byte_offset:180779893\nrepl_backlog_histlen:104857600",
+    "INFO stats": "# Stats\ntotal_connections_received:892451\ntotal_commands_processed:1847293651\ninstantaneous_ops_per_sec:12847\ntotal_net_input_bytes:284729384512\ntotal_net_output_bytes:1293847561024\ninstantaneous_input_kbps:1842.31\ninstantaneous_output_kbps:8923.47\nrejected_connections:0\nsync_full:2\nsync_partial_ok:8\nsync_partial_err:0\nexpired_keys:8472931\nevicted_keys:0\nkeyspace_hits:1284729384\nkeyspace_misses:142938471\nkeyspace_hit_rate:89.98%\npubsub_channels:4\npubsub_patterns:2\nlatest_fork_usec:12847\ntotal_forks:847\nmigrate_cached_sockets:0",
+    "INFO keyspace": "# Keyspace\ndb0:keys=52481,expires=48293,avg_ttl=3284729",
+    "INFO clients": "# Clients\nconnected_clients:142\ncluster_connections:0\nmaxclients:10000\nclient_recent_max_input_buffer:32\nclient_recent_max_output_buffer:0\ntotal_blocking_clients:3\ntotal_online_clients:142\nblocked_clients:3\ntracking_clients:0",
+    "INFO all": "# Server\nredis_version:7.2.4\nuptime_in_days:90\ntcp_port:6379\n\n# Memory\nused_memory_human:4.10G\nmaxmemory_human:8.00G\nmaxmemory_policy:noeviction\nmem_fragmentation_ratio:1.07\n\n# Stats\ninstantaneous_ops_per_sec:12847\nkeyspace_hits:1284729384\nkeyspace_misses:142938471\n\n# Replication\nrole:master\nconnected_slaves:1\n\n# Keyspace\ndb0:keys=52481,expires=48293,avg_ttl=3284729",
+    "SET user:1001 '{\"name\":\"Priya\",\"role\":\"admin\"}'": "OK",
+    "GET user:1001": "\"{\\\"name\\\":\\\"Priya\\\",\\\"role\\\":\\\"admin\\\",\\\"last_login\\\":\\\"2026-06-02T08:14:22Z\\\"}\"",
+    "GET session:usr:10042": "\"{\\\"user_id\\\":10042,\\\"token\\\":\\\"eyJhbGciOiJSUzI1NiJ9.abc\\\",\\\"created\\\":\\\"2026-06-02T09:30:00Z\\\",\\\"ttl\\\":3600}\"",
+    "GET rate:api:10042": "\"847\"",
+    "GET cache:profile:10042": "\"{\\\"user_id\\\":10042,\\\"name\\\":\\\"Rahul Sharma\\\",\\\"tier\\\":\\\"premium\\\",\\\"branch\\\":\\\"Mumbai-Central\\\"}\"",
+    "MGET user:1001 user:1002 user:1003": "1) \"{\\\"name\\\":\\\"Priya\\\",\\\"role\\\":\\\"admin\\\",\\\"last_login\\\":\\\"2026-06-02T08:14:22Z\\\"}\"\n2) \"{\\\"name\\\":\\\"Rahul\\\",\\\"role\\\":\\\"user\\\",\\\"last_login\\\":\\\"2026-06-02T07:55:10Z\\\"}\"\n3) \"{\\\"name\\\":\\\"Deepak\\\",\\\"role\\\":\\\"user\\\",\\\"last_login\\\":\\\"2026-06-01T23:42:18Z\\\"}\"",
+    "SET session:usr:99001 '{\"token\":\"abc123\",\"created\":\"2026-06-02T10:00:00Z\"}' EX 3600": "OK",
+    "HSET user:profile:1001 name Priya role admin branch Mumbai-Central": "(integer) 3",
+    "HGETALL user:profile:1001": "1) \"name\"\n2) \"Priya\"\n3) \"role\"\n4) \"admin\"\n5) \"branch\"\n6) \"Mumbai-Central\"\n7) \"tier\"\n8) \"premium\"\n9) \"last_login\"\n10) \"2026-06-02T08:14:22Z\"",
+    "HSET rate:config:api max_requests 1000 window_seconds 60 penalty_seconds 300": "(integer) 3",
+    "HGETALL rate:config:api": "1) \"max_requests\"\n2) \"1000\"\n3) \"window_seconds\"\n4) \"60\"\n5) \"penalty_seconds\"\n6) \"300\"",
+    "LPUSH queue:notifications '{\"user\":10042,\"msg\":\"Payment received\",\"ts\":\"2026-06-02T10:05:00Z\"}'": "(integer) 847",
+    "LRANGE queue:notifications 0 4": "1) \"{\\\"user\\\":10042,\\\"msg\\\":\\\"Payment received\\\",\\\"ts\\\":\\\"2026-06-02T10:05:00Z\\\"}\"\n2) \"{\\\"user\\\":10038,\\\"msg\\\":\\\"KYC approved\\\",\\\"ts\\\":\\\"2026-06-02T10:04:55Z\\\"}\"\n3) \"{\\\"user\\\":10091,\\\"msg\\\":\\\"Transfer complete\\\",\\\"ts\\\":\\\"2026-06-02T10:04:50Z\\\"}\"\n4) \"{\\\"user\\\":10003,\\\"msg\\\":\\\"OTP sent\\\",\\\"ts\\\":\\\"2026-06-02T10:04:48Z\\\"}\"\n5) \"{\\\"user\\\":10055,\\\"msg\\\":\\\"Loan disbursed\\\",\\\"ts\\\":\\\"2026-06-02T10:04:42Z\\\"}\"",
+    "LRANGE queue:notifications 0 -1": "1) \"{\\\"user\\\":10042,\\\"msg\\\":\\\"Payment received\\\",\\\"ts\\\":\\\"2026-06-02T10:05:00Z\\\"}\"\n2) \"{\\\"user\\\":10038,\\\"msg\\\":\\\"KYC approved\\\",\\\"ts\\\":\\\"2026-06-02T10:04:55Z\\\"}\"\n3) \"{\\\"user\\\":10091,\\\"msg\\\":\\\"Transfer complete\\\",\\\"ts\\\":\\\"2026-06-02T10:04:50Z\\\"}\"\n4) \"{\\\"user\\\":10003,\\\"msg\\\":\\\"OTP sent\\\",\\\"ts\\\":\\\"2026-06-02T10:04:48Z\\\"}\"\n5) \"{\\\"user\\\":10055,\\\"msg\\\":\\\"Loan disbursed\\\",\\\"ts\\\":\\\"2026-06-02T10:04:42Z\\\"}\"",
+    "SADD active:users 10042 10038 10091 10003 10055": "(integer) 5",
+    "SMEMBERS active:users": "1) \"10003\"\n2) \"10038\"\n3) \"10042\"\n4) \"10055\"\n5) \"10091\"\n6) \"10112\"\n7) \"10287\"\n8) \"10341\"",
+    "SCARD active:users": "(integer) 8",
+    "ZADD leaderboard:txn_volume 15420.50 user:10042 12800.00 user:10038 9450.75 user:10091": "(integer) 3",
+    "ZRANGE leaderboard:txn_volume 0 -1 WITHSCORES": "1) \"user:10003\"\n2) \"2340.00\"\n3) \"user:10055\"\n4) \"5672.25\"\n5) \"user:10091\"\n6) \"9450.75\"\n7) \"user:10038\"\n8) \"12800.00\"\n9) \"user:10042\"\n10) \"15420.50\"\n11) \"user:10112\"\n12) \"18932.80\"\n13) \"user:10287\"\n14) \"22415.00\"",
+    "ZRANGE leaderboard:txn_volume 0 4 WITHSCORES": "1) \"user:10003\"\n2) \"2340.00\"\n3) \"user:10055\"\n4) \"5672.25\"\n5) \"user:10091\"\n6) \"9450.75\"\n7) \"user:10038\"\n8) \"12800.00\"\n9) \"user:10042\"\n10) \"15420.50\"",
+    "ZREVRANGE leaderboard:txn_volume 0 4 WITHSCORES": "1) \"user:10287\"\n2) \"22415.00\"\n3) \"user:10112\"\n4) \"18932.80\"\n5) \"user:10042\"\n6) \"15420.50\"\n7) \"user:10038\"\n8) \"12800.00\"\n9) \"user:10091\"\n10) \"9450.75\"",
+    "ZCARD leaderboard:txn_volume": "(integer) 7",
+    "ZRANK leaderboard:txn_volume user:10042": "(integer) 4",
+    "ZSCORE leaderboard:txn_volume user:10042": "\"15420.50\"",
+    "DEL session:expired:9001": "(integer) 1",
+    "DEL temp:calc:batch42": "(integer) 1",
+    "EXISTS user:1001": "(integer) 1",
+    "EXISTS user:99999": "(integer) 0",
+    "EXISTS session:usr:10042": "(integer) 1",
+    "TTL session:usr:10042": "(integer) 2847",
+    "TTL user:1001": "(integer) -1",
+    "TTL cache:profile:10042": "(integer) 1823",
+    "EXPIRE session:usr:10042 3600": "(integer) 1",
+    "EXPIRE cache:profile:10042 900": "(integer) 1",
+    "TYPE user:1001": "string",
+    "TYPE user:profile:1001": "hash",
+    "TYPE queue:notifications": "list",
+    "TYPE active:users": "set",
+    "TYPE leaderboard:txn_volume": "zset",
+    "TYPE rate:api:10042": "string",
+    "KEYS session:*": "1) \"session:usr:10042\"\n2) \"session:usr:10038\"\n3) \"session:usr:10091\"\n4) \"session:usr:10003\"\n5) \"session:usr:10055\"\n6) \"session:usr:10112\"\n7) \"session:usr:10287\"\n8) \"session:usr:10341\"\n... (showing 8 of 12,847 matches)\n\u26a0\ufe0f  WARNING: KEYS blocks the server. Use SCAN in production.",
+    "KEYS user:*": "1) \"user:1001\"\n2) \"user:1002\"\n3) \"user:1003\"\n4) \"user:profile:1001\"\n5) \"user:profile:1002\"\n... (showing 5 of 8,429 matches)\n\u26a0\ufe0f  WARNING: KEYS blocks the server. Use SCAN in production.",
+    "KEYS rate:*": "1) \"rate:api:10042\"\n2) \"rate:api:10038\"\n3) \"rate:api:10091\"\n4) \"rate:config:api\"\n5) \"rate:config:web\"\n... (showing 5 of 3,218 matches)\n\u26a0\ufe0f  WARNING: KEYS blocks the server. Use SCAN in production.",
+    "KEYS *": "\u26a0\ufe0f  WARNING: KEYS * with 52,481 keys will block the server.\nUse SCAN 0 COUNT 100 instead.\n(showing first 10)\n1) \"user:1001\"\n2) \"user:1002\"\n3) \"session:usr:10042\"\n4) \"rate:api:10042\"\n5) \"cache:profile:10042\"\n6) \"leaderboard:txn_volume\"\n7) \"queue:notifications\"\n8) \"active:users\"\n9) \"user:profile:1001\"\n10) \"rate:config:api\"",
+    "SCAN 0 MATCH session:* COUNT 100": "1) \"13824\"\n2)  1) \"session:usr:10042\"\n    2) \"session:usr:10038\"\n    3) \"session:usr:10091\"\n    4) \"session:usr:10003\"\n    5) \"session:usr:10055\"\n    6) \"session:usr:10112\"\n    7) \"session:usr:10287\"\n    8) \"session:usr:10341\"\n    9) \"session:usr:10402\"\n   10) \"session:usr:10519\"\n   11) \"session:usr:10627\"\n   12) \"session:usr:10734\"",
+    "SCAN 0 MATCH rate:* COUNT 100": "1) \"8192\"\n2)  1) \"rate:api:10042\"\n    2) \"rate:api:10038\"\n    3) \"rate:api:10091\"\n    4) \"rate:web:10042\"\n    5) \"rate:web:10038\"\n    6) \"rate:config:api\"\n    7) \"rate:config:web\"",
+    "SCAN 0 MATCH cache:* COUNT 100": "1) \"24576\"\n2)  1) \"cache:profile:10042\"\n    2) \"cache:profile:10038\"\n    3) \"cache:profile:10091\"\n    4) \"cache:profile:10003\"\n    5) \"cache:txn:84721\"\n    6) \"cache:txn:84722\"\n    7) \"cache:balance:10042\"",
+    "SCAN 0 COUNT 100": "1) \"13824\"\n2)  1) \"user:1001\"\n    2) \"user:1002\"\n    3) \"session:usr:10042\"\n    4) \"rate:api:10042\"\n    5) \"cache:profile:10042\"\n    6) \"leaderboard:txn_volume\"\n    7) \"queue:notifications\"\n    8) \"active:users\"\n    9) \"user:profile:1001\"\n   10) \"rate:config:api\"",
+    "CONFIG GET maxmemory": "1) \"maxmemory\"\n2) \"8589934592\"",
+    "CONFIG GET maxmemory-policy": "1) \"maxmemory-policy\"\n2) \"noeviction\"",
+    "CONFIG GET save": "1) \"save\"\n2) \"900 1 300 10 60 10000\"",
+    "CONFIG GET hz": "1) \"hz\"\n2) \"10\"",
+    "CONFIG GET timeout": "1) \"timeout\"\n2) \"300\"",
+    "CONFIG GET databases": "1) \"databases\"\n2) \"16\"",
+    "CONFIG GET slowlog-log-slower-than": "1) \"slowlog-log-slower-than\"\n2) \"10000\"",
+    "CONFIG GET slowlog-max-len": "1) \"slowlog-max-len\"\n2) \"128\"",
+    "CONFIG SET maxmemory-policy allkeys-lru": "OK",
+    "CONFIG SET maxmemory 8589934592": "OK",
+    "CONFIG SET hz 10": "OK",
+    "CONFIG SET timeout 300": "OK",
+    "CONFIG SET slowlog-log-slower-than 5000": "OK",
+    "SLOWLOG GET 10": "1) 1) (integer) 42\n   2) (integer) 1717315200\n   3) (integer) 38472\n   4) 1) \"KEYS\"\n      2) \"session:*\"\n   5) \"10.0.1.42:52341\"\n2) 1) (integer) 41\n   2) (integer) 1717314900\n   3) (integer) 24891\n   4) 1) \"KEYS\"\n      2) \"*\"\n   5) \"10.0.1.42:52342\"\n3) 1) (integer) 40\n   2) (integer) 1717314600\n   3) (integer) 18234\n   4) 1) \"HGETALL\"\n      2) \"user:profile:large_object\"\n   5) \"10.0.2.18:48923\"\n4) 1) (integer) 39\n   2) (integer) 1717314300\n   3) (integer) 15847\n   4) 1) \"LRANGE\"\n      2) \"queue:notifications\"\n      3) \"0\"\n      4) \"-1\"\n   5) \"10.0.2.55:39281\"\n5) 1) (integer) 38\n   2) (integer) 1717314000\n   3) (integer) 12493\n   4) 1) \"KEYS\"\n      2) \"rate:*\"\n   5) \"10.0.1.42:52343\"",
+    "SLOWLOG GET 5": "1) 1) (integer) 42\n   2) (integer) 1717315200\n   3) (integer) 38472\n   4) 1) \"KEYS\"\n      2) \"session:*\"\n   5) \"10.0.1.42:52341\"\n2) 1) (integer) 41\n   2) (integer) 1717314900\n   3) (integer) 24891\n   4) 1) \"KEYS\"\n      2) \"*\"\n   5) \"10.0.1.42:52342\"\n3) 1) (integer) 40\n   2) (integer) 1717314600\n   3) (integer) 18234\n   4) 1) \"HGETALL\"\n      2) \"user:profile:large_object\"\n   5) \"10.0.2.18:48923\"",
+    "SLOWLOG LEN": "(integer) 42",
+    "SLOWLOG RESET": "OK",
+    "CLIENT LIST": "id=1842 addr=10.0.1.42:52341 fd=8 name=api-server age=7200 idle=2 flags=N db=0 sub=0 psub=0 multi=-1 qbuf=26 obl=0 oll=0 omem=0 events=r cmd=get\nid=1843 addr=10.0.1.42:52342 fd=9 name=api-server age=7200 idle=0 flags=N db=0 sub=0 psub=0 multi=-1 qbuf=0 obl=0 oll=0 omem=0 events=r cmd=set\nid=1901 addr=10.0.2.18:48923 fd=12 name=worker age=3600 idle=5 flags=N db=0 sub=0 psub=0 multi=-1 qbuf=0 obl=0 oll=0 omem=0 events=r cmd=lpush\nid=1902 addr=10.0.2.18:48924 fd=13 name=worker age=3600 idle=1 flags=N db=0 sub=0 psub=0 multi=-1 qbuf=0 obl=0 oll=0 omem=0 events=r cmd=brpop\nid=2001 addr=10.0.2.55:39281 fd=15 name=replica age=86400 idle=0 flags=S db=0 sub=0 psub=0 multi=-1 qbuf=0 obl=0 oll=0 omem=0 events=r cmd=replconf\nid=2101 addr=10.0.3.12:41892 fd=16 name=session-svc age=1800 idle=3 flags=N db=0 sub=0 psub=0 multi=-1 qbuf=0 obl=0 oll=0 omem=0 events=r cmd=get\nid=2102 addr=10.0.3.12:41893 fd=17 name=rate-limiter age=900 idle=0 flags=N db=0 sub=0 psub=0 multi=-1 qbuf=26 obl=0 oll=0 omem=0 events=r cmd=incr",
+    "CLIENT KILL ID 1842": "OK",
+    "CLIENT KILL ADDR 10.0.1.42:52341": "OK",
+    "CLIENT GETNAME": "\"redis-cli\"",
+    "CLIENT ID": "(integer) 2201",
+    "MONITOR": "OK\n1717315200.123456 [0 10.0.1.42:52341] \"GET\" \"session:usr:10042\"\n1717315200.234567 [0 10.0.3.12:41893] \"INCR\" \"rate:api:10042\"\n1717315200.345678 [0 10.0.1.42:52342] \"SET\" \"cache:profile:10042\" \"{...}\" \"EX\" \"900\"\n1717315200.456789 [0 10.0.2.18:48923] \"LPUSH\" \"queue:notifications\" \"{...}\"\n1717315200.567890 [0 10.0.3.12:41892] \"GET\" \"session:usr:10038\"\n(press Ctrl+C to stop)",
+    "BGSAVE": "Background saving started",
+    "LASTSAVE": "(integer) 1717315200\n(equivalent to 2026-06-02T10:00:00Z)",
+    "BGREWRITEAOF": "Background append only file rewriting started",
+    "DEBUG OBJECT user:1001": "Value at:0x7f8a2c001234 refcount:1 encoding:embstr serializedlength:58 lru:16485923 lru_seconds_idle:12 type:string",
+    "DEBUG OBJECT leaderboard:txn_volume": "Value at:0x7f8a2c005678 refcount:1 encoding:skiplist serializedlength:284 lru:16485920 lru_seconds_idle:3 type:zset",
+    "DEBUG OBJECT queue:notifications": "Value at:0x7f8a2c009abc refcount:1 encoding:listpack serializedlength:4218 lru:16485922 lru_seconds_idle:1 type:list",
+    "MEMORY USAGE user:1001": "(integer) 128",
+    "MEMORY USAGE session:usr:10042": "(integer) 2456",
+    "MEMORY USAGE leaderboard:txn_volume": "(integer) 1284",
+    "MEMORY USAGE queue:notifications": "(integer) 48392",
+    "MEMORY USAGE cache:profile:10042": "(integer) 512",
+    "MEMORY DOCTOR": "Sam, I have a few concerns:\n* Peak memory (4.87G) is above 60% of maxmemory (8.00G). Consider whether this is expected or a leak.\n* Fragmentation ratio (1.07) is acceptable but monitor during peak hours.\n* 48,293 keys have TTL set — good hygiene.\n* No active defragmentation running. Consider enabling if fragmentation increases.",
+    "MEMORY STATS": "1) \"peak.allocated\"\n2) (integer) 5234491392\n3) \"total.allocated\"\n4) (integer) 4404019200\n5) \"startup.allocated\"\n6) (integer) 892416\n7) \"replication.backlog\"\n8) (integer) 104857600\n9) \"clients.slaves\"\n10) (integer) 20512\n11) \"clients.normal\"\n12) (integer) 414896\n13) \"aof.buffer\"\n14) (integer) 0\n15) \"dbsize\"\n16) (integer) 52481\n17) \"keys.count\"\n18) (integer) 52481\n19) \"keys.bytes-per-key\"\n20) (integer) 83912\n21) \"dataset.bytes\"\n22) (integer) 3511717744\n23) \"dataset.percentage\"\n24) \"79.72%\"\n25) \"peak.percentage\"\n26) \"84.13%\"\n27) \"fragmentation\"\n28) \"1.07\"",
+    "MEMORY MALLOC-STATS": "jemalloc-5.3.0\n___ Begin jemalloc statistics ___\nAllocated: 4404019200, active: 4532281344, metadata: 42847296\nResident: 4698144768, mapped: 4831838208, retained: 284729344",
+    "CLUSTER INFO": "cluster_enabled:0\ncluster_state:ok\ncluster_slots_assigned:0\ncluster_slots_ok:0\ncluster_known_nodes:1\ncluster_size:0\n(this instance is not running in cluster mode)",
+    "CLUSTER NODES": "ERR This instance has cluster support disabled",
+    "SUBSCRIBE channel:alerts": "Reading messages... (press Ctrl+C to unsubscribe)\n1) \"subscribe\"\n2) \"channel:alerts\"\n3) (integer) 1\n\n1) \"message\"\n2) \"channel:alerts\"\n3) \"{\\\"level\\\":\\\"warning\\\",\\\"msg\\\":\\\"High memory usage on cache-01\\\",\\\"ts\\\":\\\"2026-06-02T10:05:30Z\\\"}\"",
+    "PUBLISH channel:alerts '{\"level\":\"info\",\"msg\":\"Cache warmed up\"}'": "(integer) 2",
+    "PUBLISH channel:txn '{\"user\":10042,\"amount\":1500.00,\"type\":\"transfer\"}'": "(integer) 3",
+    "OBJECT ENCODING user:1001": "\"embstr\"",
+    "OBJECT ENCODING leaderboard:txn_volume": "\"skiplist\"",
+    "OBJECT ENCODING queue:notifications": "\"listpack\"",
+    "OBJECT ENCODING active:users": "\"hashtable\"",
+    "OBJECT ENCODING user:profile:1001": "\"listpack\"",
+    "OBJECT IDLETIME user:1001": "(integer) 12",
+    "OBJECT IDLETIME session:usr:10042": "(integer) 2",
+    "OBJECT FREQ user:1001": "(integer) 0",
+    "RANDOMKEY": "\"cache:profile:10287\"",
+    "SELECT 0": "OK",
+    "SELECT 1": "OK",
+    "FLUSHDB": "\u26a0\ufe0f  This would delete all keys in the current database. Blocked in playground.",
+    "FLUSHALL": "\u26a0\ufe0f  This would delete ALL keys in ALL databases. Blocked in playground.",
+    "INCR rate:api:10042": "(integer) 848",
+    "INCRBY rate:api:10042 10": "(integer) 857",
+    "DECR rate:api:10042": "(integer) 846",
+    "APPEND user:notes:1001 ' — updated 2026-06-02'": "(integer) 42",
+    "STRLEN user:1001": "(integer) 58",
+    "SETNX lock:batch:42 'cache-01:pid:8847'": "(integer) 1",
+    "GETSET rate:api:10042 0": "\"847\"",
+    "PERSIST session:usr:10042": "(integer) 1",
+    "PTTL session:usr:10042": "(integer) 2847000",
+    "RENAME temp:old temp:new": "OK",
+    "RENAMENX temp:old temp:new": "(integer) 1",
+    "UNLINK session:expired:batch1 session:expired:batch2": "(integer) 2",
+    "WAIT 1 5000": "(integer) 1",
+    "OBJECT HELP": "OBJECT <subcommand> [<arg> [value] [opt] ...]. Subcommands are:\n  ENCODING <key> - Return the encoding of the object stored at <key>.\n  FREQ <key> - Return the access frequency of the key.\n  HELP - Return subcommand help summary.\n  IDLETIME <key> - Return the idle time of the key.\n  REFCOUNT <key> - Return the reference count of the object stored at <key>.",
+    "REPLICAOF 10.0.1.100 6379": "OK (will begin replication from 10.0.1.100:6379)",
+    "REPLICAOF NO ONE": "OK (promoted to master — replication stopped)",
+    "SENTINEL masters": "ERR unknown command 'SENTINEL' (not running in Sentinel mode)",
+    "ACL LIST": "1) \"user default on nopass ~* &* +@all\"",
+    "ACL WHOAMI": "\"default\"",
+    "CONFIG REWRITE": "OK (configuration saved to /etc/redis/redis.conf)",
+    "TIME": "1) \"1717315200\"\n2) \"123456\"",
+    "ROLE": "1) \"master\"\n2) (integer) 285637492\n3) 1) 1) \"10.0.2.55\"\n      2) \"6379\"\n      3) \"285637492\"",
+    "LATENCY LATEST": "1) 1) \"command\"\n   2) (integer) 1717315200\n   3) (integer) 38\n   4) (integer) 52\n2) 1) \"fast-command\"\n   2) (integer) 1717314900\n   3) (integer) 2\n   4) (integer) 5",
+    "LATENCY HISTORY command": "1) 1) (integer) 1717315200\n   2) (integer) 38\n2) 1) (integer) 1717314900\n   2) (integer) 24\n3) 1) (integer) 1717314600\n   2) (integer) 18",
+    "COMMAND COUNT": "(integer) 242",
+    "COMMAND INFO GET": "1) 1) \"get\"\n   2) (integer) 2\n   3) 1) \"readonly\"\n      2) \"fast\"\n   4) (integer) 1\n   5) (integer) 1\n   6) (integer) 1"
+  },
+  "reference": [
+    {
+      "group": "Data Operations",
+      "commands": [
+        { "cmd": "SET user:1001 '{\"name\":\"Priya\"}'", "desc": "set string value" },
+        { "cmd": "GET user:1001", "desc": "get string value" },
+        { "cmd": "MGET user:1001 user:1002 user:1003", "desc": "get multiple keys" },
+        { "cmd": "HSET user:profile:1001 name Priya role admin", "desc": "set hash fields" },
+        { "cmd": "HGETALL user:profile:1001", "desc": "get all hash fields" },
+        { "cmd": "LPUSH queue:notifications '{...}'", "desc": "push to list" },
+        { "cmd": "LRANGE queue:notifications 0 4", "desc": "read list range" },
+        { "cmd": "SADD active:users 10042 10038", "desc": "add to set" },
+        { "cmd": "SMEMBERS active:users", "desc": "list set members" },
+        { "cmd": "ZADD leaderboard:txn_volume 15420.50 user:10042", "desc": "add to sorted set" },
+        { "cmd": "ZRANGE leaderboard:txn_volume 0 -1 WITHSCORES", "desc": "sorted set range" }
+      ]
+    },
+    {
+      "group": "Key Inspection",
+      "commands": [
+        { "cmd": "EXISTS user:1001", "desc": "check key exists" },
+        { "cmd": "TTL session:usr:10042", "desc": "time to live (seconds)" },
+        { "cmd": "EXPIRE session:usr:10042 3600", "desc": "set expiry" },
+        { "cmd": "TYPE user:profile:1001", "desc": "key data type" },
+        { "cmd": "DEL session:expired:9001", "desc": "delete key" },
+        { "cmd": "SCAN 0 MATCH session:* COUNT 100", "desc": "iterate keys safely" },
+        { "cmd": "KEYS session:*", "desc": "find keys (blocks!)" }
+      ]
+    },
+    {
+      "group": "Server Info",
+      "commands": [
+        { "cmd": "INFO server", "desc": "version, uptime" },
+        { "cmd": "INFO memory", "desc": "memory usage" },
+        { "cmd": "INFO replication", "desc": "master/replica status" },
+        { "cmd": "INFO stats", "desc": "ops/sec, hit rate" },
+        { "cmd": "INFO keyspace", "desc": "key counts per db" },
+        { "cmd": "DBSIZE", "desc": "total key count" }
+      ]
+    },
+    {
+      "group": "Performance",
+      "commands": [
+        { "cmd": "SLOWLOG GET 10", "desc": "recent slow queries" },
+        { "cmd": "SLOWLOG LEN", "desc": "slow query count" },
+        { "cmd": "LATENCY LATEST", "desc": "latency spikes" },
+        { "cmd": "DEBUG OBJECT user:1001", "desc": "key internals" },
+        { "cmd": "MONITOR", "desc": "live command stream" }
+      ]
+    },
+    {
+      "group": "Memory Analysis",
+      "commands": [
+        { "cmd": "MEMORY USAGE session:usr:10042", "desc": "bytes per key" },
+        { "cmd": "MEMORY DOCTOR", "desc": "health recommendations" },
+        { "cmd": "MEMORY STATS", "desc": "allocation breakdown" },
+        { "cmd": "OBJECT ENCODING user:1001", "desc": "internal encoding" }
+      ]
+    },
+    {
+      "group": "Configuration",
+      "commands": [
+        { "cmd": "CONFIG GET maxmemory", "desc": "memory limit" },
+        { "cmd": "CONFIG GET maxmemory-policy", "desc": "eviction policy" },
+        { "cmd": "CONFIG GET save", "desc": "RDB schedule" },
+        { "cmd": "CONFIG SET maxmemory-policy allkeys-lru", "desc": "change eviction" },
+        { "cmd": "CONFIG REWRITE", "desc": "persist to disk" }
+      ]
+    },
+    {
+      "group": "Persistence & Replication",
+      "commands": [
+        { "cmd": "BGSAVE", "desc": "trigger RDB snapshot" },
+        { "cmd": "LASTSAVE", "desc": "last snapshot time" },
+        { "cmd": "BGREWRITEAOF", "desc": "compact AOF file" },
+        { "cmd": "REPLICAOF 10.0.1.100 6379", "desc": "start replication" },
+        { "cmd": "REPLICAOF NO ONE", "desc": "promote to master" },
+        { "cmd": "CLIENT LIST", "desc": "connected clients" }
+      ]
+    },
+    {
+      "group": "Scenarios",
+      "commands": [
+        { "cmd": "scenario diagnose-cache-performance", "desc": "debug slow cache" },
+        { "cmd": "scenario setup-monitor-replication", "desc": "set up replicas" }
+      ]
+    }
+  ]
+}

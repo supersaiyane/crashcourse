@@ -1,0 +1,298 @@
+{
+  "id": "kafka",
+  "prompt": "kafka@broker-01:~$",
+  "welcome": "Welcome to the Apache Kafka CLI Playground.\nType commands to explore a simulated 3-broker production cluster.\nType 'help' for available commands, 'scenario' for guided labs.\n",
+  "scenarios": [
+    {
+      "id": "investigate-consumer-lag",
+      "title": "Investigate Consumer Lag",
+      "steps": [
+        {
+          "instruction": "List all consumer groups to see what's running on the cluster.",
+          "expect": "kafka-consumer-groups.sh --bootstrap-server localhost:9092 --list",
+          "hint": "Try: kafka-consumer-groups.sh --bootstrap-server localhost:9092 --list"
+        },
+        {
+          "instruction": "The 'payments-processor' group looks suspicious. Describe it to check lag.",
+          "expect": "kafka-consumer-groups.sh --bootstrap-server localhost:9092 --describe --group payments-processor",
+          "hint": "Try: kafka-consumer-groups.sh --bootstrap-server localhost:9092 --describe --group payments-processor"
+        },
+        {
+          "instruction": "High lag on partitions 3 and 5. Check the topic details to understand partition layout.",
+          "expect": "kafka-topics.sh --bootstrap-server localhost:9092 --describe --topic payments",
+          "hint": "Try: kafka-topics.sh --bootstrap-server localhost:9092 --describe --topic payments"
+        },
+        {
+          "instruction": "Check which brokers are leaders for the lagging partitions. List broker log dirs for disk usage.",
+          "expect": "kafka-log-dirs.sh --bootstrap-server localhost:9092 --describe --topic-list payments",
+          "hint": "Try: kafka-log-dirs.sh --bootstrap-server localhost:9092 --describe --topic-list payments"
+        },
+        {
+          "instruction": "Broker 2 is overloaded. Check the topic's retention config to see if old data is piling up.",
+          "expect": "kafka-configs.sh --bootstrap-server localhost:9092 --describe --entity-type topics --entity-name payments",
+          "hint": "Try: kafka-configs.sh --bootstrap-server localhost:9092 --describe --entity-type topics --entity-name payments"
+        },
+        {
+          "instruction": "Retention is 7 days — too long for this high-throughput topic. Let's check the consumer group state.",
+          "expect": "kafka-consumer-groups.sh --bootstrap-server localhost:9092 --describe --group payments-processor --state",
+          "hint": "Try: kafka-consumer-groups.sh --bootstrap-server localhost:9092 --describe --group payments-processor --state"
+        },
+        {
+          "instruction": "Two members are stuck. Reset offsets to latest for the lagging partitions to skip the backlog.",
+          "expect": "kafka-consumer-groups.sh --bootstrap-server localhost:9092 --group payments-processor --reset-offsets --to-latest --topic payments --execute",
+          "hint": "Try: kafka-consumer-groups.sh --bootstrap-server localhost:9092 --group payments-processor --reset-offsets --to-latest --topic payments --execute"
+        },
+        {
+          "instruction": "Verify the lag is now cleared.",
+          "expect": "kafka-consumer-groups.sh --bootstrap-server localhost:9092 --describe --group payments-processor",
+          "hint": "Try: kafka-consumer-groups.sh --bootstrap-server localhost:9092 --describe --group payments-processor"
+        }
+      ]
+    },
+    {
+      "id": "create-and-test-topic",
+      "title": "Create and Test a New Topic",
+      "steps": [
+        {
+          "instruction": "List existing topics to see what's already on the cluster.",
+          "expect": "kafka-topics.sh --bootstrap-server localhost:9092 --list",
+          "hint": "Try: kafka-topics.sh --bootstrap-server localhost:9092 --list"
+        },
+        {
+          "instruction": "Create a new 'audit-events' topic with 8 partitions and replication factor 3.",
+          "expect": "kafka-topics.sh --bootstrap-server localhost:9092 --create --topic audit-events --partitions 8 --replication-factor 3",
+          "hint": "Try: kafka-topics.sh --bootstrap-server localhost:9092 --create --topic audit-events --partitions 8 --replication-factor 3"
+        },
+        {
+          "instruction": "Verify the topic was created correctly. Describe it.",
+          "expect": "kafka-topics.sh --bootstrap-server localhost:9092 --describe --topic audit-events",
+          "hint": "Try: kafka-topics.sh --bootstrap-server localhost:9092 --describe --topic audit-events"
+        },
+        {
+          "instruction": "Produce a few test messages to the new topic.",
+          "expect": "kafka-console-producer.sh --bootstrap-server localhost:9092 --topic audit-events",
+          "hint": "Try: kafka-console-producer.sh --bootstrap-server localhost:9092 --topic audit-events"
+        },
+        {
+          "instruction": "Consume the messages from the beginning to verify they arrived.",
+          "expect": "kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic audit-events --from-beginning",
+          "hint": "Try: kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic audit-events --from-beginning"
+        },
+        {
+          "instruction": "Set retention to 30 days and enable compact cleanup policy for audit compliance.",
+          "expect": "kafka-configs.sh --bootstrap-server localhost:9092 --alter --entity-type topics --entity-name audit-events --add-config retention.ms=2592000000,cleanup.policy=compact",
+          "hint": "Try: kafka-configs.sh --bootstrap-server localhost:9092 --alter --entity-type topics --entity-name audit-events --add-config retention.ms=2592000000,cleanup.policy=compact"
+        },
+        {
+          "instruction": "Run a quick performance test to baseline throughput on the new topic.",
+          "expect": "kafka-producer-perf-test.sh --topic audit-events --num-records 10000 --record-size 256 --throughput -1 --producer-props bootstrap.servers=localhost:9092",
+          "hint": "Try: kafka-producer-perf-test.sh --topic audit-events --num-records 10000 --record-size 256 --throughput -1 --producer-props bootstrap.servers=localhost:9092"
+        },
+        {
+          "instruction": "Verify the final topic configuration looks correct.",
+          "expect": "kafka-configs.sh --bootstrap-server localhost:9092 --describe --entity-type topics --entity-name audit-events",
+          "hint": "Try: kafka-configs.sh --bootstrap-server localhost:9092 --describe --entity-type topics --entity-name audit-events"
+        }
+      ]
+    }
+  ],
+  "commands": {
+    "help": "Available commands:\n  kafka-topics.sh              — Create, list, describe, alter, delete topics\n  kafka-console-producer.sh    — Produce messages to a topic\n  kafka-console-consumer.sh    — Consume messages from a topic\n  kafka-consumer-groups.sh     — List, describe, reset consumer groups\n  kafka-configs.sh             — Describe and alter topic/broker configs\n  kafka-log-dirs.sh            — Describe broker log directories\n  kafka-broker-api-versions.sh — Show broker API versions\n  kafka-metadata.sh            — Show KRaft metadata (cluster info)\n  kafka-producer-perf-test.sh  — Producer performance benchmarking\n  kafka-consumer-perf-test.sh  — Consumer performance benchmarking\n  kafka-acls.sh                — Manage access control lists\n\n  scenario                     — Start a guided lab\n  clear                        — Clear the terminal\n  help                         — Show this help",
+    "kafka-topics.sh --bootstrap-server localhost:9092 --list": "orders\npayments\nuser-events\nnotifications",
+    "kafka-topics.sh --bootstrap-server localhost:9092 --describe --topic orders": "Topic: orders\tPartitionCount: 12\tReplicationFactor: 3\tConfigs: retention.ms=259200000,cleanup.policy=delete\n\tTopic: orders\tPartition: 0\tLeader: 1\tReplicas: 1,2,3\tIsr: 1,2,3\n\tTopic: orders\tPartition: 1\tLeader: 2\tReplicas: 2,3,1\tIsr: 2,3,1\n\tTopic: orders\tPartition: 2\tLeader: 3\tReplicas: 3,1,2\tIsr: 3,1,2\n\tTopic: orders\tPartition: 3\tLeader: 1\tReplicas: 1,3,2\tIsr: 1,3,2\n\tTopic: orders\tPartition: 4\tLeader: 2\tReplicas: 2,1,3\tIsr: 2,1,3\n\tTopic: orders\tPartition: 5\tLeader: 3\tReplicas: 3,2,1\tIsr: 3,2,1\n\tTopic: orders\tPartition: 6\tLeader: 1\tReplicas: 1,2,3\tIsr: 1,2,3\n\tTopic: orders\tPartition: 7\tLeader: 2\tReplicas: 2,3,1\tIsr: 2,3,1\n\tTopic: orders\tPartition: 8\tLeader: 3\tReplicas: 3,1,2\tIsr: 3,1,2\n\tTopic: orders\tPartition: 9\tLeader: 1\tReplicas: 1,3,2\tIsr: 1,3,2\n\tTopic: orders\tPartition: 10\tLeader: 2\tReplicas: 2,1,3\tIsr: 2,1,3\n\tTopic: orders\tPartition: 11\tLeader: 3\tReplicas: 3,2,1\tIsr: 3,2,1",
+    "kafka-topics.sh --bootstrap-server localhost:9092 --describe --topic payments": "Topic: payments\tPartitionCount: 8\tReplicationFactor: 3\tConfigs: retention.ms=604800000,cleanup.policy=delete\n\tTopic: payments\tPartition: 0\tLeader: 1\tReplicas: 1,2,3\tIsr: 1,2,3\n\tTopic: payments\tPartition: 1\tLeader: 2\tReplicas: 2,3,1\tIsr: 2,3,1\n\tTopic: payments\tPartition: 2\tLeader: 3\tReplicas: 3,1,2\tIsr: 3,1,2\n\tTopic: payments\tPartition: 3\tLeader: 1\tReplicas: 1,3,2\tIsr: 1,3\n\tTopic: payments\tPartition: 4\tLeader: 2\tReplicas: 2,1,3\tIsr: 2,1,3\n\tTopic: payments\tPartition: 5\tLeader: 3\tReplicas: 3,2,1\tIsr: 3,1\n\tTopic: payments\tPartition: 6\tLeader: 1\tReplicas: 1,2,3\tIsr: 1,2,3\n\tTopic: payments\tPartition: 7\tLeader: 2\tReplicas: 2,3,1\tIsr: 2,3,1",
+    "kafka-topics.sh --bootstrap-server localhost:9092 --describe --topic user-events": "Topic: user-events\tPartitionCount: 6\tReplicationFactor: 3\tConfigs: retention.ms=172800000,cleanup.policy=compact,delete\n\tTopic: user-events\tPartition: 0\tLeader: 2\tReplicas: 2,1,3\tIsr: 2,1,3\n\tTopic: user-events\tPartition: 1\tLeader: 3\tReplicas: 3,2,1\tIsr: 3,2,1\n\tTopic: user-events\tPartition: 2\tLeader: 1\tReplicas: 1,3,2\tIsr: 1,3,2\n\tTopic: user-events\tPartition: 3\tLeader: 2\tReplicas: 2,3,1\tIsr: 2,3,1\n\tTopic: user-events\tPartition: 4\tLeader: 3\tReplicas: 3,1,2\tIsr: 3,1,2\n\tTopic: user-events\tPartition: 5\tLeader: 1\tReplicas: 1,2,3\tIsr: 1,2,3",
+    "kafka-topics.sh --bootstrap-server localhost:9092 --describe --topic notifications": "Topic: notifications\tPartitionCount: 6\tReplicationFactor: 3\tConfigs: retention.ms=86400000,cleanup.policy=delete\n\tTopic: notifications\tPartition: 0\tLeader: 1\tReplicas: 1,3,2\tIsr: 1,3,2\n\tTopic: notifications\tPartition: 1\tLeader: 2\tReplicas: 2,1,3\tIsr: 2,1,3\n\tTopic: notifications\tPartition: 2\tLeader: 3\tReplicas: 3,2,1\tIsr: 3,2,1\n\tTopic: notifications\tPartition: 3\tLeader: 1\tReplicas: 1,2,3\tIsr: 1,2,3\n\tTopic: notifications\tPartition: 4\tLeader: 2\tReplicas: 2,3,1\tIsr: 2,3,1\n\tTopic: notifications\tPartition: 5\tLeader: 3\tReplicas: 3,1,2\tIsr: 3,1,2",
+    "kafka-topics.sh --bootstrap-server localhost:9092 --describe --topic audit-events": "Topic: audit-events\tPartitionCount: 8\tReplicationFactor: 3\tConfigs: retention.ms=2592000000,cleanup.policy=compact\n\tTopic: audit-events\tPartition: 0\tLeader: 1\tReplicas: 1,2,3\tIsr: 1,2,3\n\tTopic: audit-events\tPartition: 1\tLeader: 2\tReplicas: 2,3,1\tIsr: 2,3,1\n\tTopic: audit-events\tPartition: 2\tLeader: 3\tReplicas: 3,1,2\tIsr: 3,1,2\n\tTopic: audit-events\tPartition: 3\tLeader: 1\tReplicas: 1,3,2\tIsr: 1,3,2\n\tTopic: audit-events\tPartition: 4\tLeader: 2\tReplicas: 2,1,3\tIsr: 2,1,3\n\tTopic: audit-events\tPartition: 5\tLeader: 3\tReplicas: 3,2,1\tIsr: 3,2,1\n\tTopic: audit-events\tPartition: 6\tLeader: 1\tReplicas: 1,2,3\tIsr: 1,2,3\n\tTopic: audit-events\tPartition: 7\tLeader: 2\tReplicas: 2,3,1\tIsr: 2,3,1",
+    "kafka-topics.sh --bootstrap-server localhost:9092 --create --topic audit-events --partitions 8 --replication-factor 3": "Created topic audit-events.",
+    "kafka-topics.sh --bootstrap-server localhost:9092 --delete --topic notifications": "Topic notifications is marked for deletion.\nNote: This will have no impact if delete.topic.enable is not set to true.",
+    "kafka-topics.sh --bootstrap-server localhost:9092 --alter --topic orders --partitions 16": "WARNING: If partitions are increased for a topic that has a key, the partition logic or ordering of the messages will be affected.\nAdding partitions succeeded for topic: orders.",
+    "kafka-console-producer.sh --bootstrap-server localhost:9092 --topic orders": ">order-1001: {\"customer\":\"C-4521\",\"amount\":1250.00,\"currency\":\"INR\"}\n>order-1002: {\"customer\":\"C-8932\",\"amount\":3400.50,\"currency\":\"INR\"}\n>order-1003: {\"customer\":\"C-1187\",\"amount\":890.00,\"currency\":\"INR\"}\n>^C (3 messages produced)",
+    "kafka-console-producer.sh --bootstrap-server localhost:9092 --topic audit-events": ">audit-001: {\"action\":\"LOGIN\",\"user\":\"admin\",\"ip\":\"10.0.1.42\",\"timestamp\":\"2026-06-02T10:00:00Z\"}\n>audit-002: {\"action\":\"TRANSFER\",\"user\":\"ops-lead\",\"amount\":50000,\"timestamp\":\"2026-06-02T10:01:00Z\"}\n>audit-003: {\"action\":\"CONFIG_CHANGE\",\"user\":\"admin\",\"detail\":\"retention updated\",\"timestamp\":\"2026-06-02T10:02:00Z\"}\n>^C (3 messages produced)",
+    "kafka-console-producer.sh --bootstrap-server localhost:9092 --topic payments": ">pay-5001: {\"order\":\"O-1001\",\"status\":\"COMPLETED\",\"gateway\":\"razorpay\",\"amount\":1250.00}\n>pay-5002: {\"order\":\"O-1002\",\"status\":\"PENDING\",\"gateway\":\"razorpay\",\"amount\":3400.50}\n>^C (2 messages produced)",
+    "kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic orders --from-beginning": "{\"customer\":\"C-4521\",\"amount\":1250.00,\"currency\":\"INR\"}\n{\"customer\":\"C-8932\",\"amount\":3400.50,\"currency\":\"INR\"}\n{\"customer\":\"C-1187\",\"amount\":890.00,\"currency\":\"INR\"}\n{\"customer\":\"C-2290\",\"amount\":15000.00,\"currency\":\"INR\"}\n{\"customer\":\"C-5567\",\"amount\":4200.75,\"currency\":\"INR\"}\n^CProcessed a total of 5 messages",
+    "kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic orders --group order-analytics": "{\"customer\":\"C-5567\",\"amount\":4200.75,\"currency\":\"INR\"}\n{\"customer\":\"C-3341\",\"amount\":780.00,\"currency\":\"INR\"}\n^CProcessed a total of 2 messages",
+    "kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic orders --partition 0 --offset 5": "{\"customer\":\"C-9912\",\"amount\":2100.00,\"currency\":\"INR\"}\n{\"customer\":\"C-4478\",\"amount\":6750.25,\"currency\":\"INR\"}\n^CProcessed a total of 2 messages",
+    "kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic payments --from-beginning": "{\"order\":\"O-1001\",\"status\":\"COMPLETED\",\"gateway\":\"razorpay\",\"amount\":1250.00}\n{\"order\":\"O-1002\",\"status\":\"PENDING\",\"gateway\":\"razorpay\",\"amount\":3400.50}\n{\"order\":\"O-1003\",\"status\":\"COMPLETED\",\"gateway\":\"paytm\",\"amount\":890.00}\n{\"order\":\"O-1004\",\"status\":\"FAILED\",\"gateway\":\"razorpay\",\"amount\":15000.00}\n^CProcessed a total of 4 messages",
+    "kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic audit-events --from-beginning": "{\"action\":\"LOGIN\",\"user\":\"admin\",\"ip\":\"10.0.1.42\",\"timestamp\":\"2026-06-02T10:00:00Z\"}\n{\"action\":\"TRANSFER\",\"user\":\"ops-lead\",\"amount\":50000,\"timestamp\":\"2026-06-02T10:01:00Z\"}\n{\"action\":\"CONFIG_CHANGE\",\"user\":\"admin\",\"detail\":\"retention updated\",\"timestamp\":\"2026-06-02T10:02:00Z\"}\n^CProcessed a total of 3 messages",
+    "kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic user-events --from-beginning --max-messages 3": "{\"user_id\":\"U-1001\",\"event\":\"SIGNUP\",\"channel\":\"mobile\",\"ts\":\"2026-06-01T08:12:00Z\"}\n{\"user_id\":\"U-1002\",\"event\":\"LOGIN\",\"channel\":\"web\",\"ts\":\"2026-06-01T08:15:00Z\"}\n{\"user_id\":\"U-1001\",\"event\":\"KYC_COMPLETE\",\"channel\":\"mobile\",\"ts\":\"2026-06-01T08:20:00Z\"}\nProcessed a total of 3 messages",
+    "kafka-consumer-groups.sh --bootstrap-server localhost:9092 --list": "order-processor\npayments-processor\nuser-events-analytics\nnotification-dispatcher\nfraud-detection\norder-analytics",
+    "kafka-consumer-groups.sh --bootstrap-server localhost:9092 --describe --group order-processor": "GROUP              TOPIC      PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG   CONSUMER-ID                                HOST            CLIENT-ID\norder-processor    orders     0          148520          148523          3     consumer-1-abc123                          /10.0.1.42      consumer-1\norder-processor    orders     1          147891          147895          4     consumer-1-abc123                          /10.0.1.42      consumer-1\norder-processor    orders     2          149102          149102          0     consumer-2-def456                          /10.0.2.18      consumer-2\norder-processor    orders     3          148334          148340          6     consumer-2-def456                          /10.0.2.18      consumer-2\norder-processor    orders     4          147556          147558          2     consumer-3-ghi789                          /10.0.3.55      consumer-3\norder-processor    orders     5          148901          148901          0     consumer-3-ghi789                          /10.0.3.55      consumer-3\norder-processor    orders     6          149234          149236          2     consumer-4-jkl012                          /10.0.1.42      consumer-4\norder-processor    orders     7          147012          147015          3     consumer-4-jkl012                          /10.0.1.42      consumer-4\norder-processor    orders     8          148876          148878          2     consumer-5-mno345                          /10.0.2.18      consumer-5\norder-processor    orders     9          149501          149501          0     consumer-5-mno345                          /10.0.2.18      consumer-5\norder-processor    orders     10         147234          147237          3     consumer-6-pqr678                          /10.0.3.55      consumer-6\norder-processor    orders     11         148100          148102          2     consumer-6-pqr678                          /10.0.3.55      consumer-6",
+    "kafka-consumer-groups.sh --bootstrap-server localhost:9092 --describe --group payments-processor": "GROUP                TOPIC       PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG     CONSUMER-ID                                HOST            CLIENT-ID\npayments-processor   payments    0          89012           89015           3       pay-consumer-1-aaa111                      /10.0.1.42      pay-consumer-1\npayments-processor   payments    1          88543           88550           7       pay-consumer-1-aaa111                      /10.0.1.42      pay-consumer-1\npayments-processor   payments    2          90234           90234           0       pay-consumer-2-bbb222                      /10.0.2.18      pay-consumer-2\npayments-processor   payments    3          87102           94350           7248    pay-consumer-2-bbb222                      /10.0.2.18      pay-consumer-2\npayments-processor   payments    4          89876           89880           4       pay-consumer-3-ccc333                      /10.0.3.55      pay-consumer-3\npayments-processor   payments    5          86234           92512           6278    pay-consumer-3-ccc333                      /10.0.3.55      pay-consumer-3\npayments-processor   payments    6          90101           90105           4       pay-consumer-4-ddd444                      /10.0.1.42      pay-consumer-4\npayments-processor   payments    7          89450           89455           5       pay-consumer-4-ddd444                      /10.0.1.42      pay-consumer-4",
+    "kafka-consumer-groups.sh --bootstrap-server localhost:9092 --describe --group payments-processor --state": "GROUP                COORDINATOR (ID)    ASSIGNMENT-STRATEGY    STATE            #MEMBERS\npayments-processor   broker-01 (1)       range                  Stable           4\n\nGROUP                TOPIC       PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG     CONSUMER-ID                                HOST            CLIENT-ID\npayments-processor   payments    0          89012           89015           3       pay-consumer-1-aaa111                      /10.0.1.42      pay-consumer-1\npayments-processor   payments    1          88543           88550           7       pay-consumer-1-aaa111                      /10.0.1.42      pay-consumer-1\npayments-processor   payments    2          90234           90234           0       pay-consumer-2-bbb222                      /10.0.2.18      pay-consumer-2\npayments-processor   payments    3          87102           94350           7248    pay-consumer-2-bbb222                      /10.0.2.18      pay-consumer-2\npayments-processor   payments    4          89876           89880           4       pay-consumer-3-ccc333                      /10.0.3.55      pay-consumer-3\npayments-processor   payments    5          86234           92512           6278    pay-consumer-3-ccc333                      /10.0.3.55      pay-consumer-3\npayments-processor   payments    6          90101           90105           4       pay-consumer-4-ddd444                      /10.0.1.42      pay-consumer-4\npayments-processor   payments    7          89450           89455           5       pay-consumer-4-ddd444                      /10.0.1.42      pay-consumer-4",
+    "kafka-consumer-groups.sh --bootstrap-server localhost:9092 --describe --group user-events-analytics": "GROUP                   TOPIC         PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG   CONSUMER-ID                                HOST            CLIENT-ID\nuser-events-analytics   user-events   0          56012           56015           3     ua-consumer-1-xxx111                       /10.0.1.42      ua-consumer-1\nuser-events-analytics   user-events   1          55890           55892           2     ua-consumer-1-xxx111                       /10.0.1.42      ua-consumer-1\nuser-events-analytics   user-events   2          56234           56234           0     ua-consumer-2-yyy222                       /10.0.2.18      ua-consumer-2\nuser-events-analytics   user-events   3          55102           55108           6     ua-consumer-2-yyy222                       /10.0.2.18      ua-consumer-2\nuser-events-analytics   user-events   4          56501           56505           4     ua-consumer-3-zzz333                       /10.0.3.55      ua-consumer-3\nuser-events-analytics   user-events   5          55876           55878           2     ua-consumer-3-zzz333                       /10.0.3.55      ua-consumer-3",
+    "kafka-consumer-groups.sh --bootstrap-server localhost:9092 --describe --group fraud-detection": "GROUP              TOPIC      PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG   CONSUMER-ID                                HOST            CLIENT-ID\nfraud-detection    payments   0          89015           89015           0     fraud-1-frd001                             /10.0.1.42      fraud-1\nfraud-detection    payments   1          88550           88550           0     fraud-1-frd001                             /10.0.1.42      fraud-1\nfraud-detection    payments   2          90234           90234           0     fraud-2-frd002                             /10.0.2.18      fraud-2\nfraud-detection    payments   3          94350           94350           0     fraud-2-frd002                             /10.0.2.18      fraud-2\nfraud-detection    payments   4          89880           89880           0     fraud-3-frd003                             /10.0.3.55      fraud-3\nfraud-detection    payments   5          92512           92512           0     fraud-3-frd003                             /10.0.3.55      fraud-3\nfraud-detection    payments   6          90105           90105           0     fraud-4-frd004                             /10.0.1.42      fraud-4\nfraud-detection    payments   7          89455           89455           0     fraud-4-frd004                             /10.0.1.42      fraud-4",
+    "kafka-consumer-groups.sh --bootstrap-server localhost:9092 --describe --group notification-dispatcher": "GROUP                     TOPIC            PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG   CONSUMER-ID                                HOST            CLIENT-ID\nnotification-dispatcher   notifications    0          34012           34018           6     notif-1-nnn001                             /10.0.1.42      notif-1\nnotification-dispatcher   notifications    1          33890           33895           5     notif-1-nnn001                             /10.0.1.42      notif-1\nnotification-dispatcher   notifications    2          34234           34240           6     notif-2-nnn002                             /10.0.2.18      notif-2\nnotification-dispatcher   notifications    3          33102           33110           8     notif-2-nnn002                             /10.0.2.18      notif-2\nnotification-dispatcher   notifications    4          34501           34508           7     notif-3-nnn003                             /10.0.3.55      notif-3\nnotification-dispatcher   notifications    5          33876           33880           4     notif-3-nnn003                             /10.0.3.55      notif-3",
+    "kafka-consumer-groups.sh --bootstrap-server localhost:9092 --group payments-processor --reset-offsets --to-latest --topic payments --execute": "GROUP                          TOPIC                          PARTITION  NEW-OFFSET\npayments-processor             payments                       0          89015\npayments-processor             payments                       1          88550\npayments-processor             payments                       2          90234\npayments-processor             payments                       3          94350\npayments-processor             payments                       4          89880\npayments-processor             payments                       5          92512\npayments-processor             payments                       6          90105\npayments-processor             payments                       7          89455",
+    "kafka-consumer-groups.sh --bootstrap-server localhost:9092 --group payments-processor --reset-offsets --to-earliest --topic payments --execute": "GROUP                          TOPIC                          PARTITION  NEW-OFFSET\npayments-processor             payments                       0          0\npayments-processor             payments                       1          0\npayments-processor             payments                       2          0\npayments-processor             payments                       3          0\npayments-processor             payments                       4          0\npayments-processor             payments                       5          0\npayments-processor             payments                       6          0\npayments-processor             payments                       7          0",
+    "kafka-consumer-groups.sh --bootstrap-server localhost:9092 --delete --group order-analytics": "Deletion of requested consumer groups ('order-analytics') was successful.",
+    "kafka-configs.sh --bootstrap-server localhost:9092 --describe --entity-type topics --entity-name orders": "Dynamic configs for topic orders are:\n  retention.ms=259200000 sensitive=false synonyms={DYNAMIC_TOPIC_CONFIG:retention.ms=259200000, DEFAULT_CONFIG:log.retention.ms=604800000}\n  cleanup.policy=delete sensitive=false synonyms={DYNAMIC_TOPIC_CONFIG:cleanup.policy=delete, DEFAULT_CONFIG:log.cleanup.policy=delete}",
+    "kafka-configs.sh --bootstrap-server localhost:9092 --describe --entity-type topics --entity-name payments": "Dynamic configs for topic payments are:\n  retention.ms=604800000 sensitive=false synonyms={DYNAMIC_TOPIC_CONFIG:retention.ms=604800000, DEFAULT_CONFIG:log.retention.ms=604800000}\n  cleanup.policy=delete sensitive=false synonyms={DYNAMIC_TOPIC_CONFIG:cleanup.policy=delete, DEFAULT_CONFIG:log.cleanup.policy=delete}",
+    "kafka-configs.sh --bootstrap-server localhost:9092 --describe --entity-type topics --entity-name user-events": "Dynamic configs for topic user-events are:\n  retention.ms=172800000 sensitive=false synonyms={DYNAMIC_TOPIC_CONFIG:retention.ms=172800000, DEFAULT_CONFIG:log.retention.ms=604800000}\n  cleanup.policy=compact,delete sensitive=false synonyms={DYNAMIC_TOPIC_CONFIG:cleanup.policy=compact,delete, DEFAULT_CONFIG:log.cleanup.policy=delete}",
+    "kafka-configs.sh --bootstrap-server localhost:9092 --describe --entity-type topics --entity-name audit-events": "Dynamic configs for topic audit-events are:\n  retention.ms=2592000000 sensitive=false synonyms={DYNAMIC_TOPIC_CONFIG:retention.ms=2592000000, DEFAULT_CONFIG:log.retention.ms=604800000}\n  cleanup.policy=compact sensitive=false synonyms={DYNAMIC_TOPIC_CONFIG:cleanup.policy=compact, DEFAULT_CONFIG:log.cleanup.policy=delete}",
+    "kafka-configs.sh --bootstrap-server localhost:9092 --alter --entity-type topics --entity-name orders --add-config retention.ms=172800000": "Completed updating config for topic orders.",
+    "kafka-configs.sh --bootstrap-server localhost:9092 --alter --entity-type topics --entity-name audit-events --add-config retention.ms=2592000000,cleanup.policy=compact": "Completed updating config for topic audit-events.",
+    "kafka-configs.sh --bootstrap-server localhost:9092 --describe --entity-type brokers --entity-name 1": "Dynamic configs for broker 1 are:\n  log.retention.ms=604800000 sensitive=false\n  num.io.threads=8 sensitive=false\n  num.network.threads=3 sensitive=false\n  log.segment.bytes=1073741824 sensitive=false\n  default.replication.factor=3 sensitive=false\n  num.partitions=6 sensitive=false",
+    "kafka-broker-api-versions.sh --bootstrap-server localhost:9092": "broker-01:9092 (id: 1 rack: ap-south-1a)\n\tProduce(0): 0 to 10 [usable: 10]\n\tFetch(1): 0 to 16 [usable: 16]\n\tListOffsets(2): 0 to 8 [usable: 8]\n\tMetadata(3): 0 to 12 [usable: 12]\n\tLeaderAndIsr(4): 0 to 7 [usable: 7]\n\tStopReplica(5): 0 to 4 [usable: 4]\n\tUpdateMetadata(6): 0 to 8 [usable: 8]\n\tControlledShutdown(7): 0 to 3 [usable: 3]\n\tOffsetCommit(8): 0 to 9 [usable: 9]\n\tOffsetFetch(9): 0 to 9 [usable: 9]\n\tFindCoordinator(10): 0 to 5 [usable: 5]\n\tJoinGroup(11): 0 to 9 [usable: 9]\n\tHeartbeat(12): 0 to 4 [usable: 4]\n\tLeaveGroup(13): 0 to 5 [usable: 5]\n\tSyncGroup(14): 0 to 5 [usable: 5]\n\tDescribeGroups(15): 0 to 5 [usable: 5]\n\tListGroups(16): 0 to 4 [usable: 4]\n\tSaslHandshake(17): 0 to 1 [usable: 1]\n\tApiVersions(18): 0 to 3 [usable: 3]\n\tCreateTopics(19): 0 to 7 [usable: 7]\n\tDeleteTopics(20): 0 to 6 [usable: 6]",
+    "kafka-metadata.sh --snapshot /var/kafka-logs/__cluster_metadata-0/00000000000000000000.log --cluster-id": "Cluster ID: dKfV3r8xT3Kz7H9JcN2Qmg\nController ID: 1\nBroker registrations:\n  Broker 1 (broker-01:9092) rack=ap-south-1a\n  Broker 2 (broker-02:9092) rack=ap-south-1b\n  Broker 3 (broker-03:9092) rack=ap-south-1c\nTopics: 4\nPartitions: 32",
+    "kafka-log-dirs.sh --bootstrap-server localhost:9092 --describe --topic-list payments": "Querying brokers for log directories information\n{\n  \"version\": 1,\n  \"brokers\": [\n    {\n      \"broker\": 1,\n      \"logDirs\": [\n        {\n          \"logDir\": \"/var/kafka-logs\",\n          \"error\": null,\n          \"partitions\": [\n            {\"partition\": \"payments-0\", \"size\": 1284012032, \"offsetLag\": 0, \"isFuture\": false},\n            {\"partition\": \"payments-3\", \"size\": 2156789760, \"offsetLag\": 0, \"isFuture\": false},\n            {\"partition\": \"payments-6\", \"size\": 1102345216, \"offsetLag\": 0, \"isFuture\": false}\n          ]\n        }\n      ]\n    },\n    {\n      \"broker\": 2,\n      \"logDirs\": [\n        {\n          \"logDir\": \"/var/kafka-logs\",\n          \"error\": null,\n          \"partitions\": [\n            {\"partition\": \"payments-1\", \"size\": 1356012544, \"offsetLag\": 0, \"isFuture\": false},\n            {\"partition\": \"payments-4\", \"size\": 1198234624, \"offsetLag\": 0, \"isFuture\": false},\n            {\"partition\": \"payments-7\", \"size\": 1089012736, \"offsetLag\": 0, \"isFuture\": false}\n          ]\n        }\n      ]\n    },\n    {\n      \"broker\": 3,\n      \"logDirs\": [\n        {\n          \"logDir\": \"/var/kafka-logs\",\n          \"error\": null,\n          \"partitions\": [\n            {\"partition\": \"payments-2\", \"size\": 1423456768, \"offsetLag\": 0, \"isFuture\": false},\n            {\"partition\": \"payments-5\", \"size\": 2345678848, \"offsetLag\": 0, \"isFuture\": false}\n          ]\n        }\n      ]\n    }\n  ]\n}",
+    "kafka-log-dirs.sh --bootstrap-server localhost:9092 --describe --topic-list orders": "Querying brokers for log directories information\n{\n  \"version\": 1,\n  \"brokers\": [\n    {\n      \"broker\": 1,\n      \"logDirs\": [{\"logDir\": \"/var/kafka-logs\", \"error\": null, \"partitions\": [\n        {\"partition\": \"orders-0\", \"size\": 982345728, \"offsetLag\": 0, \"isFuture\": false},\n        {\"partition\": \"orders-3\", \"size\": 1045678080, \"offsetLag\": 0, \"isFuture\": false},\n        {\"partition\": \"orders-6\", \"size\": 956012544, \"offsetLag\": 0, \"isFuture\": false},\n        {\"partition\": \"orders-9\", \"size\": 1012345856, \"offsetLag\": 0, \"isFuture\": false}\n      ]}]\n    },\n    {\n      \"broker\": 2,\n      \"logDirs\": [{\"logDir\": \"/var/kafka-logs\", \"error\": null, \"partitions\": [\n        {\"partition\": \"orders-1\", \"size\": 998234112, \"offsetLag\": 0, \"isFuture\": false},\n        {\"partition\": \"orders-4\", \"size\": 1023456768, \"offsetLag\": 0, \"isFuture\": false},\n        {\"partition\": \"orders-7\", \"size\": 945012480, \"offsetLag\": 0, \"isFuture\": false},\n        {\"partition\": \"orders-10\", \"size\": 1078901760, \"offsetLag\": 0, \"isFuture\": false}\n      ]}]\n    },\n    {\n      \"broker\": 3,\n      \"logDirs\": [{\"logDir\": \"/var/kafka-logs\", \"error\": null, \"partitions\": [\n        {\"partition\": \"orders-2\", \"size\": 1012345344, \"offsetLag\": 0, \"isFuture\": false},\n        {\"partition\": \"orders-5\", \"size\": 989012480, \"offsetLag\": 0, \"isFuture\": false},\n        {\"partition\": \"orders-8\", \"size\": 1034567680, \"offsetLag\": 0, \"isFuture\": false},\n        {\"partition\": \"orders-11\", \"size\": 967890432, \"offsetLag\": 0, \"isFuture\": false}\n      ]}]\n    }\n  ]\n}",
+    "kafka-producer-perf-test.sh --topic audit-events --num-records 10000 --record-size 256 --throughput -1 --producer-props bootstrap.servers=localhost:9092": "10000 records sent, 45872.3 records/sec (11.19 MB/sec), 12.4 ms avg latency, 156.0 ms max latency, 8 ms 50th, 42 ms 95th, 98 ms 99th, 156 ms 99.9th.",
+    "kafka-producer-perf-test.sh --topic orders --num-records 100000 --record-size 512 --throughput 10000 --producer-props bootstrap.servers=localhost:9092": "100000 records sent, 9987.5 records/sec (4.87 MB/sec), 8.2 ms avg latency, 234.0 ms max latency, 5 ms 50th, 28 ms 95th, 78 ms 99th, 234 ms 99.9th.",
+    "kafka-consumer-perf-test.sh --bootstrap-server localhost:9092 --topic orders --messages 100000 --threads 3": "start.time, end.time, data.consumed.in.MB, MB.sec, data.consumed.in.nMsg, nMsg.sec, rebalance.time.ms, fetch.time.ms, fetch.MB.sec, fetch.nMsg.sec\n2026-06-02 10:30:00:123, 2026-06-02 10:30:08:456, 48.83, 5.86, 100000, 11990.4, 1623, 6710, 7.28, 14903.1",
+    "kafka-acls.sh --bootstrap-server localhost:9092 --list": "Current ACLs for resource `ResourcePattern(resourceType=TOPIC, name=payments, patternType=LITERAL)`:\n  (principal=User:payment-svc, host=*, operation=READ, permissionType=ALLOW)\n  (principal=User:payment-svc, host=*, operation=WRITE, permissionType=ALLOW)\n  (principal=User:fraud-svc, host=*, operation=READ, permissionType=ALLOW)\n\nCurrent ACLs for resource `ResourcePattern(resourceType=TOPIC, name=orders, patternType=LITERAL)`:\n  (principal=User:order-svc, host=*, operation=READ, permissionType=ALLOW)\n  (principal=User:order-svc, host=*, operation=WRITE, permissionType=ALLOW)\n  (principal=User:analytics-svc, host=*, operation=READ, permissionType=ALLOW)\n\nCurrent ACLs for resource `ResourcePattern(resourceType=GROUP, name=payments-processor, patternType=LITERAL)`:\n  (principal=User:payment-svc, host=*, operation=READ, permissionType=ALLOW)",
+    "kafka-acls.sh --bootstrap-server localhost:9092 --list --topic payments": "Current ACLs for resource `ResourcePattern(resourceType=TOPIC, name=payments, patternType=LITERAL)`:\n  (principal=User:payment-svc, host=*, operation=READ, permissionType=ALLOW)\n  (principal=User:payment-svc, host=*, operation=WRITE, permissionType=ALLOW)\n  (principal=User:fraud-svc, host=*, operation=READ, permissionType=ALLOW)",
+    "kafka-acls.sh --bootstrap-server localhost:9092 --add --allow-principal User:audit-svc --operation Read --topic audit-events": "Adding ACLs for resource `ResourcePattern(resourceType=TOPIC, name=audit-events, patternType=LITERAL)`:\n  (principal=User:audit-svc, host=*, operation=READ, permissionType=ALLOW)\n\nCurrent ACLs for resource `ResourcePattern(resourceType=TOPIC, name=audit-events, patternType=LITERAL)`:\n  (principal=User:audit-svc, host=*, operation=READ, permissionType=ALLOW)",
+    "kafka-acls.sh --bootstrap-server localhost:9092 --add --allow-principal User:audit-svc --operation Write --topic audit-events": "Adding ACLs for resource `ResourcePattern(resourceType=TOPIC, name=audit-events, patternType=LITERAL)`:\n  (principal=User:audit-svc, host=*, operation=WRITE, permissionType=ALLOW)\n\nCurrent ACLs for resource `ResourcePattern(resourceType=TOPIC, name=audit-events, patternType=LITERAL)`:\n  (principal=User:audit-svc, host=*, operation=READ, permissionType=ALLOW)\n  (principal=User:audit-svc, host=*, operation=WRITE, permissionType=ALLOW)"
+  },
+  "reference": [
+    {
+      "group": "Topics",
+      "commands": [
+        {
+          "cmd": "kafka-topics.sh --bootstrap-server localhost:9092 --list",
+          "desc": "list all topics"
+        },
+        {
+          "cmd": "kafka-topics.sh --bootstrap-server localhost:9092 --describe --topic orders",
+          "desc": "topic details"
+        },
+        {
+          "cmd": "kafka-topics.sh --bootstrap-server localhost:9092 --create --topic audit-events --partitions 8 --replication-factor 3",
+          "desc": "create topic"
+        },
+        {
+          "cmd": "kafka-topics.sh --bootstrap-server localhost:9092 --delete --topic notifications",
+          "desc": "delete topic"
+        },
+        {
+          "cmd": "kafka-topics.sh --bootstrap-server localhost:9092 --alter --topic orders --partitions 16",
+          "desc": "add partitions"
+        }
+      ]
+    },
+    {
+      "group": "Producer",
+      "commands": [
+        {
+          "cmd": "kafka-console-producer.sh --bootstrap-server localhost:9092 --topic orders",
+          "desc": "produce messages"
+        },
+        {
+          "cmd": "kafka-producer-perf-test.sh --topic orders --num-records 100000 --record-size 512 --throughput 10000 --producer-props bootstrap.servers=localhost:9092",
+          "desc": "perf test"
+        }
+      ]
+    },
+    {
+      "group": "Consumer",
+      "commands": [
+        {
+          "cmd": "kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic orders --from-beginning",
+          "desc": "consume from start"
+        },
+        {
+          "cmd": "kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic orders --group order-analytics",
+          "desc": "consume with group"
+        },
+        {
+          "cmd": "kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic orders --partition 0 --offset 5",
+          "desc": "specific partition/offset"
+        },
+        {
+          "cmd": "kafka-consumer-perf-test.sh --bootstrap-server localhost:9092 --topic orders --messages 100000 --threads 3",
+          "desc": "consumer perf test"
+        }
+      ]
+    },
+    {
+      "group": "Consumer Groups",
+      "commands": [
+        {
+          "cmd": "kafka-consumer-groups.sh --bootstrap-server localhost:9092 --list",
+          "desc": "list groups"
+        },
+        {
+          "cmd": "kafka-consumer-groups.sh --bootstrap-server localhost:9092 --describe --group payments-processor",
+          "desc": "group lag details"
+        },
+        {
+          "cmd": "kafka-consumer-groups.sh --bootstrap-server localhost:9092 --describe --group payments-processor --state",
+          "desc": "group state"
+        },
+        {
+          "cmd": "kafka-consumer-groups.sh --bootstrap-server localhost:9092 --group payments-processor --reset-offsets --to-latest --topic payments --execute",
+          "desc": "reset to latest"
+        },
+        {
+          "cmd": "kafka-consumer-groups.sh --bootstrap-server localhost:9092 --delete --group order-analytics",
+          "desc": "delete group"
+        }
+      ]
+    },
+    {
+      "group": "Configuration",
+      "commands": [
+        {
+          "cmd": "kafka-configs.sh --bootstrap-server localhost:9092 --describe --entity-type topics --entity-name orders",
+          "desc": "topic config"
+        },
+        {
+          "cmd": "kafka-configs.sh --bootstrap-server localhost:9092 --alter --entity-type topics --entity-name orders --add-config retention.ms=172800000",
+          "desc": "alter retention"
+        },
+        {
+          "cmd": "kafka-configs.sh --bootstrap-server localhost:9092 --describe --entity-type brokers --entity-name 1",
+          "desc": "broker config"
+        }
+      ]
+    },
+    {
+      "group": "Cluster & Brokers",
+      "commands": [
+        {
+          "cmd": "kafka-broker-api-versions.sh --bootstrap-server localhost:9092",
+          "desc": "API versions"
+        },
+        {
+          "cmd": "kafka-metadata.sh --snapshot /var/kafka-logs/__cluster_metadata-0/00000000000000000000.log --cluster-id",
+          "desc": "KRaft metadata"
+        },
+        {
+          "cmd": "kafka-log-dirs.sh --bootstrap-server localhost:9092 --describe --topic-list payments",
+          "desc": "log dir sizes"
+        }
+      ]
+    },
+    {
+      "group": "ACLs & Security",
+      "commands": [
+        {
+          "cmd": "kafka-acls.sh --bootstrap-server localhost:9092 --list",
+          "desc": "list all ACLs"
+        },
+        {
+          "cmd": "kafka-acls.sh --bootstrap-server localhost:9092 --list --topic payments",
+          "desc": "topic ACLs"
+        },
+        {
+          "cmd": "kafka-acls.sh --bootstrap-server localhost:9092 --add --allow-principal User:audit-svc --operation Read --topic audit-events",
+          "desc": "grant read access"
+        }
+      ]
+    },
+    {
+      "group": "Scenarios",
+      "commands": [
+        {
+          "cmd": "scenario investigate-consumer-lag",
+          "desc": "debug consumer lag"
+        },
+        {
+          "cmd": "scenario create-and-test-topic",
+          "desc": "create + test topic"
+        }
+      ]
+    }
+  ]
+}

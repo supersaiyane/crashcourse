@@ -1,0 +1,355 @@
+{
+  "id": "prometheus",
+  "prompt": "prom@monitoring:~$",
+  "welcome": "Welcome to the Prometheus CLI Playground.\nType commands to explore a simulated monitoring stack.\nType 'help' for available commands, 'scenario' for guided labs.\n",
+  "scenarios": [
+    {
+      "id": "investigate-high-latency",
+      "title": "Investigate High Latency Alert",
+      "steps": [
+        {
+          "instruction": "An alert fired for high p99 latency on the payment service. First, check which targets Prometheus is scraping.",
+          "expect": "curl -s localhost:9090/api/v1/targets",
+          "hint": "Try: curl -s localhost:9090/api/v1/targets"
+        },
+        {
+          "instruction": "The payment-service target is up. Query the current request rate to see if traffic spiked.",
+          "expect": "curl -s localhost:9090/api/v1/query --data-urlencode 'query=rate(http_requests_total{service=\"payment\"}[5m])'",
+          "hint": "Try: curl -s localhost:9090/api/v1/query --data-urlencode 'query=rate(http_requests_total{service=\"payment\"}[5m])'"
+        },
+        {
+          "instruction": "Traffic is 3x normal. Check the p99 latency using histogram_quantile.",
+          "expect": "curl -s localhost:9090/api/v1/query --data-urlencode 'query=histogram_quantile(0.99, rate(http_request_duration_seconds_bucket{service=\"payment\"}[5m]))'",
+          "hint": "Try: curl -s localhost:9090/api/v1/query --data-urlencode 'query=histogram_quantile(0.99, rate(http_request_duration_seconds_bucket{service=\"payment\"}[5m]))'"
+        },
+        {
+          "instruction": "p99 is 4.2s (SLO is 1s). Check which endpoint is the slowest using topk.",
+          "expect": "curl -s localhost:9090/api/v1/query --data-urlencode 'query=topk(5, rate(http_request_duration_seconds_sum{service=\"payment\"}[5m]) / rate(http_request_duration_seconds_count{service=\"payment\"}[5m]))'",
+          "hint": "Try: curl -s localhost:9090/api/v1/query --data-urlencode 'query=topk(5, rate(http_request_duration_seconds_sum{service=\"payment\"}[5m]) / rate(http_request_duration_seconds_count{service=\"payment\"}[5m]))'"
+        },
+        {
+          "instruction": "The /v1/transfer endpoint is at 5.8s avg. Check if the database connection pool is saturated.",
+          "expect": "curl -s localhost:9090/api/v1/query --data-urlencode 'query=db_pool_active_connections{service=\"payment\"} / db_pool_max_connections{service=\"payment\"}'",
+          "hint": "Try: curl -s localhost:9090/api/v1/query --data-urlencode 'query=db_pool_active_connections{service=\"payment\"} / db_pool_max_connections{service=\"payment\"}'"
+        },
+        {
+          "instruction": "Pool is at 98% — that's the bottleneck. Check what alerting rules are currently firing.",
+          "expect": "curl -s localhost:9090/api/v1/alerts",
+          "hint": "Try: curl -s localhost:9090/api/v1/alerts"
+        },
+        {
+          "instruction": "Multiple alerts firing. Silence the latency alert while the team works on scaling the DB pool.",
+          "expect": "amtool silence add service=payment alertname=HighP99Latency --comment='Scaling DB pool' --duration=2h",
+          "hint": "Try: amtool silence add service=payment alertname=HighP99Latency --comment='Scaling DB pool' --duration=2h"
+        },
+        {
+          "instruction": "Silence created. Verify the alert is now suppressed.",
+          "expect": "amtool alert query --inhibited --silenced",
+          "hint": "Try: amtool alert query --inhibited --silenced"
+        }
+      ]
+    },
+    {
+      "id": "validate-deploy-rules",
+      "title": "Validate and Deploy Recording Rules",
+      "steps": [
+        {
+          "instruction": "You wrote new recording rules for SLI calculations. First, validate the Prometheus config file.",
+          "expect": "promtool check config /etc/prometheus/prometheus.yml",
+          "hint": "Try: promtool check config /etc/prometheus/prometheus.yml"
+        },
+        {
+          "instruction": "Config is valid. Now check the recording rules file for syntax errors.",
+          "expect": "promtool check rules /etc/prometheus/rules/sli-rules.yml",
+          "hint": "Try: promtool check rules /etc/prometheus/rules/sli-rules.yml"
+        },
+        {
+          "instruction": "Rules file is valid. Run unit tests against the rules to verify they produce expected output.",
+          "expect": "promtool test rules /etc/prometheus/tests/sli-rules-test.yml",
+          "hint": "Try: promtool test rules /etc/prometheus/tests/sli-rules-test.yml"
+        },
+        {
+          "instruction": "All tests pass. Check the current TSDB status to ensure there's capacity for new series.",
+          "expect": "curl -s localhost:9090/api/v1/status/tsdb",
+          "hint": "Try: curl -s localhost:9090/api/v1/status/tsdb"
+        },
+        {
+          "instruction": "TSDB looks healthy. Analyze the local TSDB blocks for compaction status.",
+          "expect": "promtool tsdb analyze /var/lib/prometheus/data",
+          "hint": "Try: promtool tsdb analyze /var/lib/prometheus/data"
+        },
+        {
+          "instruction": "Good. Now reload Prometheus to pick up the new rules (without restart).",
+          "expect": "curl -X POST localhost:9090/-/reload",
+          "hint": "Try: curl -X POST localhost:9090/-/reload"
+        },
+        {
+          "instruction": "Reload triggered. Verify the new rules are loaded by checking the rules API.",
+          "expect": "curl -s localhost:9090/api/v1/rules",
+          "hint": "Try: curl -s localhost:9090/api/v1/rules"
+        },
+        {
+          "instruction": "Rules are loaded. Confirm the recording rule is producing data by querying it.",
+          "expect": "curl -s localhost:9090/api/v1/query --data-urlencode 'query=sli:http_request_duration_seconds:p99_5m'",
+          "hint": "Try: curl -s localhost:9090/api/v1/query --data-urlencode 'query=sli:http_request_duration_seconds:p99_5m'"
+        }
+      ]
+    }
+  ],
+  "commands": {
+    "help": "Available commands:\n  promtool check config       — Validate prometheus.yml\n  promtool check rules        — Validate rule files\n  promtool test rules         — Unit test rules with fixtures\n  promtool tsdb analyze       — Analyze TSDB blocks\n  promtool tsdb list          — List TSDB blocks\n  promtool tsdb dump          — Dump time series from TSDB\n  curl localhost:9090/api/v1/ — Query Prometheus HTTP API\n  amtool alert query          — Query Alertmanager alerts\n  amtool silence add          — Create silence\n  amtool silence expire       — Expire a silence\n  amtool check-config         — Validate alertmanager.yml\n  systemctl status prometheus — Check service status\n  kill -HUP <pid>             — Reload Prometheus config\n\n  scenario                    — Start a guided lab\n  clear                       — Clear the terminal\n  help                        — Show this help",
+    "promtool check config /etc/prometheus/prometheus.yml": "Checking /etc/prometheus/prometheus.yml\n  SUCCESS: /etc/prometheus/prometheus.yml is valid prometheus config file syntax\n\nChecking /etc/prometheus/rules/alerts.yml\n  SUCCESS: 12 rules found\n\nChecking /etc/prometheus/rules/recording.yml\n  SUCCESS: 8 rules found\n\nChecking /etc/prometheus/rules/sli-rules.yml\n  SUCCESS: 6 rules found",
+    "promtool check rules /etc/prometheus/rules/alerts.yml": "Checking /etc/prometheus/rules/alerts.yml\n  SUCCESS: 12 rules found\n    - HighErrorRate (alert)\n    - HighP99Latency (alert)\n    - TargetDown (alert)\n    - DiskSpaceLow (alert)\n    - HighMemoryUsage (alert)\n    - HighCPUUsage (alert)\n    - EndpointDown (alert)\n    - SlowQueries (alert)\n    - CertificateExpiry (alert)\n    - PodCrashLooping (alert)\n    - NodeNotReady (alert)\n    - PrometheusRuleFailures (alert)",
+    "promtool check rules /etc/prometheus/rules/recording.yml": "Checking /etc/prometheus/rules/recording.yml\n  SUCCESS: 8 rules found\n    - job:http_requests_total:rate5m (record)\n    - job:http_request_duration_seconds:p99 (record)\n    - job:http_request_duration_seconds:p50 (record)\n    - instance:node_cpu_utilisation:rate5m (record)\n    - instance:node_memory_utilisation:ratio (record)\n    - job:http_requests_total:error_rate5m (record)\n    - job:node_disk_io_time_seconds:rate5m (record)\n    - cluster:namespace:pod_cpu:active:kube_pod_container_resource_requests (record)",
+    "promtool check rules /etc/prometheus/rules/sli-rules.yml": "Checking /etc/prometheus/rules/sli-rules.yml\n  SUCCESS: 6 rules found\n    - sli:http_request_duration_seconds:p99_5m (record)\n    - sli:http_request_duration_seconds:p50_5m (record)\n    - sli:http_requests:availability_5m (record)\n    - sli:http_requests:error_budget_remaining (record)\n    - sli:http_requests:burn_rate_1h (record)\n    - sli:http_requests:burn_rate_6h (record)",
+    "promtool test rules /etc/prometheus/tests/sli-rules-test.yml": "Unit Testing: /etc/prometheus/tests/sli-rules-test.yml\n  PASS  Series: http_request_duration_seconds_bucket{service=\"payment\",le=\"0.1\"}\n  PASS  Series: http_request_duration_seconds_bucket{service=\"payment\",le=\"0.5\"}\n  PASS  Series: http_request_duration_seconds_bucket{service=\"payment\",le=\"1.0\"}\n  PASS  Series: http_request_duration_seconds_bucket{service=\"payment\",le=\"+Inf\"}\n  PASS  Alert: HighP99Latency (should fire when p99 > 1s for 5m)\n  PASS  Record: sli:http_request_duration_seconds:p99_5m = 1.2\n  PASS  Record: sli:http_requests:availability_5m = 0.997\n  PASS  Record: sli:http_requests:error_budget_remaining = 0.67\n\n8/8 tests passed",
+    "promtool test rules /etc/prometheus/tests/alerts-test.yml": "Unit Testing: /etc/prometheus/tests/alerts-test.yml\n  PASS  Alert: HighErrorRate (fires when error_rate > 5% for 5m)\n  PASS  Alert: HighP99Latency (fires when p99 > 1s for 5m)\n  PASS  Alert: TargetDown (fires when up == 0 for 3m)\n  PASS  Alert: DiskSpaceLow (fires when disk_usage > 85%)\n  PASS  Alert: HighMemoryUsage (fires when memory > 90% for 10m)\n\n5/5 tests passed",
+    "promtool tsdb analyze /var/lib/prometheus/data": "Block ID: 01HZQK4R5N8VXT2JM3PKWG7H9C\n  Duration:       2h0m0s\n  Series:         142,847\n  Samples:        28,569,400\n  Chunks:         285,694\n  Min Time:       2026-06-02T06:00:00Z\n  Max Time:       2026-06-02T08:00:00Z\n\nBlock ID: 01HZQM7S6P9WYU3KN4QLXH8I0D\n  Duration:       2h0m0s\n  Series:         143,102\n  Samples:        28,620,400\n  Chunks:         286,204\n  Min Time:       2026-06-02T08:00:00Z\n  Max Time:       2026-06-02T10:00:00Z\n\nLabel Pair Cardinality:\n  __name__              4,821\n  instance              47\n  job                   12\n  service               18\n  endpoint              156\n  method                5\n  status_code           12\n\nHighest Cardinality Metric Names:\n  http_request_duration_seconds_bucket    12,480 series\n  http_requests_total                      2,340 series\n  node_cpu_seconds_total                     384 series\n  container_memory_usage_bytes             1,856 series",
+    "promtool tsdb list /var/lib/prometheus/data": "BLOCK ID                          MIN TIME                   MAX TIME                   DURATION   NUM SAMPLES    NUM SERIES   NUM CHUNKS   SIZE\n01HZQK4R5N8VXT2JM3PKWG7H9C       2026-06-02T06:00:00Z       2026-06-02T08:00:00Z       2h0m0s     28,569,400     142,847      285,694      48MB\n01HZQM7S6P9WYU3KN4QLXH8I0D       2026-06-02T08:00:00Z       2026-06-02T10:00:00Z       2h0m0s     28,620,400     143,102      286,204      49MB\n01HZQP9T7Q0XZV4LP5RMYI9J1E       2026-06-02T10:00:00Z       2026-06-02T12:00:00Z       2h0m0s     28,715,800     143,290      286,580      49MB\n01HZQRBT8R1YAW5MQ6SNZJ0K2F       2026-06-02T12:00:00Z       2026-06-02T14:00:00Z       2h0m0s     28,680,200     143,198      286,396      49MB",
+    "promtool tsdb dump /var/lib/prometheus/data --min-time=2026-06-02T10:00:00Z --max-time=2026-06-02T10:05:00Z --match=up": "{__name__=\"up\", instance=\"payment-service:8080\", job=\"payment\"} 1 1717315200000\n{__name__=\"up\", instance=\"api-gateway:8080\", job=\"api\"} 1 1717315200000\n{__name__=\"up\", instance=\"user-service:8080\", job=\"users\"} 1 1717315200000\n{__name__=\"up\", instance=\"order-service:8080\", job=\"orders\"} 1 1717315200000\n{__name__=\"up\", instance=\"node-exporter:9100\", job=\"node\"} 1 1717315200000\n{__name__=\"up\", instance=\"postgres-exporter:9187\", job=\"postgres\"} 0 1717315200000\n{__name__=\"up\", instance=\"redis-exporter:9121\", job=\"redis\"} 1 1717315200000",
+    "promtool tsdb dump /var/lib/prometheus/data --min-time=2026-06-02T10:00:00Z --max-time=2026-06-02T10:01:00Z --match=http_requests_total{service=\"payment\"}": "{__name__=\"http_requests_total\", endpoint=\"/v1/transfer\", method=\"POST\", service=\"payment\", status=\"200\"} 4521847 1717315200000\n{__name__=\"http_requests_total\", endpoint=\"/v1/transfer\", method=\"POST\", service=\"payment\", status=\"500\"} 12483 1717315200000\n{__name__=\"http_requests_total\", endpoint=\"/v1/balance\", method=\"GET\", service=\"payment\", status=\"200\"} 8934521 1717315200000\n{__name__=\"http_requests_total\", endpoint=\"/v1/refund\", method=\"POST\", service=\"payment\", status=\"200\"} 345621 1717315200000\n{__name__=\"http_requests_total\", endpoint=\"/healthz\", method=\"GET\", service=\"payment\", status=\"200\"} 1247832 1717315200000",
+    "curl -s localhost:9090/api/v1/targets": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"activeTargets\": [\n      {\n        \"discoveredLabels\": {\"__address__\": \"payment-service:8080\", \"job\": \"payment\"},\n        \"labels\": {\"instance\": \"payment-service:8080\", \"job\": \"payment\"},\n        \"scrapePool\": \"payment\",\n        \"scrapeUrl\": \"http://payment-service:8080/metrics\",\n        \"health\": \"up\",\n        \"lastScrape\": \"2026-06-02T10:15:32.441Z\",\n        \"lastScrapeDuration\": 0.012,\n        \"lastError\": \"\"\n      },\n      {\n        \"discoveredLabels\": {\"__address__\": \"api-gateway:8080\", \"job\": \"api\"},\n        \"labels\": {\"instance\": \"api-gateway:8080\", \"job\": \"api\"},\n        \"scrapePool\": \"api\",\n        \"scrapeUrl\": \"http://api-gateway:8080/metrics\",\n        \"health\": \"up\",\n        \"lastScrape\": \"2026-06-02T10:15:30.112Z\",\n        \"lastScrapeDuration\": 0.008,\n        \"lastError\": \"\"\n      },\n      {\n        \"discoveredLabels\": {\"__address__\": \"user-service:8080\", \"job\": \"users\"},\n        \"labels\": {\"instance\": \"user-service:8080\", \"job\": \"users\"},\n        \"scrapePool\": \"users\",\n        \"scrapeUrl\": \"http://user-service:8080/metrics\",\n        \"health\": \"up\",\n        \"lastScrape\": \"2026-06-02T10:15:28.884Z\",\n        \"lastScrapeDuration\": 0.006,\n        \"lastError\": \"\"\n      },\n      {\n        \"discoveredLabels\": {\"__address__\": \"order-service:8080\", \"job\": \"orders\"},\n        \"labels\": {\"instance\": \"order-service:8080\", \"job\": \"orders\"},\n        \"scrapePool\": \"orders\",\n        \"scrapeUrl\": \"http://order-service:8080/metrics\",\n        \"health\": \"up\",\n        \"lastScrape\": \"2026-06-02T10:15:29.554Z\",\n        \"lastScrapeDuration\": 0.009,\n        \"lastError\": \"\"\n      },\n      {\n        \"discoveredLabels\": {\"__address__\": \"node-exporter:9100\", \"job\": \"node\"},\n        \"labels\": {\"instance\": \"node-exporter:9100\", \"job\": \"node\"},\n        \"scrapePool\": \"infrastructure\",\n        \"scrapeUrl\": \"http://node-exporter:9100/metrics\",\n        \"health\": \"up\",\n        \"lastScrape\": \"2026-06-02T10:15:31.220Z\",\n        \"lastScrapeDuration\": 0.015,\n        \"lastError\": \"\"\n      },\n      {\n        \"discoveredLabels\": {\"__address__\": \"postgres-exporter:9187\", \"job\": \"postgres\"},\n        \"labels\": {\"instance\": \"postgres-exporter:9187\", \"job\": \"postgres\"},\n        \"scrapePool\": \"database\",\n        \"scrapeUrl\": \"http://postgres-exporter:9187/metrics\",\n        \"health\": \"down\",\n        \"lastScrape\": \"2026-06-02T10:15:27.998Z\",\n        \"lastScrapeDuration\": 0.0,\n        \"lastError\": \"Get http://postgres-exporter:9187/metrics: dial tcp 10.0.2.45:9187: connect: connection refused\"\n      },\n      {\n        \"discoveredLabels\": {\"__address__\": \"redis-exporter:9121\", \"job\": \"redis\"},\n        \"labels\": {\"instance\": \"redis-exporter:9121\", \"job\": \"redis\"},\n        \"scrapePool\": \"cache\",\n        \"scrapeUrl\": \"http://redis-exporter:9121/metrics\",\n        \"health\": \"up\",\n        \"lastScrape\": \"2026-06-02T10:15:33.102Z\",\n        \"lastScrapeDuration\": 0.004,\n        \"lastError\": \"\"\n      }\n    ],\n    \"droppedTargets\": []\n  }\n}",
+    "curl -s localhost:9090/api/v1/query --data-urlencode 'query=up'": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"vector\",\n    \"result\": [\n      {\"metric\": {\"__name__\": \"up\", \"instance\": \"payment-service:8080\", \"job\": \"payment\"}, \"value\": [1717322132, \"1\"]},\n      {\"metric\": {\"__name__\": \"up\", \"instance\": \"api-gateway:8080\", \"job\": \"api\"}, \"value\": [1717322132, \"1\"]},\n      {\"metric\": {\"__name__\": \"up\", \"instance\": \"user-service:8080\", \"job\": \"users\"}, \"value\": [1717322132, \"1\"]},\n      {\"metric\": {\"__name__\": \"up\", \"instance\": \"order-service:8080\", \"job\": \"orders\"}, \"value\": [1717322132, \"1\"]},\n      {\"metric\": {\"__name__\": \"up\", \"instance\": \"node-exporter:9100\", \"job\": \"node\"}, \"value\": [1717322132, \"1\"]},\n      {\"metric\": {\"__name__\": \"up\", \"instance\": \"postgres-exporter:9187\", \"job\": \"postgres\"}, \"value\": [1717322132, \"0\"]},\n      {\"metric\": {\"__name__\": \"up\", \"instance\": \"redis-exporter:9121\", \"job\": \"redis\"}, \"value\": [1717322132, \"1\"]}\n    ]\n  }\n}",
+    "curl -s localhost:9090/api/v1/query --data-urlencode 'query=rate(http_requests_total{service=\"payment\"}[5m])'": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"vector\",\n    \"result\": [\n      {\"metric\": {\"service\": \"payment\", \"method\": \"POST\", \"endpoint\": \"/v1/transfer\", \"status\": \"200\"}, \"value\": [1717322132, \"847.33\"]},\n      {\"metric\": {\"service\": \"payment\", \"method\": \"POST\", \"endpoint\": \"/v1/transfer\", \"status\": \"500\"}, \"value\": [1717322132, \"12.67\"]},\n      {\"metric\": {\"service\": \"payment\", \"method\": \"GET\", \"endpoint\": \"/v1/balance\", \"status\": \"200\"}, \"value\": [1717322132, \"1245.80\"]},\n      {\"metric\": {\"service\": \"payment\", \"method\": \"POST\", \"endpoint\": \"/v1/refund\", \"status\": \"200\"}, \"value\": [1717322132, \"56.12\"]},\n      {\"metric\": {\"service\": \"payment\", \"method\": \"GET\", \"endpoint\": \"/healthz\", \"status\": \"200\"}, \"value\": [1717322132, \"12.00\"]}\n    ]\n  }\n}",
+    "curl -s localhost:9090/api/v1/query --data-urlencode 'query=rate(http_requests_total[5m])'": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"vector\",\n    \"result\": [\n      {\"metric\": {\"service\": \"payment\", \"method\": \"POST\", \"endpoint\": \"/v1/transfer\", \"status\": \"200\"}, \"value\": [1717322132, \"847.33\"]},\n      {\"metric\": {\"service\": \"payment\", \"method\": \"GET\", \"endpoint\": \"/v1/balance\", \"status\": \"200\"}, \"value\": [1717322132, \"1245.80\"]},\n      {\"metric\": {\"service\": \"api\", \"method\": \"GET\", \"endpoint\": \"/v1/users\", \"status\": \"200\"}, \"value\": [1717322132, \"523.45\"]},\n      {\"metric\": {\"service\": \"api\", \"method\": \"POST\", \"endpoint\": \"/v1/auth\", \"status\": \"200\"}, \"value\": [1717322132, \"312.10\"]},\n      {\"metric\": {\"service\": \"orders\", \"method\": \"POST\", \"endpoint\": \"/v1/create\", \"status\": \"201\"}, \"value\": [1717322132, \"178.92\"]},\n      {\"metric\": {\"service\": \"users\", \"method\": \"GET\", \"endpoint\": \"/v1/profile\", \"status\": \"200\"}, \"value\": [1717322132, \"445.67\"]}\n    ]\n  }\n}",
+    "curl -s localhost:9090/api/v1/query --data-urlencode 'query=histogram_quantile(0.99, rate(http_request_duration_seconds_bucket{service=\"payment\"}[5m]))'": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"vector\",\n    \"result\": [\n      {\"metric\": {\"service\": \"payment\", \"endpoint\": \"/v1/transfer\"}, \"value\": [1717322132, \"4.203\"]},\n      {\"metric\": {\"service\": \"payment\", \"endpoint\": \"/v1/balance\"}, \"value\": [1717322132, \"0.087\"]},\n      {\"metric\": {\"service\": \"payment\", \"endpoint\": \"/v1/refund\"}, \"value\": [1717322132, \"0.542\"]},\n      {\"metric\": {\"service\": \"payment\", \"endpoint\": \"/healthz\"}, \"value\": [1717322132, \"0.002\"]}\n    ]\n  }\n}",
+    "curl -s localhost:9090/api/v1/query --data-urlencode 'query=histogram_quantile(0.99, rate(http_request_duration_seconds_bucket[5m]))'": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"vector\",\n    \"result\": [\n      {\"metric\": {\"service\": \"payment\", \"endpoint\": \"/v1/transfer\"}, \"value\": [1717322132, \"4.203\"]},\n      {\"metric\": {\"service\": \"api\", \"endpoint\": \"/v1/users\"}, \"value\": [1717322132, \"0.245\"]},\n      {\"metric\": {\"service\": \"api\", \"endpoint\": \"/v1/auth\"}, \"value\": [1717322132, \"0.312\"]},\n      {\"metric\": {\"service\": \"orders\", \"endpoint\": \"/v1/create\"}, \"value\": [1717322132, \"0.891\"]},\n      {\"metric\": {\"service\": \"payment\", \"endpoint\": \"/v1/balance\"}, \"value\": [1717322132, \"0.087\"]}\n    ]\n  }\n}",
+    "curl -s localhost:9090/api/v1/query --data-urlencode 'query=topk(5, rate(http_request_duration_seconds_sum{service=\"payment\"}[5m]) / rate(http_request_duration_seconds_count{service=\"payment\"}[5m]))'": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"vector\",\n    \"result\": [\n      {\"metric\": {\"service\": \"payment\", \"endpoint\": \"/v1/transfer\", \"method\": \"POST\"}, \"value\": [1717322132, \"5.812\"]},\n      {\"metric\": {\"service\": \"payment\", \"endpoint\": \"/v1/refund\", \"method\": \"POST\"}, \"value\": [1717322132, \"0.423\"]},\n      {\"metric\": {\"service\": \"payment\", \"endpoint\": \"/v1/balance\", \"method\": \"GET\"}, \"value\": [1717322132, \"0.045\"]},\n      {\"metric\": {\"service\": \"payment\", \"endpoint\": \"/healthz\", \"method\": \"GET\"}, \"value\": [1717322132, \"0.001\"]}\n    ]\n  }\n}",
+    "curl -s localhost:9090/api/v1/query --data-urlencode 'query=db_pool_active_connections{service=\"payment\"} / db_pool_max_connections{service=\"payment\"}'": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"vector\",\n    \"result\": [\n      {\"metric\": {\"service\": \"payment\", \"instance\": \"payment-service:8080\", \"pool\": \"primary\"}, \"value\": [1717322132, \"0.98\"]},\n      {\"metric\": {\"service\": \"payment\", \"instance\": \"payment-service:8080\", \"pool\": \"replica\"}, \"value\": [1717322132, \"0.42\"]}\n    ]\n  }\n}",
+    "curl -s localhost:9090/api/v1/query --data-urlencode 'query=sum by (service) (rate(http_requests_total[5m]))'": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"vector\",\n    \"result\": [\n      {\"metric\": {\"service\": \"payment\"}, \"value\": [1717322132, \"2161.92\"]},\n      {\"metric\": {\"service\": \"api\"}, \"value\": [1717322132, \"835.55\"]},\n      {\"metric\": {\"service\": \"orders\"}, \"value\": [1717322132, \"178.92\"]},\n      {\"metric\": {\"service\": \"users\"}, \"value\": [1717322132, \"445.67\"]}\n    ]\n  }\n}",
+    "curl -s localhost:9090/api/v1/query --data-urlencode 'query=sum by (status) (rate(http_requests_total{service=\"payment\"}[5m]))'": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"vector\",\n    \"result\": [\n      {\"metric\": {\"status\": \"200\"}, \"value\": [1717322132, \"2149.25\"]},\n      {\"metric\": {\"status\": \"500\"}, \"value\": [1717322132, \"12.67\"]}\n    ]\n  }\n}",
+    "curl -s localhost:9090/api/v1/query --data-urlencode 'query=increase(http_requests_total{service=\"payment\",status=\"500\"}[1h])'": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"vector\",\n    \"result\": [\n      {\"metric\": {\"service\": \"payment\", \"endpoint\": \"/v1/transfer\", \"status\": \"500\"}, \"value\": [1717322132, \"2842\"]},\n      {\"metric\": {\"service\": \"payment\", \"endpoint\": \"/v1/refund\", \"status\": \"500\"}, \"value\": [1717322132, \"18\"]}\n    ]\n  }\n}",
+    "curl -s localhost:9090/api/v1/query --data-urlencode 'query=absent(up{job=\"payment\"})'": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"vector\",\n    \"result\": []\n  }\n}",
+    "curl -s localhost:9090/api/v1/query --data-urlencode 'query=absent(up{job=\"kafka\"})'": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"vector\",\n    \"result\": [\n      {\"metric\": {\"job\": \"kafka\"}, \"value\": [1717322132, \"1\"]}\n    ]\n  }\n}",
+    "curl -s localhost:9090/api/v1/query --data-urlencode 'query=node_cpu_seconds_total'": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"vector\",\n    \"result\": [\n      {\"metric\": {\"__name__\": \"node_cpu_seconds_total\", \"cpu\": \"0\", \"instance\": \"node-exporter:9100\", \"mode\": \"idle\"}, \"value\": [1717322132, \"584921.45\"]},\n      {\"metric\": {\"__name__\": \"node_cpu_seconds_total\", \"cpu\": \"0\", \"instance\": \"node-exporter:9100\", \"mode\": \"user\"}, \"value\": [1717322132, \"42156.78\"]},\n      {\"metric\": {\"__name__\": \"node_cpu_seconds_total\", \"cpu\": \"0\", \"instance\": \"node-exporter:9100\", \"mode\": \"system\"}, \"value\": [1717322132, \"18432.12\"]},\n      {\"metric\": {\"__name__\": \"node_cpu_seconds_total\", \"cpu\": \"1\", \"instance\": \"node-exporter:9100\", \"mode\": \"idle\"}, \"value\": [1717322132, \"591203.67\"]},\n      {\"metric\": {\"__name__\": \"node_cpu_seconds_total\", \"cpu\": \"1\", \"instance\": \"node-exporter:9100\", \"mode\": \"user\"}, \"value\": [1717322132, \"38974.23\"]},\n      {\"metric\": {\"__name__\": \"node_cpu_seconds_total\", \"cpu\": \"1\", \"instance\": \"node-exporter:9100\", \"mode\": \"system\"}, \"value\": [1717322132, \"15892.45\"]}\n    ]\n  }\n}",
+    "curl -s localhost:9090/api/v1/query --data-urlencode 'query=100 - (avg(rate(node_cpu_seconds_total{mode=\"idle\"}[5m])) * 100)'": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"vector\",\n    \"result\": [\n      {\"metric\": {}, \"value\": [1717322132, \"67.42\"]}\n    ]\n  }\n}",
+    "curl -s localhost:9090/api/v1/query --data-urlencode 'query=sli:http_request_duration_seconds:p99_5m'": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"vector\",\n    \"result\": [\n      {\"metric\": {\"service\": \"payment\"}, \"value\": [1717322132, \"4.203\"]},\n      {\"metric\": {\"service\": \"api\"}, \"value\": [1717322132, \"0.312\"]},\n      {\"metric\": {\"service\": \"orders\"}, \"value\": [1717322132, \"0.891\"]},\n      {\"metric\": {\"service\": \"users\"}, \"value\": [1717322132, \"0.156\"]}\n    ]\n  }\n}",
+    "curl -s localhost:9090/api/v1/query --data-urlencode 'query=topk(3, sum by (job) (scrape_samples_scraped))'": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"vector\",\n    \"result\": [\n      {\"metric\": {\"job\": \"node\"}, \"value\": [1717322132, \"4821\"]},\n      {\"metric\": {\"job\": \"payment\"}, \"value\": [1717322132, \"2156\"]},\n      {\"metric\": {\"job\": \"api\"}, \"value\": [1717322132, \"1843\"]}\n    ]\n  }\n}",
+    "curl -s localhost:9090/api/v1/alerts": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"alerts\": [\n      {\n        \"labels\": {\"alertname\": \"HighP99Latency\", \"service\": \"payment\", \"severity\": \"critical\"},\n        \"annotations\": {\"summary\": \"Payment service p99 latency above 1s SLO\", \"description\": \"p99 latency is 4.2s (threshold: 1s)\", \"runbook\": \"https://wiki.internal/runbooks/high-latency\"},\n        \"state\": \"firing\",\n        \"activeAt\": \"2026-06-02T10:05:12.000Z\",\n        \"value\": \"4.203\"\n      },\n      {\n        \"labels\": {\"alertname\": \"HighErrorRate\", \"service\": \"payment\", \"endpoint\": \"/v1/transfer\", \"severity\": \"warning\"},\n        \"annotations\": {\"summary\": \"Error rate above 1% on /v1/transfer\", \"description\": \"Error rate is 1.47% (threshold: 1%)\"},\n        \"state\": \"firing\",\n        \"activeAt\": \"2026-06-02T10:08:45.000Z\",\n        \"value\": \"0.0147\"\n      },\n      {\n        \"labels\": {\"alertname\": \"TargetDown\", \"instance\": \"postgres-exporter:9187\", \"job\": \"postgres\", \"severity\": \"critical\"},\n        \"annotations\": {\"summary\": \"Prometheus target postgres-exporter:9187 is down\", \"description\": \"Target has been unreachable for > 3m\"},\n        \"state\": \"firing\",\n        \"activeAt\": \"2026-06-02T10:02:30.000Z\",\n        \"value\": \"0\"\n      }\n    ]\n  }\n}",
+    "curl -s localhost:9090/api/v1/rules": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"groups\": [\n      {\n        \"name\": \"sli-rules\",\n        \"file\": \"/etc/prometheus/rules/sli-rules.yml\",\n        \"rules\": [\n          {\"name\": \"sli:http_request_duration_seconds:p99_5m\", \"type\": \"recording\", \"query\": \"histogram_quantile(0.99, sum by (service, le) (rate(http_request_duration_seconds_bucket[5m])))\", \"health\": \"ok\", \"evaluationTime\": 0.0034, \"lastEvaluation\": \"2026-06-02T10:15:30.000Z\"},\n          {\"name\": \"sli:http_requests:availability_5m\", \"type\": \"recording\", \"query\": \"1 - (sum by (service) (rate(http_requests_total{status=~\\\"5..\\\"}[5m])) / sum by (service) (rate(http_requests_total[5m])))\", \"health\": \"ok\", \"evaluationTime\": 0.0028, \"lastEvaluation\": \"2026-06-02T10:15:30.000Z\"},\n          {\"name\": \"sli:http_requests:error_budget_remaining\", \"type\": \"recording\", \"query\": \"1 - ((1 - sli:http_requests:availability_5m) / (1 - 0.999))\", \"health\": \"ok\", \"evaluationTime\": 0.0012, \"lastEvaluation\": \"2026-06-02T10:15:30.000Z\"}\n        ],\n        \"interval\": 30,\n        \"evaluationTime\": 0.0074,\n        \"lastEvaluation\": \"2026-06-02T10:15:30.000Z\"\n      },\n      {\n        \"name\": \"alerts\",\n        \"file\": \"/etc/prometheus/rules/alerts.yml\",\n        \"rules\": [\n          {\"name\": \"HighP99Latency\", \"type\": \"alerting\", \"query\": \"sli:http_request_duration_seconds:p99_5m > 1\", \"duration\": 300, \"health\": \"ok\", \"state\": \"firing\", \"alerts\": [{\"labels\": {\"service\": \"payment\"}, \"state\": \"firing\"}]},\n          {\"name\": \"HighErrorRate\", \"type\": \"alerting\", \"query\": \"1 - sli:http_requests:availability_5m > 0.01\", \"duration\": 300, \"health\": \"ok\", \"state\": \"firing\", \"alerts\": [{\"labels\": {\"service\": \"payment\"}, \"state\": \"firing\"}]},\n          {\"name\": \"TargetDown\", \"type\": \"alerting\", \"query\": \"up == 0\", \"duration\": 180, \"health\": \"ok\", \"state\": \"firing\", \"alerts\": [{\"labels\": {\"job\": \"postgres\"}, \"state\": \"firing\"}]}\n        ],\n        \"interval\": 30,\n        \"evaluationTime\": 0.0045,\n        \"lastEvaluation\": \"2026-06-02T10:15:30.000Z\"\n      }\n    ]\n  }\n}",
+    "curl -s localhost:9090/api/v1/status/config": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"yaml\": \"global:\\n  scrape_interval: 15s\\n  evaluation_interval: 30s\\n  scrape_timeout: 10s\\n\\nalerting:\\n  alertmanagers:\\n    - static_configs:\\n        - targets: ['alertmanager:9093']\\n\\nrule_files:\\n  - /etc/prometheus/rules/alerts.yml\\n  - /etc/prometheus/rules/recording.yml\\n  - /etc/prometheus/rules/sli-rules.yml\\n\\nscrape_configs:\\n  - job_name: 'payment'\\n    static_configs:\\n      - targets: ['payment-service:8080']\\n  - job_name: 'api'\\n    static_configs:\\n      - targets: ['api-gateway:8080']\\n  - job_name: 'users'\\n    static_configs:\\n      - targets: ['user-service:8080']\\n  - job_name: 'orders'\\n    static_configs:\\n      - targets: ['order-service:8080']\\n  - job_name: 'node'\\n    static_configs:\\n      - targets: ['node-exporter:9100']\\n  - job_name: 'postgres'\\n    static_configs:\\n      - targets: ['postgres-exporter:9187']\\n  - job_name: 'redis'\\n    static_configs:\\n      - targets: ['redis-exporter:9121']\\n\"\n  }\n}",
+    "curl -s localhost:9090/api/v1/status/tsdb": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"headStats\": {\n      \"numSeries\": 143290,\n      \"numLabelPairs\": 8942,\n      \"chunkCount\": 572580,\n      \"minTime\": 1717315200000,\n      \"maxTime\": 1717322132000\n    },\n    \"seriesCountByMetricName\": [\n      {\"name\": \"http_request_duration_seconds_bucket\", \"value\": 12480},\n      {\"name\": \"http_requests_total\", \"value\": 2340},\n      {\"name\": \"container_memory_usage_bytes\", \"value\": 1856},\n      {\"name\": \"node_cpu_seconds_total\", \"value\": 384},\n      {\"name\": \"container_cpu_usage_seconds_total\", \"value\": 928},\n      {\"name\": \"kube_pod_status_phase\", \"value\": 720}\n    ],\n    \"labelValueCountByLabelName\": [\n      {\"name\": \"__name__\", \"value\": 4821},\n      {\"name\": \"instance\", \"value\": 47},\n      {\"name\": \"le\", \"value\": 14},\n      {\"name\": \"endpoint\", \"value\": 156},\n      {\"name\": \"service\", \"value\": 18}\n    ],\n    \"memoryInBytesByLabelName\": [\n      {\"name\": \"__name__\", \"value\": 245760},\n      {\"name\": \"instance\", \"value\": 12288},\n      {\"name\": \"le\", \"value\": 4096}\n    ],\n    \"seriesCountByLabelValuePair\": [\n      {\"name\": \"job=node\", \"value\": 48210},\n      {\"name\": \"job=payment\", \"value\": 21560},\n      {\"name\": \"job=api\", \"value\": 18430}\n    ]\n  }\n}",
+    "curl -s localhost:9090/api/v1/status/runtimeinfo": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"startTime\": \"2026-05-28T00:00:00.000Z\",\n    \"CWD\": \"/prometheus\",\n    \"reloadConfigSuccess\": true,\n    \"lastConfigTime\": \"2026-06-02T10:16:00.000Z\",\n    \"corruptionCount\": 0,\n    \"goroutineCount\": 142,\n    \"GOMAXPROCS\": 4,\n    \"GOGC\": \"\",\n    \"GODEBUG\": \"\",\n    \"storageRetention\": \"15d\"\n  }\n}",
+    "curl -X POST localhost:9090/-/reload": "Prometheus config reloaded successfully.",
+    "curl -s localhost:9090/-/healthy": "Prometheus Server is Healthy.",
+    "curl -s localhost:9090/-/ready": "Prometheus Server is Ready.",
+    "systemctl status prometheus": "● prometheus.service - Prometheus Monitoring System\n     Loaded: loaded (/etc/systemd/system/prometheus.service; enabled)\n     Active: active (running) since Mon 2026-05-28 00:00:00 UTC; 5 days ago\n   Main PID: 1842 (prometheus)\n      Tasks: 142 (limit: 4915)\n     Memory: 2.4G\n        CPU: 4h 12min 34s\n     CGroup: /system.slice/prometheus.service\n             └─1842 /usr/local/bin/prometheus --config.file=/etc/prometheus/prometheus.yml --storage.tsdb.path=/var/lib/prometheus/data --storage.tsdb.retention.time=15d --web.enable-lifecycle\n\nJun 02 10:16:00 monitoring prometheus[1842]: level=info ts=2026-06-02T10:16:00.000Z caller=main.go:1116 msg=\"Completed loading of configuration file\" filename=/etc/prometheus/prometheus.yml",
+    "systemctl status alertmanager": "● alertmanager.service - Alertmanager\n     Loaded: loaded (/etc/systemd/system/alertmanager.service; enabled)\n     Active: active (running) since Mon 2026-05-28 00:00:15 UTC; 5 days ago\n   Main PID: 1856 (alertmanager)\n      Tasks: 18 (limit: 4915)\n     Memory: 84M\n        CPU: 12min 5s\n     CGroup: /system.slice/alertmanager.service\n             └─1856 /usr/local/bin/alertmanager --config.file=/etc/alertmanager/alertmanager.yml --storage.path=/var/lib/alertmanager/data",
+    "kill -HUP 1842": "Signal sent. Prometheus will reload configuration.",
+    "amtool alert query": "Alertname        Instance                  Service    Severity   State    Active Since\nHighP99Latency   payment-service:8080      payment    critical   active   2026-06-02 10:05:12 UTC\nHighErrorRate    payment-service:8080      payment    warning    active   2026-06-02 10:08:45 UTC\nTargetDown       postgres-exporter:9187    postgres   critical   active   2026-06-02 10:02:30 UTC",
+    "amtool alert query --inhibited --silenced": "Alertname        Instance                  Service    Severity   State      Active Since\nHighP99Latency   payment-service:8080      payment    critical   silenced   2026-06-02 10:05:12 UTC\nHighErrorRate    payment-service:8080      payment    warning    active     2026-06-02 10:08:45 UTC\nTargetDown       postgres-exporter:9187    postgres   critical   active     2026-06-02 10:02:30 UTC",
+    "amtool silence add service=payment alertname=HighP99Latency --comment='Scaling DB pool' --duration=2h": "Silence created: ID=a1b2c3d4-e5f6-7890-abcd-ef1234567890\n  Matchers: service=payment, alertname=HighP99Latency\n  Starts:   2026-06-02 10:16:00 UTC\n  Ends:     2026-06-02 12:16:00 UTC\n  Comment:  Scaling DB pool\n  Creator:  admin",
+    "amtool silence query": "ID                                    Matchers                                        Ends At                  Creator  Comment\na1b2c3d4-e5f6-7890-abcd-ef1234567890  service=payment alertname=HighP99Latency        2026-06-02 12:16:00 UTC  admin    Scaling DB pool",
+    "amtool silence expire a1b2c3d4-e5f6-7890-abcd-ef1234567890": "Silence a1b2c3d4-e5f6-7890-abcd-ef1234567890 expired.",
+    "amtool check-config /etc/alertmanager/alertmanager.yml": "Checking '/etc/alertmanager/alertmanager.yml'\n  SUCCESS\n\nFound:\n  - global config\n  - route\n  - 1 inhibit rules\n  - 3 receivers (slack-critical, pagerduty-team, email-fallback)",
+    "prometheus --version": "prometheus, version 2.52.0 (branch: HEAD, revision: 879d80922a)\n  build user:       root@buildhost\n  build date:       20260515-12:00:00\n  go version:       go1.22.3\n  platform:         linux/amd64\n  tags:             netgo,builtinassets,stringlabels",
+    "promtool --version": "promtool, version 2.52.0 (branch: HEAD, revision: 879d80922a)\n  build user:       root@buildhost\n  build date:       20260515-12:00:00\n  go version:       go1.22.3\n  platform:         linux/amd64",
+    "amtool --version": "amtool, version 0.27.0 (branch: HEAD, revision: f2a9b7c1d2)\n  build user:       root@buildhost\n  build date:       20260510-08:00:00\n  go version:       go1.22.3\n  platform:         linux/amd64",
+    "curl -s localhost:9090/api/v1/query --data-urlencode 'query=prometheus_build_info'": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"vector\",\n    \"result\": [\n      {\"metric\": {\"__name__\": \"prometheus_build_info\", \"branch\": \"HEAD\", \"goversion\": \"go1.22.3\", \"instance\": \"localhost:9090\", \"job\": \"prometheus\", \"revision\": \"879d80922a\", \"version\": \"2.52.0\"}, \"value\": [1717322132, \"1\"]}\n    ]\n  }\n}",
+    "curl -s localhost:9090/api/v1/query --data-urlencode 'query=scrape_duration_seconds'": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"vector\",\n    \"result\": [\n      {\"metric\": {\"instance\": \"payment-service:8080\", \"job\": \"payment\"}, \"value\": [1717322132, \"0.012\"]},\n      {\"metric\": {\"instance\": \"api-gateway:8080\", \"job\": \"api\"}, \"value\": [1717322132, \"0.008\"]},\n      {\"metric\": {\"instance\": \"node-exporter:9100\", \"job\": \"node\"}, \"value\": [1717322132, \"0.015\"]},\n      {\"metric\": {\"instance\": \"redis-exporter:9121\", \"job\": \"redis\"}, \"value\": [1717322132, \"0.004\"]}\n    ]\n  }\n}",
+    "curl -s localhost:9090/api/v1/query --data-urlencode 'query=prometheus_tsdb_head_series'": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"vector\",\n    \"result\": [\n      {\"metric\": {\"__name__\": \"prometheus_tsdb_head_series\", \"instance\": \"localhost:9090\", \"job\": \"prometheus\"}, \"value\": [1717322132, \"143290\"]}\n    ]\n  }\n}",
+    "curl -s localhost:9090/api/v1/query --data-urlencode 'query=prometheus_tsdb_storage_blocks_bytes'": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"vector\",\n    \"result\": [\n      {\"metric\": {\"__name__\": \"prometheus_tsdb_storage_blocks_bytes\", \"instance\": \"localhost:9090\", \"job\": \"prometheus\"}, \"value\": [1717322132, \"2147483648\"]}\n    ]\n  }\n}",
+    "curl -s localhost:9090/api/v1/query_range --data-urlencode 'query=rate(http_requests_total{service=\"payment\"}[5m])' --data-urlencode 'start=2026-06-02T09:00:00Z' --data-urlencode 'end=2026-06-02T10:00:00Z' --data-urlencode 'step=15m'": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"matrix\",\n    \"result\": [\n      {\n        \"metric\": {\"service\": \"payment\", \"endpoint\": \"/v1/transfer\", \"status\": \"200\"},\n        \"values\": [[1717311600, \"285.12\"], [1717312500, \"312.45\"], [1717313400, \"578.90\"], [1717314300, \"847.33\"]]\n      }\n    ]\n  }\n}",
+    "curl -s localhost:9090/api/v1/label/__name__/values": "{\n  \"status\": \"success\",\n  \"data\": [\n    \"container_cpu_usage_seconds_total\",\n    \"container_memory_usage_bytes\",\n    \"db_pool_active_connections\",\n    \"db_pool_max_connections\",\n    \"http_request_duration_seconds_bucket\",\n    \"http_request_duration_seconds_count\",\n    \"http_request_duration_seconds_sum\",\n    \"http_requests_total\",\n    \"kube_pod_status_phase\",\n    \"node_cpu_seconds_total\",\n    \"node_disk_io_time_seconds_total\",\n    \"node_filesystem_avail_bytes\",\n    \"node_filesystem_size_bytes\",\n    \"node_memory_MemAvailable_bytes\",\n    \"node_memory_MemTotal_bytes\",\n    \"node_network_receive_bytes_total\",\n    \"node_network_transmit_bytes_total\",\n    \"process_cpu_seconds_total\",\n    \"prometheus_build_info\",\n    \"prometheus_tsdb_head_series\",\n    \"prometheus_tsdb_storage_blocks_bytes\",\n    \"scrape_duration_seconds\",\n    \"scrape_samples_scraped\",\n    \"sli:http_request_duration_seconds:p99_5m\",\n    \"sli:http_requests:availability_5m\",\n    \"sli:http_requests:error_budget_remaining\",\n    \"up\"\n  ]\n}",
+    "curl -s localhost:9090/api/v1/label/job/values": "{\n  \"status\": \"success\",\n  \"data\": [\"api\", \"node\", \"orders\", \"payment\", \"postgres\", \"prometheus\", \"redis\", \"users\"]\n}",
+    "curl -s localhost:9090/api/v1/label/service/values": "{\n  \"status\": \"success\",\n  \"data\": [\"api\", \"orders\", \"payment\", \"users\"]\n}",
+    "curl -s localhost:9090/api/v1/metadata": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"http_requests_total\": [{\"type\": \"counter\", \"help\": \"Total number of HTTP requests\", \"unit\": \"\"}],\n    \"http_request_duration_seconds\": [{\"type\": \"histogram\", \"help\": \"HTTP request duration in seconds\", \"unit\": \"seconds\"}],\n    \"node_cpu_seconds_total\": [{\"type\": \"counter\", \"help\": \"Seconds the CPUs spent in each mode\", \"unit\": \"seconds\"}],\n    \"up\": [{\"type\": \"gauge\", \"help\": \"1 if the target is up, 0 if it is down\", \"unit\": \"\"}],\n    \"db_pool_active_connections\": [{\"type\": \"gauge\", \"help\": \"Number of active database pool connections\", \"unit\": \"\"}],\n    \"db_pool_max_connections\": [{\"type\": \"gauge\", \"help\": \"Maximum number of database pool connections\", \"unit\": \"\"}]\n  }\n}",
+    "curl -s localhost:9090/api/v1/query --data-urlencode 'query=node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes'": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"vector\",\n    \"result\": [\n      {\"metric\": {\"instance\": \"node-exporter:9100\", \"job\": \"node\"}, \"value\": [1717322132, \"0.32\"]}\n    ]\n  }\n}",
+    "curl -s localhost:9090/api/v1/query --data-urlencode 'query=node_filesystem_avail_bytes{mountpoint=\"/\"} / node_filesystem_size_bytes{mountpoint=\"/\"}'": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"vector\",\n    \"result\": [\n      {\"metric\": {\"instance\": \"node-exporter:9100\", \"job\": \"node\", \"mountpoint\": \"/\"}, \"value\": [1717322132, \"0.58\"]}\n    ]\n  }\n}",
+    "curl -s localhost:9090/api/v1/query --data-urlencode 'query=rate(node_network_receive_bytes_total[5m])'": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"vector\",\n    \"result\": [\n      {\"metric\": {\"device\": \"eth0\", \"instance\": \"node-exporter:9100\", \"job\": \"node\"}, \"value\": [1717322132, \"15728640\"]},\n      {\"metric\": {\"device\": \"lo\", \"instance\": \"node-exporter:9100\", \"job\": \"node\"}, \"value\": [1717322132, \"524288\"]}\n    ]\n  }\n}"
+  },
+  "reference": [
+    {
+      "group": "PromQL Queries",
+      "commands": [
+        {
+          "cmd": "curl -s localhost:9090/api/v1/query --data-urlencode 'query=up'",
+          "desc": "target health"
+        },
+        {
+          "cmd": "curl -s localhost:9090/api/v1/query --data-urlencode 'query=rate(http_requests_total{service=\"payment\"}[5m])'",
+          "desc": "request rate"
+        },
+        {
+          "cmd": "curl -s localhost:9090/api/v1/query --data-urlencode 'query=histogram_quantile(0.99, rate(http_request_duration_seconds_bucket{service=\"payment\"}[5m]))'",
+          "desc": "p99 latency"
+        },
+        {
+          "cmd": "curl -s localhost:9090/api/v1/query --data-urlencode 'query=sum by (service) (rate(http_requests_total[5m]))'",
+          "desc": "rate by service"
+        },
+        {
+          "cmd": "curl -s localhost:9090/api/v1/query --data-urlencode 'query=increase(http_requests_total{service=\"payment\",status=\"500\"}[1h])'",
+          "desc": "error count 1h"
+        },
+        {
+          "cmd": "curl -s localhost:9090/api/v1/query --data-urlencode 'query=absent(up{job=\"kafka\"})'",
+          "desc": "missing metric"
+        }
+      ]
+    },
+    {
+      "group": "HTTP API",
+      "commands": [
+        {
+          "cmd": "curl -s localhost:9090/api/v1/targets",
+          "desc": "scrape targets"
+        },
+        {
+          "cmd": "curl -s localhost:9090/api/v1/rules",
+          "desc": "rules & alerts"
+        },
+        {
+          "cmd": "curl -s localhost:9090/api/v1/alerts",
+          "desc": "firing alerts"
+        },
+        {
+          "cmd": "curl -s localhost:9090/api/v1/status/config",
+          "desc": "running config"
+        },
+        {
+          "cmd": "curl -s localhost:9090/api/v1/status/tsdb",
+          "desc": "TSDB stats"
+        },
+        {
+          "cmd": "curl -s localhost:9090/api/v1/label/__name__/values",
+          "desc": "all metric names"
+        }
+      ]
+    },
+    {
+      "group": "promtool",
+      "commands": [
+        {
+          "cmd": "promtool check config /etc/prometheus/prometheus.yml",
+          "desc": "validate config"
+        },
+        {
+          "cmd": "promtool check rules /etc/prometheus/rules/sli-rules.yml",
+          "desc": "validate rules"
+        },
+        {
+          "cmd": "promtool test rules /etc/prometheus/tests/sli-rules-test.yml",
+          "desc": "unit test rules"
+        },
+        {
+          "cmd": "promtool tsdb analyze /var/lib/prometheus/data",
+          "desc": "analyze blocks"
+        },
+        {
+          "cmd": "promtool tsdb list /var/lib/prometheus/data",
+          "desc": "list blocks"
+        }
+      ]
+    },
+    {
+      "group": "Alertmanager (amtool)",
+      "commands": [
+        {
+          "cmd": "amtool alert query",
+          "desc": "active alerts"
+        },
+        {
+          "cmd": "amtool silence add service=payment alertname=HighP99Latency --comment='Scaling DB pool' --duration=2h",
+          "desc": "create silence"
+        },
+        {
+          "cmd": "amtool silence query",
+          "desc": "list silences"
+        },
+        {
+          "cmd": "amtool silence expire a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+          "desc": "expire silence"
+        },
+        {
+          "cmd": "amtool check-config /etc/alertmanager/alertmanager.yml",
+          "desc": "validate config"
+        }
+      ]
+    },
+    {
+      "group": "Service Management",
+      "commands": [
+        {
+          "cmd": "systemctl status prometheus",
+          "desc": "service status"
+        },
+        {
+          "cmd": "systemctl status alertmanager",
+          "desc": "alertmanager status"
+        },
+        {
+          "cmd": "curl -X POST localhost:9090/-/reload",
+          "desc": "hot reload config"
+        },
+        {
+          "cmd": "kill -HUP 1842",
+          "desc": "reload via signal"
+        },
+        {
+          "cmd": "curl -s localhost:9090/-/healthy",
+          "desc": "health check"
+        },
+        {
+          "cmd": "curl -s localhost:9090/-/ready",
+          "desc": "readiness check"
+        }
+      ]
+    },
+    {
+      "group": "Node & Infrastructure",
+      "commands": [
+        {
+          "cmd": "curl -s localhost:9090/api/v1/query --data-urlencode 'query=100 - (avg(rate(node_cpu_seconds_total{mode=\"idle\"}[5m])) * 100)'",
+          "desc": "CPU usage %"
+        },
+        {
+          "cmd": "curl -s localhost:9090/api/v1/query --data-urlencode 'query=node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes'",
+          "desc": "memory available"
+        },
+        {
+          "cmd": "curl -s localhost:9090/api/v1/query --data-urlencode 'query=node_filesystem_avail_bytes{mountpoint=\"/\"} / node_filesystem_size_bytes{mountpoint=\"/\"}'",
+          "desc": "disk available"
+        },
+        {
+          "cmd": "curl -s localhost:9090/api/v1/query --data-urlencode 'query=rate(node_network_receive_bytes_total[5m])'",
+          "desc": "network rx rate"
+        }
+      ]
+    },
+    {
+      "group": "Version & Meta",
+      "commands": [
+        {
+          "cmd": "prometheus --version",
+          "desc": "server version"
+        },
+        {
+          "cmd": "promtool --version",
+          "desc": "promtool version"
+        },
+        {
+          "cmd": "amtool --version",
+          "desc": "amtool version"
+        },
+        {
+          "cmd": "curl -s localhost:9090/api/v1/status/runtimeinfo",
+          "desc": "runtime info"
+        }
+      ]
+    },
+    {
+      "group": "Scenarios",
+      "commands": [
+        {
+          "cmd": "scenario investigate-high-latency",
+          "desc": "debug latency alert"
+        },
+        {
+          "cmd": "scenario validate-deploy-rules",
+          "desc": "deploy recording rules"
+        }
+      ]
+    }
+  ]
+}

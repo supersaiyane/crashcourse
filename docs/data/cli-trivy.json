@@ -1,0 +1,127 @@
+{
+  "id": "trivy",
+  "prompt": "trivy@scanner:~$",
+  "welcome": "Welcome to the Trivy CLI Playground.\nSimulated security scanner for container images, filesystems, and Kubernetes.\nType 'help' for available commands, 'scenario' for guided labs.\n",
+  "scenarios": [
+    {
+      "id": "scan-fix-image",
+      "title": "Scan and Fix Container Image Vulnerabilities",
+      "steps": [
+        { "instruction": "Scan the nginx image for all vulnerabilities.", "expect": "trivy image nginx:1.25", "hint": "Try: trivy image nginx:1.25" },
+        { "instruction": "Too noisy. Filter for HIGH and CRITICAL only.", "expect": "trivy image --severity HIGH,CRITICAL nginx:1.25", "hint": "Try: trivy image --severity HIGH,CRITICAL nginx:1.25" },
+        { "instruction": "Show only vulnerabilities that have a fix available.", "expect": "trivy image --ignore-unfixed nginx:1.25", "hint": "Try: trivy image --ignore-unfixed nginx:1.25" },
+        { "instruction": "Get the full package list.", "expect": "trivy image --list-all-pkgs nginx:1.25", "hint": "Try: trivy image --list-all-pkgs nginx:1.25" },
+        { "instruction": "Scan our application image.", "expect": "trivy image myregistry/api:v2.1.0", "hint": "Try: trivy image myregistry/api:v2.1.0" },
+        { "instruction": "Generate a JSON report for CI.", "expect": "trivy image --format json --output report.json myregistry/api:v2.1.0", "hint": "Try: trivy image --format json --output report.json myregistry/api:v2.1.0" },
+        { "instruction": "Check if image passes CI gate (exit 1 on CRITICAL).", "expect": "trivy image --exit-code 1 --severity CRITICAL myregistry/api:v2.1.0", "hint": "Try: trivy image --exit-code 1 --severity CRITICAL myregistry/api:v2.1.0" },
+        { "instruction": "Generate an SBOM for compliance.", "expect": "trivy image --format cyclonedx --output sbom.json myregistry/api:v2.1.0", "hint": "Try: trivy image --format cyclonedx --output sbom.json myregistry/api:v2.1.0" }
+      ]
+    },
+    {
+      "id": "k8s-audit",
+      "title": "Audit Kubernetes Cluster Security",
+      "steps": [
+        { "instruction": "Scan the project filesystem for vulnerabilities and secrets.", "expect": "trivy fs .", "hint": "Try: trivy fs ." },
+        { "instruction": "Check IaC configs for misconfigurations.", "expect": "trivy config .", "hint": "Try: trivy config ." },
+        { "instruction": "Filter config scan to HIGH and CRITICAL.", "expect": "trivy config --severity HIGH,CRITICAL .", "hint": "Try: trivy config --severity HIGH,CRITICAL ." },
+        { "instruction": "Scan the Kubernetes cluster.", "expect": "trivy k8s --report summary cluster", "hint": "Try: trivy k8s --report summary cluster" },
+        { "instruction": "Get detailed findings.", "expect": "trivy k8s --report all cluster", "hint": "Try: trivy k8s --report all cluster" },
+        { "instruction": "Scan for secrets only.", "expect": "trivy fs --scanners secret .", "hint": "Try: trivy fs --scanners secret ." },
+        { "instruction": "Check CIS compliance.", "expect": "trivy k8s --compliance k8s-cis cluster", "hint": "Try: trivy k8s --compliance k8s-cis cluster" },
+        { "instruction": "Scan a remote repo.", "expect": "trivy repo https://github.com/example/app", "hint": "Try: trivy repo https://github.com/example/app" }
+      ]
+    }
+  ],
+  "commands": {
+    "help": "Available commands:\n  trivy image        — Scan container images\n  trivy fs           — Scan filesystem\n  trivy config       — Scan IaC (Terraform, K8s YAML, Dockerfile)\n  trivy k8s          — Scan Kubernetes cluster\n  trivy repo         — Scan remote git repository\n  trivy rootfs       — Scan root filesystem\n  trivy sbom         — Scan SBOM file\n  trivy plugin       — Manage plugins\n  trivy version      — Show version\n\n  Flags: --severity, --format, --ignore-unfixed, --exit-code, --scanners\n\n  scenario           — Start a guided lab\n  clear              — Clear terminal\n  help               — Show this help",
+    "trivy version": "Version: 0.52.0\nVulnerability DB:\n  Version: 2\n  UpdatedAt: 2026-06-02 06:00:12\n  NextUpdate: 2026-06-03 06:00:12\n  DownloadedAt: 2026-06-02 08:15:30",
+    "trivy image nginx:1.25": "2026-06-03T08:00:00Z INFO  Vulnerability scanning enabled\n2026-06-03T08:00:02Z INFO  Detected OS: debian 12.4\n\nnginx:1.25 (debian 12.4)\n\nTotal: 89 (UNKNOWN: 2, LOW: 45, MEDIUM: 28, HIGH: 11, CRITICAL: 3)\n\nLibrary          Vulnerability   Severity  Status  Installed         Fixed             Title\nlibssl3          CVE-2024-5535   CRITICAL  fixed   3.0.11-1~deb12u2  3.0.13-1~deb12u1  openssl: SSL_select_next_proto...\nlibexpat1        CVE-2024-45490  CRITICAL  fixed   2.5.0-1           2.5.0-1+deb12u1   expat: integer overflow in XML...\ncurl             CVE-2024-2398   CRITICAL  fixed   7.88.1-10+deb12u5 7.88.1-10+deb12u6 curl: HTTP/2 push headers memory..\nzlib1g           CVE-2023-45853  HIGH      fixed   1:1.2.13.dfsg-1   1:1.2.13.dfsg-2   zlib: integer overflow in minizip\nlibsystemd0      CVE-2023-26604  HIGH      fixed   252.22-1~deb12u1  252.23-1~deb12u1  systemd: privilege escalation...\nlibc6            CVE-2024-2961   HIGH      fixed   2.36-9+deb12u4    2.36-9+deb12u7    glibc: iconv buffer overflow...\nlibpcre2-8-0     CVE-2022-41409  HIGH      fixed   10.42-1           10.42-1+deb12u1   pcre2: negative repeat...\n... 82 more vulnerabilities",
+    "trivy image --severity HIGH,CRITICAL nginx:1.25": "nginx:1.25 (debian 12.4)\n\nTotal: 14 (HIGH: 11, CRITICAL: 3)\n\nLibrary          Vulnerability   Severity  Status  Installed         Fixed\nlibssl3          CVE-2024-5535   CRITICAL  fixed   3.0.11-1~deb12u2  3.0.13-1~deb12u1\nlibexpat1        CVE-2024-45490  CRITICAL  fixed   2.5.0-1           2.5.0-1+deb12u1\ncurl             CVE-2024-2398   CRITICAL  fixed   7.88.1-10+deb12u5 7.88.1-10+deb12u6\nzlib1g           CVE-2023-45853  HIGH      fixed   1:1.2.13.dfsg-1   1:1.2.13.dfsg-2\nlibsystemd0      CVE-2023-26604  HIGH      fixed   252.22-1~deb12u1  252.23-1~deb12u1\nlibc6            CVE-2024-2961   HIGH      fixed   2.36-9+deb12u4    2.36-9+deb12u7\n... 8 more",
+    "trivy image --ignore-unfixed nginx:1.25": "nginx:1.25 (debian 12.4)\n\nTotal: 67 (LOW: 32, MEDIUM: 21, HIGH: 11, CRITICAL: 3)\n\n(showing only vulnerabilities with available fixes)",
+    "trivy image --list-all-pkgs nginx:1.25": "nginx:1.25 (debian 12.4)\nTotal packages: 142\n\nPackage              Version            Source\nadduser              3.134              dpkg\napt                  2.6.1              dpkg\nbash                 5.2.15-2+b2        dpkg\ncurl                 7.88.1-10+deb12u5  dpkg\nlibc6                2.36-9+deb12u4     dpkg\nlibssl3              3.0.11-1~deb12u2   dpkg\nnginx                1.25.4-1~bookworm  dpkg\nopenssl              3.0.11-1~deb12u2   dpkg\nzlib1g               1:1.2.13.dfsg-1    dpkg\n... 133 more packages",
+    "trivy image myregistry/api:v2.1.0": "2026-06-03T08:00:00Z INFO  Detected OS: alpine 3.19.1\n2026-06-03T08:00:01Z INFO  Number of language-specific files: 1 (node-pkg)\n\nmyregistry/api:v2.1.0 (alpine 3.19.1)\nTotal: 4 (MEDIUM: 1, HIGH: 2, CRITICAL: 1)\n\nLibrary          Vulnerability   Severity  Installed   Fixed\nlibcrypto3       CVE-2024-5535   CRITICAL  3.1.4-r5    3.1.4-r6\nlibssl3          CVE-2024-5535   HIGH      3.1.4-r5    3.1.4-r6\nssl_client       CVE-2023-42366  HIGH      1.36.1-r15  1.36.1-r17\nbusybox          CVE-2023-42366  MEDIUM    1.36.1-r15  1.36.1-r17\n\nNode.js (node-pkg)\nTotal: 4 (LOW: 1, MEDIUM: 2, HIGH: 1)\n\nLibrary          Vulnerability   Severity  Installed  Fixed\npg               CVE-2024-1597   HIGH      8.11.3     8.11.4\nexpress          CVE-2024-29041  MEDIUM    4.18.2     4.19.2\nfollow-redirects CVE-2024-28849  MEDIUM    1.15.4     1.15.6\nsemver           CVE-2022-25883  LOW       7.5.4      7.5.5",
+    "trivy image --format json --output report.json myregistry/api:v2.1.0": "2026-06-03T08:00:01Z INFO  Report written to report.json\n\nReport saved: report.json (8 vulnerabilities, 2 targets)",
+    "trivy image --exit-code 1 --severity CRITICAL myregistry/api:v2.1.0": "myregistry/api:v2.1.0 (alpine 3.19.1)\nTotal: 1 (CRITICAL: 1)\n\nlibcrypto3  CVE-2024-5535  CRITICAL  fixed  3.1.4-r5  3.1.4-r6\n\nExit code: 1 (CRITICAL vulnerabilities found)",
+    "trivy image --format cyclonedx --output sbom.json myregistry/api:v2.1.0": "2026-06-03T08:00:01Z INFO  SBOM written to sbom.json\n\nSBOM generated: sbom.json (CycloneDX v1.5, 142 components)",
+    "trivy image --format sarif --output results.sarif myregistry/api:v2.1.0": "2026-06-03T08:00:01Z INFO  Report written to results.sarif\n\nSARIF report saved (compatible with GitHub Code Scanning)",
+    "trivy fs .": "2026-06-03T08:00:00Z INFO  Vulnerability scanning + Secret scanning enabled\n\npackage-lock.json (npm)\nTotal: 8 (LOW: 2, MEDIUM: 3, HIGH: 2, CRITICAL: 1)\n\nLibrary       Vulnerability   Severity  Installed  Fixed\njsonwebtoken  CVE-2022-23529  CRITICAL  8.5.1      9.0.0\naxios         CVE-2024-39338  HIGH      1.6.7      1.7.4\npg            CVE-2024-1597   HIGH      8.11.3     8.11.4\nexpress       CVE-2024-29041  MEDIUM    4.18.2     4.19.2\n... 4 more\n\nSecrets (1 detected)\nSeverity  Rule                  File      Match\nHIGH      AWS Access Key ID     .env.bak  AKIA****EXAMPLE (line 3)",
+    "trivy fs --scanners secret .": "Secrets (1 detected)\n\nSeverity  Rule                  File      Match\nHIGH      AWS Access Key ID     .env.bak  AKIA****EXAMPLE (line 3)\n\nTotal: 1 secret(s) found",
+    "trivy fs --scanners vuln .": "package-lock.json (npm)\nTotal: 8 (LOW: 2, MEDIUM: 3, HIGH: 2, CRITICAL: 1)\n\ngo.sum (gomod)\nTotal: 3 (MEDIUM: 2, HIGH: 1)",
+    "trivy config .": "Dockerfile (dockerfile)\nTests: 23 (SUCCESSES: 18, FAILURES: 5)\nFailures: 5 (HIGH: 2, MEDIUM: 3)\n\nHIGH  DS002  Running as root user\nHIGH  DS026  No HEALTHCHECK instruction\nMED   DS001  Using latest tag in FROM\nMED   DS014  No apt-get clean after install\nMED   DS015  apt-get upgrade in Dockerfile\n\ndeploy/deployment.yaml (kubernetes)\nTests: 15 (SUCCESSES: 11, FAILURES: 4)\nFailures: 4 (HIGH: 2, MEDIUM: 2)\n\nHIGH  KSV001  Container is privileged\nHIGH  KSV003  Should drop ALL capabilities\nMED   KSV011  No CPU limits set\nMED   KSV015  No memory limits set\n\nterraform/main.tf (terraform)\nTests: 12 (SUCCESSES: 10, FAILURES: 2)\nFailures: 2 (HIGH: 1, MEDIUM: 1)\n\nHIGH  AVD-AWS-0107  S3 bucket publicly accessible\nMED   AVD-AWS-0132  S3 bucket no encryption",
+    "trivy config --severity HIGH,CRITICAL .": "Dockerfile: 2 failures (HIGH: 2)\n  DS002 Running as root user\n  DS026 No HEALTHCHECK\n\ndeploy/deployment.yaml: 2 failures (HIGH: 2)\n  KSV001 Container is privileged\n  KSV003 Should drop ALL capabilities\n\nterraform/main.tf: 1 failure (HIGH: 1)\n  AVD-AWS-0107 S3 bucket publicly accessible",
+    "trivy k8s --report summary cluster": "2026-06-03T08:00:05Z INFO  Scanned 45 resources in 6 namespaces\n\nNamespace       Total  Low  Med  High  Critical\nproduction        23    8    9    4       2\nstaging           15    5    6    3       1\nmonitoring         8    3    3    2       0\nkube-system       12    4    5    2       1\ningress-nginx      5    2    2    1       0\nTOTAL             63   22   25   12       4\n\nMisconfigurations: 18 (HIGH: 6, MEDIUM: 8, LOW: 4)\nSecrets: 2 found in production namespace",
+    "trivy k8s --report all cluster": "Namespace: production\n  Deployment/api (myregistry/api:v2.1.0)\n    Vulnerabilities: 8 (C:1, H:2, M:3, L:2)\n    Misconfigs: 3 (no limits, no readiness probe, privileged)\n  Deployment/web (myregistry/web:v1.5.0)\n    Vulnerabilities: 18 (C:2, H:4, M:7, L:5)\n    Misconfigs: 2 (running as root, no network policy)\n  Deployment/worker (myregistry/worker:v1.3.0)\n    Vulnerabilities: 8 (C:0, H:1, M:4, L:3)\n    Misconfigs: 1 (no memory limits)\n\nNamespace: kube-system\n  DaemonSet/aws-node\n    Vulnerabilities: 5 (C:1, H:2, M:2)\n\n... (45 resources total)",
+    "trivy k8s --compliance k8s-cis cluster": "CIS Kubernetes Benchmark v1.8.0\n\nControl                                              Status  Severity\n5.1.1 Cluster-admin role used sparingly              PASS\n5.1.2 Minimize access to secrets                     FAIL    HIGH\n5.2.1 Minimize privileged containers                 FAIL    HIGH\n5.2.2 Minimize containers running as root            FAIL    MEDIUM\n5.2.3 Minimize hostNetwork containers                PASS\n5.3.1 NetworkPolicy for all namespaces               FAIL    MEDIUM\n5.4.1 Prefer secrets as files over env vars          FAIL    LOW\n5.7.1 Create administrative boundaries              PASS\n\nTOTAL: 45 controls (35 PASS, 8 FAIL, 2 N/A)",
+    "trivy repo https://github.com/example/app": "2026-06-03T08:00:03Z INFO  Cloning and scanning...\n\npackage-lock.json (npm): 6 vulns (C:1, H:1, M:3, L:1)\ngo.sum (gomod): 2 vulns (H:1, M:1)\nDockerfile (misconfig): 3 failures (H:1, M:2)\nSecrets: 0 detected",
+    "trivy rootfs /": "/ (ubuntu 22.04)\nTotal: 34 (LOW: 15, MEDIUM: 12, HIGH: 5, CRITICAL: 2)",
+    "trivy plugin list": "Installed Plugins:\n  Name       Version  Description\n  aqua       0.5.0    Aqua platform integration\n  kubectl    0.3.1    Scan kubectl resources\n  referrer   0.2.0    OCI referrers support",
+    "trivy sbom sbom.json": "Scanning CycloneDX SBOM...\n\nsbom.json (cyclonedx)\nTotal: 8 (LOW: 2, MEDIUM: 3, HIGH: 2, CRITICAL: 1)\n\n(Same vulnerabilities as image scan)",
+    "trivy image --scanners vuln,secret,misconfig myregistry/api:v2.1.0": "All scanners enabled\n\nVulnerabilities: 8 (C:1, H:2, M:3, L:2)\nSecrets: 0 found\nMisconfigurations: 0 (no config files in image)"
+  },
+  "reference": [
+    {
+      "group": "Image Scanning",
+      "commands": [
+        { "cmd": "trivy image nginx:1.25", "desc": "scan image" },
+        { "cmd": "trivy image --severity HIGH,CRITICAL nginx:1.25", "desc": "filter severity" },
+        { "cmd": "trivy image --ignore-unfixed nginx:1.25", "desc": "fixable only" },
+        { "cmd": "trivy image --exit-code 1 --severity CRITICAL myregistry/api:v2.1.0", "desc": "CI gate" },
+        { "cmd": "trivy image --list-all-pkgs nginx:1.25", "desc": "all packages" }
+      ]
+    },
+    {
+      "group": "Output Formats",
+      "commands": [
+        { "cmd": "trivy image --format json --output report.json myregistry/api:v2.1.0", "desc": "JSON" },
+        { "cmd": "trivy image --format cyclonedx --output sbom.json myregistry/api:v2.1.0", "desc": "SBOM" },
+        { "cmd": "trivy image --format sarif --output results.sarif myregistry/api:v2.1.0", "desc": "SARIF" }
+      ]
+    },
+    {
+      "group": "Filesystem & Secrets",
+      "commands": [
+        { "cmd": "trivy fs .", "desc": "scan project" },
+        { "cmd": "trivy fs --scanners secret .", "desc": "secrets only" },
+        { "cmd": "trivy fs --scanners vuln .", "desc": "vulns only" },
+        { "cmd": "trivy rootfs /", "desc": "scan root" }
+      ]
+    },
+    {
+      "group": "Config & IaC",
+      "commands": [
+        { "cmd": "trivy config .", "desc": "scan all configs" },
+        { "cmd": "trivy config --severity HIGH,CRITICAL .", "desc": "high+ only" },
+        { "cmd": "trivy repo https://github.com/example/app", "desc": "scan repo" }
+      ]
+    },
+    {
+      "group": "Kubernetes",
+      "commands": [
+        { "cmd": "trivy k8s --report summary cluster", "desc": "cluster summary" },
+        { "cmd": "trivy k8s --report all cluster", "desc": "full report" },
+        { "cmd": "trivy k8s --compliance k8s-cis cluster", "desc": "CIS benchmark" }
+      ]
+    },
+    {
+      "group": "SBOM & Advanced",
+      "commands": [
+        { "cmd": "trivy sbom sbom.json", "desc": "scan SBOM" },
+        { "cmd": "trivy image --scanners vuln,secret,misconfig myregistry/api:v2.1.0", "desc": "all scanners" }
+      ]
+    },
+    {
+      "group": "Management",
+      "commands": [
+        { "cmd": "trivy version", "desc": "version + DB" },
+        { "cmd": "trivy plugin list", "desc": "plugins" }
+      ]
+    },
+    {
+      "group": "Scenarios",
+      "commands": [
+        { "cmd": "scenario scan-fix-image", "desc": "fix image vulns" },
+        { "cmd": "scenario k8s-audit", "desc": "audit K8s cluster" }
+      ]
+    }
+  ]
+}

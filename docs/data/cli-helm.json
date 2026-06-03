@@ -1,0 +1,331 @@
+{
+  "id": "helm",
+  "prompt": "helm@production:~/charts$",
+  "welcome": "Welcome to the Helm CLI Playground.\nType commands to explore a simulated production cluster with Helm releases.\nType 'help' for available commands, 'scenario' for guided labs.\n",
+  "scenarios": [
+    {
+      "id": "deploy-and-upgrade",
+      "title": "Deploy and Upgrade a Microservice",
+      "steps": [
+        {
+          "instruction": "First, add the Bitnami repository so we can pull community charts.",
+          "expect": "helm repo add bitnami https://charts.bitnami.com/bitnami",
+          "hint": "Try: helm repo add bitnami https://charts.bitnami.com/bitnami"
+        },
+        {
+          "instruction": "Update all repo indexes to get the latest chart versions.",
+          "expect": "helm repo update",
+          "hint": "Try: helm repo update"
+        },
+        {
+          "instruction": "Install the api-chart into production with production values.",
+          "expect": "helm install api ./api-chart --namespace production --values values-prod.yaml",
+          "hint": "Try: helm install api ./api-chart --namespace production --values values-prod.yaml"
+        },
+        {
+          "instruction": "Check the status of the new release to verify it deployed.",
+          "expect": "helm status api -n production",
+          "hint": "Try: helm status api -n production"
+        },
+        {
+          "instruction": "List all releases in production to see the full picture.",
+          "expect": "helm list -n production",
+          "hint": "Try: helm list -n production"
+        },
+        {
+          "instruction": "Now upgrade the API to v2.3.0 by setting the image tag.",
+          "expect": "helm upgrade api ./api-chart -n production --set image.tag=v2.3.0",
+          "hint": "Try: helm upgrade api ./api-chart -n production --set image.tag=v2.3.0"
+        },
+        {
+          "instruction": "Check the revision history to confirm the upgrade was recorded.",
+          "expect": "helm history api -n production",
+          "hint": "Try: helm history api -n production"
+        },
+        {
+          "instruction": "The new version has a memory leak. Roll back to revision 2.",
+          "expect": "helm rollback api 2 -n production",
+          "hint": "Try: helm rollback api 2 -n production"
+        }
+      ]
+    },
+    {
+      "id": "debug-failed-release",
+      "title": "Debug a Failed Helm Release",
+      "steps": [
+        {
+          "instruction": "List all releases in production to find the problem.",
+          "expect": "helm list -n production",
+          "hint": "Try: helm list -n production"
+        },
+        {
+          "instruction": "The 'web' release shows status 'failed'. Get its detailed status.",
+          "expect": "helm status web -n production",
+          "hint": "Try: helm status web -n production"
+        },
+        {
+          "instruction": "Check what values the failed release was deployed with.",
+          "expect": "helm get values web -n production",
+          "hint": "Try: helm get values web -n production"
+        },
+        {
+          "instruction": "Look at the rendered manifest to see what Kubernetes resources were generated.",
+          "expect": "helm get manifest web -n production",
+          "hint": "Try: helm get manifest web -n production"
+        },
+        {
+          "instruction": "Render the template locally to debug without deploying.",
+          "expect": "helm template web ./web-chart --values values-prod.yaml",
+          "hint": "Try: helm template web ./web-chart --values values-prod.yaml"
+        },
+        {
+          "instruction": "Lint the chart to catch structural issues.",
+          "expect": "helm lint ./web-chart",
+          "hint": "Try: helm lint ./web-chart"
+        },
+        {
+          "instruction": "Use the diff plugin to preview what an upgrade would change.",
+          "expect": "helm diff upgrade web ./web-chart -n production",
+          "hint": "Try: helm diff upgrade web ./web-chart -n production"
+        },
+        {
+          "instruction": "Fix the values and upgrade the release with the corrected chart.",
+          "expect": "helm upgrade web ./web-chart -n production --values values-prod.yaml",
+          "hint": "Try: helm upgrade web ./web-chart -n production --values values-prod.yaml"
+        }
+      ]
+    }
+  ],
+  "commands": {
+    "help": "Available commands:\n  helm install [name] [chart]    \u2014 Install a Helm chart\n  helm upgrade [name] [chart]    \u2014 Upgrade a release\n  helm upgrade --install         \u2014 Install or upgrade\n  helm rollback [name] [rev]     \u2014 Roll back to a previous revision\n  helm uninstall [name]          \u2014 Remove a release\n  helm list                      \u2014 List releases\n  helm status [name]             \u2014 Show release status\n  helm history [name]            \u2014 Show release history\n  helm get values [name]         \u2014 Show release values\n  helm get manifest [name]       \u2014 Show release manifest\n  helm repo add/update/list      \u2014 Manage chart repos\n  helm search repo [keyword]     \u2014 Search repos for charts\n  helm template [name] [chart]   \u2014 Render chart templates locally\n  helm create [name]             \u2014 Create a new chart scaffold\n  helm package [chart]           \u2014 Package chart into archive\n  helm lint [chart]              \u2014 Check chart for issues\n  helm plugin list               \u2014 List installed plugins\n  helm diff upgrade              \u2014 Preview upgrade changes (plugin)\n  helm version                   \u2014 Show Helm version\n  helm install --dry-run         \u2014 Simulate install without deploying\n\n  scenario                       \u2014 Start a guided lab\n  clear                          \u2014 Clear the terminal\n  help                           \u2014 Show this help",
+    "helm version": "version.BuildInfo{Version:\"v3.15.2\", GitCommit:\"1a500d5625419a524fdae4b33de351cc4f58ec35\", GitTreeState:\"clean\", GoVersion:\"go1.22.4\"}",
+    "helm list -n production": "NAME            NAMESPACE    REVISION  UPDATED                                STATUS    CHART                  APP VERSION\napi             production   3         2026-06-01 14:22:10.483726 +0530 IST   deployed  api-chart-1.4.2        2.1.0\nweb             production   5         2026-06-02 09:15:33.192847 +0530 IST   failed    web-chart-2.1.0        1.8.0\nredis           production   2         2026-05-28 11:04:55.738291 +0530 IST   deployed  redis-18.6.1           7.2.5\npostgres        production   1         2026-05-15 16:30:22.105634 +0530 IST   deployed  postgresql-15.2.5      16.3.0\nnginx-ingress   production   4         2026-05-20 10:45:18.294756 +0530 IST   deployed  ingress-nginx-4.10.1   1.10.1",
+    "helm list --all-namespaces": "NAME            NAMESPACE    REVISION  UPDATED                                STATUS    CHART                  APP VERSION\napi             production   3         2026-06-01 14:22:10.483726 +0530 IST   deployed  api-chart-1.4.2        2.1.0\nweb             production   5         2026-06-02 09:15:33.192847 +0530 IST   failed    web-chart-2.1.0        1.8.0\nredis           production   2         2026-05-28 11:04:55.738291 +0530 IST   deployed  redis-18.6.1           7.2.5\npostgres        production   1         2026-05-15 16:30:22.105634 +0530 IST   deployed  postgresql-15.2.5      16.3.0\nnginx-ingress   production   4         2026-05-20 10:45:18.294756 +0530 IST   deployed  ingress-nginx-4.10.1   1.10.1\nprometheus      monitoring   6         2026-05-30 08:12:44.561832 +0530 IST   deployed  kube-prometheus-61.2.0 0.75.0\ngrafana         monitoring   3         2026-05-25 13:55:09.384721 +0530 IST   deployed  grafana-8.0.2          11.0.0\ncert-manager    cert-manager 2         2026-05-10 09:20:15.293847 +0530 IST   deployed  cert-manager-1.15.1    1.15.1",
+    "helm list -A": "NAME            NAMESPACE    REVISION  UPDATED                                STATUS    CHART                  APP VERSION\napi             production   3         2026-06-01 14:22:10.483726 +0530 IST   deployed  api-chart-1.4.2        2.1.0\nweb             production   5         2026-06-02 09:15:33.192847 +0530 IST   failed    web-chart-2.1.0        1.8.0\nredis           production   2         2026-05-28 11:04:55.738291 +0530 IST   deployed  redis-18.6.1           7.2.5\npostgres        production   1         2026-05-15 16:30:22.105634 +0530 IST   deployed  postgresql-15.2.5      16.3.0\nnginx-ingress   production   4         2026-05-20 10:45:18.294756 +0530 IST   deployed  ingress-nginx-4.10.1   1.10.1\nprometheus      monitoring   6         2026-05-30 08:12:44.561832 +0530 IST   deployed  kube-prometheus-61.2.0 0.75.0\ngrafana         monitoring   3         2026-05-25 13:55:09.384721 +0530 IST   deployed  grafana-8.0.2          11.0.0\ncert-manager    cert-manager 2         2026-05-10 09:20:15.293847 +0530 IST   deployed  cert-manager-1.15.1    1.15.1",
+    "helm status api -n production": "NAME: api\nLAST DEPLOYED: Sun Jun  1 14:22:10 2026\nNAMESPACE: production\nSTATUS: deployed\nREVISION: 3\nTEST SUITE: None\nNOTES:\n  api-chart has been deployed.\n\n  Get the application URL by running:\n    export POD_NAME=$(kubectl get pods -n production -l \"app.kubernetes.io/name=api\" -o jsonpath=\"{.items[0].metadata.name}\")\n    kubectl port-forward $POD_NAME 8080:8080 -n production\n\n  Health check:\n    curl http://localhost:8080/healthz",
+    "helm status web -n production": "NAME: web\nLAST DEPLOYED: Mon Jun  2 09:15:33 2026\nNAMESPACE: production\nSTATUS: failed\nREVISION: 5\nTEST SUITE: None\nDESCRIPTION: Upgrade \"web\" failed: timed out waiting for the condition\nNOTES:\n  web-chart has been deployed.\n\n  WARNING: Release is in a failed state. Last deployment did not complete successfully.\n  Run 'helm history web -n production' to view revision history.\n  Run 'helm rollback web [REVISION] -n production' to roll back.",
+    "helm status redis -n production": "NAME: redis\nLAST DEPLOYED: Tue May 28 11:04:55 2026\nNAMESPACE: production\nSTATUS: deployed\nREVISION: 2\nTEST SUITE: None\nNOTES:\n  Redis has been deployed.\n\n  To connect to your Redis server:\n    export REDIS_PASSWORD=$(kubectl get secret redis -n production -o jsonpath=\"{.data.redis-password}\" | base64 -d)\n    kubectl run redis-client --rm -it --image redis:7.2 -- redis-cli -h redis-master -a $REDIS_PASSWORD",
+    "helm status postgres -n production": "NAME: postgres\nLAST DEPLOYED: Wed May 15 16:30:22 2026\nNAMESPACE: production\nSTATUS: deployed\nREVISION: 1\nTEST SUITE: None\nNOTES:\n  PostgreSQL has been deployed.\n\n  To connect:\n    export POSTGRES_PASSWORD=$(kubectl get secret postgres-postgresql -n production -o jsonpath=\"{.data.postgres-password}\" | base64 -d)\n    kubectl run pg-client --rm -it --image postgres:16.3 -- psql -h postgres-postgresql -U postgres -d production",
+    "helm status nginx-ingress -n production": "NAME: nginx-ingress\nLAST DEPLOYED: Mon May 20 10:45:18 2026\nNAMESPACE: production\nSTATUS: deployed\nREVISION: 4\nTEST SUITE: None\nNOTES:\n  The ingress-nginx controller has been installed.\n\n  Get the LoadBalancer IP:\n    kubectl get svc nginx-ingress-ingress-nginx-controller -n production -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'",
+    "helm history api -n production": "REVISION  UPDATED                   STATUS      CHART            APP VERSION  DESCRIPTION\n1         2026-05-10 09:30:15 IST   superseded  api-chart-1.2.0  2.0.0        Install complete\n2         2026-05-22 16:45:33 IST   superseded  api-chart-1.3.1  2.0.5        Upgrade complete\n3         2026-06-01 14:22:10 IST   deployed    api-chart-1.4.2  2.1.0        Upgrade complete",
+    "helm history web -n production": "REVISION  UPDATED                   STATUS      CHART            APP VERSION  DESCRIPTION\n1         2026-04-20 11:00:00 IST   superseded  web-chart-1.0.0  1.5.0        Install complete\n2         2026-04-28 14:30:22 IST   superseded  web-chart-1.1.0  1.6.0        Upgrade complete\n3         2026-05-12 09:15:44 IST   superseded  web-chart-1.2.0  1.7.0        Upgrade complete\n4         2026-05-25 17:40:11 IST   superseded  web-chart-2.0.0  1.7.5        Upgrade complete\n5         2026-06-02 09:15:33 IST   failed      web-chart-2.1.0  1.8.0        Upgrade \"web\" failed: timed out waiting for the condition",
+    "helm history redis -n production": "REVISION  UPDATED                   STATUS      CHART          APP VERSION  DESCRIPTION\n1         2026-05-15 10:00:00 IST   superseded  redis-18.5.0   7.2.4        Install complete\n2         2026-05-28 11:04:55 IST   deployed    redis-18.6.1   7.2.5        Upgrade complete",
+    "helm history postgres -n production": "REVISION  UPDATED                   STATUS    CHART              APP VERSION  DESCRIPTION\n1         2026-05-15 16:30:22 IST   deployed  postgresql-15.2.5  16.3.0       Install complete",
+    "helm history nginx-ingress -n production": "REVISION  UPDATED                   STATUS      CHART                APP VERSION  DESCRIPTION\n1         2026-04-10 08:00:00 IST   superseded  ingress-nginx-4.8.0  1.9.6        Install complete\n2         2026-04-25 12:15:33 IST   superseded  ingress-nginx-4.9.0  1.10.0       Upgrade complete\n3         2026-05-10 14:22:47 IST   superseded  ingress-nginx-4.9.1  1.10.0       Upgrade complete\n4         2026-05-20 10:45:18 IST   deployed    ingress-nginx-4.10.1 1.10.1       Upgrade complete",
+    "helm get values api -n production": "USER-SUPPLIED VALUES:\nimage:\n  repository: myregistry/api\n  tag: v2.1.0\n  pullPolicy: IfNotPresent\nreplicaCount: 2\nservice:\n  type: ClusterIP\n  port: 8080\nresources:\n  limits:\n    cpu: 500m\n    memory: 512Mi\n  requests:\n    cpu: 200m\n    memory: 256Mi\ningress:\n  enabled: true\n  host: api.example.com\nautoscaling:\n  enabled: true\n  minReplicas: 2\n  maxReplicas: 15\n  targetCPUUtilizationPercentage: 70\nenv:\n  DB_HOST: postgres-postgresql.production.svc.cluster.local\n  DB_PORT: \"5432\"\n  DB_NAME: production\n  REDIS_HOST: redis-master.production.svc.cluster.local",
+    "helm get values web -n production": "USER-SUPPLIED VALUES:\nimage:\n  repository: myregistry/web\n  tag: v1.8.0\n  pullPolicy: Always\nreplicaCount: 3\nservice:\n  type: LoadBalancer\n  port: 443\nresources:\n  limits:\n    cpu: 1\n    memory: 2Gi\n  requests:\n    cpu: 500m\n    memory: 1Gi\nreadinessProbe:\n  httpGet:\n    path: /healthz\n    port: 8080\n  initialDelaySeconds: 5\n  timeoutSeconds: 1\nlivenessProbe:\n  httpGet:\n    path: /healthz\n    port: 8080\n  initialDelaySeconds: 300\n  timeoutSeconds: 5",
+    "helm get values redis -n production": "USER-SUPPLIED VALUES:\narchitecture: replication\nauth:\n  enabled: true\n  existingSecret: redis-credentials\nmaster:\n  resources:\n    limits:\n      cpu: 250m\n      memory: 256Mi\nreplica:\n  replicaCount: 2\n  resources:\n    limits:\n      cpu: 250m\n      memory: 256Mi\nmetrics:\n  enabled: true\n  serviceMonitor:\n    enabled: true",
+    "helm get manifest api -n production": "---\n# Source: api-chart/templates/serviceaccount.yaml\napiVersion: v1\nkind: ServiceAccount\nmetadata:\n  name: api\n  namespace: production\n  labels:\n    app.kubernetes.io/name: api\n    app.kubernetes.io/instance: api\n    app.kubernetes.io/version: \"2.1.0\"\n    helm.sh/chart: api-chart-1.4.2\n---\n# Source: api-chart/templates/configmap.yaml\napiVersion: v1\nkind: ConfigMap\nmetadata:\n  name: api-config\n  namespace: production\ndata:\n  DB_HOST: postgres-postgresql.production.svc.cluster.local\n  DB_PORT: \"5432\"\n  DB_NAME: production\n  REDIS_HOST: redis-master.production.svc.cluster.local\n---\n# Source: api-chart/templates/service.yaml\napiVersion: v1\nkind: Service\nmetadata:\n  name: api\n  namespace: production\nspec:\n  type: ClusterIP\n  ports:\n    - port: 8080\n      targetPort: http\n      protocol: TCP\n      name: http\n  selector:\n    app.kubernetes.io/name: api\n---\n# Source: api-chart/templates/deployment.yaml\napiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: api\n  namespace: production\nspec:\n  replicas: 2\n  selector:\n    matchLabels:\n      app.kubernetes.io/name: api\n  template:\n    metadata:\n      labels:\n        app.kubernetes.io/name: api\n    spec:\n      serviceAccountName: api\n      containers:\n        - name: api\n          image: \"myregistry/api:v2.1.0\"\n          ports:\n            - name: http\n              containerPort: 8080\n          livenessProbe:\n            httpGet:\n              path: /healthz\n              port: http\n            initialDelaySeconds: 10\n            periodSeconds: 15\n          readinessProbe:\n            httpGet:\n              path: /readyz\n              port: http\n            initialDelaySeconds: 5\n            periodSeconds: 10\n          resources:\n            limits:\n              cpu: 500m\n              memory: 512Mi\n            requests:\n              cpu: 200m\n              memory: 256Mi\n          envFrom:\n            - configMapRef:\n                name: api-config\n---\n# Source: api-chart/templates/hpa.yaml\napiVersion: autoscaling/v2\nkind: HorizontalPodAutoscaler\nmetadata:\n  name: api\n  namespace: production\nspec:\n  scaleTargetRef:\n    apiVersion: apps/v1\n    kind: Deployment\n    name: api\n  minReplicas: 2\n  maxReplicas: 15\n  metrics:\n    - type: Resource\n      resource:\n        name: cpu\n        target:\n          type: Utilization\n          averageUtilization: 70",
+    "helm get manifest web -n production": "---\n# Source: web-chart/templates/service.yaml\napiVersion: v1\nkind: Service\nmetadata:\n  name: web\n  namespace: production\nspec:\n  type: LoadBalancer\n  ports:\n    - port: 443\n      targetPort: 8080\n      protocol: TCP\n  selector:\n    app.kubernetes.io/name: web\n---\n# Source: web-chart/templates/deployment.yaml\napiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: web\n  namespace: production\nspec:\n  replicas: 3\n  selector:\n    matchLabels:\n      app.kubernetes.io/name: web\n  template:\n    metadata:\n      labels:\n        app.kubernetes.io/name: web\n    spec:\n      containers:\n        - name: web\n          image: \"myregistry/web:v1.8.0\"\n          ports:\n            - containerPort: 8080\n          readinessProbe:\n            httpGet:\n              path: /healthz\n              port: 8080\n            initialDelaySeconds: 5\n            timeoutSeconds: 1\n          livenessProbe:\n            httpGet:\n              path: /healthz\n              port: 8080\n            initialDelaySeconds: 300\n            timeoutSeconds: 5\n          resources:\n            limits:\n              cpu: 1\n              memory: 2Gi\n            requests:\n              cpu: 500m\n              memory: 1Gi",
+    "helm install api ./api-chart --namespace production --values values-prod.yaml": "NAME: api\nLAST DEPLOYED: Mon Jun  2 21:55:00 2026\nNAMESPACE: production\nSTATUS: deployed\nREVISION: 1\nTEST SUITE: None\nNOTES:\n  api-chart has been deployed.\n\n  Get the application URL by running:\n    export POD_NAME=$(kubectl get pods -n production -l \"app.kubernetes.io/name=api\" -o jsonpath=\"{.items[0].metadata.name}\")\n    kubectl port-forward $POD_NAME 8080:8080 -n production",
+    "helm install api ./api-chart -n production --values values-prod.yaml": "NAME: api\nLAST DEPLOYED: Mon Jun  2 21:55:00 2026\nNAMESPACE: production\nSTATUS: deployed\nREVISION: 1\nTEST SUITE: None\nNOTES:\n  api-chart has been deployed.\n\n  Get the application URL by running:\n    export POD_NAME=$(kubectl get pods -n production -l \"app.kubernetes.io/name=api\" -o jsonpath=\"{.items[0].metadata.name}\")\n    kubectl port-forward $POD_NAME 8080:8080 -n production",
+    "helm install --dry-run api ./api-chart --namespace production --values values-prod.yaml": "NAME: api\nLAST DEPLOYED: Mon Jun  2 21:55:00 2026\nNAMESPACE: production\nSTATUS: pending-install\nREVISION: 1\nTEST SUITE: None\nHOOKS:\nMANIFEST:\n---\n# Source: api-chart/templates/serviceaccount.yaml\napiVersion: v1\nkind: ServiceAccount\nmetadata:\n  name: api\n  namespace: production\n---\n# Source: api-chart/templates/service.yaml\napiVersion: v1\nkind: Service\nmetadata:\n  name: api\n  namespace: production\nspec:\n  type: ClusterIP\n  ports:\n    - port: 8080\n      targetPort: http\n---\n# Source: api-chart/templates/deployment.yaml\napiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: api\n  namespace: production\nspec:\n  replicas: 2\n  template:\n    spec:\n      containers:\n        - name: api\n          image: \"myregistry/api:v2.1.0\"\n          resources:\n            limits:\n              cpu: 500m\n              memory: 512Mi\n\nNOTES:\n  api-chart has been deployed (dry-run).\n  No resources were actually created.",
+    "helm install --dry-run api ./api-chart -n production --values values-prod.yaml": "NAME: api\nLAST DEPLOYED: Mon Jun  2 21:55:00 2026\nNAMESPACE: production\nSTATUS: pending-install\nREVISION: 1\nTEST SUITE: None\nHOOKS:\nMANIFEST:\n---\n# Source: api-chart/templates/serviceaccount.yaml\napiVersion: v1\nkind: ServiceAccount\nmetadata:\n  name: api\n  namespace: production\n---\n# Source: api-chart/templates/service.yaml\napiVersion: v1\nkind: Service\nmetadata:\n  name: api\n  namespace: production\nspec:\n  type: ClusterIP\n  ports:\n    - port: 8080\n      targetPort: http\n---\n# Source: api-chart/templates/deployment.yaml\napiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: api\n  namespace: production\nspec:\n  replicas: 2\n  template:\n    spec:\n      containers:\n        - name: api\n          image: \"myregistry/api:v2.1.0\"\n          resources:\n            limits:\n              cpu: 500m\n              memory: 512Mi\n\nNOTES:\n  api-chart has been deployed (dry-run).\n  No resources were actually created.",
+    "helm upgrade api ./api-chart -n production --set image.tag=v2.3.0": "Release \"api\" has been upgraded. Happy Helming!\nNAME: api\nLAST DEPLOYED: Mon Jun  2 21:58:00 2026\nNAMESPACE: production\nSTATUS: deployed\nREVISION: 4\nTEST SUITE: None\nNOTES:\n  api-chart has been upgraded to image tag v2.3.0.",
+    "helm upgrade web ./web-chart -n production --values values-prod.yaml": "Release \"web\" has been upgraded. Happy Helming!\nNAME: web\nLAST DEPLOYED: Mon Jun  2 22:00:00 2026\nNAMESPACE: production\nSTATUS: deployed\nREVISION: 6\nTEST SUITE: None\nNOTES:\n  web-chart has been upgraded successfully.",
+    "helm upgrade --install api ./api-chart -n production --values values-prod.yaml": "Release \"api\" has been upgraded. Happy Helming!\nNAME: api\nLAST DEPLOYED: Mon Jun  2 21:58:00 2026\nNAMESPACE: production\nSTATUS: deployed\nREVISION: 4\nTEST SUITE: None\nNOTES:\n  api-chart has been installed/upgraded.",
+    "helm rollback api 2 -n production": "Rollback was a success! Happy Helming!",
+    "helm rollback web 4 -n production": "Rollback was a success! Happy Helming!",
+    "helm uninstall api -n production": "release \"api\" uninstalled",
+    "helm uninstall web -n production": "release \"web\" uninstalled",
+    "helm repo add bitnami https://charts.bitnami.com/bitnami": "\"bitnami\" has been added to your repositories",
+    "helm repo update": "Hang tight while we grab the latest from your chart repositories...\n...Successfully got an update from the \"bitnami\" chart repository\n...Successfully got an update from the \"ingress-nginx\" chart repository\n...Successfully got an update from the \"prometheus-community\" chart repository\n...Successfully got an update from the \"grafana\" chart repository\nUpdate Complete. \u23ceHappy Helming!\u23ce",
+    "helm repo list": "NAME                  URL\nbitnami               https://charts.bitnami.com/bitnami\ningress-nginx         https://kubernetes.github.io/ingress-nginx\nprometheus-community  https://prometheus-community.github.io/helm-charts\ngrafana               https://grafana.github.io/helm-charts",
+    "helm search repo nginx": "NAME                                  CHART VERSION  APP VERSION  DESCRIPTION\nbitnami/nginx                         18.1.5         1.27.0       NGINX Open Source is a web server that can be...\nbitnami/nginx-ingress-controller      11.3.0         1.10.1       NGINX Ingress Controller is an Ingress contro...\ningress-nginx/ingress-nginx           4.10.1         1.10.1       Ingress controller for Kubernetes using NGINX...",
+    "helm search repo bitnami/postgresql --versions": "NAME                   CHART VERSION  APP VERSION  DESCRIPTION\nbitnami/postgresql     15.2.5         16.3.0       PostgreSQL (Postgres) is an open source object...\nbitnami/postgresql     15.2.4         16.3.0       PostgreSQL (Postgres) is an open source object...\nbitnami/postgresql     15.2.3         16.2.0       PostgreSQL (Postgres) is an open source object...\nbitnami/postgresql     15.1.4         16.2.0       PostgreSQL (Postgres) is an open source object...\nbitnami/postgresql     15.1.3         16.1.0       PostgreSQL (Postgres) is an open source object...\nbitnami/postgresql     15.0.0         16.0.0       PostgreSQL (Postgres) is an open source object...\nbitnami/postgresql     14.3.3         15.6.0       PostgreSQL (Postgres) is an open source object...\nbitnami/postgresql     14.2.0         15.5.0       PostgreSQL (Postgres) is an open source object...",
+    "helm search repo redis": "NAME              CHART VERSION  APP VERSION  DESCRIPTION\nbitnami/redis     18.6.1         7.2.5        Redis(R) is an open source, advanced key-valu...\nbitnami/redis-cluster  10.0.1   7.2.5        Redis(R) is an open source, scalable, distribu...",
+    "helm search repo bitnami/redis --versions": "NAME              CHART VERSION  APP VERSION  DESCRIPTION\nbitnami/redis     18.6.1         7.2.5        Redis(R) is an open source, advanced key-valu...\nbitnami/redis     18.6.0         7.2.5        Redis(R) is an open source, advanced key-valu...\nbitnami/redis     18.5.0         7.2.4        Redis(R) is an open source, advanced key-valu...\nbitnami/redis     18.4.0         7.2.4        Redis(R) is an open source, advanced key-valu...\nbitnami/redis     18.3.2         7.2.3        Redis(R) is an open source, advanced key-valu...",
+    "helm template api ./api-chart --values values-prod.yaml": "---\n# Source: api-chart/templates/serviceaccount.yaml\napiVersion: v1\nkind: ServiceAccount\nmetadata:\n  name: api\n  labels:\n    app.kubernetes.io/name: api\n    helm.sh/chart: api-chart-1.4.2\n---\n# Source: api-chart/templates/configmap.yaml\napiVersion: v1\nkind: ConfigMap\nmetadata:\n  name: api-config\ndata:\n  DB_HOST: postgres-postgresql.production.svc.cluster.local\n  DB_PORT: \"5432\"\n  DB_NAME: production\n---\n# Source: api-chart/templates/service.yaml\napiVersion: v1\nkind: Service\nmetadata:\n  name: api\nspec:\n  type: ClusterIP\n  ports:\n    - port: 8080\n      targetPort: http\n      protocol: TCP\n  selector:\n    app.kubernetes.io/name: api\n---\n# Source: api-chart/templates/deployment.yaml\napiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: api\nspec:\n  replicas: 2\n  selector:\n    matchLabels:\n      app.kubernetes.io/name: api\n  template:\n    spec:\n      containers:\n        - name: api\n          image: \"myregistry/api:v2.1.0\"\n          ports:\n            - name: http\n              containerPort: 8080\n          resources:\n            limits:\n              cpu: 500m\n              memory: 512Mi\n            requests:\n              cpu: 200m\n              memory: 256Mi\n---\n# Source: api-chart/templates/hpa.yaml\napiVersion: autoscaling/v2\nkind: HorizontalPodAutoscaler\nmetadata:\n  name: api\nspec:\n  scaleTargetRef:\n    apiVersion: apps/v1\n    kind: Deployment\n    name: api\n  minReplicas: 2\n  maxReplicas: 15",
+    "helm template web ./web-chart --values values-prod.yaml": "---\n# Source: web-chart/templates/service.yaml\napiVersion: v1\nkind: Service\nmetadata:\n  name: web\nspec:\n  type: LoadBalancer\n  ports:\n    - port: 443\n      targetPort: 8080\n  selector:\n    app.kubernetes.io/name: web\n---\n# Source: web-chart/templates/deployment.yaml\napiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: web\nspec:\n  replicas: 3\n  selector:\n    matchLabels:\n      app.kubernetes.io/name: web\n  template:\n    spec:\n      containers:\n        - name: web\n          image: \"myregistry/web:v1.8.0\"\n          ports:\n            - containerPort: 8080\n          resources:\n            limits:\n              cpu: 1\n              memory: 2Gi\n            requests:\n              cpu: 500m\n              memory: 1Gi",
+    "helm template --debug api ./api-chart --values values-prod.yaml": "install.go:214: [debug] Original chart version: \"\"\ninstall.go:231: [debug] CHART PATH: /home/user/charts/api-chart\n\n---\n# Source: api-chart/templates/serviceaccount.yaml\napiVersion: v1\nkind: ServiceAccount\nmetadata:\n  name: api\n  labels:\n    app.kubernetes.io/name: api\n    helm.sh/chart: api-chart-1.4.2\n    app.kubernetes.io/managed-by: Helm\n---\n# Source: api-chart/templates/configmap.yaml\napiVersion: v1\nkind: ConfigMap\nmetadata:\n  name: api-config\ndata:\n  DB_HOST: postgres-postgresql.production.svc.cluster.local\n  DB_PORT: \"5432\"\n---\n# Source: api-chart/templates/service.yaml\napiVersion: v1\nkind: Service\nmetadata:\n  name: api\nspec:\n  type: ClusterIP\n  ports:\n    - port: 8080\n      targetPort: http\n  selector:\n    app.kubernetes.io/name: api\n---\n# Source: api-chart/templates/deployment.yaml\napiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: api\nspec:\n  replicas: 2\n  template:\n    spec:\n      containers:\n        - name: api\n          image: \"myregistry/api:v2.1.0\"\n          resources:\n            limits:\n              cpu: 500m\n              memory: 512Mi",
+    "helm create mychart": "Creating mychart\n\nmychart/\n\u251c\u2500\u2500 .helmignore        # Patterns to ignore when packaging\n\u251c\u2500\u2500 Chart.yaml         # Chart metadata (name, version, dependencies)\n\u251c\u2500\u2500 values.yaml        # Default configuration values\n\u251c\u2500\u2500 charts/            # Dependency charts\n\u251c\u2500\u2500 templates/         # Kubernetes manifest templates\n\u2502   \u251c\u2500\u2500 _helpers.tpl   # Template helpers and partials\n\u2502   \u251c\u2500\u2500 deployment.yaml\n\u2502   \u251c\u2500\u2500 hpa.yaml\n\u2502   \u251c\u2500\u2500 ingress.yaml\n\u2502   \u251c\u2500\u2500 service.yaml\n\u2502   \u251c\u2500\u2500 serviceaccount.yaml\n\u2502   \u2514\u2500\u2500 tests/\n\u2502       \u2514\u2500\u2500 test-connection.yaml\n\u2514\u2500\u2500 README.md",
+    "helm package ./api-chart": "Successfully packaged chart and saved it to: /home/user/charts/api-chart-1.4.2.tgz",
+    "helm lint ./api-chart": "==> Linting ./api-chart\n[INFO] Chart.yaml: icon is recommended\n\n1 chart(s) linted, 0 chart(s) failed",
+    "helm lint ./web-chart": "==> Linting ./web-chart\n[WARNING] templates/deployment.yaml: container \"web\" has no resource requests defined\n[WARNING] templates/deployment.yaml: container \"web\" has no liveness probe\n[INFO] Chart.yaml: icon is recommended\n\n1 chart(s) linted, 0 chart(s) failed",
+    "helm plugin list": "NAME    VERSION  DESCRIPTION\ndiff    3.9.5    Preview helm upgrade changes as a diff\nsecrets 4.6.0    Manage secrets with Helm\nmapkubeapis 0.4.2  Map deprecated Kubernetes APIs in releases",
+    "helm diff upgrade api ./api-chart -n production": "production, api, Deployment (apps) has changed:\n  # Source: api-chart/templates/deployment.yaml\n  apiVersion: apps/v1\n  kind: Deployment\n  metadata:\n    name: api\n    namespace: production\n  spec:\n    replicas: 2\n    template:\n      spec:\n        containers:\n          - name: api\n-           image: \"myregistry/api:v2.1.0\"\n+           image: \"myregistry/api:v2.3.0\"\n            ports:\n              - name: http\n                containerPort: 8080\n            resources:\n              limits:\n                cpu: 500m\n                memory: 512Mi\n              requests:\n                cpu: 200m\n                memory: 256Mi",
+    "helm diff upgrade web ./web-chart -n production": "production, web, Deployment (apps) has changed:\n  # Source: web-chart/templates/deployment.yaml\n  apiVersion: apps/v1\n  kind: Deployment\n  metadata:\n    name: web\n    namespace: production\n  spec:\n-   replicas: 3\n+   replicas: 2\n    template:\n      spec:\n        containers:\n          - name: web\n-           image: \"myregistry/web:v1.8.0\"\n+           image: \"myregistry/web:v1.7.5\"\n            resources:\n              limits:\n-               cpu: 1\n-               memory: 2Gi\n+               cpu: 500m\n+               memory: 1Gi\n              requests:\n-               cpu: 500m\n-               memory: 1Gi\n+               cpu: 200m\n+               memory: 512Mi",
+    "helm show values bitnami/redis": "## @section Global parameters\nglobal:\n  imageRegistry: \"\"\n  storageClass: \"\"\n\n## @section Redis common parameters\narchitecture: replication\nauth:\n  enabled: true\n  sentinel: true\n  password: \"\"\n  existingSecret: \"\"\n\nmaster:\n  count: 1\n  resources:\n    limits:\n      cpu: 250m\n      memory: 256Mi\n    requests:\n      cpu: 100m\n      memory: 128Mi\n  persistence:\n    enabled: true\n    size: 8Gi\n\nreplica:\n  replicaCount: 3\n  resources:\n    limits:\n      cpu: 250m\n      memory: 256Mi\n  persistence:\n    enabled: true\n    size: 8Gi\n\nmetrics:\n  enabled: false\n  serviceMonitor:\n    enabled: false",
+    "helm show chart bitnami/redis": "apiVersion: v2\nappVersion: 7.2.5\ndescription: Redis(R) is an open source, advanced key-value store.\nhome: https://redis.io\nicon: https://bitnami.com/assets/stacks/redis/img/redis-stack-220x234.png\nkeywords:\n  - redis\n  - keyvalue\n  - database\nmaintainers:\n  - name: Broadcom - Bitnami\nname: redis\nversion: 18.6.1",
+    "helm show values bitnami/postgresql": "## @section Global parameters\nglobal:\n  imageRegistry: \"\"\n  storageClass: \"\"\n\n## @section PostgreSQL common parameters\nauth:\n  postgresPassword: \"\"\n  username: \"\"\n  password: \"\"\n  database: \"\"\n  existingSecret: \"\"\n\nprimary:\n  resources:\n    limits:\n      cpu: 500m\n      memory: 512Mi\n    requests:\n      cpu: 250m\n      memory: 256Mi\n  persistence:\n    enabled: true\n    size: 20Gi\n\nreadReplicas:\n  replicaCount: 1\n  resources:\n    limits:\n      cpu: 500m\n      memory: 512Mi\n  persistence:\n    enabled: true\n    size: 20Gi\n\nmetrics:\n  enabled: false\n  serviceMonitor:\n    enabled: false",
+    "helm env": "HELM_BIN=\"/usr/local/bin/helm\"\nHELM_BURST_LIMIT=\"100\"\nHELM_CACHE_HOME=\"/home/user/.cache/helm\"\nHELM_CONFIG_HOME=\"/home/user/.config/helm\"\nHELM_DATA_HOME=\"/home/user/.local/share/helm\"\nHELM_DEBUG=\"false\"\nHELM_KUBEAPISERVER=\"\"\nHELM_KUBEASGROUPS=\"\"\nHELM_KUBEASUSER=\"\"\nHELM_KUBECAFILE=\"\"\nHELM_KUBECONTEXT=\"\"\nHELM_KUBEINSECURE_SKIP_TLS_VERIFY=\"false\"\nHELM_KUBETLS_SERVER_NAME=\"\"\nHELM_KUBETOKEN=\"\"\nHELM_MAX_HISTORY=\"10\"\nHELM_NAMESPACE=\"default\"\nHELM_PLUGINS=\"/home/user/.local/share/helm/plugins\"\nHELM_REGISTRY_CONFIG=\"/home/user/.config/helm/registry/config.json\"\nHELM_REPOSITORY_CACHE=\"/home/user/.cache/helm/repository\"\nHELM_REPOSITORY_CONFIG=\"/home/user/.config/helm/repositories.yaml\"",
+    "helm repo remove bitnami": "\"bitnami\" has been removed from your repositories",
+    "helm search hub nginx": "URL                                                  CHART VERSION  APP VERSION  DESCRIPTION\nhttps://artifacthub.io/packages/helm/bitnami/nginx   18.1.5         1.27.0       NGINX Open Source is a web server...\nhttps://artifacthub.io/packages/helm/nginx/nginx     1.3.1          1.27.0       Chart for the nginx server\nhttps://artifacthub.io/packages/helm/ingress-nginx   4.10.1         1.10.1       Ingress controller for Kubernetes...",
+    "helm get notes api -n production": "NOTES:\n  api-chart has been deployed.\n\n  Get the application URL by running:\n    export POD_NAME=$(kubectl get pods -n production -l \"app.kubernetes.io/name=api\" -o jsonpath=\"{.items[0].metadata.name}\")\n    kubectl port-forward $POD_NAME 8080:8080 -n production\n\n  Health check:\n    curl http://localhost:8080/healthz",
+    "helm get all api -n production": "NAME: api\nLAST DEPLOYED: Sun Jun  1 14:22:10 2026\nNAMESPACE: production\nSTATUS: deployed\nREVISION: 3\n\nUSER-SUPPLIED VALUES:\nimage:\n  repository: myregistry/api\n  tag: v2.1.0\nreplicaCount: 2\nservice:\n  type: ClusterIP\n  port: 8080\n\nCOMPUTED VALUES:\nimage:\n  repository: myregistry/api\n  tag: v2.1.0\n  pullPolicy: IfNotPresent\nreplicaCount: 2\nservice:\n  type: ClusterIP\n  port: 8080\nresources:\n  limits:\n    cpu: 500m\n    memory: 512Mi\n  requests:\n    cpu: 200m\n    memory: 256Mi\n\nHOOKS:\nMANIFEST:\n---\n# Source: api-chart/templates/deployment.yaml\napiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: api\n  namespace: production\nspec:\n  replicas: 2\n  template:\n    spec:\n      containers:\n        - name: api\n          image: \"myregistry/api:v2.1.0\"\n\nNOTES:\n  api-chart has been deployed.",
+    "helm test api -n production": "NAME: api\nLAST DEPLOYED: Sun Jun  1 14:22:10 2026\nNAMESPACE: production\nSTATUS: deployed\nREVISION: 3\nTEST SUITE:     api-test-connection\nLast Started:   Mon Jun  2 22:05:00 2026\nLast Completed: Mon Jun  2 22:05:03 2026\nPhase:          Succeeded",
+    "helm dependency list ./api-chart": "NAME       VERSION  REPOSITORY                              STATUS\nredis      18.x.x   https://charts.bitnami.com/bitnami      ok\npostgresql 15.x.x   https://charts.bitnami.com/bitnami      ok",
+    "helm dependency update ./api-chart": "Hang tight while we grab the latest from your chart repositories...\n...Successfully got an update from the \"bitnami\" chart repository\nSaving 2 charts\nDownloading redis from repo https://charts.bitnami.com/bitnami\nDownloading postgresql from repo https://charts.bitnami.com/bitnami\nDeleting outdated charts",
+    "helm dependency build ./api-chart": "Hang tight while we grab the latest from your chart repositories...\n...Successfully got an update from the \"bitnami\" chart repository\nSaving 2 charts\nDownloading redis from repo https://charts.bitnami.com/bitnami\nDownloading postgresql from repo https://charts.bitnami.com/bitnami\nDeleting outdated charts"
+  },
+  "reference": [
+    {
+      "group": "Install & Upgrade",
+      "commands": [
+        {
+          "cmd": "helm install api ./api-chart --namespace production --values values-prod.yaml",
+          "desc": "install chart"
+        },
+        {
+          "cmd": "helm install --dry-run api ./api-chart -n production --values values-prod.yaml",
+          "desc": "dry-run install"
+        },
+        {
+          "cmd": "helm upgrade api ./api-chart -n production --set image.tag=v2.3.0",
+          "desc": "upgrade with set"
+        },
+        {
+          "cmd": "helm upgrade --install api ./api-chart -n production --values values-prod.yaml",
+          "desc": "install or upgrade"
+        },
+        {
+          "cmd": "helm uninstall api -n production",
+          "desc": "remove release"
+        }
+      ]
+    },
+    {
+      "group": "Rollback & History",
+      "commands": [
+        {
+          "cmd": "helm history api -n production",
+          "desc": "revision history"
+        },
+        {
+          "cmd": "helm rollback api 2 -n production",
+          "desc": "roll back to rev 2"
+        }
+      ]
+    },
+    {
+      "group": "List & Status",
+      "commands": [
+        {
+          "cmd": "helm list -n production",
+          "desc": "releases in namespace"
+        },
+        {
+          "cmd": "helm list --all-namespaces",
+          "desc": "all releases"
+        },
+        {
+          "cmd": "helm status api -n production",
+          "desc": "release status"
+        },
+        {
+          "cmd": "helm get values api -n production",
+          "desc": "release values"
+        },
+        {
+          "cmd": "helm get manifest api -n production",
+          "desc": "rendered manifests"
+        },
+        {
+          "cmd": "helm get all api -n production",
+          "desc": "everything about release"
+        }
+      ]
+    },
+    {
+      "group": "Repositories",
+      "commands": [
+        {
+          "cmd": "helm repo add bitnami https://charts.bitnami.com/bitnami",
+          "desc": "add repo"
+        },
+        {
+          "cmd": "helm repo update",
+          "desc": "refresh indexes"
+        },
+        {
+          "cmd": "helm repo list",
+          "desc": "list repos"
+        },
+        {
+          "cmd": "helm search repo nginx",
+          "desc": "search charts"
+        },
+        {
+          "cmd": "helm search repo bitnami/postgresql --versions",
+          "desc": "list versions"
+        }
+      ]
+    },
+    {
+      "group": "Template & Debug",
+      "commands": [
+        {
+          "cmd": "helm template api ./api-chart --values values-prod.yaml",
+          "desc": "render locally"
+        },
+        {
+          "cmd": "helm template --debug api ./api-chart --values values-prod.yaml",
+          "desc": "render with debug"
+        },
+        {
+          "cmd": "helm lint ./api-chart",
+          "desc": "check chart"
+        },
+        {
+          "cmd": "helm diff upgrade api ./api-chart -n production",
+          "desc": "preview changes"
+        },
+        {
+          "cmd": "helm test api -n production",
+          "desc": "run chart tests"
+        }
+      ]
+    },
+    {
+      "group": "Create & Package",
+      "commands": [
+        {
+          "cmd": "helm create mychart",
+          "desc": "scaffold chart"
+        },
+        {
+          "cmd": "helm package ./api-chart",
+          "desc": "build .tgz"
+        },
+        {
+          "cmd": "helm dependency list ./api-chart",
+          "desc": "list dependencies"
+        },
+        {
+          "cmd": "helm dependency update ./api-chart",
+          "desc": "pull dependencies"
+        }
+      ]
+    },
+    {
+      "group": "Plugins & Info",
+      "commands": [
+        {
+          "cmd": "helm plugin list",
+          "desc": "installed plugins"
+        },
+        {
+          "cmd": "helm version",
+          "desc": "Helm version"
+        },
+        {
+          "cmd": "helm env",
+          "desc": "environment info"
+        }
+      ]
+    },
+    {
+      "group": "Scenarios",
+      "commands": [
+        {
+          "cmd": "scenario deploy-and-upgrade",
+          "desc": "install, upgrade, rollback"
+        },
+        {
+          "cmd": "scenario debug-failed-release",
+          "desc": "debug failed release"
+        }
+      ]
+    }
+  ]
+}

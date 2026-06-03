@@ -1,0 +1,333 @@
+{
+  "id": "terraform",
+  "prompt": "terraform@infra:~/aws-prod$",
+  "welcome": "Welcome to the Terraform CLI Playground.\nType commands to explore a simulated AWS infrastructure project.\nType 'help' for available commands, 'scenario' for guided labs.\n",
+  "scenarios": [
+    {
+      "id": "provision-vpc",
+      "title": "Provision a VPC with Subnets",
+      "steps": [
+        {
+          "instruction": "First, initialise the Terraform working directory to download providers and modules.",
+          "expect": "terraform init",
+          "hint": "Try: terraform init"
+        },
+        {
+          "instruction": "Validate the configuration files for syntax errors before planning.",
+          "expect": "terraform validate",
+          "hint": "Try: terraform validate"
+        },
+        {
+          "instruction": "Run a plan to preview what resources Terraform will create.",
+          "expect": "terraform plan",
+          "hint": "Try: terraform plan"
+        },
+        {
+          "instruction": "Save the plan to a file so you can apply exactly what was reviewed.",
+          "expect": "terraform plan -out=tfplan",
+          "hint": "Try: terraform plan -out=tfplan"
+        },
+        {
+          "instruction": "Apply the saved plan to create the infrastructure.",
+          "expect": "terraform apply tfplan",
+          "hint": "Try: terraform apply tfplan"
+        },
+        {
+          "instruction": "List all resources now tracked in state to confirm creation.",
+          "expect": "terraform state list",
+          "hint": "Try: terraform state list"
+        },
+        {
+          "instruction": "Inspect the VPC resource details in state.",
+          "expect": "terraform state show aws_vpc.main",
+          "hint": "Try: terraform state show aws_vpc.main"
+        },
+        {
+          "instruction": "View the outputs to get the VPC ID and subnet CIDRs.",
+          "expect": "terraform output",
+          "hint": "Try: terraform output"
+        }
+      ]
+    },
+    {
+      "id": "recover-drift",
+      "title": "Recover from State Drift",
+      "steps": [
+        {
+          "instruction": "Someone changed a security group manually in the AWS console. Run a plan to detect drift.",
+          "expect": "terraform plan",
+          "hint": "Try: terraform plan"
+        },
+        {
+          "instruction": "The plan shows drift. List all resources in state to understand what we manage.",
+          "expect": "terraform state list",
+          "hint": "Try: terraform state list"
+        },
+        {
+          "instruction": "A new S3 bucket was created outside Terraform. Import it into state.",
+          "expect": "terraform import aws_s3_bucket.logs prod-app-logs-bucket",
+          "hint": "Try: terraform import aws_s3_bucket.logs prod-app-logs-bucket"
+        },
+        {
+          "instruction": "Inspect the imported bucket in state to verify its attributes.",
+          "expect": "terraform state show aws_s3_bucket.logs",
+          "hint": "Try: terraform state show aws_s3_bucket.logs"
+        },
+        {
+          "instruction": "The web instance needs to be replaced due to a corrupted root volume. Taint it.",
+          "expect": "terraform taint aws_instance.web",
+          "hint": "Try: terraform taint aws_instance.web"
+        },
+        {
+          "instruction": "Run a plan to confirm the tainted instance will be destroyed and recreated.",
+          "expect": "terraform plan",
+          "hint": "Try: terraform plan"
+        },
+        {
+          "instruction": "Apply the changes to replace the tainted instance and reconcile drift.",
+          "expect": "terraform apply -auto-approve",
+          "hint": "Try: terraform apply -auto-approve"
+        },
+        {
+          "instruction": "Verify the final state by listing all managed resources.",
+          "expect": "terraform state list",
+          "hint": "Try: terraform state list"
+        }
+      ]
+    }
+  ],
+  "commands": {
+    "help": "Available commands:\n  terraform init                 — Initialise working directory, download providers\n  terraform plan                 — Preview changes (create/update/destroy)\n  terraform apply                — Apply changes to infrastructure\n  terraform destroy              — Destroy all managed infrastructure\n  terraform state [subcommand]   — Inspect and manage state\n  terraform import               — Import existing resource into state\n  terraform workspace            — Manage workspaces\n  terraform output               — Show output values\n  terraform show                 — Show current state or a plan file\n  terraform validate             — Check configuration syntax\n  terraform fmt                  — Reformat configuration files\n  terraform graph                — Generate a resource dependency graph\n  terraform taint                — Mark resource for replacement\n  terraform untaint              — Remove taint from a resource\n  terraform console              — Interactive expression evaluator\n  terraform providers            — Show required providers\n  terraform version              — Show Terraform version\n  terraform force-unlock         — Release a stuck state lock\n\n  scenario                       — Start a guided lab\n  clear                          — Clear the terminal\n  help                           — Show this help",
+    "terraform version": "Terraform v1.7.5\non linux_amd64\n\nYour version of Terraform is out of date! The latest version\nis 1.8.2. You can update by downloading from https://www.terraform.io/downloads.html",
+    "terraform init": "Initializing the backend...\n\nInitializing provider plugins...\n- Finding hashicorp/aws versions matching \"~> 5.40\"...\n- Finding hashicorp/random versions matching \"~> 3.6\"...\n- Installing hashicorp/aws v5.46.0...\n- Installed hashicorp/aws v5.46.0 (signed by HashiCorp)\n- Installing hashicorp/random v3.6.1...\n- Installed hashicorp/random v3.6.1 (signed by HashiCorp)\n\nTerraform has created a lock file .terraform.lock.hcl to record the provider\nselections it made above. Include this file in your version control repository\nso that Terraform can guarantee to make the same selections by default when\nyou run \"terraform init\" in the future.\n\nTerraform has been successfully initialized!\n\nYou may now begin working with Terraform. Try running \"terraform plan\" to see\nany changes that are required for your infrastructure.",
+    "terraform validate": "Success! The configuration is valid.",
+    "terraform fmt": "main.tf\nvariables.tf",
+    "terraform fmt -check": "main.tf\nvariables.tf",
+    "terraform plan": "aws_vpc.main: Refreshing state... [id=vpc-0a1b2c3d4e5f60001]\naws_subnet.public_a: Refreshing state... [id=subnet-0a1b2c3d4e5f60011]\naws_subnet.public_b: Refreshing state... [id=subnet-0a1b2c3d4e5f60012]\naws_subnet.private_a: Refreshing state... [id=subnet-0a1b2c3d4e5f60021]\naws_subnet.private_b: Refreshing state... [id=subnet-0a1b2c3d4e5f60022]\naws_internet_gateway.gw: Refreshing state... [id=igw-0a1b2c3d4e5f60001]\naws_security_group.web_sg: Refreshing state... [id=sg-0a1b2c3d4e5f60001]\naws_security_group.db_sg: Refreshing state... [id=sg-0a1b2c3d4e5f60002]\naws_instance.web: Refreshing state... [id=i-0a1b2c3d4e5f60001]\naws_db_instance.postgres: Refreshing state... [id=prod-db-instance]\naws_s3_bucket.assets: Refreshing state... [id=prod-app-assets-bucket]\n\nTerraform used the selected providers to generate the following execution plan.\nResource actions are indicated with the following symbols:\n  + create\n  ~ update in-place\n  - destroy\n\nTerraform will perform the following actions:\n\n  # aws_vpc.main will be created\n  + resource \"aws_vpc\" \"main\" {\n      + arn                                  = (known after apply)\n      + cidr_block                           = \"10.0.0.0/16\"\n      + enable_dns_hostnames                 = true\n      + enable_dns_support                   = true\n      + id                                   = (known after apply)\n      + instance_tenancy                     = \"default\"\n      + tags                                 = {\n          + \"Environment\" = \"production\"\n          + \"Name\"        = \"prod-vpc\"\n          + \"ManagedBy\"   = \"terraform\"\n        }\n    }\n\n  # aws_subnet.public_a will be created\n  + resource \"aws_subnet\" \"public_a\" {\n      + arn                                  = (known after apply)\n      + availability_zone                    = \"ap-south-1a\"\n      + cidr_block                           = \"10.0.1.0/24\"\n      + id                                   = (known after apply)\n      + map_public_ip_on_launch              = true\n      + tags                                 = {\n          + \"Name\" = \"prod-public-a\"\n        }\n    }\n\n  # aws_subnet.public_b will be created\n  + resource \"aws_subnet\" \"public_b\" {\n      + arn                                  = (known after apply)\n      + availability_zone                    = \"ap-south-1b\"\n      + cidr_block                           = \"10.0.2.0/24\"\n      + id                                   = (known after apply)\n      + map_public_ip_on_launch              = true\n      + tags                                 = {\n          + \"Name\" = \"prod-public-b\"\n        }\n    }\n\n  # aws_subnet.private_a will be created\n  + resource \"aws_subnet\" \"private_a\" {\n      + arn                                  = (known after apply)\n      + availability_zone                    = \"ap-south-1a\"\n      + cidr_block                           = \"10.0.10.0/24\"\n      + id                                   = (known after apply)\n      + map_public_ip_on_launch              = false\n      + tags                                 = {\n          + \"Name\" = \"prod-private-a\"\n        }\n    }\n\n  # aws_subnet.private_b will be created\n  + resource \"aws_subnet\" \"private_b\" {\n      + arn                                  = (known after apply)\n      + availability_zone                    = \"ap-south-1b\"\n      + cidr_block                           = \"10.0.11.0/24\"\n      + id                                   = (known after apply)\n      + map_public_ip_on_launch              = false\n      + tags                                 = {\n          + \"Name\" = \"prod-private-b\"\n        }\n    }\n\n  # aws_internet_gateway.gw will be created\n  + resource \"aws_internet_gateway\" \"gw\" {\n      + arn      = (known after apply)\n      + id       = (known after apply)\n      + vpc_id   = (known after apply)\n      + tags     = {\n          + \"Name\" = \"prod-igw\"\n        }\n    }\n\n  # aws_security_group.web_sg will be created\n  + resource \"aws_security_group\" \"web_sg\" {\n      + arn         = (known after apply)\n      + id          = (known after apply)\n      + name        = \"prod-web-sg\"\n      + vpc_id      = (known after apply)\n      + ingress     = [\n          + {\n              + cidr_blocks = [\"0.0.0.0/0\"]\n              + from_port   = 443\n              + protocol    = \"tcp\"\n              + to_port     = 443\n            },\n          + {\n              + cidr_blocks = [\"10.0.0.0/16\"]\n              + from_port   = 22\n              + protocol    = \"tcp\"\n              + to_port     = 22\n            },\n        ]\n    }\n\nPlan: 7 to add, 0 to change, 0 to destroy.\n\nChanges to Outputs:\n  + vpc_id           = (known after apply)\n  + public_subnets   = (known after apply)\n  + private_subnets  = (known after apply)\n\n─────────────────────────────────────────────────────────────────────────────\n\nNote: You didn't use the -out option to save this plan, so Terraform can't\nguarantee that exactly these actions will be performed if \"terraform apply\"\nis subsequently run.",
+    "terraform plan -out=tfplan": "aws_vpc.main: Refreshing state... [id=vpc-0a1b2c3d4e5f60001]\naws_subnet.public_a: Refreshing state... [id=subnet-0a1b2c3d4e5f60011]\naws_subnet.public_b: Refreshing state... [id=subnet-0a1b2c3d4e5f60012]\naws_subnet.private_a: Refreshing state... [id=subnet-0a1b2c3d4e5f60021]\naws_subnet.private_b: Refreshing state... [id=subnet-0a1b2c3d4e5f60022]\naws_internet_gateway.gw: Refreshing state... [id=igw-0a1b2c3d4e5f60001]\naws_security_group.web_sg: Refreshing state... [id=sg-0a1b2c3d4e5f60001]\n\nTerraform used the selected providers to generate the following execution plan.\nResource actions are indicated with the following symbols:\n  + create\n\nTerraform will perform the following actions:\n\n  # aws_vpc.main will be created\n  + resource \"aws_vpc\" \"main\" {\n      + cidr_block           = \"10.0.0.0/16\"\n      + enable_dns_hostnames = true\n      + enable_dns_support   = true\n      + tags                 = {\n          + \"Name\"        = \"prod-vpc\"\n          + \"Environment\" = \"production\"\n        }\n    }\n\n  # aws_subnet.public_a will be created\n  + resource \"aws_subnet\" \"public_a\" {\n      + availability_zone       = \"ap-south-1a\"\n      + cidr_block              = \"10.0.1.0/24\"\n      + map_public_ip_on_launch = true\n    }\n\n  # aws_subnet.public_b will be created\n  + resource \"aws_subnet\" \"public_b\" {\n      + availability_zone       = \"ap-south-1b\"\n      + cidr_block              = \"10.0.2.0/24\"\n      + map_public_ip_on_launch = true\n    }\n\n  # aws_subnet.private_a will be created\n  + resource \"aws_subnet\" \"private_a\" {\n      + availability_zone       = \"ap-south-1a\"\n      + cidr_block              = \"10.0.10.0/24\"\n      + map_public_ip_on_launch = false\n    }\n\n  # aws_subnet.private_b will be created\n  + resource \"aws_subnet\" \"private_b\" {\n      + availability_zone       = \"ap-south-1b\"\n      + cidr_block              = \"10.0.11.0/24\"\n      + map_public_ip_on_launch = false\n    }\n\n  # aws_internet_gateway.gw will be created\n  + resource \"aws_internet_gateway\" \"gw\" {\n      + vpc_id = (known after apply)\n    }\n\n  # aws_security_group.web_sg will be created\n  + resource \"aws_security_group\" \"web_sg\" {\n      + name   = \"prod-web-sg\"\n      + vpc_id = (known after apply)\n    }\n\nPlan: 7 to add, 0 to change, 0 to destroy.\n\n─────────────────────────────────────────────────────────────────────────────\n\nSaved to: tfplan\n\nTo perform exactly these actions, run the following command to apply:\n    terraform apply \"tfplan\"",
+    "terraform apply": "aws_vpc.main: Refreshing state... [id=vpc-0a1b2c3d4e5f60001]\n\nTerraform used the selected providers to generate the following execution plan.\n\nPlan: 7 to add, 0 to change, 0 to destroy.\n\nDo you want to perform these actions?\n  Terraform will perform the actions described above.\n  Only 'yes' will be accepted to approve.\n\n  Enter a value: yes\n\naws_vpc.main: Creating...\naws_vpc.main: Creation complete after 3s [id=vpc-0a1b2c3d4e5f60001]\naws_internet_gateway.gw: Creating...\naws_internet_gateway.gw: Creation complete after 1s [id=igw-0a1b2c3d4e5f60001]\naws_subnet.public_a: Creating...\naws_subnet.public_b: Creating...\naws_subnet.private_a: Creating...\naws_subnet.private_b: Creating...\naws_subnet.public_a: Creation complete after 2s [id=subnet-0a1b2c3d4e5f60011]\naws_subnet.public_b: Creation complete after 2s [id=subnet-0a1b2c3d4e5f60012]\naws_subnet.private_a: Creation complete after 2s [id=subnet-0a1b2c3d4e5f60021]\naws_subnet.private_b: Creation complete after 2s [id=subnet-0a1b2c3d4e5f60022]\naws_security_group.web_sg: Creating...\naws_security_group.web_sg: Creation complete after 2s [id=sg-0a1b2c3d4e5f60001]\n\nApply complete! Resources: 7 added, 0 changed, 0 destroyed.\n\nOutputs:\n\nvpc_id         = \"vpc-0a1b2c3d4e5f60001\"\npublic_subnets = [\"subnet-0a1b2c3d4e5f60011\", \"subnet-0a1b2c3d4e5f60012\"]\nprivate_subnets = [\"subnet-0a1b2c3d4e5f60021\", \"subnet-0a1b2c3d4e5f60022\"]",
+    "terraform apply tfplan": "aws_vpc.main: Creating...\naws_vpc.main: Creation complete after 3s [id=vpc-0a1b2c3d4e5f60001]\naws_internet_gateway.gw: Creating...\naws_internet_gateway.gw: Creation complete after 1s [id=igw-0a1b2c3d4e5f60001]\naws_subnet.public_a: Creating...\naws_subnet.public_b: Creating...\naws_subnet.private_a: Creating...\naws_subnet.private_b: Creating...\naws_subnet.public_a: Creation complete after 2s [id=subnet-0a1b2c3d4e5f60011]\naws_subnet.public_b: Creation complete after 2s [id=subnet-0a1b2c3d4e5f60012]\naws_subnet.private_a: Creation complete after 2s [id=subnet-0a1b2c3d4e5f60021]\naws_subnet.private_b: Creation complete after 2s [id=subnet-0a1b2c3d4e5f60022]\naws_security_group.web_sg: Creating...\naws_security_group.web_sg: Creation complete after 2s [id=sg-0a1b2c3d4e5f60001]\n\nApply complete! Resources: 7 added, 0 changed, 0 destroyed.\n\nOutputs:\n\nvpc_id         = \"vpc-0a1b2c3d4e5f60001\"\npublic_subnets = [\"subnet-0a1b2c3d4e5f60011\", \"subnet-0a1b2c3d4e5f60012\"]\nprivate_subnets = [\"subnet-0a1b2c3d4e5f60021\", \"subnet-0a1b2c3d4e5f60022\"]",
+    "terraform apply -auto-approve": "aws_vpc.main: Refreshing state... [id=vpc-0a1b2c3d4e5f60001]\naws_subnet.public_a: Refreshing state... [id=subnet-0a1b2c3d4e5f60011]\naws_subnet.public_b: Refreshing state... [id=subnet-0a1b2c3d4e5f60012]\naws_subnet.private_a: Refreshing state... [id=subnet-0a1b2c3d4e5f60021]\naws_subnet.private_b: Refreshing state... [id=subnet-0a1b2c3d4e5f60022]\naws_internet_gateway.gw: Refreshing state... [id=igw-0a1b2c3d4e5f60001]\naws_security_group.web_sg: Refreshing state... [id=sg-0a1b2c3d4e5f60001]\naws_security_group.db_sg: Refreshing state... [id=sg-0a1b2c3d4e5f60002]\naws_instance.web: Refreshing state... [id=i-0a1b2c3d4e5f60001]\naws_db_instance.postgres: Refreshing state... [id=prod-db-instance]\naws_s3_bucket.assets: Refreshing state... [id=prod-app-assets-bucket]\naws_s3_bucket.logs: Refreshing state... [id=prod-app-logs-bucket]\n\naws_instance.web: Destroying... [id=i-0a1b2c3d4e5f60001]\naws_instance.web: Still destroying... [id=i-0a1b2c3d4e5f60001, 10s elapsed]\naws_instance.web: Destruction complete after 32s\naws_instance.web: Creating...\naws_instance.web: Still creating... [10s elapsed]\naws_instance.web: Creation complete after 25s [id=i-0a1b2c3d4e5f60099]\n\nApply complete! Resources: 1 added, 0 changed, 1 destroyed.\n\nOutputs:\n\nvpc_id           = \"vpc-0a1b2c3d4e5f60001\"\npublic_subnets   = [\"subnet-0a1b2c3d4e5f60011\", \"subnet-0a1b2c3d4e5f60012\"]\nprivate_subnets  = [\"subnet-0a1b2c3d4e5f60021\", \"subnet-0a1b2c3d4e5f60022\"]\nweb_instance_ip  = \"10.0.1.87\"\ndb_endpoint      = \"prod-db-instance.c9ak3rz7v2xq.ap-south-1.rds.amazonaws.com:5432\"",
+    "terraform destroy": "aws_instance.web: Refreshing state... [id=i-0a1b2c3d4e5f60001]\naws_db_instance.postgres: Refreshing state... [id=prod-db-instance]\naws_s3_bucket.assets: Refreshing state... [id=prod-app-assets-bucket]\naws_security_group.web_sg: Refreshing state... [id=sg-0a1b2c3d4e5f60001]\naws_security_group.db_sg: Refreshing state... [id=sg-0a1b2c3d4e5f60002]\naws_subnet.public_a: Refreshing state... [id=subnet-0a1b2c3d4e5f60011]\naws_subnet.public_b: Refreshing state... [id=subnet-0a1b2c3d4e5f60012]\naws_subnet.private_a: Refreshing state... [id=subnet-0a1b2c3d4e5f60021]\naws_subnet.private_b: Refreshing state... [id=subnet-0a1b2c3d4e5f60022]\naws_internet_gateway.gw: Refreshing state... [id=igw-0a1b2c3d4e5f60001]\naws_vpc.main: Refreshing state... [id=vpc-0a1b2c3d4e5f60001]\n\nTerraform used the selected providers to generate the following execution plan.\nResource actions are indicated with the following symbols:\n  - destroy\n\nTerraform will perform the following actions:\n\n  # aws_instance.web will be destroyed\n  - resource \"aws_instance\" \"web\" {\n      - ami                    = \"ami-0c768662cc797cd75\" -> null\n      - instance_type          = \"t3.medium\" -> null\n      - id                     = \"i-0a1b2c3d4e5f60001\" -> null\n      - tags                   = {\n          - \"Name\" = \"prod-web-server\"\n        } -> null\n    }\n\n  # aws_db_instance.postgres will be destroyed\n  - resource \"aws_db_instance\" \"postgres\" {\n      - identifier             = \"prod-db-instance\" -> null\n      - engine                 = \"postgres\" -> null\n      - engine_version         = \"15.6\" -> null\n      - instance_class         = \"db.r6g.large\" -> null\n      - allocated_storage      = 100 -> null\n    }\n\n  # aws_s3_bucket.assets will be destroyed\n  - resource \"aws_s3_bucket\" \"assets\" {\n      - bucket = \"prod-app-assets-bucket\" -> null\n      - id     = \"prod-app-assets-bucket\" -> null\n    }\n\nPlan: 0 to add, 0 to change, 11 to destroy.\n\nDo you really want to destroy all resources?\n  Terraform will destroy all your managed infrastructure, as shown above.\n  There is no undo. Only 'yes' will be accepted to confirm.\n\n  Enter a value: yes\n\naws_instance.web: Destroying... [id=i-0a1b2c3d4e5f60001]\naws_db_instance.postgres: Destroying... [id=prod-db-instance]\naws_s3_bucket.assets: Destroying... [id=prod-app-assets-bucket]\naws_s3_bucket.assets: Destruction complete after 1s\naws_instance.web: Still destroying... [id=i-0a1b2c3d4e5f60001, 10s elapsed]\naws_instance.web: Destruction complete after 32s\naws_db_instance.postgres: Still destroying... [id=prod-db-instance, 1m0s elapsed]\naws_db_instance.postgres: Still destroying... [id=prod-db-instance, 2m0s elapsed]\naws_db_instance.postgres: Destruction complete after 2m15s\naws_security_group.web_sg: Destroying... [id=sg-0a1b2c3d4e5f60001]\naws_security_group.db_sg: Destroying... [id=sg-0a1b2c3d4e5f60002]\naws_security_group.web_sg: Destruction complete after 1s\naws_security_group.db_sg: Destruction complete after 1s\naws_subnet.public_a: Destroying... [id=subnet-0a1b2c3d4e5f60011]\naws_subnet.public_b: Destroying... [id=subnet-0a1b2c3d4e5f60012]\naws_subnet.private_a: Destroying... [id=subnet-0a1b2c3d4e5f60021]\naws_subnet.private_b: Destroying... [id=subnet-0a1b2c3d4e5f60022]\naws_subnet.public_a: Destruction complete after 1s\naws_subnet.public_b: Destruction complete after 1s\naws_subnet.private_a: Destruction complete after 1s\naws_subnet.private_b: Destruction complete after 1s\naws_internet_gateway.gw: Destroying... [id=igw-0a1b2c3d4e5f60001]\naws_internet_gateway.gw: Destruction complete after 2s\naws_vpc.main: Destroying... [id=vpc-0a1b2c3d4e5f60001]\naws_vpc.main: Destruction complete after 1s\n\nDestroy complete! Resources: 11 destroyed.",
+    "terraform state list": "aws_vpc.main\naws_subnet.public_a\naws_subnet.public_b\naws_subnet.private_a\naws_subnet.private_b\naws_internet_gateway.gw\naws_security_group.web_sg\naws_security_group.db_sg\naws_instance.web\naws_db_instance.postgres\naws_s3_bucket.assets",
+    "terraform state show aws_vpc.main": "# aws_vpc.main:\nresource \"aws_vpc\" \"main\" {\n    arn                                  = \"arn:aws:ec2:ap-south-1:123456789012:vpc/vpc-0a1b2c3d4e5f60001\"\n    assign_generated_ipv6_cidr_block     = false\n    cidr_block                           = \"10.0.0.0/16\"\n    default_network_acl_id               = \"acl-0a1b2c3d4e5f60001\"\n    default_route_table_id               = \"rtb-0a1b2c3d4e5f60001\"\n    default_security_group_id            = \"sg-0a1b2c3d4e5f60000\"\n    dhcp_options_id                      = \"dopt-0a1b2c3d4e5f60001\"\n    enable_dns_hostnames                 = true\n    enable_dns_support                   = true\n    id                                   = \"vpc-0a1b2c3d4e5f60001\"\n    instance_tenancy                     = \"default\"\n    main_route_table_id                  = \"rtb-0a1b2c3d4e5f60001\"\n    owner_id                             = \"123456789012\"\n    tags                                 = {\n        \"Environment\" = \"production\"\n        \"ManagedBy\"   = \"terraform\"\n        \"Name\"        = \"prod-vpc\"\n    }\n    tags_all                             = {\n        \"Environment\" = \"production\"\n        \"ManagedBy\"   = \"terraform\"\n        \"Name\"        = \"prod-vpc\"\n    }\n}",
+    "terraform state show aws_instance.web": "# aws_instance.web:\nresource \"aws_instance\" \"web\" {\n    ami                          = \"ami-0c768662cc797cd75\"\n    arn                          = \"arn:aws:ec2:ap-south-1:123456789012:instance/i-0a1b2c3d4e5f60001\"\n    associate_public_ip_address  = true\n    availability_zone            = \"ap-south-1a\"\n    cpu_core_count               = 1\n    cpu_threads_per_core         = 2\n    disable_api_termination      = false\n    ebs_optimized                = true\n    id                           = \"i-0a1b2c3d4e5f60001\"\n    instance_state               = \"running\"\n    instance_type                = \"t3.medium\"\n    monitoring                   = true\n    private_ip                   = \"10.0.1.42\"\n    public_ip                    = \"13.235.48.102\"\n    subnet_id                    = \"subnet-0a1b2c3d4e5f60011\"\n    vpc_security_group_ids       = [\n        \"sg-0a1b2c3d4e5f60001\",\n    ]\n    tags                         = {\n        \"Environment\" = \"production\"\n        \"Name\"        = \"prod-web-server\"\n    }\n    tags_all                     = {\n        \"Environment\" = \"production\"\n        \"Name\"        = \"prod-web-server\"\n    }\n\n    root_block_device {\n        delete_on_termination = true\n        encrypted             = true\n        volume_size           = 30\n        volume_type           = \"gp3\"\n    }\n}",
+    "terraform state show aws_s3_bucket.logs": "# aws_s3_bucket.logs:\nresource \"aws_s3_bucket\" \"logs\" {\n    arn                         = \"arn:aws:s3:::prod-app-logs-bucket\"\n    bucket                      = \"prod-app-logs-bucket\"\n    bucket_domain_name          = \"prod-app-logs-bucket.s3.amazonaws.com\"\n    bucket_regional_domain_name = \"prod-app-logs-bucket.s3.ap-south-1.amazonaws.com\"\n    hosted_zone_id              = \"Z11RGJOFQNVJUP\"\n    id                          = \"prod-app-logs-bucket\"\n    region                      = \"ap-south-1\"\n    request_payer               = \"BucketOwner\"\n    tags                        = {\n        \"Environment\" = \"production\"\n        \"Name\"        = \"prod-app-logs\"\n    }\n    tags_all                    = {\n        \"Environment\" = \"production\"\n        \"Name\"        = \"prod-app-logs\"\n    }\n\n    versioning {\n        enabled    = true\n        mfa_delete = false\n    }\n\n    server_side_encryption_configuration {\n        rule {\n            apply_server_side_encryption_by_default {\n                sse_algorithm = \"aws:kms\"\n            }\n        }\n    }\n}",
+    "terraform state show aws_s3_bucket.assets": "# aws_s3_bucket.assets:\nresource \"aws_s3_bucket\" \"assets\" {\n    arn                         = \"arn:aws:s3:::prod-app-assets-bucket\"\n    bucket                      = \"prod-app-assets-bucket\"\n    bucket_domain_name          = \"prod-app-assets-bucket.s3.amazonaws.com\"\n    bucket_regional_domain_name = \"prod-app-assets-bucket.s3.ap-south-1.amazonaws.com\"\n    id                          = \"prod-app-assets-bucket\"\n    region                      = \"ap-south-1\"\n    tags                        = {\n        \"Environment\" = \"production\"\n        \"Name\"        = \"prod-app-assets\"\n    }\n}",
+    "terraform state show aws_db_instance.postgres": "# aws_db_instance.postgres:\nresource \"aws_db_instance\" \"postgres\" {\n    address                               = \"prod-db-instance.c9ak3rz7v2xq.ap-south-1.rds.amazonaws.com\"\n    allocated_storage                     = 100\n    auto_minor_version_upgrade            = true\n    availability_zone                     = \"ap-south-1a\"\n    backup_retention_period               = 7\n    backup_window                         = \"03:00-04:00\"\n    ca_cert_identifier                    = \"rds-ca-rsa2048-g1\"\n    db_name                               = \"proddb\"\n    db_subnet_group_name                  = \"prod-db-subnet-group\"\n    deletion_protection                   = true\n    engine                                = \"postgres\"\n    engine_version                        = \"15.6\"\n    id                                    = \"prod-db-instance\"\n    identifier                            = \"prod-db-instance\"\n    instance_class                        = \"db.r6g.large\"\n    maintenance_window                    = \"sun:05:00-sun:06:00\"\n    multi_az                              = true\n    performance_insights_enabled          = true\n    port                                  = 5432\n    publicly_accessible                   = false\n    storage_encrypted                     = true\n    storage_type                          = \"gp3\"\n    tags                                  = {\n        \"Environment\" = \"production\"\n        \"Name\"        = \"prod-postgres\"\n    }\n    vpc_security_group_ids                = [\n        \"sg-0a1b2c3d4e5f60002\",\n    ]\n}",
+    "terraform state mv aws_s3_bucket.assets aws_s3_bucket.static_assets": "Move \"aws_s3_bucket.assets\" to \"aws_s3_bucket.static_assets\"\nSuccessfully moved 1 object(s).",
+    "terraform state rm aws_s3_bucket.assets": "Removed aws_s3_bucket.assets\nSuccessfully removed 1 resource instance(s).",
+    "terraform state pull": "{\n  \"version\": 4,\n  \"terraform_version\": \"1.7.5\",\n  \"serial\": 42,\n  \"lineage\": \"a1b2c3d4-e5f6-7890-abcd-ef1234567890\",\n  \"outputs\": {\n    \"vpc_id\": {\n      \"value\": \"vpc-0a1b2c3d4e5f60001\",\n      \"type\": \"string\"\n    },\n    \"public_subnets\": {\n      \"value\": [\"subnet-0a1b2c3d4e5f60011\", \"subnet-0a1b2c3d4e5f60012\"],\n      \"type\": [\"tuple\", [[\"string\", \"string\"]]]\n    },\n    \"db_endpoint\": {\n      \"value\": \"prod-db-instance.c9ak3rz7v2xq.ap-south-1.rds.amazonaws.com:5432\",\n      \"type\": \"string\"\n    }\n  },\n  \"resources\": [\n    {\n      \"mode\": \"managed\",\n      \"type\": \"aws_vpc\",\n      \"name\": \"main\",\n      \"provider\": \"provider[\\\"registry.terraform.io/hashicorp/aws\\\"]\",\n      \"instances\": [{\"attributes\": {\"id\": \"vpc-0a1b2c3d4e5f60001\", \"cidr_block\": \"10.0.0.0/16\"}}]\n    }\n  ]\n}",
+    "terraform import aws_s3_bucket.logs prod-app-logs-bucket": "aws_s3_bucket.logs: Importing from ID \"prod-app-logs-bucket\"...\naws_s3_bucket.logs: Import prepared!\n  Prepared aws_s3_bucket for import\naws_s3_bucket.logs: Refreshing state... [id=prod-app-logs-bucket]\n\nImport successful!\n\nThe resources that were imported are shown above. These resources are now in\nyour Terraform state and will henceforth be managed by Terraform.",
+    "terraform workspace list": "  default\n* production\n  staging",
+    "terraform workspace new staging": "Created and switched to workspace \"staging\"!\n\nYou're now on a new, empty workspace. Workspaces isolate their state,\nso if you run \"terraform plan\" Terraform will not see any existing state\nfor this configuration.",
+    "terraform workspace select production": "Switched to workspace \"production\".",
+    "terraform workspace select staging": "Switched to workspace \"staging\".",
+    "terraform workspace select default": "Switched to workspace \"default\".",
+    "terraform workspace show": "production",
+    "terraform show": "# aws_vpc.main:\nresource \"aws_vpc\" \"main\" {\n    arn                              = \"arn:aws:ec2:ap-south-1:123456789012:vpc/vpc-0a1b2c3d4e5f60001\"\n    cidr_block                       = \"10.0.0.0/16\"\n    enable_dns_hostnames             = true\n    enable_dns_support               = true\n    id                               = \"vpc-0a1b2c3d4e5f60001\"\n    instance_tenancy                 = \"default\"\n    tags                             = {\n        \"Environment\" = \"production\"\n        \"Name\"        = \"prod-vpc\"\n    }\n}\n\n# aws_subnet.public_a:\nresource \"aws_subnet\" \"public_a\" {\n    arn                             = \"arn:aws:ec2:ap-south-1:123456789012:subnet/subnet-0a1b2c3d4e5f60011\"\n    availability_zone               = \"ap-south-1a\"\n    cidr_block                      = \"10.0.1.0/24\"\n    id                              = \"subnet-0a1b2c3d4e5f60011\"\n    map_public_ip_on_launch         = true\n}\n\n# aws_instance.web:\nresource \"aws_instance\" \"web\" {\n    ami                          = \"ami-0c768662cc797cd75\"\n    instance_type                = \"t3.medium\"\n    id                           = \"i-0a1b2c3d4e5f60001\"\n    private_ip                   = \"10.0.1.42\"\n    public_ip                    = \"13.235.48.102\"\n    subnet_id                    = \"subnet-0a1b2c3d4e5f60011\"\n}\n\n# aws_db_instance.postgres:\nresource \"aws_db_instance\" \"postgres\" {\n    address                      = \"prod-db-instance.c9ak3rz7v2xq.ap-south-1.rds.amazonaws.com\"\n    engine                       = \"postgres\"\n    engine_version               = \"15.6\"\n    id                           = \"prod-db-instance\"\n    instance_class               = \"db.r6g.large\"\n    multi_az                     = true\n    port                         = 5432\n}\n\n# aws_s3_bucket.assets:\nresource \"aws_s3_bucket\" \"assets\" {\n    bucket = \"prod-app-assets-bucket\"\n    id     = \"prod-app-assets-bucket\"\n    region = \"ap-south-1\"\n}\n\nOutputs:\n\ndb_endpoint      = \"prod-db-instance.c9ak3rz7v2xq.ap-south-1.rds.amazonaws.com:5432\"\nprivate_subnets  = [\"subnet-0a1b2c3d4e5f60021\", \"subnet-0a1b2c3d4e5f60022\"]\npublic_subnets   = [\"subnet-0a1b2c3d4e5f60011\", \"subnet-0a1b2c3d4e5f60012\"]\nvpc_id           = \"vpc-0a1b2c3d4e5f60001\"\nweb_instance_ip  = \"13.235.48.102\"",
+    "terraform output": "db_endpoint      = \"prod-db-instance.c9ak3rz7v2xq.ap-south-1.rds.amazonaws.com:5432\"\nprivate_subnets  = [\n  \"subnet-0a1b2c3d4e5f60021\",\n  \"subnet-0a1b2c3d4e5f60022\",\n]\npublic_subnets   = [\n  \"subnet-0a1b2c3d4e5f60011\",\n  \"subnet-0a1b2c3d4e5f60012\",\n]\nvpc_id           = \"vpc-0a1b2c3d4e5f60001\"\nweb_instance_ip  = \"13.235.48.102\"",
+    "terraform output -json": "{\n  \"db_endpoint\": {\n    \"sensitive\": false,\n    \"type\": \"string\",\n    \"value\": \"prod-db-instance.c9ak3rz7v2xq.ap-south-1.rds.amazonaws.com:5432\"\n  },\n  \"private_subnets\": {\n    \"sensitive\": false,\n    \"type\": [\"tuple\", [[\"string\", \"string\"]]],\n    \"value\": [\"subnet-0a1b2c3d4e5f60021\", \"subnet-0a1b2c3d4e5f60022\"]\n  },\n  \"public_subnets\": {\n    \"sensitive\": false,\n    \"type\": [\"tuple\", [[\"string\", \"string\"]]],\n    \"value\": [\"subnet-0a1b2c3d4e5f60011\", \"subnet-0a1b2c3d4e5f60012\"]\n  },\n  \"vpc_id\": {\n    \"sensitive\": false,\n    \"type\": \"string\",\n    \"value\": \"vpc-0a1b2c3d4e5f60001\"\n  },\n  \"web_instance_ip\": {\n    \"sensitive\": false,\n    \"type\": \"string\",\n    \"value\": \"13.235.48.102\"\n  }\n}",
+    "terraform output vpc_id": "\"vpc-0a1b2c3d4e5f60001\"",
+    "terraform output db_endpoint": "\"prod-db-instance.c9ak3rz7v2xq.ap-south-1.rds.amazonaws.com:5432\"",
+    "terraform providers": "Providers required by configuration:\n.\n├── provider[registry.terraform.io/hashicorp/aws] ~> 5.40\n└── provider[registry.terraform.io/hashicorp/random] ~> 3.6\n\nProviders required by state:\n\n    provider[registry.terraform.io/hashicorp/aws]\n\n    provider[registry.terraform.io/hashicorp/random]",
+    "terraform graph": "digraph {\n  compound = \"true\"\n  newrank = \"true\"\n  subgraph \"root\" {\n    \"[root] aws_vpc.main (expand)\" [label = \"aws_vpc.main\", shape = \"box\"]\n    \"[root] aws_subnet.public_a (expand)\" [label = \"aws_subnet.public_a\", shape = \"box\"]\n    \"[root] aws_subnet.public_b (expand)\" [label = \"aws_subnet.public_b\", shape = \"box\"]\n    \"[root] aws_subnet.private_a (expand)\" [label = \"aws_subnet.private_a\", shape = \"box\"]\n    \"[root] aws_subnet.private_b (expand)\" [label = \"aws_subnet.private_b\", shape = \"box\"]\n    \"[root] aws_internet_gateway.gw (expand)\" [label = \"aws_internet_gateway.gw\", shape = \"box\"]\n    \"[root] aws_security_group.web_sg (expand)\" [label = \"aws_security_group.web_sg\", shape = \"box\"]\n    \"[root] aws_instance.web (expand)\" [label = \"aws_instance.web\", shape = \"box\"]\n    \"[root] aws_db_instance.postgres (expand)\" [label = \"aws_db_instance.postgres\", shape = \"box\"]\n    \"[root] aws_subnet.public_a (expand)\" -> \"[root] aws_vpc.main (expand)\"\n    \"[root] aws_subnet.public_b (expand)\" -> \"[root] aws_vpc.main (expand)\"\n    \"[root] aws_subnet.private_a (expand)\" -> \"[root] aws_vpc.main (expand)\"\n    \"[root] aws_subnet.private_b (expand)\" -> \"[root] aws_vpc.main (expand)\"\n    \"[root] aws_internet_gateway.gw (expand)\" -> \"[root] aws_vpc.main (expand)\"\n    \"[root] aws_security_group.web_sg (expand)\" -> \"[root] aws_vpc.main (expand)\"\n    \"[root] aws_instance.web (expand)\" -> \"[root] aws_subnet.public_a (expand)\"\n    \"[root] aws_instance.web (expand)\" -> \"[root] aws_security_group.web_sg (expand)\"\n    \"[root] aws_db_instance.postgres (expand)\" -> \"[root] aws_subnet.private_a (expand)\"\n  }\n}\n\nTip: Pipe this output to 'dot -Tsvg > graph.svg' to visualise it.",
+    "terraform console": "Terraform console opened. Type expressions to evaluate.\nUse Ctrl+D or 'exit' to close.\n\n> var.environment\n\"production\"\n\n> aws_vpc.main.id\n\"vpc-0a1b2c3d4e5f60001\"\n\n> length(aws_subnet.public_a)\n1\n\n> cidrsubnet(\"10.0.0.0/16\", 8, 1)\n\"10.0.1.0/24\"\n\n> exit",
+    "terraform force-unlock a1b2c3d4-e5f6-7890-abcd-ef1234567890": "Terraform state has been successfully unlocked!\n\nThe state has been unlocked, and Terraform commands should now be able to\nobtain a new lock on the next run.",
+    "terraform force-unlock": "Usage: terraform force-unlock LOCK_ID\n\nManually unlock the state for the defined configuration.\n\nThis will not modify your infrastructure. This command removes the lock on\nthe state for the current workspace. The behavior of this lock is dependent\non the backend being used.\n\nExample:\n  terraform force-unlock a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "terraform taint aws_instance.web": "Resource instance aws_instance.web has been marked as tainted.",
+    "terraform untaint aws_instance.web": "Resource instance aws_instance.web has been successfully untainted.",
+    "terraform taint aws_db_instance.postgres": "Resource instance aws_db_instance.postgres has been marked as tainted.",
+    "terraform untaint aws_db_instance.postgres": "Resource instance aws_db_instance.postgres has been successfully untainted.",
+    "terraform state show aws_security_group.web_sg": "# aws_security_group.web_sg:\nresource \"aws_security_group\" \"web_sg\" {\n    arn         = \"arn:aws:ec2:ap-south-1:123456789012:security-group/sg-0a1b2c3d4e5f60001\"\n    description = \"Security group for web servers\"\n    id          = \"sg-0a1b2c3d4e5f60001\"\n    name        = \"prod-web-sg\"\n    owner_id    = \"123456789012\"\n    vpc_id      = \"vpc-0a1b2c3d4e5f60001\"\n\n    ingress {\n        cidr_blocks = [\"0.0.0.0/0\"]\n        from_port   = 443\n        protocol    = \"tcp\"\n        to_port     = 443\n    }\n\n    ingress {\n        cidr_blocks = [\"10.0.0.0/16\"]\n        from_port   = 22\n        protocol    = \"tcp\"\n        to_port     = 22\n    }\n\n    egress {\n        cidr_blocks = [\"0.0.0.0/0\"]\n        from_port   = 0\n        protocol    = \"-1\"\n        to_port     = 0\n    }\n\n    tags = {\n        \"Environment\" = \"production\"\n        \"Name\"        = \"prod-web-sg\"\n    }\n}",
+    "terraform state show aws_security_group.db_sg": "# aws_security_group.db_sg:\nresource \"aws_security_group\" \"db_sg\" {\n    arn         = \"arn:aws:ec2:ap-south-1:123456789012:security-group/sg-0a1b2c3d4e5f60002\"\n    description = \"Security group for database\"\n    id          = \"sg-0a1b2c3d4e5f60002\"\n    name        = \"prod-db-sg\"\n    owner_id    = \"123456789012\"\n    vpc_id      = \"vpc-0a1b2c3d4e5f60001\"\n\n    ingress {\n        cidr_blocks     = []\n        from_port       = 5432\n        protocol        = \"tcp\"\n        security_groups = [\"sg-0a1b2c3d4e5f60001\"]\n        to_port         = 5432\n    }\n\n    egress {\n        cidr_blocks = [\"0.0.0.0/0\"]\n        from_port   = 0\n        protocol    = \"-1\"\n        to_port     = 0\n    }\n\n    tags = {\n        \"Environment\" = \"production\"\n        \"Name\"        = \"prod-db-sg\"\n    }\n}",
+    "terraform state show aws_subnet.public_a": "# aws_subnet.public_a:\nresource \"aws_subnet\" \"public_a\" {\n    arn                             = \"arn:aws:ec2:ap-south-1:123456789012:subnet/subnet-0a1b2c3d4e5f60011\"\n    availability_zone               = \"ap-south-1a\"\n    availability_zone_id            = \"aps1-az1\"\n    cidr_block                      = \"10.0.1.0/24\"\n    id                              = \"subnet-0a1b2c3d4e5f60011\"\n    map_public_ip_on_launch         = true\n    owner_id                        = \"123456789012\"\n    vpc_id                          = \"vpc-0a1b2c3d4e5f60001\"\n    tags                            = {\n        \"Environment\" = \"production\"\n        \"Name\"        = \"prod-public-a\"\n    }\n}",
+    "terraform state show aws_internet_gateway.gw": "# aws_internet_gateway.gw:\nresource \"aws_internet_gateway\" \"gw\" {\n    arn      = \"arn:aws:ec2:ap-south-1:123456789012:internet-gateway/igw-0a1b2c3d4e5f60001\"\n    id       = \"igw-0a1b2c3d4e5f60001\"\n    owner_id = \"123456789012\"\n    vpc_id   = \"vpc-0a1b2c3d4e5f60001\"\n    tags     = {\n        \"Environment\" = \"production\"\n        \"Name\"        = \"prod-igw\"\n    }\n}"
+  },
+  "reference": [
+    {
+      "group": "Init / Plan / Apply",
+      "commands": [
+        {
+          "cmd": "terraform init",
+          "desc": "download providers, init backend"
+        },
+        {
+          "cmd": "terraform plan",
+          "desc": "preview changes"
+        },
+        {
+          "cmd": "terraform plan -out=tfplan",
+          "desc": "save plan to file"
+        },
+        {
+          "cmd": "terraform apply",
+          "desc": "apply with confirmation"
+        },
+        {
+          "cmd": "terraform apply tfplan",
+          "desc": "apply a saved plan"
+        },
+        {
+          "cmd": "terraform apply -auto-approve",
+          "desc": "apply without prompt"
+        },
+        {
+          "cmd": "terraform destroy",
+          "desc": "tear down all resources"
+        }
+      ]
+    },
+    {
+      "group": "State Management",
+      "commands": [
+        {
+          "cmd": "terraform state list",
+          "desc": "list tracked resources"
+        },
+        {
+          "cmd": "terraform state show aws_instance.web",
+          "desc": "inspect a resource"
+        },
+        {
+          "cmd": "terraform state mv aws_s3_bucket.assets aws_s3_bucket.static_assets",
+          "desc": "rename in state"
+        },
+        {
+          "cmd": "terraform state rm aws_s3_bucket.assets",
+          "desc": "remove from state"
+        },
+        {
+          "cmd": "terraform state pull",
+          "desc": "download raw state JSON"
+        },
+        {
+          "cmd": "terraform import aws_s3_bucket.logs prod-app-logs-bucket",
+          "desc": "import existing resource"
+        }
+      ]
+    },
+    {
+      "group": "Workspaces",
+      "commands": [
+        {
+          "cmd": "terraform workspace list",
+          "desc": "list workspaces"
+        },
+        {
+          "cmd": "terraform workspace new staging",
+          "desc": "create workspace"
+        },
+        {
+          "cmd": "terraform workspace select production",
+          "desc": "switch workspace"
+        },
+        {
+          "cmd": "terraform workspace show",
+          "desc": "current workspace"
+        }
+      ]
+    },
+    {
+      "group": "Inspect / Validate",
+      "commands": [
+        {
+          "cmd": "terraform show",
+          "desc": "full state overview"
+        },
+        {
+          "cmd": "terraform output",
+          "desc": "show outputs"
+        },
+        {
+          "cmd": "terraform output -json",
+          "desc": "outputs as JSON"
+        },
+        {
+          "cmd": "terraform validate",
+          "desc": "check syntax"
+        },
+        {
+          "cmd": "terraform fmt",
+          "desc": "reformat HCL files"
+        },
+        {
+          "cmd": "terraform fmt -check",
+          "desc": "check formatting"
+        },
+        {
+          "cmd": "terraform providers",
+          "desc": "show providers"
+        },
+        {
+          "cmd": "terraform version",
+          "desc": "show version"
+        }
+      ]
+    },
+    {
+      "group": "Graph / Debug",
+      "commands": [
+        {
+          "cmd": "terraform graph",
+          "desc": "DOT dependency graph"
+        },
+        {
+          "cmd": "terraform console",
+          "desc": "expression evaluator"
+        },
+        {
+          "cmd": "terraform force-unlock",
+          "desc": "release stuck lock"
+        }
+      ]
+    },
+    {
+      "group": "Taint / Replace",
+      "commands": [
+        {
+          "cmd": "terraform taint aws_instance.web",
+          "desc": "mark for replacement"
+        },
+        {
+          "cmd": "terraform untaint aws_instance.web",
+          "desc": "remove taint"
+        }
+      ]
+    },
+    {
+      "group": "Resource Details",
+      "commands": [
+        {
+          "cmd": "terraform state show aws_vpc.main",
+          "desc": "VPC details"
+        },
+        {
+          "cmd": "terraform state show aws_db_instance.postgres",
+          "desc": "RDS details"
+        },
+        {
+          "cmd": "terraform state show aws_security_group.web_sg",
+          "desc": "web SG rules"
+        },
+        {
+          "cmd": "terraform state show aws_s3_bucket.logs",
+          "desc": "S3 logs bucket"
+        }
+      ]
+    },
+    {
+      "group": "Scenarios",
+      "commands": [
+        {
+          "cmd": "scenario provision-vpc",
+          "desc": "provision VPC + subnets"
+        },
+        {
+          "cmd": "scenario recover-drift",
+          "desc": "fix state drift"
+        }
+      ]
+    }
+  ]
+}

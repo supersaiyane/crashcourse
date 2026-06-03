@@ -1,0 +1,257 @@
+{
+  "id": "bash",
+  "prompt": "sre@toolbox:~/scripts$",
+  "welcome": "Welcome to the Bash CLI Playground.\nSimulated environment with nginx access logs, configs, and scripts.\nType 'help' for available commands, 'scenario' for guided labs.\n",
+  "scenarios": [
+    {
+      "id": "parse-logs",
+      "title": "Parse and Analyze Access Logs",
+      "steps": [
+        {
+          "instruction": "First, check how many lines are in the access log.",
+          "expect": "wc -l access.log",
+          "hint": "Try: wc -l access.log"
+        },
+        {
+          "instruction": "Find how many 500 errors occurred.",
+          "expect": "grep -c \" 500 \" access.log",
+          "hint": "Try: grep -c \" 500 \" access.log"
+        },
+        {
+          "instruction": "Extract just the IP addresses from the log (field 1).",
+          "expect": "awk '{print $1}' access.log",
+          "hint": "Try: awk '{print $1}' access.log"
+        },
+        {
+          "instruction": "Now find the top 10 IPs by request count.",
+          "expect": "awk '{print $1}' access.log | sort | uniq -c | sort -rn | head -10",
+          "hint": "Try: awk '{print $1}' access.log | sort | uniq -c | sort -rn | head -10"
+        },
+        {
+          "instruction": "Find which URLs are returning 500 errors.",
+          "expect": "awk '$9 == 500 {print $7}' access.log | sort | uniq -c | sort -rn",
+          "hint": "Try: awk '$9 == 500 {print $7}' access.log | sort | uniq -c | sort -rn"
+        },
+        {
+          "instruction": "Check the HTTP status code distribution.",
+          "expect": "awk '{print $9}' access.log | sort | uniq -c | sort -rn",
+          "hint": "Try: awk '{print $9}' access.log | sort | uniq -c | sort -rn"
+        },
+        {
+          "instruction": "Find the IPs that are generating the most 500 errors.",
+          "expect": "awk '$9 == 500 {print $1}' access.log | sort | uniq -c | sort -rn | head -5",
+          "hint": "Try: awk '$9 == 500 {print $1}' access.log | sort | uniq -c | sort -rn | head -5"
+        },
+        {
+          "instruction": "Check the request rate per hour from the timestamps.",
+          "expect": "awk '{print $4}' access.log | cut -d: -f2 | sort | uniq -c",
+          "hint": "Try: awk '{print $4}' access.log | cut -d: -f2 | sort | uniq -c"
+        }
+      ]
+    },
+    {
+      "id": "deploy-script",
+      "title": "Build a Deployment Script",
+      "steps": [
+        {
+          "instruction": "Check what's in the current scripts directory.",
+          "expect": "ls -la",
+          "hint": "Try: ls -la"
+        },
+        {
+          "instruction": "Look at the current deploy.sh to understand the existing pattern.",
+          "expect": "cat deploy.sh",
+          "hint": "Try: cat deploy.sh"
+        },
+        {
+          "instruction": "Check which environment variables are set.",
+          "expect": "env | grep -i app",
+          "hint": "Try: env | grep -i app"
+        },
+        {
+          "instruction": "Test if the APP_ENV variable is set correctly.",
+          "expect": "echo $APP_ENV",
+          "hint": "Try: echo $APP_ENV"
+        },
+        {
+          "instruction": "Validate the config file syntax before deploying.",
+          "expect": "cat config.yaml",
+          "hint": "Try: cat config.yaml"
+        },
+        {
+          "instruction": "Check the current app version.",
+          "expect": "cat VERSION",
+          "hint": "Try: cat VERSION"
+        },
+        {
+          "instruction": "Run the deploy script in dry-run mode.",
+          "expect": "bash deploy.sh --dry-run",
+          "hint": "Try: bash deploy.sh --dry-run"
+        },
+        {
+          "instruction": "Execute the actual deployment.",
+          "expect": "bash deploy.sh",
+          "hint": "Try: bash deploy.sh"
+        }
+      ]
+    }
+  ],
+  "commands": {
+    "help": "Available commands:\n  grep                       — Search text patterns\n  awk                        — Column-based text processing\n  sed                        — Stream editor (find/replace)\n  sort / uniq                — Sort and deduplicate\n  cut / tr / wc              — Text transformation\n  find / xargs               — Find files and batch process\n  head / tail                — View file start/end\n  cat / tee                  — Concatenate and split output\n  echo / printf              — Print text and variables\n  test / [[ ]]               — Conditionals\n  for / while                — Loops\n  diff                       — Compare files\n  env / export               — Environment variables\n  bash <script>              — Run scripts\n\n  scenario                   — Start a guided lab\n  clear                      — Clear the terminal\n  help                       — Show this help",
+    "wc -l access.log": "48562 access.log",
+    "wc -l error.log": "2341 error.log",
+    "wc -l /etc/passwd": "34 /etc/passwd",
+    "cat access.log | head -5": "10.0.2.15 - - [02/Jun/2026:08:00:01 +0000] \"GET /api/v1/users HTTP/1.1\" 200 1234 \"-\" \"Mozilla/5.0\"\n10.0.3.22 - - [02/Jun/2026:08:00:02 +0000] \"POST /api/v1/orders HTTP/1.1\" 201 567 \"-\" \"curl/7.81.0\"\n10.0.2.15 - - [02/Jun/2026:08:00:03 +0000] \"GET /api/v1/products HTTP/1.1\" 200 8901 \"-\" \"Mozilla/5.0\"\n192.168.1.100 - - [02/Jun/2026:08:00:04 +0000] \"GET /admin/login HTTP/1.1\" 403 234 \"-\" \"python-requests/2.28\"\n10.0.1.8 - - [02/Jun/2026:08:00:05 +0000] \"GET /healthz HTTP/1.1\" 200 15 \"-\" \"kube-probe/1.29\"",
+    "head -5 access.log": "10.0.2.15 - - [02/Jun/2026:08:00:01 +0000] \"GET /api/v1/users HTTP/1.1\" 200 1234 \"-\" \"Mozilla/5.0\"\n10.0.3.22 - - [02/Jun/2026:08:00:02 +0000] \"POST /api/v1/orders HTTP/1.1\" 201 567 \"-\" \"curl/7.81.0\"\n10.0.2.15 - - [02/Jun/2026:08:00:03 +0000] \"GET /api/v1/products HTTP/1.1\" 200 8901 \"-\" \"Mozilla/5.0\"\n192.168.1.100 - - [02/Jun/2026:08:00:04 +0000] \"GET /admin/login HTTP/1.1\" 403 234 \"-\" \"python-requests/2.28\"\n10.0.1.8 - - [02/Jun/2026:08:00:05 +0000] \"GET /healthz HTTP/1.1\" 200 15 \"-\" \"kube-probe/1.29\"",
+    "head -20 access.log": "10.0.2.15 - - [02/Jun/2026:08:00:01 +0000] \"GET /api/v1/users HTTP/1.1\" 200 1234 \"-\" \"Mozilla/5.0\"\n10.0.3.22 - - [02/Jun/2026:08:00:02 +0000] \"POST /api/v1/orders HTTP/1.1\" 201 567 \"-\" \"curl/7.81.0\"\n10.0.2.15 - - [02/Jun/2026:08:00:03 +0000] \"GET /api/v1/products HTTP/1.1\" 200 8901 \"-\" \"Mozilla/5.0\"\n192.168.1.100 - - [02/Jun/2026:08:00:04 +0000] \"GET /admin/login HTTP/1.1\" 403 234 \"-\" \"python-requests/2.28\"\n10.0.1.8 - - [02/Jun/2026:08:00:05 +0000] \"GET /healthz HTTP/1.1\" 200 15 \"-\" \"kube-probe/1.29\"\n10.0.2.15 - - [02/Jun/2026:08:00:06 +0000] \"GET /api/v1/reports HTTP/1.1\" 500 89 \"-\" \"Mozilla/5.0\"\n10.0.4.55 - - [02/Jun/2026:08:00:07 +0000] \"GET /api/v1/users HTTP/1.1\" 200 1234 \"-\" \"Mozilla/5.0\"\n10.0.2.15 - - [02/Jun/2026:08:00:08 +0000] \"PUT /api/v1/users/42 HTTP/1.1\" 200 456 \"-\" \"Mozilla/5.0\"\n10.0.3.22 - - [02/Jun/2026:08:00:09 +0000] \"DELETE /api/v1/orders/99 HTTP/1.1\" 204 0 \"-\" \"curl/7.81.0\"\n172.16.0.50 - - [02/Jun/2026:08:00:10 +0000] \"GET /api/v1/reports HTTP/1.1\" 500 89 \"-\" \"python-requests/2.28\"\n10.0.1.8 - - [02/Jun/2026:08:00:11 +0000] \"GET /healthz HTTP/1.1\" 200 15 \"-\" \"kube-probe/1.29\"\n10.0.2.15 - - [02/Jun/2026:08:00:12 +0000] \"GET /api/v1/users HTTP/1.1\" 200 1234 \"-\" \"Mozilla/5.0\"\n10.0.5.33 - - [02/Jun/2026:08:00:13 +0000] \"POST /api/v1/auth/login HTTP/1.1\" 200 890 \"-\" \"Mozilla/5.0\"\n192.168.1.100 - - [02/Jun/2026:08:00:14 +0000] \"GET /admin/config HTTP/1.1\" 403 234 \"-\" \"python-requests/2.28\"\n10.0.2.15 - - [02/Jun/2026:08:00:15 +0000] \"GET /static/app.js HTTP/1.1\" 304 0 \"-\" \"Mozilla/5.0\"\n10.0.3.22 - - [02/Jun/2026:08:00:16 +0000] \"GET /api/v1/orders HTTP/1.1\" 200 4567 \"-\" \"curl/7.81.0\"\n172.16.0.50 - - [02/Jun/2026:08:00:17 +0000] \"POST /api/v1/reports/export HTTP/1.1\" 500 89 \"-\" \"python-requests/2.28\"\n10.0.4.55 - - [02/Jun/2026:08:00:18 +0000] \"GET /api/v1/products HTTP/1.1\" 200 8901 \"-\" \"Mozilla/5.0\"\n10.0.2.15 - - [02/Jun/2026:08:00:19 +0000] \"GET /api/v1/users/42 HTTP/1.1\" 200 567 \"-\" \"Mozilla/5.0\"\n10.0.1.8 - - [02/Jun/2026:08:00:20 +0000] \"GET /healthz HTTP/1.1\" 200 15 \"-\" \"kube-probe/1.29\"",
+    "tail -5 access.log": "10.0.2.15 - - [02/Jun/2026:10:15:32 +0000] \"GET /api/v1/users HTTP/1.1\" 200 1234 \"-\" \"Mozilla/5.0\"\n10.0.3.22 - - [02/Jun/2026:10:15:33 +0000] \"POST /api/v1/orders HTTP/1.1\" 201 567 \"-\" \"curl/7.81.0\"\n172.16.0.50 - - [02/Jun/2026:10:15:34 +0000] \"GET /api/v1/reports HTTP/1.1\" 500 89 \"-\" \"python-requests/2.28\"\n10.0.1.8 - - [02/Jun/2026:10:15:35 +0000] \"GET /healthz HTTP/1.1\" 200 15 \"-\" \"kube-probe/1.29\"\n10.0.4.55 - - [02/Jun/2026:10:15:36 +0000] \"GET /api/v1/products HTTP/1.1\" 200 8901 \"-\" \"Mozilla/5.0\"",
+    "tail -f access.log": "10.0.2.15 - - [02/Jun/2026:10:15:37 +0000] \"GET /api/v1/users HTTP/1.1\" 200 1234\n10.0.3.22 - - [02/Jun/2026:10:15:38 +0000] \"POST /api/v1/orders HTTP/1.1\" 201 567\n(following — press Ctrl+C to stop)",
+    "grep \"500\" access.log": "10.0.2.15 - - [02/Jun/2026:08:00:06 +0000] \"GET /api/v1/reports HTTP/1.1\" 500 89\n172.16.0.50 - - [02/Jun/2026:08:00:10 +0000] \"GET /api/v1/reports HTTP/1.1\" 500 89\n172.16.0.50 - - [02/Jun/2026:08:00:17 +0000] \"POST /api/v1/reports/export HTTP/1.1\" 500 89\n10.0.2.15 - - [02/Jun/2026:09:12:45 +0000] \"GET /api/v1/reports HTTP/1.1\" 500 89\n172.16.0.50 - - [02/Jun/2026:09:45:23 +0000] \"GET /api/v1/reports HTTP/1.1\" 500 89\n10.0.4.55 - - [02/Jun/2026:10:01:12 +0000] \"GET /api/v1/reports HTTP/1.1\" 500 89\n172.16.0.50 - - [02/Jun/2026:10:15:34 +0000] \"GET /api/v1/reports HTTP/1.1\" 500 89",
+    "grep -c \" 500 \" access.log": "342",
+    "grep -c \" 200 \" access.log": "38245",
+    "grep -c \" 404 \" access.log": "1234",
+    "grep -c \" 403 \" access.log": "567",
+    "grep -v \"healthz\" access.log | head -5": "10.0.2.15 - - [02/Jun/2026:08:00:01 +0000] \"GET /api/v1/users HTTP/1.1\" 200 1234\n10.0.3.22 - - [02/Jun/2026:08:00:02 +0000] \"POST /api/v1/orders HTTP/1.1\" 201 567\n10.0.2.15 - - [02/Jun/2026:08:00:03 +0000] \"GET /api/v1/products HTTP/1.1\" 200 8901\n192.168.1.100 - - [02/Jun/2026:08:00:04 +0000] \"GET /admin/login HTTP/1.1\" 403 234\n10.0.2.15 - - [02/Jun/2026:08:00:06 +0000] \"GET /api/v1/reports HTTP/1.1\" 500 89",
+    "grep -i \"error\" error.log | head -5": "2026-06-02T08:00:06Z ERROR [req-12345] Database connection timeout after 30s\n2026-06-02T08:00:10Z ERROR [req-12346] Failed to generate report: heap allocation failed\n2026-06-02T08:00:17Z ERROR [req-12347] Report export failed: out of memory\n2026-06-02T09:12:45Z ERROR [req-23456] Database connection pool exhausted (max: 20)\n2026-06-02T09:45:23Z ERROR [req-23457] Report generation timeout: query took 45s",
+    "grep -rn \"timeout\" error.log": "error.log:1:2026-06-02T08:00:06Z ERROR [req-12345] Database connection timeout after 30s\nerror.log:45:2026-06-02T09:45:23Z ERROR [req-23457] Report generation timeout: query took 45s\nerror.log:89:2026-06-02T10:01:12Z ERROR [req-34567] Request timeout: /api/v1/reports after 30000ms",
+    "grep -E \"(500|502|503)\" access.log | wc -l": "389",
+    "awk '{print $1}' access.log": "10.0.2.15\n10.0.3.22\n10.0.2.15\n192.168.1.100\n10.0.1.8\n10.0.2.15\n10.0.4.55\n10.0.2.15\n10.0.3.22\n172.16.0.50\n...(48552 more lines)",
+    "awk '{print $1}' access.log | sort | uniq -c | sort -rn | head -10": "  15234  10.0.2.15\n   8901  10.0.3.22\n   7654  10.0.4.55\n   6543  10.0.1.8\n   4321  172.16.0.50\n   2345  10.0.5.33\n   1890  192.168.1.100\n    987  10.0.6.44\n    456  10.0.7.12\n    231  10.0.8.99",
+    "awk '$9 == 500 {print $7}' access.log | sort | uniq -c | sort -rn": "    289  /api/v1/reports\n     34  /api/v1/reports/export\n     12  /api/v1/orders/bulk\n      7  /api/v1/users/import",
+    "awk '$9 >= 500 {print $1}' access.log | sort | uniq -c | sort -rn | head -5": "    156  172.16.0.50\n     98  10.0.2.15\n     45  10.0.4.55\n     23  192.168.1.100\n     20  10.0.3.22",
+    "awk '{print $9}' access.log | sort | uniq -c | sort -rn": "  38245  200\n   4567  201\n   2345  304\n   1234  404\n    567  403\n    342  500\n    156  204\n     67  502\n     34  301\n      5  503",
+    "awk '{print $4}' access.log | cut -d: -f2 | sort | uniq -c": "   3456  08\n   4567  09\n   6789  10\n   5432  11\n   4321  12\n   3890  13\n   5678  14\n   6543  15\n   4890  16\n   3456  17\n   2890  18\n   2150  19",
+    "awk -F: '{print $1}' /etc/passwd": "root\ndaemon\nbin\nsys\nnobody\nsystemd-network\nsystemd-resolve\nmessagebus\nsyslog\n_apt\nnginx\nnode\npostgres\nredis\nubuntu\nsshd",
+    "awk -F: '$3 >= 1000 {print $1, $3}' /etc/passwd": "nginx 1000\nnode 1001\npostgres 1002\nredis 1003\nubuntu 1004",
+    "sed 's/http/https/g' config.yaml": "server:\n  host: 0.0.0.0\n  port: 8080\n  base_url: https://api.example.com\n\ndatabase:\n  url: postgresql://app:****@postgres:5432/production\n  pool_size: 20\n  timeout: 30s\n\nredis:\n  url: redis://redis-cache:6379/0\n  ttl: 3600\n\nlogging:\n  level: info\n  format: json",
+    "sed -n '10,20p' access.log": "172.16.0.50 - - [02/Jun/2026:08:00:10 +0000] \"GET /api/v1/reports HTTP/1.1\" 500 89\n10.0.1.8 - - [02/Jun/2026:08:00:11 +0000] \"GET /healthz HTTP/1.1\" 200 15\n10.0.2.15 - - [02/Jun/2026:08:00:12 +0000] \"GET /api/v1/users HTTP/1.1\" 200 1234\n10.0.5.33 - - [02/Jun/2026:08:00:13 +0000] \"POST /api/v1/auth/login HTTP/1.1\" 200 890\n192.168.1.100 - - [02/Jun/2026:08:00:14 +0000] \"GET /admin/config HTTP/1.1\" 403 234\n10.0.2.15 - - [02/Jun/2026:08:00:15 +0000] \"GET /static/app.js HTTP/1.1\" 304 0\n10.0.3.22 - - [02/Jun/2026:08:00:16 +0000] \"GET /api/v1/orders HTTP/1.1\" 200 4567\n172.16.0.50 - - [02/Jun/2026:08:00:17 +0000] \"POST /api/v1/reports/export HTTP/1.1\" 500 89\n10.0.4.55 - - [02/Jun/2026:08:00:18 +0000] \"GET /api/v1/products HTTP/1.1\" 200 8901\n10.0.2.15 - - [02/Jun/2026:08:00:19 +0000] \"GET /api/v1/users/42 HTTP/1.1\" 200 567\n10.0.1.8 - - [02/Jun/2026:08:00:20 +0000] \"GET /healthz HTTP/1.1\" 200 15",
+    "sed '/^#/d' config.yaml": "server:\n  host: 0.0.0.0\n  port: 8080\n  base_url: http://api.example.com\n\ndatabase:\n  url: postgresql://app:****@postgres:5432/production\n  pool_size: 20\n  timeout: 30s\n\nredis:\n  url: redis://redis-cache:6379/0\n  ttl: 3600\n\nlogging:\n  level: info\n  format: json",
+    "sed -i 's/pool_size: 20/pool_size: 50/' config.yaml": "(config.yaml modified in-place)",
+    "sort access.log | head -5": "10.0.1.8 - - [02/Jun/2026:08:00:05 +0000] \"GET /healthz HTTP/1.1\" 200 15\n10.0.1.8 - - [02/Jun/2026:08:00:11 +0000] \"GET /healthz HTTP/1.1\" 200 15\n10.0.1.8 - - [02/Jun/2026:08:00:20 +0000] \"GET /healthz HTTP/1.1\" 200 15\n10.0.2.15 - - [02/Jun/2026:08:00:01 +0000] \"GET /api/v1/users HTTP/1.1\" 200 1234\n10.0.2.15 - - [02/Jun/2026:08:00:03 +0000] \"GET /api/v1/products HTTP/1.1\" 200 8901",
+    "sort -t, -k2 -rn data.csv | head -5": "api-server,98.2,720M\nworker,45.1,512M\npostgres,12.3,384M\nnginx,2.4,128M\nredis,0.5,28M",
+    "uniq -c sorted.txt | sort -rn | head -5": "    342 /api/v1/reports\n    289 /api/v1/users\n    156 /api/v1/orders\n     98 /api/v1/products\n     45 /healthz",
+    "uniq -d sorted.txt": "/api/v1/reports\n/api/v1/users\n/api/v1/orders",
+    "cut -d: -f1 /etc/passwd": "root\ndaemon\nbin\nsys\nnobody\nsystemd-network\nnginx\nnode\npostgres\nredis\nubuntu",
+    "cut -d: -f1,3 /etc/passwd": "root:0\ndaemon:1\nbin:2\nnobody:65534\nnginx:1000\nnode:1001\npostgres:1002\nredis:1003\nubuntu:1004",
+    "tr '[:upper:]' '[:lower:]' <<< \"HELLO WORLD\"": "hello world",
+    "tr -d '\"' <<< '\"hello world\"'": "hello world",
+    "tr -s ' ' <<< \"hello    world    test\"": "hello world test",
+    "cat config.yaml": "# Application Configuration\nserver:\n  host: 0.0.0.0\n  port: 8080\n  base_url: http://api.example.com\n\ndatabase:\n  url: postgresql://app:****@postgres:5432/production\n  pool_size: 20\n  timeout: 30s\n\nredis:\n  url: redis://redis-cache:6379/0\n  ttl: 3600\n\nlogging:\n  level: info\n  format: json",
+    "cat deploy.sh": "#!/bin/bash\nset -euo pipefail\n\nAPP_NAME=\"api-server\"\nVERSION=$(cat VERSION)\nENV=${APP_ENV:-staging}\nDRY_RUN=false\n\n[[ \"${1:-}\" == \"--dry-run\" ]] && DRY_RUN=true\n\nlog() { echo \"[$(date -u +%FT%TZ)] $1\"; }\n\nlog \"Deploying $APP_NAME v$VERSION to $ENV\"\n\nif $DRY_RUN; then\n  log \"DRY RUN — no changes will be made\"\n  log \"Would build: docker build -t myregistry/$APP_NAME:$VERSION .\"\n  log \"Would push:  docker push myregistry/$APP_NAME:$VERSION\"\n  log \"Would deploy to $ENV cluster\"\n  exit 0\nfi\n\nlog \"Building image...\"\nlog \"Pushing to registry...\"\nlog \"Rolling out to $ENV...\"\nlog \"Deployment complete: $APP_NAME v$VERSION on $ENV\"",
+    "cat VERSION": "2.3.0",
+    "cat /etc/passwd": "root:x:0:0:root:/root:/bin/bash\ndaemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin\nbin:x:2:2:bin:/bin:/usr/sbin/nologin\nsys:x:3:3:sys:/dev:/usr/sbin/nologin\nnobody:x:65534:65534:nobody:/nonexistent:/usr/sbin/nologin\nsystemd-network:x:100:102::/run/systemd:/usr/sbin/nologin\nnginx:x:1000:1000:nginx user:/var/cache/nginx:/sbin/nologin\nnode:x:1001:1001::/home/node:/bin/bash\npostgres:x:1002:1002:PostgreSQL:/var/lib/postgresql:/bin/bash\nredis:x:1003:1003::/var/lib/redis:/usr/sbin/nologin\nubuntu:x:1004:1004:Ubuntu:/home/ubuntu:/bin/bash",
+    "echo $PATH": "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+    "echo $HOME": "/root",
+    "echo $APP_ENV": "production",
+    "echo $SHELL": "/bin/bash",
+    "env | grep -i app": "APP_ENV=production\nAPP_NAME=api-server\nAPP_VERSION=2.3.0\nAPP_PORT=8080",
+    "export NEW_VAR=hello": "(NEW_VAR exported)",
+    "echo $NEW_VAR": "hello",
+    "for f in *.log; do echo \"$f: $(wc -l < $f) lines\"; done": "access.log: 48562 lines\nerror.log: 2341 lines\ndeploy.log: 156 lines",
+    "for i in 1 2 3 4 5; do echo \"Server web-0$i: OK\"; done": "Server web-01: OK\nServer web-02: OK\nServer web-03: OK\nServer web-04: OK\nServer web-05: OK",
+    "while read line; do echo \">> $line\"; done < VERSION": ">> 2.3.0",
+    "test -f deploy.sh && echo \"exists\" || echo \"missing\"": "exists",
+    "[[ -d /var/log ]] && echo \"directory exists\"": "directory exists",
+    "[[ -f config.yaml ]] && echo \"config found\" || echo \"config missing\"": "config found",
+    "[[ $APP_ENV == \"production\" ]] && echo \"PROD\" || echo \"non-prod\"": "PROD",
+    "find . -name \"*.log\"": "./access.log\n./error.log\n./deploy.log",
+    "find . -name \"*.log\" -size +1M": "./access.log (23M)\n./error.log (1.2M)",
+    "find . -name \"*.sh\" -type f": "./deploy.sh\n./backup.sh\n./healthcheck.sh",
+    "find . -name \"*.log\" -mtime +7": "./deploy.log",
+    "find . -type f | xargs grep -l \"error\"": "./error.log\n./deploy.log",
+    "find . -name \"*.log\" -exec wc -l {} \\;": "48562 ./access.log\n2341 ./error.log\n156 ./deploy.log",
+    "xargs -I{} echo \"Processing: {}\" <<< \"file1 file2 file3\"": "Processing: file1 file2 file3",
+    "cat access.log | grep 500 | awk '{print $1}' | sort | uniq -c | sort -rn | head -10": "    156  172.16.0.50\n     98  10.0.2.15\n     45  10.0.4.55\n     23  192.168.1.100\n     20  10.0.3.22",
+    "cat access.log | awk '{print $7}' | sort | uniq -c | sort -rn | head -10": "  12456  /api/v1/users\n   8901  /healthz\n   7654  /api/v1/orders\n   6543  /api/v1/products\n   4321  /api/v1/reports\n   2345  /static/app.js\n   1890  /api/v1/auth/login\n   1567  /admin/login\n    987  /api/v1/reports/export\n    456  /api/v1/users/import",
+    "cat access.log | grep -v healthz | awk '{sum += $10} END {printf \"Total bytes: %.2f GB\\n\", sum/1024/1024/1024}'": "Total bytes: 3.45 GB",
+    "diff config.yaml config.yaml.bak": "7c7\n<   pool_size: 20\n---\n>   pool_size: 10\n12c12\n<   level: info\n---\n>   level: debug",
+    "diff -u config.yaml config.yaml.bak": "--- config.yaml\t2026-06-02 10:00:00\n+++ config.yaml.bak\t2026-06-01 10:00:00\n@@ -5,7 +5,7 @@\n database:\n   url: postgresql://app:****@postgres:5432/production\n-  pool_size: 20\n+  pool_size: 10\n   timeout: 30s\n@@ -10,4 +10,4 @@\n logging:\n-  level: info\n+  level: debug\n   format: json",
+    "ls -la": "total 48\ndrwxr-xr-x  2 sre sre  4096 Jun  2 10:00 .\ndrwxr-xr-x 10 sre sre  4096 Jun  1 08:00 ..\n-rw-r--r--  1 sre sre   23M Jun  2 10:15 access.log\n-rw-r--r--  1 sre sre  1.2M Jun  2 10:15 error.log\n-rw-r--r--  1 sre sre   12K Jun  2 08:00 deploy.log\n-rwxr-xr-x  1 sre sre   456 Jun  1 08:00 deploy.sh\n-rwxr-xr-x  1 sre sre   234 Jun  1 08:00 backup.sh\n-rwxr-xr-x  1 sre sre   123 Jun  1 08:00 healthcheck.sh\n-rw-r--r--  1 sre sre   312 Jun  1 08:00 config.yaml\n-rw-r--r--  1 sre sre   298 May 30 12:00 config.yaml.bak\n-rw-r--r--  1 sre sre     6 Jun  1 08:00 VERSION\n-rw-r--r--  1 sre sre   890 Jun  1 08:00 data.csv",
+    "bash deploy.sh --dry-run": "[2026-06-02T10:15:32Z] Deploying api-server v2.3.0 to production\n[2026-06-02T10:15:32Z] DRY RUN — no changes will be made\n[2026-06-02T10:15:32Z] Would build: docker build -t myregistry/api-server:2.3.0 .\n[2026-06-02T10:15:32Z] Would push:  docker push myregistry/api-server:2.3.0\n[2026-06-02T10:15:32Z] Would deploy to production cluster",
+    "bash deploy.sh": "[2026-06-02T10:15:32Z] Deploying api-server v2.3.0 to production\n[2026-06-02T10:15:32Z] Building image...\n[2026-06-02T10:15:45Z] Pushing to registry...\n[2026-06-02T10:15:52Z] Rolling out to production...\n[2026-06-02T10:16:02Z] Deployment complete: api-server v2.3.0 on production",
+    "echo \"hello\" > output.txt": "(written to output.txt)",
+    "echo \"append\" >> output.txt": "(appended to output.txt)",
+    "cat access.log | tee filtered.log | wc -l": "48562",
+    "command > /dev/null 2>&1": "(stdout and stderr silenced)",
+    "printf \"%-15s %5s %8s\\n\" \"Service\" \"CPU%\" \"Memory\"": "Service           CPU%   Memory",
+    "printf \"%-15s %5.1f %8s\\n\" \"api-server\" 2.45 \"256Mi\"": "api-server          2.5    256Mi"
+  },
+  "reference": [
+    {
+      "group": "Grep (Search)",
+      "commands": [
+        { "cmd": "grep -c \" 500 \" access.log", "desc": "count matches" },
+        { "cmd": "grep -v \"healthz\" access.log | head -5", "desc": "exclude pattern" },
+        { "cmd": "grep -i \"error\" error.log | head -5", "desc": "case-insensitive" },
+        { "cmd": "grep -rn \"timeout\" error.log", "desc": "with line numbers" },
+        { "cmd": "grep -E \"(500|502|503)\" access.log | wc -l", "desc": "regex OR" }
+      ]
+    },
+    {
+      "group": "Awk (Columns)",
+      "commands": [
+        { "cmd": "awk '{print $1}' access.log | sort | uniq -c | sort -rn | head -10", "desc": "top IPs" },
+        { "cmd": "awk '$9 == 500 {print $7}' access.log | sort | uniq -c | sort -rn", "desc": "500 error URLs" },
+        { "cmd": "awk '{print $9}' access.log | sort | uniq -c | sort -rn", "desc": "status codes" },
+        { "cmd": "awk -F: '{print $1}' /etc/passwd", "desc": "custom delimiter" },
+        { "cmd": "awk '{print $4}' access.log | cut -d: -f2 | sort | uniq -c", "desc": "requests/hour" }
+      ]
+    },
+    {
+      "group": "Sed (Transform)",
+      "commands": [
+        { "cmd": "sed 's/http/https/g' config.yaml", "desc": "find/replace" },
+        { "cmd": "sed -n '10,20p' access.log", "desc": "print range" },
+        { "cmd": "sed '/^#/d' config.yaml", "desc": "delete comments" },
+        { "cmd": "sed -i 's/pool_size: 20/pool_size: 50/' config.yaml", "desc": "in-place edit" }
+      ]
+    },
+    {
+      "group": "Sort & Uniq",
+      "commands": [
+        { "cmd": "sort -t, -k2 -rn data.csv | head -5", "desc": "sort by column" },
+        { "cmd": "uniq -c sorted.txt | sort -rn | head -5", "desc": "count occurrences" },
+        { "cmd": "cut -d: -f1 /etc/passwd", "desc": "extract field" },
+        { "cmd": "tr '[:upper:]' '[:lower:]' <<< \"HELLO WORLD\"", "desc": "lowercase" },
+        { "cmd": "wc -l access.log", "desc": "count lines" }
+      ]
+    },
+    {
+      "group": "Find & Xargs",
+      "commands": [
+        { "cmd": "find . -name \"*.log\"", "desc": "find by name" },
+        { "cmd": "find . -name \"*.log\" -size +1M", "desc": "large files" },
+        { "cmd": "find . -type f | xargs grep -l \"error\"", "desc": "search in files" },
+        { "cmd": "find . -name \"*.log\" -exec wc -l {} \\;", "desc": "exec on each" }
+      ]
+    },
+    {
+      "group": "Pipes & Combos",
+      "commands": [
+        { "cmd": "cat access.log | grep 500 | awk '{print $1}' | sort | uniq -c | sort -rn | head -10", "desc": "top 500-error IPs" },
+        { "cmd": "cat access.log | awk '{print $7}' | sort | uniq -c | sort -rn | head -10", "desc": "top URLs" },
+        { "cmd": "diff -u config.yaml config.yaml.bak", "desc": "unified diff" },
+        { "cmd": "cat access.log | tee filtered.log | wc -l", "desc": "tee + count" }
+      ]
+    },
+    {
+      "group": "Variables & Logic",
+      "commands": [
+        { "cmd": "echo $APP_ENV", "desc": "print variable" },
+        { "cmd": "env | grep -i app", "desc": "app env vars" },
+        { "cmd": "for f in *.log; do echo \"$f: $(wc -l < $f) lines\"; done", "desc": "loop files" },
+        { "cmd": "[[ -f config.yaml ]] && echo \"config found\" || echo \"config missing\"", "desc": "conditional" },
+        { "cmd": "cat deploy.sh", "desc": "view script" },
+        { "cmd": "bash deploy.sh --dry-run", "desc": "dry run" },
+        { "cmd": "bash deploy.sh", "desc": "run deploy" }
+      ]
+    },
+    {
+      "group": "Scenarios",
+      "commands": [
+        { "cmd": "scenario parse-logs", "desc": "analyze access logs" },
+        { "cmd": "scenario deploy-script", "desc": "build deploy script" }
+      ]
+    }
+  ]
+}

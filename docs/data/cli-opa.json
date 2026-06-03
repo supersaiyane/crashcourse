@@ -1,0 +1,315 @@
+{
+  "id": "opa",
+  "prompt": "opa@policy:~/policies$",
+  "welcome": "Welcome to the OPA (Open Policy Agent) CLI Playground.\nType commands to explore policy authoring, testing, and enforcement.\nType 'help' for available commands, 'scenario' for guided labs.\n",
+  "scenarios": [
+    {
+      "id": "write-and-test-authz",
+      "title": "Write and Test an Authorization Policy",
+      "steps": [
+        {
+          "instruction": "Start by checking the OPA version installed.",
+          "expect": "opa version",
+          "hint": "Try: opa version"
+        },
+        {
+          "instruction": "Check the syntax of your RBAC authorization policy file.",
+          "expect": "opa check policy.rego",
+          "hint": "Try: opa check policy.rego"
+        },
+        {
+          "instruction": "Format the policy file to enforce consistent style.",
+          "expect": "opa fmt policy.rego",
+          "hint": "Try: opa fmt policy.rego"
+        },
+        {
+          "instruction": "Evaluate the allow rule against a sample input to see if user 'alice' can read the accounts resource.",
+          "expect": "opa eval -d policy.rego -i input.json \"data.authz.allow\"",
+          "hint": "Try: opa eval -d policy.rego -i input.json \"data.authz.allow\""
+        },
+        {
+          "instruction": "Run the same evaluation with pretty output for easier reading.",
+          "expect": "opa eval --format pretty -d policy.rego -i input.json \"data.authz.allow\"",
+          "hint": "Try: opa eval --format pretty -d policy.rego -i input.json \"data.authz.allow\""
+        },
+        {
+          "instruction": "Run the unit tests to validate all policy rules pass.",
+          "expect": "opa test -v .",
+          "hint": "Try: opa test -v ."
+        },
+        {
+          "instruction": "Check test coverage to ensure all rules are exercised.",
+          "expect": "opa test --coverage .",
+          "hint": "Try: opa test --coverage ."
+        },
+        {
+          "instruction": "Build the policy bundle for deployment to an OPA server or Kubernetes admission controller.",
+          "expect": "opa build -b .",
+          "hint": "Try: opa build -b ."
+        }
+      ]
+    },
+    {
+      "id": "k8s-admission-control",
+      "title": "Enforce Kubernetes Admission Control",
+      "steps": [
+        {
+          "instruction": "Check the syntax of all Rego files in the k8s policies directory.",
+          "expect": "opa check k8s/",
+          "hint": "Try: opa check k8s/"
+        },
+        {
+          "instruction": "Evaluate the deny rule against a pod spec that requests privileged mode.",
+          "expect": "opa eval -d k8s/ -i pod-privileged.json \"data.kubernetes.admission.deny\"",
+          "hint": "Try: opa eval -d k8s/ -i pod-privileged.json \"data.kubernetes.admission.deny\""
+        },
+        {
+          "instruction": "Check the deny rule output in pretty format to see the violation messages.",
+          "expect": "opa eval --format pretty -d k8s/ -i pod-privileged.json \"data.kubernetes.admission.deny\"",
+          "hint": "Try: opa eval --format pretty -d k8s/ -i pod-privileged.json \"data.kubernetes.admission.deny\""
+        },
+        {
+          "instruction": "Test a valid pod that should be allowed (no deny reasons).",
+          "expect": "opa eval --format pretty -d k8s/ -i pod-valid.json \"data.kubernetes.admission.deny\"",
+          "hint": "Try: opa eval --format pretty -d k8s/ -i pod-valid.json \"data.kubernetes.admission.deny\""
+        },
+        {
+          "instruction": "Run the Kubernetes policy unit tests with verbose output.",
+          "expect": "opa test -v k8s/",
+          "hint": "Try: opa test -v k8s/"
+        },
+        {
+          "instruction": "Benchmark the deny rule to check evaluation performance under load.",
+          "expect": "opa bench -d k8s/ -i pod-privileged.json \"data.kubernetes.admission.deny\"",
+          "hint": "Try: opa bench -d k8s/ -i pod-privileged.json \"data.kubernetes.admission.deny\""
+        },
+        {
+          "instruction": "Use conftest to test Kubernetes manifests against your policies.",
+          "expect": "conftest test deployment.yaml",
+          "hint": "Try: conftest test deployment.yaml"
+        },
+        {
+          "instruction": "Build the k8s policy bundle for deployment to Gatekeeper or OPA sidecar.",
+          "expect": "opa build --bundle k8s/",
+          "hint": "Try: opa build --bundle k8s/"
+        }
+      ]
+    }
+  ],
+  "commands": {
+    "help": "Available commands:\n  opa eval [expr]            \u2014 Evaluate a Rego expression or rule\n  opa test [path]            \u2014 Run Rego unit tests\n  opa check [file]           \u2014 Check Rego syntax and types\n  opa fmt [file]             \u2014 Format Rego source files\n  opa build [path]           \u2014 Build an OPA bundle (tar.gz)\n  opa run [path]             \u2014 Start OPA in REPL or server mode\n  opa bench [expr]           \u2014 Benchmark a Rego expression\n  opa parse [file]           \u2014 Parse and dump Rego AST\n  opa inspect [bundle]       \u2014 Inspect a bundle archive\n  opa deps [expr]            \u2014 Show rule dependencies\n  opa capabilities           \u2014 Show supported built-in functions\n  opa version                \u2014 Print OPA version\n  conftest test [file]       \u2014 Test structured data against policies\n  conftest verify            \u2014 Verify policy test assertions\n  conftest pull [repo]       \u2014 Pull policies from a registry\n\n  scenario                   \u2014 Start a guided lab\n  clear                      \u2014 Clear the terminal\n  help                       \u2014 Show this help",
+    "opa version": "Version: 0.68.0\nBuild Commit: 9c1a2b3d\nBuild Timestamp: 2026-05-15T10:30:00Z\nBuild Hostname: builder-01\nGo Version: go1.22.4\nPlatform: linux/amd64\nWebAssembly: available",
+    "opa check policy.rego": "policy.rego: ok",
+    "opa check k8s/": "k8s/admission.rego: ok\nk8s/labels.rego: ok\nk8s/resources.rego: ok\nk8s/privileged.rego: ok",
+    "opa check .": "policy.rego: ok\npolicy_test.rego: ok\ndata.json: ok",
+    "opa fmt policy.rego": "package authz\n\nimport rego.v1\n\ndefault allow := false\n\nallow if {\n\tsome role in data.roles[input.user]\n\tsome permission in data.role_permissions[role]\n\tpermission.action == input.action\n\tpermission.resource == input.resource\n}\n\nallow if {\n\tinput.user == \"admin\"\n}",
+    "opa fmt -d .": "policy.rego... formatted\npolicy_test.rego... formatted\n2 files formatted",
+    "opa fmt --diff": "--- policy.rego.orig\n+++ policy.rego\n@@ -5,8 +5,8 @@\n \n allow if {\n-  some role in data.roles[input.user]\n-  some permission in data.role_permissions[role]\n+\tsome role in data.roles[input.user]\n+\tsome permission in data.role_permissions[role]\n \tpermission.action == input.action\n \tpermission.resource == input.resource\n }",
+    "opa eval \"1+1\"": "{\n  \"result\": [\n    {\n      \"expressions\": [\n        {\n          \"value\": 2,\n          \"text\": \"1+1\",\n          \"location\": { \"row\": 1, \"col\": 1 }\n        }\n      ]\n    }\n  ]\n}",
+    "opa eval -d policy.rego -i input.json \"data.authz.allow\"": "{\n  \"result\": [\n    {\n      \"expressions\": [\n        {\n          \"value\": true,\n          \"text\": \"data.authz.allow\",\n          \"location\": { \"row\": 1, \"col\": 1 }\n        }\n      ]\n    }\n  ]\n}",
+    "opa eval -d . \"data.authz.allow\"": "{\n  \"result\": [\n    {\n      \"expressions\": [\n        {\n          \"value\": true,\n          \"text\": \"data.authz.allow\",\n          \"location\": { \"row\": 1, \"col\": 1 }\n        }\n      ]\n    }\n  ]\n}",
+    "opa eval --format pretty -d policy.rego -i input.json \"data.authz.allow\"": "true",
+    "opa eval --format json -d policy.rego -i input.json \"data.authz.allow\"": "{\n  \"result\": [\n    {\n      \"expressions\": [\n        {\n          \"value\": true,\n          \"text\": \"data.authz.allow\",\n          \"location\": { \"row\": 1, \"col\": 1 }\n        }\n      ]\n    }\n  ]\n}",
+    "opa eval --format pretty -d k8s/ -i pod-privileged.json \"data.kubernetes.admission.deny\"": "[\n  \"Privileged containers are not allowed: container 'app' in pod 'payment-processor'\",\n  \"Container 'app' must set resource limits (cpu, memory)\"\n]",
+    "opa eval -d k8s/ -i pod-privileged.json \"data.kubernetes.admission.deny\"": "{\n  \"result\": [\n    {\n      \"expressions\": [\n        {\n          \"value\": [\n            \"Privileged containers are not allowed: container 'app' in pod 'payment-processor'\",\n            \"Container 'app' must set resource limits (cpu, memory)\"\n          ],\n          \"text\": \"data.kubernetes.admission.deny\",\n          \"location\": { \"row\": 1, \"col\": 1 }\n        }\n      ]\n    }\n  ]\n}",
+    "opa eval --format pretty -d k8s/ -i pod-valid.json \"data.kubernetes.admission.deny\"": "[]",
+    "opa eval --format pretty -d k8s/ -i pod-missing-labels.json \"data.kubernetes.admission.deny\"": "[\n  \"Pod 'nginx-frontend' must have label 'app.kubernetes.io/name'\",\n  \"Pod 'nginx-frontend' must have label 'app.kubernetes.io/version'\"\n]",
+    "opa eval --format pretty -d k8s/ -i pod-no-limits.json \"data.kubernetes.admission.deny\"": "[\n  \"Container 'web' must set resource limits (cpu, memory)\",\n  \"Container 'web' memory limit exceeds maximum allowed: 8Gi > 4Gi\"\n]",
+    "opa eval --format pretty -d policy.rego -i input-denied.json \"data.authz.allow\"": "false",
+    "opa eval --format pretty -d . \"data.authz.user_permissions[\\\"alice\\\"]\"": "[\n  { \"action\": \"read\", \"resource\": \"accounts\" },\n  { \"action\": \"read\", \"resource\": \"transactions\" },\n  { \"action\": \"create\", \"resource\": \"transfers\" }\n]",
+    "opa test .": "PASS: 6/6\nok",
+    "opa test -v .": "policy_test.rego:\n  data.authz.test_allow_admin: PASS (328.1\u00b5s)\n  data.authz.test_allow_role_read: PASS (215.4\u00b5s)\n  data.authz.test_deny_unauthorized_user: PASS (187.9\u00b5s)\n  data.authz.test_deny_wrong_action: PASS (201.3\u00b5s)\n  data.authz.test_allow_multiple_roles: PASS (245.6\u00b5s)\n  data.authz.test_deny_unknown_resource: PASS (192.8\u00b5s)\n--------------------------------------------------------------------------------\nPASS: 6/6\nok",
+    "opa test --coverage .": "policy_test.rego:\n  data.authz.test_allow_admin: PASS (328.1\u00b5s)\n  data.authz.test_allow_role_read: PASS (215.4\u00b5s)\n  data.authz.test_deny_unauthorized_user: PASS (187.9\u00b5s)\n  data.authz.test_deny_wrong_action: PASS (201.3\u00b5s)\n  data.authz.test_allow_multiple_roles: PASS (245.6\u00b5s)\n  data.authz.test_deny_unknown_resource: PASS (192.8\u00b5s)\n--------------------------------------------------------------------------------\nPASS: 6/6\n+---------------------+----------+\n| File                | Coverage |\n+---------------------+----------+\n| policy.rego         | 94.2%    |\n+---------------------+----------+\n| TOTAL               | 94.2%    |\n+---------------------+----------+",
+    "opa test -v k8s/": "k8s/admission_test.rego:\n  data.kubernetes.admission.test_deny_privileged: PASS (412.7\u00b5s)\n  data.kubernetes.admission.test_allow_non_privileged: PASS (298.1\u00b5s)\n  data.kubernetes.admission.test_deny_missing_labels: PASS (267.4\u00b5s)\n  data.kubernetes.admission.test_deny_no_resource_limits: PASS (289.5\u00b5s)\n  data.kubernetes.admission.test_deny_excess_memory: PASS (301.2\u00b5s)\n  data.kubernetes.admission.test_allow_valid_pod: PASS (256.8\u00b5s)\n  data.kubernetes.admission.test_deny_latest_tag: PASS (278.3\u00b5s)\n  data.kubernetes.admission.test_allow_pinned_image: PASS (243.9\u00b5s)\n--------------------------------------------------------------------------------\nPASS: 8/8\nok",
+    "opa test --coverage k8s/": "k8s/admission_test.rego:\n  data.kubernetes.admission.test_deny_privileged: PASS (412.7\u00b5s)\n  data.kubernetes.admission.test_allow_non_privileged: PASS (298.1\u00b5s)\n  data.kubernetes.admission.test_deny_missing_labels: PASS (267.4\u00b5s)\n  data.kubernetes.admission.test_deny_no_resource_limits: PASS (289.5\u00b5s)\n  data.kubernetes.admission.test_deny_excess_memory: PASS (301.2\u00b5s)\n  data.kubernetes.admission.test_allow_valid_pod: PASS (256.8\u00b5s)\n  data.kubernetes.admission.test_deny_latest_tag: PASS (278.3\u00b5s)\n  data.kubernetes.admission.test_allow_pinned_image: PASS (243.9\u00b5s)\n--------------------------------------------------------------------------------\nPASS: 8/8\n+---------------------+----------+\n| File                | Coverage |\n+---------------------+----------+\n| k8s/admission.rego  | 100.0%   |\n| k8s/labels.rego     | 87.5%    |\n| k8s/resources.rego  | 91.3%    |\n| k8s/privileged.rego | 100.0%   |\n+---------------------+----------+\n| TOTAL               | 95.6%    |\n+---------------------+----------+",
+    "opa build -b .": "Build successful.\nOutput: bundle.tar.gz\nSize: 4.2 KiB\nManifest:\n  revision: \"2026-06-02T10:30:00Z\"\n  roots: [\"authz\"]",
+    "opa build --bundle": "Build successful.\nOutput: bundle.tar.gz\nSize: 4.2 KiB\nManifest:\n  revision: \"2026-06-02T10:30:00Z\"\n  roots: [\"authz\"]",
+    "opa build --bundle k8s/": "Build successful.\nOutput: bundle.tar.gz\nSize: 6.8 KiB\nManifest:\n  revision: \"2026-06-02T10:30:00Z\"\n  roots: [\"kubernetes\"]",
+    "opa run .": "OPA 0.68.0 (commit 9c1a2b3d, built at 2026-05-15)\n\nRun 'help' to see a list of commands and check for updates.\n\n> data.authz.allow\ntrue\n> exit",
+    "opa run --server": "{\n  \"addrs\": [\":8181\"],\n  \"diagnostic-addrs\": [],\n  \"level\": \"info\",\n  \"msg\": \"Initializing server.\",\n  \"time\": \"2026-06-02T10:30:00Z\"\n}\n{\n  \"addrs\": [\":8181\"],\n  \"level\": \"info\",\n  \"msg\": \"Starting OPA server on :8181.\",\n  \"time\": \"2026-06-02T10:30:01Z\"\n}\n(Ctrl+C to stop)",
+    "opa bench -d policy.rego -i input.json \"data.authz.allow\"": "+-------------------------------------------+------------+\n| samples                                   |      52431 |\n| ns/op                                     |      22847 |\n| B/op                                      |      11264 |\n| allocs/op                                 |        145 |\n| histogram_timer_rego_query_eval_ns_count  |      52431 |\n| histogram_timer_rego_query_eval_ns_min    |      18200 |\n| histogram_timer_rego_query_eval_ns_max    |     145600 |\n| histogram_timer_rego_query_eval_ns_mean   |      22847 |\n| histogram_timer_rego_query_eval_ns_median |      21400 |\n| histogram_timer_rego_query_eval_ns_99%ile |      38900 |\n+-------------------------------------------+------------+",
+    "opa bench -d k8s/ -i pod-privileged.json \"data.kubernetes.admission.deny\"": "+-------------------------------------------+------------+\n| samples                                   |      38274 |\n| ns/op                                     |      31205 |\n| B/op                                      |      15872 |\n| allocs/op                                 |        198 |\n| histogram_timer_rego_query_eval_ns_count  |      38274 |\n| histogram_timer_rego_query_eval_ns_min    |      25100 |\n| histogram_timer_rego_query_eval_ns_max    |     198400 |\n| histogram_timer_rego_query_eval_ns_mean   |      31205 |\n| histogram_timer_rego_query_eval_ns_median |      29800 |\n| histogram_timer_rego_query_eval_ns_99%ile |      52300 |\n+-------------------------------------------+------------+",
+    "opa parse policy.rego": "package authz\n\nAST:\n  Package: data.authz\n  Rules:\n    - allow (default: false)\n      Body:\n        - some role in data.roles[input.user]\n        - some permission in data.role_permissions[role]\n        - permission.action == input.action\n        - permission.resource == input.resource\n    - allow\n      Body:\n        - input.user == \"admin\"",
+    "opa inspect bundle.tar.gz": "Manifest:\n  revision: \"2026-06-02T10:30:00Z\"\n  roots: [\"authz\"]\n  wasm: []\n  metadata:\n    created_at: \"2026-06-02T10:30:00Z\"\n\nNamespaces:\n  data.authz (policy.rego)\n\nFiles:\n  /policy.rego        (1.2 KiB)\n  /data.json          (856 B)\n  /.manifest          (128 B)\n\nCapabilities: v0.68.0",
+    "opa deps data.authz.allow": "data.authz.allow\n+-- data.roles\n+-- data.role_permissions\n+-- input.user\n+-- input.action\n+-- input.resource",
+    "opa capabilities": "OPA 0.68.0 Capabilities:\n\nBuilt-in Functions: 189\n  aggregates:    count, sum, product, max, min, sort\n  arrays:        array.concat, array.slice, array.reverse\n  sets:          intersection, union\n  objects:       object.get, object.keys, object.remove, object.union, object.filter\n  strings:       concat, contains, startswith, endswith, lower, upper, replace, split, sprintf, trim, regex.match\n  types:         is_string, is_number, is_boolean, is_array, is_set, is_object, is_null, type_name\n  encoding:      base64.encode, base64.decode, json.marshal, json.unmarshal, yaml.marshal, yaml.unmarshal\n  crypto:        crypto.sha256, crypto.md5, crypto.x509.parse_certificates\n  time:          time.now_ns, time.parse_ns, time.date, time.clock\n  http:          http.send\n  net:           net.cidr_contains, net.cidr_intersects\n  rego:          rego.parse_module\n  uuid:          uuid.rfc4122\n  semver:        semver.compare, semver.is_valid\n  graphql:       graphql.parse, graphql.is_valid\n  ...\n\nFuture Keywords: every, in, contains, if",
+    "opa deps data.kubernetes.admission.deny": "data.kubernetes.admission.deny\n+-- input.request.object.spec.containers\n+-- input.request.object.metadata.labels\n+-- input.request.object.spec.containers[_].securityContext.privileged\n+-- input.request.object.spec.containers[_].resources.limits\n+-- input.request.object.spec.containers[_].image",
+    "conftest test .": "PASS - policy.rego - no violations\n\n1 test, 1 passed, 0 warnings, 0 failures",
+    "conftest test deployment.yaml": "FAIL - deployment.yaml - kubernetes.admission - Privileged containers are not allowed: container 'app'\nFAIL - deployment.yaml - kubernetes.admission - Container 'app' must have resource limits\nWARN - deployment.yaml - kubernetes.admission - Image 'nginx:latest' uses mutable tag\n\n3 tests, 0 passed, 1 warning, 2 failures",
+    "conftest test pod.yaml": "PASS - pod.yaml - kubernetes.admission - all checks passed\n\n3 tests, 3 passed, 0 warnings, 0 failures",
+    "conftest verify": "PASS - policy_test.rego - 6/6 assertions passed\nPASS - k8s/admission_test.rego - 8/8 assertions passed\n\n14 tests, 14 passed, 0 warnings, 0 failures",
+    "conftest pull opa/policy-library": "Pulling policies from opa/policy-library...\nDownloaded 12 policy files to ./policy/\n  policy/kubernetes/privileged.rego\n  policy/kubernetes/labels.rego\n  policy/kubernetes/resources.rego\n  policy/kubernetes/images.rego\n  policy/terraform/encryption.rego\n  policy/terraform/public_access.rego\n  ...\nDone.",
+    "opa eval --format pretty -d policy.rego -i input.json \"data.authz.user_roles\"": "[\n  \"analyst\",\n  \"viewer\"\n]",
+    "opa eval --format pretty -d . \"data.roles\"": "{\n  \"alice\": [\"analyst\", \"viewer\"],\n  \"bob\": [\"admin\"],\n  \"charlie\": [\"viewer\"],\n  \"svc-payment\": [\"payment-processor\"]\n}",
+    "opa eval --format pretty -d . \"data.role_permissions\"": "{\n  \"admin\": [\n    { \"action\": \"read\", \"resource\": \"*\" },\n    { \"action\": \"write\", \"resource\": \"*\" },\n    { \"action\": \"delete\", \"resource\": \"*\" }\n  ],\n  \"analyst\": [\n    { \"action\": \"read\", \"resource\": \"accounts\" },\n    { \"action\": \"read\", \"resource\": \"transactions\" },\n    { \"action\": \"create\", \"resource\": \"reports\" }\n  ],\n  \"viewer\": [\n    { \"action\": \"read\", \"resource\": \"accounts\" },\n    { \"action\": \"read\", \"resource\": \"dashboard\" }\n  ],\n  \"payment-processor\": [\n    { \"action\": \"create\", \"resource\": \"transfers\" },\n    { \"action\": \"read\", \"resource\": \"accounts\" }\n  ]\n}",
+    "opa eval --partial -d policy.rego \"data.authz.allow\"": "{\n  \"result\": {\n    \"queries\": [\n      [\"input.user = \\\"admin\\\"\"],\n      [\"some role in data.roles[input.user]\", \"some permission in data.role_permissions[role]\", \"permission.action = input.action\", \"permission.resource = input.resource\"]\n    ],\n    \"support\": []\n  }\n}",
+    "opa eval --profile -d policy.rego -i input.json \"data.authz.allow\"": "+----------+----------+----------+---------+\n| METRIC   | MIN      | MAX      | AVG     |\n+----------+----------+----------+---------+\n| eval_op  | 18.2\u00b5s   | 22.4\u00b5s   | 19.8\u00b5s  |\n+----------+----------+----------+---------+\n\nResult: true",
+    "opa eval --instrument -d policy.rego -i input.json \"data.authz.allow\"": "{\n  \"result\": [{ \"expressions\": [{ \"value\": true, \"text\": \"data.authz.allow\" }] }],\n  \"metrics\": {\n    \"timer_rego_query_compile_ns\": 5420,\n    \"timer_rego_query_eval_ns\": 18234,\n    \"timer_rego_query_parse_ns\": 2103,\n    \"timer_server_handler_ns\": 28901\n  }\n}"
+  },
+  "reference": [
+    {
+      "group": "Evaluate Policies",
+      "commands": [
+        {
+          "cmd": "opa eval \"1+1\"",
+          "desc": "evaluate expression"
+        },
+        {
+          "cmd": "opa eval -d policy.rego -i input.json \"data.authz.allow\"",
+          "desc": "eval rule with data+input"
+        },
+        {
+          "cmd": "opa eval -d . \"data.authz.allow\"",
+          "desc": "eval from directory"
+        },
+        {
+          "cmd": "opa eval --format pretty -d policy.rego -i input.json \"data.authz.allow\"",
+          "desc": "pretty output"
+        },
+        {
+          "cmd": "opa eval --format json -d policy.rego -i input.json \"data.authz.allow\"",
+          "desc": "JSON output"
+        },
+        {
+          "cmd": "opa eval --profile -d policy.rego -i input.json \"data.authz.allow\"",
+          "desc": "profile evaluation"
+        }
+      ]
+    },
+    {
+      "group": "Test & Coverage",
+      "commands": [
+        {
+          "cmd": "opa test .",
+          "desc": "run all tests"
+        },
+        {
+          "cmd": "opa test -v .",
+          "desc": "verbose test output"
+        },
+        {
+          "cmd": "opa test --coverage .",
+          "desc": "test with coverage"
+        },
+        {
+          "cmd": "opa test -v k8s/",
+          "desc": "test specific dir"
+        }
+      ]
+    },
+    {
+      "group": "Check & Format",
+      "commands": [
+        {
+          "cmd": "opa check policy.rego",
+          "desc": "syntax check"
+        },
+        {
+          "cmd": "opa check k8s/",
+          "desc": "check directory"
+        },
+        {
+          "cmd": "opa fmt policy.rego",
+          "desc": "format file"
+        },
+        {
+          "cmd": "opa fmt -d .",
+          "desc": "format all files"
+        },
+        {
+          "cmd": "opa fmt --diff",
+          "desc": "show format diff"
+        }
+      ]
+    },
+    {
+      "group": "Build & Bundle",
+      "commands": [
+        {
+          "cmd": "opa build -b .",
+          "desc": "build bundle"
+        },
+        {
+          "cmd": "opa build --bundle k8s/",
+          "desc": "build from directory"
+        },
+        {
+          "cmd": "opa inspect bundle.tar.gz",
+          "desc": "inspect bundle"
+        }
+      ]
+    },
+    {
+      "group": "Run & Serve",
+      "commands": [
+        {
+          "cmd": "opa run .",
+          "desc": "interactive REPL"
+        },
+        {
+          "cmd": "opa run --server",
+          "desc": "start HTTP server"
+        }
+      ]
+    },
+    {
+      "group": "Analysis & Debug",
+      "commands": [
+        {
+          "cmd": "opa parse policy.rego",
+          "desc": "show AST"
+        },
+        {
+          "cmd": "opa deps data.authz.allow",
+          "desc": "rule dependencies"
+        },
+        {
+          "cmd": "opa bench -d policy.rego -i input.json \"data.authz.allow\"",
+          "desc": "benchmark rule"
+        },
+        {
+          "cmd": "opa capabilities",
+          "desc": "list built-ins"
+        },
+        {
+          "cmd": "opa version",
+          "desc": "show version"
+        }
+      ]
+    },
+    {
+      "group": "Conftest (Policy Testing)",
+      "commands": [
+        {
+          "cmd": "conftest test deployment.yaml",
+          "desc": "test manifest"
+        },
+        {
+          "cmd": "conftest test pod.yaml",
+          "desc": "test pod spec"
+        },
+        {
+          "cmd": "conftest verify",
+          "desc": "verify assertions"
+        },
+        {
+          "cmd": "conftest pull opa/policy-library",
+          "desc": "pull from registry"
+        }
+      ]
+    },
+    {
+      "group": "Scenarios",
+      "commands": [
+        {
+          "cmd": "scenario write-and-test-authz",
+          "desc": "RBAC policy authoring"
+        },
+        {
+          "cmd": "scenario k8s-admission-control",
+          "desc": "K8s admission control"
+        }
+      ]
+    }
+  ]
+}

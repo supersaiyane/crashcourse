@@ -1,0 +1,389 @@
+{
+  "id": "jq-yq",
+  "prompt": "sre@toolbox:~/data$",
+  "welcome": "Welcome to the jq/yq CLI Playground.\nType commands to parse, filter, and transform JSON and YAML data.\nType 'help' for available commands, 'scenario' for guided labs.\n",
+  "scenarios": [
+    {
+      "id": "parse-api-response",
+      "title": "Parse and Transform API Response",
+      "steps": [
+        {
+          "instruction": "First, look at the raw API response to understand the data structure.",
+          "expect": "cat users.json | jq '.'",
+          "hint": "Try: cat users.json | jq '.'"
+        },
+        {
+          "instruction": "Extract just the array of users from the response envelope.",
+          "expect": "cat users.json | jq '.data.users'",
+          "hint": "Try: cat users.json | jq '.data.users'"
+        },
+        {
+          "instruction": "Get only the names of all users.",
+          "expect": "cat users.json | jq '.data.users[] | .name'",
+          "hint": "Try: cat users.json | jq '.data.users[] | .name'"
+        },
+        {
+          "instruction": "Filter to show only active users.",
+          "expect": "cat users.json | jq '.data.users[] | select(.status == \"active\")'",
+          "hint": "Try: cat users.json | jq '.data.users[] | select(.status == \"active\")'"
+        },
+        {
+          "instruction": "Reshape the data: extract id, name, and email into a clean array of objects.",
+          "expect": "cat users.json | jq '[.data.users[] | {id, name, email}]'",
+          "hint": "Try: cat users.json | jq '[.data.users[] | {id, name, email}]'"
+        },
+        {
+          "instruction": "Sort users by their created_at date, most recent first.",
+          "expect": "cat users.json | jq '.data.users | sort_by(.created_at) | reverse'",
+          "hint": "Try: cat users.json | jq '.data.users | sort_by(.created_at) | reverse'"
+        },
+        {
+          "instruction": "Calculate the total spending across all users using reduce.",
+          "expect": "cat users.json | jq 'reduce .data.users[] as $u (0; . + $u.spending)'",
+          "hint": "Try: cat users.json | jq 'reduce .data.users[] as $u (0; . + $u.spending)'"
+        },
+        {
+          "instruction": "Export active users as CSV (name,email) for a report.",
+          "expect": "cat users.json | jq -r '.data.users[] | select(.status == \"active\") | [.name, .email] | @csv'",
+          "hint": "Try: cat users.json | jq -r '.data.users[] | select(.status == \"active\") | [.name, .email] | @csv'"
+        }
+      ]
+    },
+    {
+      "id": "edit-k8s-yaml",
+      "title": "Edit Kubernetes YAML Configs",
+      "steps": [
+        {
+          "instruction": "Read the current replica count from the deployment manifest.",
+          "expect": "yq '.spec.replicas' deployment.yaml",
+          "hint": "Try: yq '.spec.replicas' deployment.yaml"
+        },
+        {
+          "instruction": "Check what image the container is currently using.",
+          "expect": "yq '.spec.template.spec.containers[0].image' deployment.yaml",
+          "hint": "Try: yq '.spec.template.spec.containers[0].image' deployment.yaml"
+        },
+        {
+          "instruction": "Scale the deployment to 5 replicas by editing the YAML in-place.",
+          "expect": "yq -i '.spec.replicas = 5' deployment.yaml",
+          "hint": "Try: yq -i '.spec.replicas = 5' deployment.yaml"
+        },
+        {
+          "instruction": "Add a new environment variable to the first container.",
+          "expect": "yq -i '.spec.template.spec.containers[0].env += [{\"name\": \"LOG_LEVEL\", \"value\": \"debug\"}]' deployment.yaml",
+          "hint": "Try: yq -i '.spec.template.spec.containers[0].env += [{\"name\": \"LOG_LEVEL\", \"value\": \"debug\"}]' deployment.yaml"
+        },
+        {
+          "instruction": "Remove the annotations section from metadata.",
+          "expect": "yq 'del(.metadata.annotations)' deployment.yaml",
+          "hint": "Try: yq 'del(.metadata.annotations)' deployment.yaml"
+        },
+        {
+          "instruction": "The multi-doc file has multiple resources. Extract only the Service.",
+          "expect": "yq eval-all 'select(.kind == \"Service\")' multi.yaml",
+          "hint": "Try: yq eval-all 'select(.kind == \"Service\")' multi.yaml"
+        },
+        {
+          "instruction": "Merge the override values into the base configuration.",
+          "expect": "yq '. * load(\"override.yaml\")' base.yaml",
+          "hint": "Try: yq '. * load(\"override.yaml\")' base.yaml"
+        },
+        {
+          "instruction": "Verify the final merged config has the correct image tag.",
+          "expect": "yq '.spec.template.spec.containers[0].image' deployment.yaml",
+          "hint": "Try: yq '.spec.template.spec.containers[0].image' deployment.yaml"
+        }
+      ]
+    }
+  ],
+  "commands": {
+    "help": "Available commands:\n  jq '.'                         — Pretty-print JSON\n  jq '.field'                    — Extract a field\n  jq '.array[]'                  — Iterate array elements\n  jq 'select(expr)'             — Filter by condition\n  jq 'map(expr)'                — Transform each element\n  jq 'sort_by(field)'           — Sort array\n  jq 'group_by(field)'          — Group array\n  jq '@csv / @tsv'              — Format as CSV/TSV\n  jq 'reduce'                   — Accumulate values\n  yq '.path' file.yaml          — Read YAML field\n  yq -i '.path = val' file      — Edit YAML in-place\n  yq eval-all 'expr' file       — Process multi-doc YAML\n\n  scenario                       — Start a guided lab\n  clear                          — Clear the terminal\n  help                           — Show this help",
+    "cat users.json | jq '.'": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"users\": [\n      {\n        \"id\": 1,\n        \"name\": \"Priya Sharma\",\n        \"email\": \"priya.sharma@example.com\",\n        \"status\": \"active\",\n        \"role\": \"sre\",\n        \"spending\": 4500,\n        \"created_at\": \"2025-03-15T10:30:00Z\"\n      },\n      {\n        \"id\": 2,\n        \"name\": \"Rahul Mehta\",\n        \"email\": \"rahul.mehta@example.com\",\n        \"status\": \"active\",\n        \"role\": \"developer\",\n        \"spending\": 3200,\n        \"created_at\": \"2025-06-22T14:00:00Z\"\n      },\n      {\n        \"id\": 3,\n        \"name\": \"Ananya Patel\",\n        \"email\": \"ananya.patel@example.com\",\n        \"status\": \"inactive\",\n        \"role\": \"sre\",\n        \"spending\": 1800,\n        \"created_at\": \"2024-11-05T09:15:00Z\"\n      },\n      {\n        \"id\": 4,\n        \"name\": \"Vikram Singh\",\n        \"email\": \"vikram.singh@example.com\",\n        \"status\": \"active\",\n        \"role\": \"manager\",\n        \"spending\": 6100,\n        \"created_at\": \"2025-01-10T08:45:00Z\"\n      },\n      {\n        \"id\": 5,\n        \"name\": \"Deepa Nair\",\n        \"email\": \"deepa.nair@example.com\",\n        \"status\": \"inactive\",\n        \"role\": \"developer\",\n        \"spending\": 2400,\n        \"created_at\": \"2025-08-30T16:20:00Z\"\n      }\n    ],\n    \"total\": 5,\n    \"page\": 1\n  }\n}",
+    "cat users.json | jq '.data'": "{\n  \"users\": [\n    {\n      \"id\": 1,\n      \"name\": \"Priya Sharma\",\n      \"email\": \"priya.sharma@example.com\",\n      \"status\": \"active\",\n      \"role\": \"sre\",\n      \"spending\": 4500,\n      \"created_at\": \"2025-03-15T10:30:00Z\"\n    },\n    ...\n  ],\n  \"total\": 5,\n  \"page\": 1\n}",
+    "cat users.json | jq '.data.users'": "[\n  {\n    \"id\": 1,\n    \"name\": \"Priya Sharma\",\n    \"email\": \"priya.sharma@example.com\",\n    \"status\": \"active\",\n    \"role\": \"sre\",\n    \"spending\": 4500,\n    \"created_at\": \"2025-03-15T10:30:00Z\"\n  },\n  {\n    \"id\": 2,\n    \"name\": \"Rahul Mehta\",\n    \"email\": \"rahul.mehta@example.com\",\n    \"status\": \"active\",\n    \"role\": \"developer\",\n    \"spending\": 3200,\n    \"created_at\": \"2025-06-22T14:00:00Z\"\n  },\n  {\n    \"id\": 3,\n    \"name\": \"Ananya Patel\",\n    \"email\": \"ananya.patel@example.com\",\n    \"status\": \"inactive\",\n    \"role\": \"sre\",\n    \"spending\": 1800,\n    \"created_at\": \"2024-11-05T09:15:00Z\"\n  },\n  {\n    \"id\": 4,\n    \"name\": \"Vikram Singh\",\n    \"email\": \"vikram.singh@example.com\",\n    \"status\": \"active\",\n    \"role\": \"manager\",\n    \"spending\": 6100,\n    \"created_at\": \"2025-01-10T08:45:00Z\"\n  },\n  {\n    \"id\": 5,\n    \"name\": \"Deepa Nair\",\n    \"email\": \"deepa.nair@example.com\",\n    \"status\": \"inactive\",\n    \"role\": \"developer\",\n    \"spending\": 2400,\n    \"created_at\": \"2025-08-30T16:20:00Z\"\n  }\n]",
+    "cat users.json | jq '.data.users[]'": "{\n  \"id\": 1,\n  \"name\": \"Priya Sharma\",\n  \"email\": \"priya.sharma@example.com\",\n  \"status\": \"active\",\n  \"role\": \"sre\",\n  \"spending\": 4500,\n  \"created_at\": \"2025-03-15T10:30:00Z\"\n}\n{\n  \"id\": 2,\n  \"name\": \"Rahul Mehta\",\n  \"email\": \"rahul.mehta@example.com\",\n  \"status\": \"active\",\n  \"role\": \"developer\",\n  \"spending\": 3200,\n  \"created_at\": \"2025-06-22T14:00:00Z\"\n}\n{\n  \"id\": 3,\n  \"name\": \"Ananya Patel\",\n  \"email\": \"ananya.patel@example.com\",\n  \"status\": \"inactive\",\n  \"role\": \"sre\",\n  \"spending\": 1800,\n  \"created_at\": \"2024-11-05T09:15:00Z\"\n}\n{\n  \"id\": 4,\n  \"name\": \"Vikram Singh\",\n  \"email\": \"vikram.singh@example.com\",\n  \"status\": \"active\",\n  \"role\": \"manager\",\n  \"spending\": 6100,\n  \"created_at\": \"2025-01-10T08:45:00Z\"\n}\n{\n  \"id\": 5,\n  \"name\": \"Deepa Nair\",\n  \"email\": \"deepa.nair@example.com\",\n  \"status\": \"inactive\",\n  \"role\": \"developer\",\n  \"spending\": 2400,\n  \"created_at\": \"2025-08-30T16:20:00Z\"\n}",
+    "cat users.json | jq '.data.users[0]'": "{\n  \"id\": 1,\n  \"name\": \"Priya Sharma\",\n  \"email\": \"priya.sharma@example.com\",\n  \"status\": \"active\",\n  \"role\": \"sre\",\n  \"spending\": 4500,\n  \"created_at\": \"2025-03-15T10:30:00Z\"\n}",
+    "cat users.json | jq '.data.users[] | .name'": "\"Priya Sharma\"\n\"Rahul Mehta\"\n\"Ananya Patel\"\n\"Vikram Singh\"\n\"Deepa Nair\"",
+    "cat users.json | jq '.data.users[] | .email'": "\"priya.sharma@example.com\"\n\"rahul.mehta@example.com\"\n\"ananya.patel@example.com\"\n\"vikram.singh@example.com\"\n\"deepa.nair@example.com\"",
+    "cat users.json | jq '.data.users[] | select(.status == \"active\")'": "{\n  \"id\": 1,\n  \"name\": \"Priya Sharma\",\n  \"email\": \"priya.sharma@example.com\",\n  \"status\": \"active\",\n  \"role\": \"sre\",\n  \"spending\": 4500,\n  \"created_at\": \"2025-03-15T10:30:00Z\"\n}\n{\n  \"id\": 2,\n  \"name\": \"Rahul Mehta\",\n  \"email\": \"rahul.mehta@example.com\",\n  \"status\": \"active\",\n  \"role\": \"developer\",\n  \"spending\": 3200,\n  \"created_at\": \"2025-06-22T14:00:00Z\"\n}\n{\n  \"id\": 4,\n  \"name\": \"Vikram Singh\",\n  \"email\": \"vikram.singh@example.com\",\n  \"status\": \"active\",\n  \"role\": \"manager\",\n  \"spending\": 6100,\n  \"created_at\": \"2025-01-10T08:45:00Z\"\n}",
+    "cat users.json | jq '.data.users[] | select(.spending > 3000)'": "{\n  \"id\": 1,\n  \"name\": \"Priya Sharma\",\n  \"email\": \"priya.sharma@example.com\",\n  \"status\": \"active\",\n  \"role\": \"sre\",\n  \"spending\": 4500,\n  \"created_at\": \"2025-03-15T10:30:00Z\"\n}\n{\n  \"id\": 2,\n  \"name\": \"Rahul Mehta\",\n  \"email\": \"rahul.mehta@example.com\",\n  \"status\": \"active\",\n  \"role\": \"developer\",\n  \"spending\": 3200,\n  \"created_at\": \"2025-06-22T14:00:00Z\"\n}\n{\n  \"id\": 4,\n  \"name\": \"Vikram Singh\",\n  \"email\": \"vikram.singh@example.com\",\n  \"status\": \"active\",\n  \"role\": \"manager\",\n  \"spending\": 6100,\n  \"created_at\": \"2025-01-10T08:45:00Z\"\n}",
+    "cat users.json | jq '.data.users[] | select(.role == \"sre\")'": "{\n  \"id\": 1,\n  \"name\": \"Priya Sharma\",\n  \"email\": \"priya.sharma@example.com\",\n  \"status\": \"active\",\n  \"role\": \"sre\",\n  \"spending\": 4500,\n  \"created_at\": \"2025-03-15T10:30:00Z\"\n}\n{\n  \"id\": 3,\n  \"name\": \"Ananya Patel\",\n  \"email\": \"ananya.patel@example.com\",\n  \"status\": \"inactive\",\n  \"role\": \"sre\",\n  \"spending\": 1800,\n  \"created_at\": \"2024-11-05T09:15:00Z\"\n}",
+    "cat users.json | jq '[.data.users[] | {id, name, email}]'": "[\n  {\n    \"id\": 1,\n    \"name\": \"Priya Sharma\",\n    \"email\": \"priya.sharma@example.com\"\n  },\n  {\n    \"id\": 2,\n    \"name\": \"Rahul Mehta\",\n    \"email\": \"rahul.mehta@example.com\"\n  },\n  {\n    \"id\": 3,\n    \"name\": \"Ananya Patel\",\n    \"email\": \"ananya.patel@example.com\"\n  },\n  {\n    \"id\": 4,\n    \"name\": \"Vikram Singh\",\n    \"email\": \"vikram.singh@example.com\"\n  },\n  {\n    \"id\": 5,\n    \"name\": \"Deepa Nair\",\n    \"email\": \"deepa.nair@example.com\"\n  }\n]",
+    "cat users.json | jq '.data.users | sort_by(.created_at)'": "[\n  {\n    \"id\": 3,\n    \"name\": \"Ananya Patel\",\n    \"created_at\": \"2024-11-05T09:15:00Z\",\n    ...\n  },\n  {\n    \"id\": 4,\n    \"name\": \"Vikram Singh\",\n    \"created_at\": \"2025-01-10T08:45:00Z\",\n    ...\n  },\n  {\n    \"id\": 1,\n    \"name\": \"Priya Sharma\",\n    \"created_at\": \"2025-03-15T10:30:00Z\",\n    ...\n  },\n  {\n    \"id\": 2,\n    \"name\": \"Rahul Mehta\",\n    \"created_at\": \"2025-06-22T14:00:00Z\",\n    ...\n  },\n  {\n    \"id\": 5,\n    \"name\": \"Deepa Nair\",\n    \"created_at\": \"2025-08-30T16:20:00Z\",\n    ...\n  }\n]",
+    "cat users.json | jq '.data.users | sort_by(.created_at) | reverse'": "[\n  {\n    \"id\": 5,\n    \"name\": \"Deepa Nair\",\n    \"created_at\": \"2025-08-30T16:20:00Z\",\n    ...\n  },\n  {\n    \"id\": 2,\n    \"name\": \"Rahul Mehta\",\n    \"created_at\": \"2025-06-22T14:00:00Z\",\n    ...\n  },\n  {\n    \"id\": 1,\n    \"name\": \"Priya Sharma\",\n    \"created_at\": \"2025-03-15T10:30:00Z\",\n    ...\n  },\n  {\n    \"id\": 4,\n    \"name\": \"Vikram Singh\",\n    \"created_at\": \"2025-01-10T08:45:00Z\",\n    ...\n  },\n  {\n    \"id\": 3,\n    \"name\": \"Ananya Patel\",\n    \"created_at\": \"2024-11-05T09:15:00Z\",\n    ...\n  }\n]",
+    "cat users.json | jq '.data.users | sort_by(.spending) | reverse'": "[\n  {\n    \"id\": 4,\n    \"name\": \"Vikram Singh\",\n    \"spending\": 6100,\n    ...\n  },\n  {\n    \"id\": 1,\n    \"name\": \"Priya Sharma\",\n    \"spending\": 4500,\n    ...\n  },\n  {\n    \"id\": 2,\n    \"name\": \"Rahul Mehta\",\n    \"spending\": 3200,\n    ...\n  },\n  {\n    \"id\": 5,\n    \"name\": \"Deepa Nair\",\n    \"spending\": 2400,\n    ...\n  },\n  {\n    \"id\": 3,\n    \"name\": \"Ananya Patel\",\n    \"spending\": 1800,\n    ...\n  }\n]",
+    "cat users.json | jq '.data.users | group_by(.role)'": "[\n  [\n    {\n      \"id\": 2,\n      \"name\": \"Rahul Mehta\",\n      \"role\": \"developer\",\n      ...\n    },\n    {\n      \"id\": 5,\n      \"name\": \"Deepa Nair\",\n      \"role\": \"developer\",\n      ...\n    }\n  ],\n  [\n    {\n      \"id\": 4,\n      \"name\": \"Vikram Singh\",\n      \"role\": \"manager\",\n      ...\n    }\n  ],\n  [\n    {\n      \"id\": 1,\n      \"name\": \"Priya Sharma\",\n      \"role\": \"sre\",\n      ...\n    },\n    {\n      \"id\": 3,\n      \"name\": \"Ananya Patel\",\n      \"role\": \"sre\",\n      ...\n    }\n  ]\n]",
+    "cat users.json | jq '.data.users | group_by(.status)'": "[\n  [\n    {\n      \"id\": 1,\n      \"name\": \"Priya Sharma\",\n      \"status\": \"active\",\n      ...\n    },\n    {\n      \"id\": 2,\n      \"name\": \"Rahul Mehta\",\n      \"status\": \"active\",\n      ...\n    },\n    {\n      \"id\": 4,\n      \"name\": \"Vikram Singh\",\n      \"status\": \"active\",\n      ...\n    }\n  ],\n  [\n    {\n      \"id\": 3,\n      \"name\": \"Ananya Patel\",\n      \"status\": \"inactive\",\n      ...\n    },\n    {\n      \"id\": 5,\n      \"name\": \"Deepa Nair\",\n      \"status\": \"inactive\",\n      ...\n    }\n  ]\n]",
+    "cat users.json | jq '.data.users | unique_by(.role) | .[].role'": "\"developer\"\n\"manager\"\n\"sre\"",
+    "cat users.json | jq '.data.users | map(.name)'": "[\n  \"Priya Sharma\",\n  \"Rahul Mehta\",\n  \"Ananya Patel\",\n  \"Vikram Singh\",\n  \"Deepa Nair\"\n]",
+    "cat users.json | jq '.data.users | map(.spending)'": "[\n  4500,\n  3200,\n  1800,\n  6100,\n  2400\n]",
+    "cat users.json | jq '.data.users | map(select(.status == \"active\")) | map(.name)'": "[\n  \"Priya Sharma\",\n  \"Rahul Mehta\",\n  \"Vikram Singh\"\n]",
+    "cat users.json | jq '.data.users | length'": "5",
+    "cat users.json | jq '.data.users[0] | keys'": "[\n  \"created_at\",\n  \"email\",\n  \"id\",\n  \"name\",\n  \"role\",\n  \"spending\",\n  \"status\"\n]",
+    "cat users.json | jq '.data.users[0] | type'": "\"object\"",
+    "cat users.json | jq '.data | type'": "\"object\"",
+    "cat users.json | jq '.data.users | type'": "\"array\"",
+    "cat users.json | jq 'reduce .data.users[] as $u (0; . + $u.spending)'": "18000",
+    "cat users.json | jq '.data.users[0] | to_entries'": "[\n  {\n    \"key\": \"id\",\n    \"value\": 1\n  },\n  {\n    \"key\": \"name\",\n    \"value\": \"Priya Sharma\"\n  },\n  {\n    \"key\": \"email\",\n    \"value\": \"priya.sharma@example.com\"\n  },\n  {\n    \"key\": \"status\",\n    \"value\": \"active\"\n  },\n  {\n    \"key\": \"role\",\n    \"value\": \"sre\"\n  },\n  {\n    \"key\": \"spending\",\n    \"value\": 4500\n  },\n  {\n    \"key\": \"created_at\",\n    \"value\": \"2025-03-15T10:30:00Z\"\n  }\n]",
+    "cat users.json | jq '.data.users[0] | to_entries | from_entries'": "{\n  \"id\": 1,\n  \"name\": \"Priya Sharma\",\n  \"email\": \"priya.sharma@example.com\",\n  \"status\": \"active\",\n  \"role\": \"sre\",\n  \"spending\": 4500,\n  \"created_at\": \"2025-03-15T10:30:00Z\"\n}",
+    "cat users.json | jq -r '.data.users[] | [.name, .email] | @csv'": "\"Priya Sharma\",\"priya.sharma@example.com\"\n\"Rahul Mehta\",\"rahul.mehta@example.com\"\n\"Ananya Patel\",\"ananya.patel@example.com\"\n\"Vikram Singh\",\"vikram.singh@example.com\"\n\"Deepa Nair\",\"deepa.nair@example.com\"",
+    "cat users.json | jq -r '.data.users[] | [.name, .email] | @tsv'": "Priya Sharma\tpriya.sharma@example.com\nRahul Mehta\trahul.mehta@example.com\nAnanya Patel\tananya.patel@example.com\nVikram Singh\tvikram.singh@example.com\nDeepa Nair\tdeepa.nair@example.com",
+    "cat users.json | jq -r '.data.users[] | select(.status == \"active\") | [.name, .email] | @csv'": "\"Priya Sharma\",\"priya.sharma@example.com\"\n\"Rahul Mehta\",\"rahul.mehta@example.com\"\n\"Vikram Singh\",\"vikram.singh@example.com\"",
+    "cat users.json | jq -r '.data.users[] | select(.status == \"active\") | .name'": "Priya Sharma\nRahul Mehta\nVikram Singh",
+    "cat users.json | jq --arg role \"sre\" '.data.users[] | select(.role == $role)'": "{\n  \"id\": 1,\n  \"name\": \"Priya Sharma\",\n  \"email\": \"priya.sharma@example.com\",\n  \"status\": \"active\",\n  \"role\": \"sre\",\n  \"spending\": 4500,\n  \"created_at\": \"2025-03-15T10:30:00Z\"\n}\n{\n  \"id\": 3,\n  \"name\": \"Ananya Patel\",\n  \"email\": \"ananya.patel@example.com\",\n  \"status\": \"inactive\",\n  \"role\": \"sre\",\n  \"spending\": 1800,\n  \"created_at\": \"2024-11-05T09:15:00Z\"\n}",
+    "cat users.json | jq '.data.users[] | if .status == \"active\" then .name else empty end'": "\"Priya Sharma\"\n\"Rahul Mehta\"\n\"Vikram Singh\"",
+    "cat users.json | jq '.data.users[] | {name: .name, high_spender: (.spending > 3000)}'": "{\n  \"name\": \"Priya Sharma\",\n  \"high_spender\": true\n}\n{\n  \"name\": \"Rahul Mehta\",\n  \"high_spender\": true\n}\n{\n  \"name\": \"Ananya Patel\",\n  \"high_spender\": false\n}\n{\n  \"name\": \"Vikram Singh\",\n  \"high_spender\": true\n}\n{\n  \"name\": \"Deepa Nair\",\n  \"high_spender\": false\n}",
+    "cat users.json | jq '[.data.users[] | select(.status == \"active\")] | length'": "3",
+    "cat users.json | jq '.data | {total_users: .total, page: .page}'": "{\n  \"total_users\": 5,\n  \"page\": 1\n}",
+    "cat users.json | jq -r '.data.users[0].email | @base64'": "cHJpeWEuc2hhcm1hQGV4YW1wbGUuY29t",
+    "echo 'cHJpeWEuc2hhcm1hQGV4YW1wbGUuY29t' | jq -Rr '@base64d'": "priya.sharma@example.com",
+    "cat instances.json | jq '.'": "{\n  \"Reservations\": [\n    {\n      \"Instances\": [\n        {\n          \"InstanceId\": \"i-0a1b2c3d4e5f67890\",\n          \"InstanceType\": \"t3.large\",\n          \"State\": {\"Name\": \"running\"},\n          \"Tags\": [{\"Key\": \"Name\", \"Value\": \"api-prod-1\"}, {\"Key\": \"Environment\", \"Value\": \"production\"}],\n          \"PrivateIpAddress\": \"10.0.1.42\",\n          \"LaunchTime\": \"2025-12-01T08:30:00Z\"\n        }\n      ]\n    },\n    {\n      \"Instances\": [\n        {\n          \"InstanceId\": \"i-0b2c3d4e5f6789012\",\n          \"InstanceType\": \"t3.medium\",\n          \"State\": {\"Name\": \"running\"},\n          \"Tags\": [{\"Key\": \"Name\", \"Value\": \"worker-prod-1\"}, {\"Key\": \"Environment\", \"Value\": \"production\"}],\n          \"PrivateIpAddress\": \"10.0.2.18\",\n          \"LaunchTime\": \"2025-11-15T10:00:00Z\"\n        }\n      ]\n    },\n    {\n      \"Instances\": [\n        {\n          \"InstanceId\": \"i-0c3d4e5f678901234\",\n          \"InstanceType\": \"t3.small\",\n          \"State\": {\"Name\": \"stopped\"},\n          \"Tags\": [{\"Key\": \"Name\", \"Value\": \"dev-test-1\"}, {\"Key\": \"Environment\", \"Value\": \"development\"}],\n          \"PrivateIpAddress\": \"10.0.3.55\",\n          \"LaunchTime\": \"2025-10-20T14:15:00Z\"\n        }\n      ]\n    }\n  ]\n}",
+    "cat instances.json | jq '.Reservations[].Instances[] | {id: .InstanceId, type: .InstanceType, state: .State.Name}'": "{\n  \"id\": \"i-0a1b2c3d4e5f67890\",\n  \"type\": \"t3.large\",\n  \"state\": \"running\"\n}\n{\n  \"id\": \"i-0b2c3d4e5f6789012\",\n  \"type\": \"t3.medium\",\n  \"state\": \"running\"\n}\n{\n  \"id\": \"i-0c3d4e5f678901234\",\n  \"type\": \"t3.small\",\n  \"state\": \"stopped\"\n}",
+    "cat instances.json | jq '.Reservations[].Instances[] | select(.State.Name == \"running\") | .InstanceId'": "\"i-0a1b2c3d4e5f67890\"\n\"i-0b2c3d4e5f6789012\"",
+    "cat instances.json | jq '[.Reservations[].Instances[] | select(.State.Name == \"running\")] | length'": "2",
+    "cat instances.json | jq '.Reservations[].Instances[].Tags[] | select(.Key == \"Name\") | .Value'": "\"api-prod-1\"\n\"worker-prod-1\"\n\"dev-test-1\"",
+    "cat package.json | jq '.'": "{\n  \"name\": \"payment-service\",\n  \"version\": \"2.4.1\",\n  \"description\": \"Payment processing microservice for BFSI platform\",\n  \"main\": \"dist/index.js\",\n  \"scripts\": {\n    \"build\": \"tsc\",\n    \"start\": \"node dist/index.js\",\n    \"test\": \"jest --coverage\",\n    \"lint\": \"eslint src/\"\n  },\n  \"dependencies\": {\n    \"express\": \"^4.18.2\",\n    \"pg\": \"^8.11.3\",\n    \"redis\": \"^4.6.12\",\n    \"winston\": \"^3.11.0\",\n    \"zod\": \"^3.22.4\"\n  },\n  \"devDependencies\": {\n    \"@types/express\": \"^4.17.21\",\n    \"jest\": \"^29.7.0\",\n    \"typescript\": \"^5.3.3\"\n  }\n}",
+    "cat package.json | jq '.dependencies | keys'": "[\n  \"express\",\n  \"pg\",\n  \"redis\",\n  \"winston\",\n  \"zod\"\n]",
+    "cat package.json | jq '.dependencies | to_entries | map(\"\\(.key)@\\(.value)\") | .[]'": "\"express@^4.18.2\"\n\"pg@^8.11.3\"\n\"redis@^4.6.12\"\n\"winston@^3.11.0\"\n\"zod@^3.22.4\"",
+    "cat package.json | jq '.scripts | keys'": "[\n  \"build\",\n  \"lint\",\n  \"start\",\n  \"test\"\n]",
+    "cat package.json | jq '{name: .name, version: .version, deps: (.dependencies | length)}'": "{\n  \"name\": \"payment-service\",\n  \"version\": \"2.4.1\",\n  \"deps\": 5\n}",
+    "cat pods.json | jq '.items[] | {name: .metadata.name, status: .status.phase}'": "{\n  \"name\": \"api-7d4b8c6f5-x2k9n\",\n  \"status\": \"Running\"\n}\n{\n  \"name\": \"api-7d4b8c6f5-p8m3w\",\n  \"status\": \"Running\"\n}\n{\n  \"name\": \"web-5f8b9c4d7-m3p2q\",\n  \"status\": \"Failed\"\n}\n{\n  \"name\": \"worker-6c9a8b3d2-n5v1x\",\n  \"status\": \"Running\"\n}",
+    "cat pods.json | jq '.items[] | select(.status.phase != \"Running\") | .metadata.name'": "\"web-5f8b9c4d7-m3p2q\"",
+    "cat pods.json | jq '[.items[] | select(.status.phase == \"Running\")] | length'": "3",
+    "jq -n '{timestamp: now | todate, service: \"api\", healthy: true}'": "{\n  \"timestamp\": \"2026-06-02T14:30:00Z\",\n  \"service\": \"api\",\n  \"healthy\": true\n}",
+    "jq -n '[range(5)] | map(. + 1)'": "[\n  1,\n  2,\n  3,\n  4,\n  5\n]",
+    "jq -s '.' file1.json file2.json": "[\n  {\"name\": \"service-a\", \"version\": \"1.2.0\"},\n  {\"name\": \"service-b\", \"version\": \"3.1.0\"}\n]",
+    "jq -s 'add' numbers.json": "42",
+    "jq -s 'map(.version) | unique' services.json": "[\n  \"1.2.0\",\n  \"2.0.1\",\n  \"3.1.0\"\n]",
+    "yq '.metadata.name' deployment.yaml": "payment-api",
+    "yq '.metadata' deployment.yaml": "name: payment-api\nnamespace: production\nlabels:\n  app: payment-api\n  tier: backend\nannotations:\n  deployment.kubernetes.io/revision: \"3\"",
+    "yq '.metadata.labels' deployment.yaml": "app: payment-api\ntier: backend",
+    "yq '.spec.replicas' deployment.yaml": "3",
+    "yq '.spec.template.spec.containers[0].image' deployment.yaml": "myregistry/payment-api:v2.4.1",
+    "yq '.spec.template.spec.containers[0].name' deployment.yaml": "payment-api",
+    "yq '.spec.template.spec.containers[0].env' deployment.yaml": "- name: DB_HOST\n  value: db.production.svc.cluster.local\n- name: DB_PORT\n  value: \"5432\"\n- name: REDIS_URL\n  value: redis://redis.production.svc.cluster.local:6379",
+    "yq '.spec.template.spec.containers[0].resources' deployment.yaml": "limits:\n  cpu: 500m\n  memory: 512Mi\nrequests:\n  cpu: 200m\n  memory: 256Mi",
+    "yq -i '.spec.replicas = 5' deployment.yaml": "(deployment.yaml updated: spec.replicas set to 5)",
+    "yq -i '.spec.template.spec.containers[0].image = \"myregistry/payment-api:v2.5.0\"' deployment.yaml": "(deployment.yaml updated: container image set to myregistry/payment-api:v2.5.0)",
+    "yq -i '.spec.template.spec.containers[0].env += [{\"name\": \"LOG_LEVEL\", \"value\": \"debug\"}]' deployment.yaml": "(deployment.yaml updated: LOG_LEVEL=debug added to env)",
+    "yq -i '.metadata.labels.version = \"v2.5.0\"' deployment.yaml": "(deployment.yaml updated: label version=v2.5.0 added)",
+    "yq 'del(.metadata.annotations)' deployment.yaml": "apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: payment-api\n  namespace: production\n  labels:\n    app: payment-api\n    tier: backend\nspec:\n  replicas: 3\n  selector:\n    matchLabels:\n      app: payment-api\n  template:\n    spec:\n      containers:\n        - name: payment-api\n          image: myregistry/payment-api:v2.4.1\n          ports:\n            - containerPort: 8080",
+    "yq 'del(.spec.template.spec.containers[0].resources.limits)' deployment.yaml": "(output: deployment without resource limits)",
+    "yq eval-all 'select(.kind == \"Service\")' multi.yaml": "apiVersion: v1\nkind: Service\nmetadata:\n  name: payment-api\n  namespace: production\nspec:\n  type: ClusterIP\n  ports:\n    - port: 8080\n      targetPort: 8080\n  selector:\n    app: payment-api",
+    "yq eval-all 'select(.kind == \"Deployment\")' multi.yaml": "apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: payment-api\n  namespace: production\nspec:\n  replicas: 3\n  selector:\n    matchLabels:\n      app: payment-api\n  template:\n    metadata:\n      labels:\n        app: payment-api\n    spec:\n      containers:\n        - name: payment-api\n          image: myregistry/payment-api:v2.4.1",
+    "yq eval-all multi.yaml": "apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: payment-api\n  namespace: production\nspec:\n  replicas: 3\n  ...\n---\napiVersion: v1\nkind: Service\nmetadata:\n  name: payment-api\n  namespace: production\nspec:\n  type: ClusterIP\n  ...\n---\napiVersion: v1\nkind: ConfigMap\nmetadata:\n  name: payment-api-config\ndata:\n  DB_HOST: db.production.svc.cluster.local\n  LOG_FORMAT: json",
+    "yq '. * load(\"override.yaml\")' base.yaml": "apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: payment-api\n  namespace: production\n  labels:\n    app: payment-api\n    tier: backend\n    environment: production\nspec:\n  replicas: 5\n  template:\n    spec:\n      containers:\n        - name: payment-api\n          image: myregistry/payment-api:v2.5.0\n          resources:\n            limits:\n              cpu: \"1\"\n              memory: 1Gi",
+    "yq ea '. as $item ireduce ({}; . * $item)' base.yaml override.yaml": "apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: payment-api\n  namespace: production\n  labels:\n    app: payment-api\n    environment: production\nspec:\n  replicas: 5\n  template:\n    spec:\n      containers:\n        - name: payment-api\n          image: myregistry/payment-api:v2.5.0",
+    "yq '.spec.template.spec.containers[0].env[] | select(.name == \"DB_HOST\") | .value' deployment.yaml": "db.production.svc.cluster.local",
+    "yq '.spec.template.spec.containers[0].ports[0].containerPort' deployment.yaml": "8080",
+    "yq -o=json '.' deployment.yaml": "{\n  \"apiVersion\": \"apps/v1\",\n  \"kind\": \"Deployment\",\n  \"metadata\": {\n    \"name\": \"payment-api\",\n    \"namespace\": \"production\",\n    \"labels\": {\n      \"app\": \"payment-api\",\n      \"tier\": \"backend\"\n    }\n  },\n  \"spec\": {\n    \"replicas\": 3,\n    \"selector\": {\n      \"matchLabels\": {\n        \"app\": \"payment-api\"\n      }\n    }\n  }\n}",
+    "yq -P '.' config.json": "name: payment-service\nversion: 2.4.1\ndatabase:\n  host: localhost\n  port: 5432\n  name: payments",
+    "cat config.json | jq '.' | yq -P '.'": "name: payment-service\nversion: 2.4.1\ndatabase:\n  host: localhost\n  port: 5432\n  name: payments",
+    "ls": "base.yaml        deployment.yaml   instances.json    multi.yaml\nconfig.json      numbers.json      override.yaml     package.json\npods.json        services.json     users.json",
+    "cat deployment.yaml": "apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: payment-api\n  namespace: production\n  labels:\n    app: payment-api\n    tier: backend\n  annotations:\n    deployment.kubernetes.io/revision: \"3\"\nspec:\n  replicas: 3\n  selector:\n    matchLabels:\n      app: payment-api\n  template:\n    metadata:\n      labels:\n        app: payment-api\n    spec:\n      containers:\n        - name: payment-api\n          image: myregistry/payment-api:v2.4.1\n          ports:\n            - containerPort: 8080\n          env:\n            - name: DB_HOST\n              value: db.production.svc.cluster.local\n            - name: DB_PORT\n              value: \"5432\"\n            - name: REDIS_URL\n              value: redis://redis.production.svc.cluster.local:6379\n          resources:\n            limits:\n              cpu: 500m\n              memory: 512Mi\n            requests:\n              cpu: 200m\n              memory: 256Mi",
+    "cat base.yaml": "apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: payment-api\n  namespace: production\n  labels:\n    app: payment-api\n    tier: backend\nspec:\n  replicas: 3\n  template:\n    spec:\n      containers:\n        - name: payment-api\n          image: myregistry/payment-api:v2.4.1\n          resources:\n            limits:\n              cpu: 500m\n              memory: 512Mi",
+    "cat override.yaml": "metadata:\n  labels:\n    environment: production\nspec:\n  replicas: 5\n  template:\n    spec:\n      containers:\n        - name: payment-api\n          image: myregistry/payment-api:v2.5.0\n          resources:\n            limits:\n              cpu: \"1\"\n              memory: 1Gi"
+  },
+  "reference": [
+    {
+      "group": "jq Basics",
+      "commands": [
+        {
+          "cmd": "cat users.json | jq '.'",
+          "desc": "pretty-print JSON"
+        },
+        {
+          "cmd": "cat users.json | jq '.data.users'",
+          "desc": "extract nested field"
+        },
+        {
+          "cmd": "cat users.json | jq '.data.users[]'",
+          "desc": "iterate array"
+        },
+        {
+          "cmd": "cat users.json | jq '.data.users[0]'",
+          "desc": "first element"
+        },
+        {
+          "cmd": "cat users.json | jq '.data.users[0] | keys'",
+          "desc": "list keys"
+        },
+        {
+          "cmd": "cat users.json | jq '.data.users | length'",
+          "desc": "count elements"
+        },
+        {
+          "cmd": "cat users.json | jq '.data.users | type'",
+          "desc": "check type"
+        }
+      ]
+    },
+    {
+      "group": "jq Filters & Select",
+      "commands": [
+        {
+          "cmd": "cat users.json | jq '.data.users[] | select(.status == \"active\")'",
+          "desc": "filter by value"
+        },
+        {
+          "cmd": "cat users.json | jq '.data.users[] | select(.spending > 3000)'",
+          "desc": "numeric filter"
+        },
+        {
+          "cmd": "cat users.json | jq '.data.users[] | select(.role == \"sre\")'",
+          "desc": "filter by role"
+        },
+        {
+          "cmd": "cat users.json | jq '.data.users[] | if .status == \"active\" then .name else empty end'",
+          "desc": "conditional"
+        },
+        {
+          "cmd": "cat users.json | jq --arg role \"sre\" '.data.users[] | select(.role == $role)'",
+          "desc": "variable binding"
+        }
+      ]
+    },
+    {
+      "group": "jq Transform & Reshape",
+      "commands": [
+        {
+          "cmd": "cat users.json | jq '[.data.users[] | {id, name, email}]'",
+          "desc": "reshape objects"
+        },
+        {
+          "cmd": "cat users.json | jq '.data.users | map(.name)'",
+          "desc": "map to field"
+        },
+        {
+          "cmd": "cat users.json | jq '.data.users | sort_by(.created_at) | reverse'",
+          "desc": "sort descending"
+        },
+        {
+          "cmd": "cat users.json | jq '.data.users | group_by(.role)'",
+          "desc": "group by field"
+        },
+        {
+          "cmd": "cat users.json | jq '.data.users | unique_by(.role) | .[].role'",
+          "desc": "unique values"
+        },
+        {
+          "cmd": "cat users.json | jq '.data.users[0] | to_entries'",
+          "desc": "object to pairs"
+        }
+      ]
+    },
+    {
+      "group": "jq Output Formats",
+      "commands": [
+        {
+          "cmd": "cat users.json | jq -r '.data.users[] | [.name, .email] | @csv'",
+          "desc": "export as CSV"
+        },
+        {
+          "cmd": "cat users.json | jq -r '.data.users[] | [.name, .email] | @tsv'",
+          "desc": "export as TSV"
+        },
+        {
+          "cmd": "cat users.json | jq -r '.data.users[0].email | @base64'",
+          "desc": "base64 encode"
+        },
+        {
+          "cmd": "cat users.json | jq 'reduce .data.users[] as $u (0; . + $u.spending)'",
+          "desc": "sum values"
+        }
+      ]
+    },
+    {
+      "group": "jq Real-World (AWS/K8s)",
+      "commands": [
+        {
+          "cmd": "cat instances.json | jq '.Reservations[].Instances[] | {id: .InstanceId, type: .InstanceType, state: .State.Name}'",
+          "desc": "AWS instances"
+        },
+        {
+          "cmd": "cat instances.json | jq '.Reservations[].Instances[] | select(.State.Name == \"running\") | .InstanceId'",
+          "desc": "running IDs"
+        },
+        {
+          "cmd": "cat pods.json | jq '.items[] | {name: .metadata.name, status: .status.phase}'",
+          "desc": "K8s pod status"
+        },
+        {
+          "cmd": "cat package.json | jq '.dependencies | keys'",
+          "desc": "list deps"
+        }
+      ]
+    },
+    {
+      "group": "yq Read & Query",
+      "commands": [
+        {
+          "cmd": "yq '.metadata.name' deployment.yaml",
+          "desc": "read field"
+        },
+        {
+          "cmd": "yq '.spec.replicas' deployment.yaml",
+          "desc": "read replicas"
+        },
+        {
+          "cmd": "yq '.spec.template.spec.containers[0].image' deployment.yaml",
+          "desc": "container image"
+        },
+        {
+          "cmd": "yq '.spec.template.spec.containers[0].env' deployment.yaml",
+          "desc": "env vars"
+        },
+        {
+          "cmd": "yq -o=json '.' deployment.yaml",
+          "desc": "YAML to JSON"
+        },
+        {
+          "cmd": "yq -P '.' config.json",
+          "desc": "JSON to YAML"
+        }
+      ]
+    },
+    {
+      "group": "yq Edit & Merge",
+      "commands": [
+        {
+          "cmd": "yq -i '.spec.replicas = 5' deployment.yaml",
+          "desc": "set value"
+        },
+        {
+          "cmd": "yq -i '.spec.template.spec.containers[0].env += [{\"name\": \"LOG_LEVEL\", \"value\": \"debug\"}]' deployment.yaml",
+          "desc": "add env var"
+        },
+        {
+          "cmd": "yq 'del(.metadata.annotations)' deployment.yaml",
+          "desc": "delete field"
+        },
+        {
+          "cmd": "yq eval-all 'select(.kind == \"Service\")' multi.yaml",
+          "desc": "filter multi-doc"
+        },
+        {
+          "cmd": "yq '. * load(\"override.yaml\")' base.yaml",
+          "desc": "merge files"
+        },
+        {
+          "cmd": "yq ea '. as $item ireduce ({}; . * $item)' base.yaml override.yaml",
+          "desc": "deep merge"
+        }
+      ]
+    },
+    {
+      "group": "Scenarios",
+      "commands": [
+        {
+          "cmd": "scenario parse-api-response",
+          "desc": "parse & transform JSON"
+        },
+        {
+          "cmd": "scenario edit-k8s-yaml",
+          "desc": "edit K8s YAML configs"
+        }
+      ]
+    }
+  ]
+}

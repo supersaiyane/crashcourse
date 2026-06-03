@@ -1,0 +1,307 @@
+{
+  "id": "argocd",
+  "prompt": "argocd@gitops:~$",
+  "welcome": "Welcome to the Argo CD CLI Playground.\nType commands to explore a simulated GitOps environment.\nType 'help' for available commands, 'scenario' for guided labs.\n",
+  "scenarios": [
+    {
+      "id": "deploy-and-sync",
+      "title": "Deploy and Sync an Application",
+      "steps": [
+        {
+          "instruction": "First, log in to the Argo CD server.",
+          "expect": "argocd login argocd.example.com",
+          "hint": "Try: argocd login argocd.example.com"
+        },
+        {
+          "instruction": "Create a new application from a Git repository.",
+          "expect": "argocd app create payments-api --repo https://github.com/acme/k8s-manifests.git --path services/payments-api --dest-server https://kubernetes.default.svc --dest-namespace production",
+          "hint": "Try: argocd app create payments-api --repo https://github.com/acme/k8s-manifests.git --path services/payments-api --dest-server https://kubernetes.default.svc --dest-namespace production"
+        },
+        {
+          "instruction": "List all applications to confirm it was created.",
+          "expect": "argocd app list",
+          "hint": "Try: argocd app list"
+        },
+        {
+          "instruction": "Check the application details and sync status.",
+          "expect": "argocd app get payments-api",
+          "hint": "Try: argocd app get payments-api"
+        },
+        {
+          "instruction": "View what would change if you sync (dry-run diff).",
+          "expect": "argocd app diff payments-api",
+          "hint": "Try: argocd app diff payments-api"
+        },
+        {
+          "instruction": "Sync the application to deploy the latest manifests from Git.",
+          "expect": "argocd app sync payments-api",
+          "hint": "Try: argocd app sync payments-api"
+        },
+        {
+          "instruction": "Wait for the application to become healthy after sync.",
+          "expect": "argocd app wait payments-api",
+          "hint": "Try: argocd app wait payments-api"
+        },
+        {
+          "instruction": "Verify the application is now Synced and Healthy.",
+          "expect": "argocd app get payments-api",
+          "hint": "Try: argocd app get payments-api"
+        }
+      ]
+    },
+    {
+      "id": "rollback-failed-deploy",
+      "title": "Rollback a Failed Deployment",
+      "steps": [
+        {
+          "instruction": "Check the current status of the web-frontend app — it's showing Degraded.",
+          "expect": "argocd app get web-frontend",
+          "hint": "Try: argocd app get web-frontend"
+        },
+        {
+          "instruction": "View the deployment history to see previous revisions.",
+          "expect": "argocd app history web-frontend",
+          "hint": "Try: argocd app history web-frontend"
+        },
+        {
+          "instruction": "Compare the current (broken) revision 5 against the last known-good revision 4.",
+          "expect": "argocd app diff web-frontend --revision 4",
+          "hint": "Try: argocd app diff web-frontend --revision 4"
+        },
+        {
+          "instruction": "Rollback to revision 4 (the last healthy release).",
+          "expect": "argocd app rollback web-frontend 4",
+          "hint": "Try: argocd app rollback web-frontend 4"
+        },
+        {
+          "instruction": "Wait for the rollback to complete and pods to stabilise.",
+          "expect": "argocd app wait web-frontend",
+          "hint": "Try: argocd app wait web-frontend"
+        },
+        {
+          "instruction": "Verify the app is back to Healthy status.",
+          "expect": "argocd app get web-frontend",
+          "hint": "Try: argocd app get web-frontend"
+        },
+        {
+          "instruction": "Check the updated history to confirm rollback is recorded.",
+          "expect": "argocd app history web-frontend",
+          "hint": "Try: argocd app history web-frontend"
+        }
+      ]
+    }
+  ],
+  "commands": {
+    "help": "Available commands:\n  argocd login                   — Authenticate to Argo CD server\n  argocd app list                — List all applications\n  argocd app get [app]           — Show application details\n  argocd app create              — Create a new application\n  argocd app sync [app]          — Sync application to target state\n  argocd app diff [app]          — Show diff between live and desired state\n  argocd app history [app]       — Show deployment history\n  argocd app rollback [app] [rev]— Rollback to a previous revision\n  argocd app delete [app]        — Delete an application\n  argocd app set [app]           — Update application parameters\n  argocd app wait [app]          — Wait for app to reach healthy state\n  argocd app terminate-op [app]  — Terminate running operation\n  argocd app actions list [app]  — List available resource actions\n  argocd repo list               — List configured repositories\n  argocd repo add                — Add a Git repository\n  argocd proj list               — List projects\n  argocd proj get [proj]         — Show project details\n  argocd proj create             — Create a new project\n  argocd cluster list            — List registered clusters\n  argocd cluster add             — Add a cluster\n  argocd account list            — List accounts\n  argocd account get-user-info   — Show current user info\n  argocd version                 — Show version info\n\n  scenario                       — Start a guided lab\n  clear                          — Clear the terminal\n  help                           — Show this help",
+    "argocd version": "argocd: v2.11.2+a6231e3\n  BuildDate: 2026-05-15T14:22:10Z\n  GitCommit: a6231e3b9f2c\n  GitTreeState: clean\n  GoVersion: go1.22.3\n  Compiler: gc\n  Platform: linux/amd64\nARGOCD_SERVER: v2.11.2+a6231e3",
+    "argocd login argocd.example.com": "'admin:login' logged in successfully\nContext 'argocd.example.com' updated",
+    "argocd account get-user-info": "Logged In: true\nUsername: admin\nIssuer: argocd\nGroups: role:admin",
+    "argocd account list": "NAME     ENABLED  CAPABILITIES\nadmin    true     apiKey, login\nci-bot   true     apiKey\ndev-team true     login",
+    "argocd cluster list": "SERVER                          NAME        VERSION  STATUS      MESSAGE\nhttps://kubernetes.default.svc  in-cluster  1.29     Successful  \nhttps://10.0.5.100:6443         staging     1.29     Successful  \nhttps://10.0.6.200:6443         dr-cluster  1.28     Successful  ",
+    "argocd cluster add staging": "WARNING: This will create a service account `argocd-manager` on the cluster\n  referenced by context `staging` with full cluster level admin privileges.\nINFO[0000] ServiceAccount \"argocd-manager\" created in namespace \"kube-system\"\nINFO[0001] ClusterRole \"argocd-manager-role\" created\nINFO[0002] ClusterRoleBinding \"argocd-manager-role-binding\" created\nCluster 'https://10.0.5.100:6443' added",
+    "argocd repo list": "TYPE  NAME              REPO                                              INSECURE  OCI    LFS    CREDS  STATUS      MESSAGE\ngit   k8s-manifests     https://github.com/acme/k8s-manifests.git          false     false  false  true   Successful  \ngit   helm-charts       https://github.com/acme/helm-charts.git            false     false  false  true   Successful  \nhelm  bitnami           https://charts.bitnami.com/bitnami                 false     false  false  false  Successful  \ngit   infra-configs     https://github.com/acme/infra-configs.git          false     false  false  true   Successful  ",
+    "argocd repo add https://github.com/acme/k8s-manifests.git --username ci-bot --password $GIT_TOKEN": "Repository 'https://github.com/acme/k8s-manifests.git' added",
+    "argocd proj list": "NAME        DESCRIPTION                     DESTINATIONS             SOURCES\ndefault     Default project                 *,*                      *\nproduction  Production workloads            in-cluster,production    https://github.com/acme/*\nstaging     Staging environment             staging,staging          https://github.com/acme/*\nplatform    Platform infrastructure         in-cluster,kube-system   https://github.com/acme/infra-configs.git",
+    "argocd proj get production": "Name:             production\nDescription:      Production workloads\nDestinations:\n  SERVER                          NAMESPACE\n  https://kubernetes.default.svc  production\nSources:\n  https://github.com/acme/*\nCluster Resource Whitelist:\n  GROUP  KIND\n  *      Namespace\n  *      ClusterRole\n  *      ClusterRoleBinding\nNamespace Resource Blacklist:\n  GROUP  KIND\n  *      ResourceQuota\n  *      LimitRange\nOrphan Resources: enabled (warn)\nRoles:\n  NAME       DESCRIPTION\n  dev-lead   Can sync production apps\n  read-only  View-only access",
+    "argocd proj create staging --description \"Staging environment\" --dest https://10.0.5.100:6443,staging --src https://github.com/acme/*": "project 'staging' created",
+    "argocd app list": "NAME            CLUSTER                         NAMESPACE    PROJECT      STATUS     HEALTH      SYNCPOLICY  CONDITIONS\napi-gateway     https://kubernetes.default.svc  production   production   Synced     Healthy     Auto-Prune  <none>\nweb-frontend    https://kubernetes.default.svc  production   production   OutOfSync  Degraded    Auto        ComparisonError\nworker-service  https://kubernetes.default.svc  production   production   Synced     Healthy     Auto-Prune  <none>\nredis-cache     https://kubernetes.default.svc  production   production   Synced     Healthy     Manual      <none>\npostgres-db     https://kubernetes.default.svc  production   production   Synced     Healthy     Manual      <none>\nmonitoring      https://kubernetes.default.svc  monitoring   platform     Synced     Progressing Auto        <none>",
+    "argocd app get api-gateway": "Name:               production/api-gateway\nProject:            production\nServer:             https://kubernetes.default.svc\nNamespace:          production\nURL:                https://argocd.example.com/applications/api-gateway\nRepo:               https://github.com/acme/k8s-manifests.git\nTarget:             main\nPath:               services/api-gateway\nSyncWindow:         Sync Allowed\nSync Policy:        Automated (Prune)\nSync Status:        Synced to main (8a3f2c1)\nHealth Status:      Healthy\n\nGROUP  KIND        NAMESPACE   NAME          STATUS  HEALTH   HOOK  MESSAGE\n       Service     production  api-gateway   Synced  Healthy        service/api-gateway unchanged\napps   Deployment  production  api-gateway   Synced  Healthy        deployment.apps/api-gateway unchanged\n       ConfigMap   production  api-config    Synced                  configmap/api-config unchanged\nautoscaling  HPA  production  api-gateway   Synced  Healthy        horizontalpodautoscaler.autoscaling/api-gateway unchanged",
+    "argocd app get web-frontend": "Name:               production/web-frontend\nProject:            production\nServer:             https://kubernetes.default.svc\nNamespace:          production\nURL:                https://argocd.example.com/applications/web-frontend\nRepo:               https://github.com/acme/k8s-manifests.git\nTarget:             main\nPath:               services/web-frontend\nSyncWindow:         Sync Allowed\nSync Policy:        Automated\nSync Status:        OutOfSync (5e7b1a4 → main)\nHealth Status:      Degraded\n\nGROUP  KIND        NAMESPACE   NAME           STATUS     HEALTH    HOOK  MESSAGE\n       Service     production  web-frontend   Synced     Healthy         service/web-frontend unchanged\napps   Deployment  production  web-frontend   OutOfSync  Degraded        deployment.apps/web-frontend: 0/3 replicas healthy\n       ConfigMap   production  web-config     Synced                     configmap/web-config configured\n       Ingress     production  web-ingress    Synced     Healthy         ingress.networking.k8s.io/web-ingress unchanged",
+    "argocd app get worker-service": "Name:               production/worker-service\nProject:            production\nServer:             https://kubernetes.default.svc\nNamespace:          production\nURL:                https://argocd.example.com/applications/worker-service\nRepo:               https://github.com/acme/k8s-manifests.git\nTarget:             main\nPath:               services/worker-service\nSyncWindow:         Sync Allowed\nSync Policy:        Automated (Prune)\nSync Status:        Synced to main (8a3f2c1)\nHealth Status:      Healthy\n\nGROUP  KIND        NAMESPACE   NAME             STATUS  HEALTH   HOOK  MESSAGE\n       Service     production  worker-service   Synced  Healthy        service/worker-service unchanged\napps   Deployment  production  worker-service   Synced  Healthy        deployment.apps/worker-service unchanged",
+    "argocd app get redis-cache": "Name:               production/redis-cache\nProject:            production\nServer:             https://kubernetes.default.svc\nNamespace:          production\nURL:                https://argocd.example.com/applications/redis-cache\nRepo:               https://github.com/acme/helm-charts.git\nTarget:             main\nPath:               charts/redis\nSyncWindow:         Sync Allowed\nSync Policy:        Manual\nSync Status:        Synced to main (c4d9e2f)\nHealth Status:      Healthy\n\nGROUP  KIND         NAMESPACE   NAME         STATUS  HEALTH   HOOK  MESSAGE\n       Service      production  redis-cache  Synced  Healthy        service/redis-cache unchanged\napps   StatefulSet  production  redis-cache  Synced  Healthy        statefulset.apps/redis-cache unchanged\n       ConfigMap    production  redis-conf   Synced                  configmap/redis-conf unchanged",
+    "argocd app get postgres-db": "Name:               production/postgres-db\nProject:            production\nServer:             https://kubernetes.default.svc\nNamespace:          production\nURL:                https://argocd.example.com/applications/postgres-db\nRepo:               https://github.com/acme/helm-charts.git\nTarget:             main\nPath:               charts/postgres\nSyncWindow:         Sync Allowed\nSync Policy:        Manual\nSync Status:        Synced to main (c4d9e2f)\nHealth Status:      Healthy\n\nGROUP  KIND         NAMESPACE   NAME          STATUS  HEALTH   HOOK  MESSAGE\n       Service      production  postgres-db   Synced  Healthy        service/postgres-db unchanged\napps   StatefulSet  production  postgres-db   Synced  Healthy        statefulset.apps/postgres-db unchanged\n       Secret       production  pg-creds      Synced                  secret/pg-creds unchanged\n       ConfigMap    production  pg-config     Synced                  configmap/pg-config unchanged",
+    "argocd app get monitoring": "Name:               platform/monitoring\nProject:            platform\nServer:             https://kubernetes.default.svc\nNamespace:          monitoring\nURL:                https://argocd.example.com/applications/monitoring\nRepo:               https://github.com/acme/infra-configs.git\nTarget:             main\nPath:               monitoring-stack\nSyncWindow:         Sync Allowed\nSync Policy:        Automated\nSync Status:        Synced to main (1b4c8e9)\nHealth Status:      Progressing\n\nGROUP               KIND         NAMESPACE   NAME           STATUS  HEALTH       HOOK  MESSAGE\nmonitoring.coreos   Prometheus   monitoring  prometheus     Synced  Healthy            prometheus/prometheus unchanged\nmonitoring.coreos   Alertmanager monitoring  alertmanager   Synced  Progressing        alertmanager/alertmanager rolling update\n                    Service      monitoring  grafana        Synced  Healthy            service/grafana unchanged\napps                Deployment   monitoring  grafana        Synced  Healthy            deployment.apps/grafana unchanged",
+    "argocd app get payments-api": "Name:               production/payments-api\nProject:            production\nServer:             https://kubernetes.default.svc\nNamespace:          production\nURL:                https://argocd.example.com/applications/payments-api\nRepo:               https://github.com/acme/k8s-manifests.git\nTarget:             main\nPath:               services/payments-api\nSyncWindow:         Sync Allowed\nSync Policy:        Manual\nSync Status:        OutOfSync (target: main)\nHealth Status:      Missing\n\nGROUP  KIND        NAMESPACE   NAME          STATUS     HEALTH   HOOK  MESSAGE\n       Service     production  payments-api  OutOfSync  Missing        service/payments-api needs creation\napps   Deployment  production  payments-api  OutOfSync  Missing        deployment.apps/payments-api needs creation\n       ConfigMap   production  pay-config    OutOfSync  Missing        configmap/pay-config needs creation",
+    "argocd app create payments-api --repo https://github.com/acme/k8s-manifests.git --path services/payments-api --dest-server https://kubernetes.default.svc --dest-namespace production": "application 'payments-api' created",
+    "argocd app sync api-gateway": "TIMESTAMP                  GROUP        KIND        NAMESPACE   NAME          STATUS   HEALTH   HOOK  MESSAGE\n2026-06-02T10:30:01+0530               Service     production  api-gateway   Synced   Healthy        service/api-gateway unchanged\n2026-06-02T10:30:01+0530   apps         Deployment  production  api-gateway   Synced   Healthy        deployment.apps/api-gateway unchanged\n2026-06-02T10:30:01+0530               ConfigMap   production  api-config    Synced                  configmap/api-config unchanged\n\nName:               production/api-gateway\nSync Status:        Synced to main (8a3f2c1)\nHealth Status:      Healthy\n\nOperation:          Sync\nSync Revision:      8a3f2c1d5e7b9a4f6c8d0e2f4a6b8c0d2e4f6a8b\nPhase:              Succeeded\nStart:              2026-06-02 10:30:01 +0530 IST\nFinished:           2026-06-02 10:30:04 +0530 IST\nDuration:           3s\nMessage:            successfully synced (all tasks run)",
+    "argocd app sync web-frontend": "TIMESTAMP                  GROUP        KIND        NAMESPACE   NAME           STATUS    HEALTH     HOOK  MESSAGE\n2026-06-02T10:32:01+0530               Service     production  web-frontend   Synced    Healthy          service/web-frontend unchanged\n2026-06-02T10:32:02+0530   apps         Deployment  production  web-frontend   Synced    Progressing      deployment.apps/web-frontend rolling update\n2026-06-02T10:32:02+0530               ConfigMap   production  web-config     Synced                     configmap/web-config configured\n2026-06-02T10:32:02+0530               Ingress     production  web-ingress    Synced    Healthy          ingress.networking.k8s.io/web-ingress unchanged\n\nName:               production/web-frontend\nSync Status:        Synced to main (5e7b1a4)\nHealth Status:      Progressing\n\nOperation:          Sync\nSync Revision:      5e7b1a4c3d9f8e2a1b7c6d5e4f3a2b1c0d9e8f7a\nPhase:              Succeeded\nStart:              2026-06-02 10:32:01 +0530 IST\nFinished:           2026-06-02 10:32:05 +0530 IST\nDuration:           4s\nMessage:            successfully synced (all tasks run)",
+    "argocd app sync payments-api": "TIMESTAMP                  GROUP        KIND        NAMESPACE   NAME          STATUS   HEALTH       HOOK  MESSAGE\n2026-06-02T10:35:01+0530               Service     production  payments-api  Synced   Healthy            service/payments-api created\n2026-06-02T10:35:02+0530   apps         Deployment  production  payments-api  Synced   Progressing        deployment.apps/payments-api created\n2026-06-02T10:35:02+0530               ConfigMap   production  pay-config    Synced                      configmap/pay-config created\n\nName:               production/payments-api\nSync Status:        Synced to main (8a3f2c1)\nHealth Status:      Progressing\n\nOperation:          Sync\nSync Revision:      8a3f2c1d5e7b9a4f6c8d0e2f4a6b8c0d2e4f6a8b\nPhase:              Succeeded\nStart:              2026-06-02 10:35:01 +0530 IST\nFinished:           2026-06-02 10:35:05 +0530 IST\nDuration:           4s\nMessage:            successfully synced (all tasks run)",
+    "argocd app sync worker-service": "TIMESTAMP                  GROUP        KIND        NAMESPACE   NAME             STATUS   HEALTH   HOOK  MESSAGE\n2026-06-02T10:36:01+0530               Service     production  worker-service   Synced   Healthy        service/worker-service unchanged\n2026-06-02T10:36:01+0530   apps         Deployment  production  worker-service   Synced   Healthy        deployment.apps/worker-service unchanged\n\nName:               production/worker-service\nSync Status:        Synced to main (8a3f2c1)\nHealth Status:      Healthy\n\nOperation:          Sync\nSync Revision:      8a3f2c1d5e7b9a4f6c8d0e2f4a6b8c0d2e4f6a8b\nPhase:              Succeeded\nStart:              2026-06-02 10:36:01 +0530 IST\nFinished:           2026-06-02 10:36:03 +0530 IST\nDuration:           2s\nMessage:            successfully synced (all tasks run)",
+    "argocd app sync redis-cache": "TIMESTAMP                  GROUP        KIND         NAMESPACE   NAME         STATUS   HEALTH   HOOK  MESSAGE\n2026-06-02T10:37:01+0530               Service      production  redis-cache  Synced   Healthy        service/redis-cache unchanged\n2026-06-02T10:37:01+0530   apps         StatefulSet  production  redis-cache  Synced   Healthy        statefulset.apps/redis-cache unchanged\n2026-06-02T10:37:01+0530               ConfigMap    production  redis-conf   Synced                  configmap/redis-conf unchanged\n\nName:               production/redis-cache\nSync Status:        Synced to main (c4d9e2f)\nHealth Status:      Healthy\n\nOperation:          Sync\nSync Revision:      c4d9e2f1a3b5d7e9f0c2a4b6d8e0f1a3b5c7d9e1\nPhase:              Succeeded\nStart:              2026-06-02 10:37:01 +0530 IST\nFinished:           2026-06-02 10:37:03 +0530 IST\nDuration:           2s\nMessage:            successfully synced (all tasks run)",
+    "argocd app diff api-gateway": "No differences found. Application is in sync.",
+    "argocd app diff web-frontend": "===== apps/Deployment production/web-frontend ======\n--- live\n+++ desired\n@@ -17,7 +17,7 @@\n       containers:\n       - name: web-frontend\n-        image: acme/web-frontend:v2.3.1\n+        image: acme/web-frontend:v2.4.0\n         ports:\n         - containerPort: 3000\n         resources:\n@@ -25,6 +25,8 @@\n             memory: \"256Mi\"\n           requests:\n             cpu: \"100m\"\n+        livenessProbe:\n+          httpGet:\n+            path: /healthz\n+            port: 3000",
+    "argocd app diff payments-api": "===== /Service production/payments-api ======\n--- live (missing)\n+++ desired\n+apiVersion: v1\n+kind: Service\n+metadata:\n+  name: payments-api\n+  namespace: production\n+spec:\n+  selector:\n+    app: payments-api\n+  ports:\n+  - port: 8080\n+    targetPort: 8080\n\n===== apps/Deployment production/payments-api ======\n--- live (missing)\n+++ desired\n+apiVersion: apps/v1\n+kind: Deployment\n+metadata:\n+  name: payments-api\n+  namespace: production\n+spec:\n+  replicas: 3\n+  selector:\n+    matchLabels:\n+      app: payments-api\n+  template:\n+    spec:\n+      containers:\n+      - name: payments-api\n+        image: acme/payments-api:v1.0.0\n+        ports:\n+        - containerPort: 8080",
+    "argocd app diff web-frontend --revision 4": "===== apps/Deployment production/web-frontend ======\n--- current (revision 5)\n+++ target (revision 4)\n@@ -17,7 +17,7 @@\n       containers:\n       - name: web-frontend\n-        image: acme/web-frontend:v2.4.0\n+        image: acme/web-frontend:v2.3.1\n         ports:\n         - containerPort: 3000\n         resources:\n@@ -25,8 +25,6 @@\n             memory: \"256Mi\"\n           requests:\n             cpu: \"100m\"\n-        livenessProbe:\n-          httpGet:\n-            path: /healthz\n-            port: 3000",
+    "argocd app history api-gateway": "ID  DATE                           REVISION\n1   2026-05-10 09:15:00 +0530 IST  a1b2c3d (main)\n2   2026-05-18 14:30:00 +0530 IST  d4e5f6a (main)\n3   2026-05-25 11:00:00 +0530 IST  8a3f2c1 (main)",
+    "argocd app history web-frontend": "ID  DATE                           REVISION\n1   2026-05-05 10:00:00 +0530 IST  f1a2b3c (main)\n2   2026-05-12 16:45:00 +0530 IST  c4d5e6f (main)\n3   2026-05-19 09:30:00 +0530 IST  7b8c9d0 (main)\n4   2026-05-26 14:00:00 +0530 IST  2e3f4a5 (main)\n5   2026-06-01 18:20:00 +0530 IST  5e7b1a4 (main)",
+    "argocd app history worker-service": "ID  DATE                           REVISION\n1   2026-05-10 09:15:00 +0530 IST  a1b2c3d (main)\n2   2026-05-25 11:00:00 +0530 IST  8a3f2c1 (main)",
+    "argocd app history payments-api": "ID  DATE                           REVISION\n1   2026-06-02 10:35:05 +0530 IST  8a3f2c1 (main)",
+    "argocd app rollback web-frontend 4": "TIMESTAMP                  GROUP        KIND        NAMESPACE   NAME           STATUS   HEALTH       HOOK  MESSAGE\n2026-06-02T10:40:01+0530               Service     production  web-frontend   Synced   Healthy            service/web-frontend unchanged\n2026-06-02T10:40:02+0530   apps         Deployment  production  web-frontend   Synced   Progressing        deployment.apps/web-frontend rolling back\n2026-06-02T10:40:02+0530               ConfigMap   production  web-config     Synced                      configmap/web-config unchanged\n2026-06-02T10:40:02+0530               Ingress     production  web-ingress    Synced   Healthy            ingress.networking.k8s.io/web-ingress unchanged\n\nName:               production/web-frontend\nSync Status:        Synced to (2e3f4a5)\nHealth Status:      Progressing\n\nOperation:          Sync\nSync Revision:      2e3f4a5b1c7d9e8f0a2b4c6d8e0f1a3b5c7d9e1f\nPhase:              Succeeded\nStart:              2026-06-02 10:40:01 +0530 IST\nFinished:           2026-06-02 10:40:05 +0530 IST\nDuration:           4s\nMessage:            successfully rolled back to revision 4",
+    "argocd app wait api-gateway": "TIMESTAMP                  GROUP  KIND        NAMESPACE   NAME          HEALTH\n2026-06-02T10:30:08+0530   apps   Deployment  production  api-gateway   Healthy\n\napplication 'api-gateway' is healthy",
+    "argocd app wait web-frontend": "TIMESTAMP                  GROUP  KIND        NAMESPACE   NAME           HEALTH\n2026-06-02T10:40:12+0530   apps   Deployment  production  web-frontend   Healthy\n\napplication 'web-frontend' is healthy",
+    "argocd app wait payments-api": "TIMESTAMP                  GROUP  KIND        NAMESPACE   NAME          HEALTH\n2026-06-02T10:35:18+0530   apps   Deployment  production  payments-api  Healthy\n\napplication 'payments-api' is healthy",
+    "argocd app wait worker-service": "TIMESTAMP                  GROUP  KIND        NAMESPACE   NAME             HEALTH\n2026-06-02T10:36:06+0530   apps   Deployment  production  worker-service   Healthy\n\napplication 'worker-service' is healthy",
+    "argocd app delete payments-api": "Are you sure you want to delete 'payments-api' and all its resources? [y/n] y\napplication 'payments-api' deleted",
+    "argocd app delete web-frontend": "Are you sure you want to delete 'web-frontend' and all its resources? [y/n] y\napplication 'web-frontend' deleted",
+    "argocd app set api-gateway --sync-policy automated --auto-prune --self-heal": "application 'api-gateway' updated successfully\nSync Policy:    Automated (Prune, Self-Heal)",
+    "argocd app set web-frontend --sync-policy automated --auto-prune --self-heal": "application 'web-frontend' updated successfully\nSync Policy:    Automated (Prune, Self-Heal)",
+    "argocd app set worker-service --sync-policy automated": "application 'worker-service' updated successfully\nSync Policy:    Automated",
+    "argocd app set api-gateway --values-file values-prod.yaml": "application 'api-gateway' updated successfully",
+    "argocd app set api-gateway --parameter image.tag=v2.2.0": "application 'api-gateway' updated successfully",
+    "argocd app terminate-op web-frontend": "Application 'web-frontend' operation terminated",
+    "argocd app terminate-op api-gateway": "Application 'api-gateway' operation terminated",
+    "argocd app actions list api-gateway": "RESOURCE                         ACTION\nDeployment/api-gateway           restart\nDeployment/api-gateway           pause\nDeployment/api-gateway           resume",
+    "argocd app actions list web-frontend": "RESOURCE                         ACTION\nDeployment/web-frontend          restart\nDeployment/web-frontend          pause\nDeployment/web-frontend          resume\nDeployment/web-frontend          scale",
+    "argocd app sync api-gateway --prune": "TIMESTAMP                  GROUP        KIND        NAMESPACE   NAME          STATUS    HEALTH   HOOK  MESSAGE\n2026-06-02T10:45:01+0530               Service     production  api-gateway   Synced    Healthy        service/api-gateway unchanged\n2026-06-02T10:45:01+0530   apps         Deployment  production  api-gateway   Synced    Healthy        deployment.apps/api-gateway unchanged\n2026-06-02T10:45:01+0530               ConfigMap   production  api-config    Synced                   configmap/api-config unchanged\n2026-06-02T10:45:02+0530               ConfigMap   production  api-old-cfg   Pruned                   configmap/api-old-cfg pruned\n\nName:               production/api-gateway\nSync Status:        Synced to main (8a3f2c1)\nHealth Status:      Healthy\n\nOperation:          Sync\nPhase:              Succeeded\nMessage:            successfully synced (all tasks run)",
+    "argocd app sync web-frontend --dry-run": "TIMESTAMP                  GROUP        KIND        NAMESPACE   NAME           STATUS     HEALTH     HOOK  MESSAGE\n2026-06-02T10:46:01+0530               Service     production  web-frontend   Synced     Healthy          (dry run)\n2026-06-02T10:46:01+0530   apps         Deployment  production  web-frontend   OutOfSync  Degraded         (dry run) image: acme/web-frontend:v2.3.1 → v2.4.0\n2026-06-02T10:46:01+0530               ConfigMap   production  web-config     Synced                      (dry run)\n\nDry run complete. No changes applied.",
+    "argocd app sync api-gateway --revision HEAD~1": "TIMESTAMP                  GROUP        KIND        NAMESPACE   NAME          STATUS   HEALTH   HOOK  MESSAGE\n2026-06-02T10:47:01+0530               Service     production  api-gateway   Synced   Healthy        service/api-gateway unchanged\n2026-06-02T10:47:01+0530   apps         Deployment  production  api-gateway   Synced   Healthy        deployment.apps/api-gateway configured\n\nName:               production/api-gateway\nSync Status:        Synced to main (d4e5f6a)\nHealth Status:      Healthy\n\nOperation:          Sync\nPhase:              Succeeded\nMessage:            successfully synced (all tasks run)",
+    "argocd app sync monitoring": "TIMESTAMP                  GROUP               KIND          NAMESPACE   NAME          STATUS   HEALTH       HOOK  MESSAGE\n2026-06-02T10:48:01+0530   monitoring.coreos   Prometheus    monitoring  prometheus    Synced   Healthy            prometheus/prometheus unchanged\n2026-06-02T10:48:01+0530   monitoring.coreos   Alertmanager  monitoring  alertmanager  Synced   Progressing        alertmanager/alertmanager rolling update\n2026-06-02T10:48:02+0530                       Service       monitoring  grafana       Synced   Healthy            service/grafana unchanged\n2026-06-02T10:48:02+0530   apps                Deployment    monitoring  grafana       Synced   Healthy            deployment.apps/grafana unchanged\n\nName:               platform/monitoring\nSync Status:        Synced to main (1b4c8e9)\nHealth Status:      Progressing\n\nOperation:          Sync\nPhase:              Succeeded\nMessage:            successfully synced (all tasks run)",
+    "argocd app diff monitoring": "No differences found. Application is in sync.",
+    "argocd app diff redis-cache": "No differences found. Application is in sync.",
+    "argocd app diff postgres-db": "No differences found. Application is in sync.",
+    "argocd app diff worker-service": "No differences found. Application is in sync.",
+    "argocd app history redis-cache": "ID  DATE                           REVISION\n1   2026-05-08 08:00:00 +0530 IST  b1c2d3e (main)\n2   2026-05-20 12:30:00 +0530 IST  c4d9e2f (main)",
+    "argocd app history postgres-db": "ID  DATE                           REVISION\n1   2026-05-08 08:00:00 +0530 IST  b1c2d3e (main)\n2   2026-05-15 10:00:00 +0530 IST  a7b8c9d (main)\n3   2026-05-22 15:45:00 +0530 IST  c4d9e2f (main)",
+    "argocd app history monitoring": "ID  DATE                           REVISION\n1   2026-05-10 09:00:00 +0530 IST  e1f2a3b (main)\n2   2026-05-20 11:00:00 +0530 IST  4c5d6e7 (main)\n3   2026-06-01 16:00:00 +0530 IST  1b4c8e9 (main)"
+  },
+  "reference": [
+    {
+      "group": "Authentication",
+      "commands": [
+        {
+          "cmd": "argocd login argocd.example.com",
+          "desc": "log in to server"
+        },
+        {
+          "cmd": "argocd account get-user-info",
+          "desc": "current user info"
+        },
+        {
+          "cmd": "argocd account list",
+          "desc": "list accounts"
+        }
+      ]
+    },
+    {
+      "group": "Applications",
+      "commands": [
+        {
+          "cmd": "argocd app list",
+          "desc": "list all apps"
+        },
+        {
+          "cmd": "argocd app get api-gateway",
+          "desc": "app details + health"
+        },
+        {
+          "cmd": "argocd app create payments-api --repo ... --path ... --dest-server ... --dest-namespace ...",
+          "desc": "create app"
+        },
+        {
+          "cmd": "argocd app delete payments-api",
+          "desc": "delete app"
+        }
+      ]
+    },
+    {
+      "group": "Sync & Deploy",
+      "commands": [
+        {
+          "cmd": "argocd app sync api-gateway",
+          "desc": "sync app to Git"
+        },
+        {
+          "cmd": "argocd app sync web-frontend --dry-run",
+          "desc": "preview sync"
+        },
+        {
+          "cmd": "argocd app sync api-gateway --prune",
+          "desc": "sync + remove stale"
+        },
+        {
+          "cmd": "argocd app diff web-frontend",
+          "desc": "live vs desired diff"
+        },
+        {
+          "cmd": "argocd app wait payments-api",
+          "desc": "wait until healthy"
+        }
+      ]
+    },
+    {
+      "group": "History & Rollback",
+      "commands": [
+        {
+          "cmd": "argocd app history web-frontend",
+          "desc": "deployment history"
+        },
+        {
+          "cmd": "argocd app rollback web-frontend 4",
+          "desc": "rollback to revision"
+        },
+        {
+          "cmd": "argocd app diff web-frontend --revision 4",
+          "desc": "diff against revision"
+        },
+        {
+          "cmd": "argocd app terminate-op web-frontend",
+          "desc": "cancel running sync"
+        }
+      ]
+    },
+    {
+      "group": "App Settings",
+      "commands": [
+        {
+          "cmd": "argocd app set api-gateway --sync-policy automated --auto-prune --self-heal",
+          "desc": "enable auto-sync"
+        },
+        {
+          "cmd": "argocd app set api-gateway --parameter image.tag=v2.2.0",
+          "desc": "set parameter"
+        },
+        {
+          "cmd": "argocd app actions list api-gateway",
+          "desc": "available actions"
+        }
+      ]
+    },
+    {
+      "group": "Repositories",
+      "commands": [
+        {
+          "cmd": "argocd repo list",
+          "desc": "list repos"
+        },
+        {
+          "cmd": "argocd repo add https://github.com/acme/k8s-manifests.git --username ci-bot --password $GIT_TOKEN",
+          "desc": "add repo"
+        }
+      ]
+    },
+    {
+      "group": "Projects & Clusters",
+      "commands": [
+        {
+          "cmd": "argocd proj list",
+          "desc": "list projects"
+        },
+        {
+          "cmd": "argocd proj get production",
+          "desc": "project details"
+        },
+        {
+          "cmd": "argocd cluster list",
+          "desc": "list clusters"
+        },
+        {
+          "cmd": "argocd cluster add staging",
+          "desc": "register cluster"
+        }
+      ]
+    },
+    {
+      "group": "Scenarios",
+      "commands": [
+        {
+          "cmd": "scenario deploy-and-sync",
+          "desc": "deploy + sync app"
+        },
+        {
+          "cmd": "scenario rollback-failed-deploy",
+          "desc": "rollback failed release"
+        }
+      ]
+    }
+  ]
+}

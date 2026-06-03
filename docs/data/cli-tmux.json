@@ -1,0 +1,402 @@
+{
+  "id": "tmux",
+  "prompt": "sre@jumpbox:~$",
+  "welcome": "Welcome to the tmux CLI Playground.\nType commands to explore a simulated terminal multiplexer.\nType 'help' for available commands, 'scenario' for guided labs.\n",
+  "scenarios": [
+    {
+      "id": "incident-workspace",
+      "title": "Set Up an Incident Response Workspace",
+      "steps": [
+        {
+          "instruction": "Create a new tmux session named 'incident-2026' for the ongoing incident.",
+          "expect": "tmux new -s incident-2026",
+          "hint": "Try: tmux new -s incident-2026"
+        },
+        {
+          "instruction": "Create a new window named 'logs' to tail application logs.",
+          "expect": "tmux new-window -n logs",
+          "hint": "Try: tmux new-window -n logs"
+        },
+        {
+          "instruction": "Split the current window horizontally to have logs on the left and a shell on the right.",
+          "expect": "tmux split-window -h",
+          "hint": "Try: tmux split-window -h"
+        },
+        {
+          "instruction": "Split the right pane vertically to add a metrics pane below.",
+          "expect": "tmux split-window -v",
+          "hint": "Try: tmux split-window -v"
+        },
+        {
+          "instruction": "List all panes to confirm the layout.",
+          "expect": "tmux list-panes",
+          "hint": "Try: tmux list-panes"
+        },
+        {
+          "instruction": "Create another window named 'comms' for incident communication.",
+          "expect": "tmux new-window -n comms",
+          "hint": "Try: tmux new-window -n comms"
+        },
+        {
+          "instruction": "List all windows to see the workspace layout.",
+          "expect": "tmux list-windows",
+          "hint": "Try: tmux list-windows"
+        },
+        {
+          "instruction": "Switch back to the logs window (window 1) to start monitoring.",
+          "expect": "tmux select-window -t 1",
+          "hint": "Try: tmux select-window -t 1"
+        }
+      ]
+    },
+    {
+      "id": "recover-session",
+      "title": "Recover a Disconnected Session",
+      "steps": [
+        {
+          "instruction": "List all existing tmux sessions to find the one you were disconnected from.",
+          "expect": "tmux ls",
+          "hint": "Try: tmux ls"
+        },
+        {
+          "instruction": "Reattach to the 'monitoring' session that was running your dashboards.",
+          "expect": "tmux attach -t monitoring",
+          "hint": "Try: tmux attach -t monitoring"
+        },
+        {
+          "instruction": "List windows to see what was running before the disconnect.",
+          "expect": "tmux list-windows",
+          "hint": "Try: tmux list-windows"
+        },
+        {
+          "instruction": "Switch to window 2 where your Grafana queries were running.",
+          "expect": "tmux select-window -t 2",
+          "hint": "Try: tmux select-window -t 2"
+        },
+        {
+          "instruction": "Display pane numbers to orient yourself in the split layout.",
+          "expect": "tmux display-panes",
+          "hint": "Try: tmux display-panes"
+        },
+        {
+          "instruction": "Enter copy mode to scroll back and see output you missed during disconnection.",
+          "expect": "tmux copy-mode",
+          "hint": "Try: tmux copy-mode"
+        },
+        {
+          "instruction": "Kill the stale 'deploy' session that is no longer needed.",
+          "expect": "tmux kill-session -t deploy",
+          "hint": "Try: tmux kill-session -t deploy"
+        },
+        {
+          "instruction": "Rename your current session to 'incident-2026' to reflect its new purpose.",
+          "expect": "tmux rename-session incident-2026",
+          "hint": "Try: tmux rename-session incident-2026"
+        }
+      ]
+    }
+  ],
+  "commands": {
+    "help": "Available commands:\n  tmux new -s <name>             — Create a new named session\n  tmux ls                        — List all sessions\n  tmux attach -t <name>          — Attach to a session\n  tmux kill-session -t <name>    — Kill a session\n  tmux rename-session <name>     — Rename current session\n  tmux switch -t <name>          — Switch to another session\n  tmux new-window -n <name>      — Create a new window\n  tmux list-windows              — List all windows\n  tmux select-window -t <n>      — Switch to window N\n  tmux rename-window <name>      — Rename current window\n  tmux kill-window               — Kill current window\n  tmux split-window -h           — Split pane horizontally\n  tmux split-window -v           — Split pane vertically\n  tmux select-pane -t <n>        — Select pane N\n  tmux resize-pane -D <n>        — Resize pane down by N rows\n  tmux list-panes                — List panes in current window\n  tmux swap-pane                 — Swap panes\n  tmux display-panes             — Show pane numbers\n  tmux copy-mode                 — Enter scroll/copy mode\n  tmux clock-mode                — Show clock in pane\n  tmux show-options -g           — Show global options\n  tmux set -g mouse on           — Enable mouse support\n  tmux source-file ~/.tmux.conf  — Reload config\n  tmux list-keys                 — List key bindings\n  tmux info                      — Show server info\n  tmux display-message           — Show status message\n  tmux show-environment          — Show environment variables\n\n  scenario                       — Start a guided lab\n  clear                          — Clear the terminal\n  help                           — Show this help",
+    "tmux new -s incident-2026": "Created session: incident-2026\n[incident-2026] 0:bash*",
+    "tmux new -s monitoring": "Created session: monitoring\n[monitoring] 0:bash*",
+    "tmux new -s deploy": "Created session: deploy\n[deploy] 0:bash*",
+    "tmux new -s incident": "Created session: incident\n[incident] 0:bash*",
+    "tmux ls": "deploy: 2 windows (created Mon Jun  2 09:15:03 2026) (attached)\nincident-2026: 3 windows (created Mon Jun  2 14:22:18 2026) (attached)\nmonitoring: 4 windows (created Sun Jun  1 22:05:41 2026)",
+    "tmux list-sessions": "deploy: 2 windows (created Mon Jun  2 09:15:03 2026) (attached)\nincident-2026: 3 windows (created Mon Jun  2 14:22:18 2026) (attached)\nmonitoring: 4 windows (created Sun Jun  1 22:05:41 2026)",
+    "tmux attach -t incident-2026": "Attached to session: incident-2026\n[incident-2026] 1:logs* 2:comms",
+    "tmux attach -t monitoring": "Attached to session: monitoring\n[monitoring] 0:dashboards* 1:alerts 2:queries 3:shell",
+    "tmux attach -t deploy": "Attached to session: deploy\n[deploy] 0:pipeline* 1:rollback",
+    "tmux kill-session -t old": "Session 'old' killed.",
+    "tmux kill-session -t deploy": "Session 'deploy' killed.",
+    "tmux kill-session -t incident-2026": "Session 'incident-2026' killed.",
+    "tmux rename-session incident-2026": "Session renamed to: incident-2026",
+    "tmux rename-session monitoring": "Session renamed to: monitoring",
+    "tmux switch -t monitoring": "Switched to session: monitoring\n[monitoring] 0:dashboards*",
+    "tmux switch -t incident-2026": "Switched to session: incident-2026\n[incident-2026] 1:logs*",
+    "tmux switch -t deploy": "Switched to session: deploy\n[deploy] 0:pipeline*",
+    "tmux new-window -n logs": "Created window: logs\n[incident-2026] 1:logs*",
+    "tmux new-window -n metrics": "Created window: metrics\n[incident-2026] 2:metrics*",
+    "tmux new-window -n comms": "Created window: comms\n[incident-2026] 2:comms*",
+    "tmux new-window -n shell": "Created window: shell\n[incident-2026] 3:shell*",
+    "tmux new-window -n deploy": "Created window: deploy\n[monitoring] 4:deploy*",
+    "tmux list-windows": "0: bash (1 panes) [204x56]\n1: logs (3 panes) [204x56] (active)\n2: comms (1 panes) [204x56]",
+    "tmux select-window -t 0": "Switched to window 0: bash",
+    "tmux select-window -t 1": "Switched to window 1: logs",
+    "tmux select-window -t 2": "Switched to window 2: comms",
+    "tmux select-window -t 3": "Switched to window 3: shell",
+    "tmux rename-window dashboards": "Window renamed to: dashboards",
+    "tmux rename-window alerts": "Window renamed to: alerts",
+    "tmux kill-window": "Window killed.\n[incident-2026] 1:logs*",
+    "tmux split-window -h": "Split pane horizontally.\n[incident-2026] 1:logs* (2 panes)\n┌──────────────────────┬──────────────────────┐\n│ pane 0               │ pane 1               │\n│ sre@jumpbox:~$       │ sre@jumpbox:~$       │\n│                      │                      │\n└──────────────────────┴──────────────────────┘",
+    "tmux split-window -v": "Split pane vertically.\n[incident-2026] 1:logs* (3 panes)\n┌──────────────────────┬──────────────────────┐\n│ pane 0               │ pane 1               │\n│ sre@jumpbox:~$       ├──────────────────────┤\n│                      │ pane 2               │\n│                      │ sre@jumpbox:~$       │\n└──────────────────────┴──────────────────────┘",
+    "tmux select-pane -t 0": "Selected pane 0.",
+    "tmux select-pane -t 1": "Selected pane 1.",
+    "tmux select-pane -t 2": "Selected pane 2.",
+    "tmux resize-pane -D 10": "Pane resized down by 10 rows.",
+    "tmux resize-pane -U 10": "Pane resized up by 10 rows.",
+    "tmux resize-pane -L 10": "Pane resized left by 10 columns.",
+    "tmux resize-pane -R 10": "Pane resized right by 10 columns.",
+    "tmux resize-pane -D 5": "Pane resized down by 5 rows.",
+    "tmux resize-pane -U 5": "Pane resized up by 5 rows.",
+    "tmux list-panes": "0: [102x56] [history 2048/50000, 156 bytes] (active)\n1: [101x28] [history 1024/50000, 89 bytes]\n2: [101x27] [history 512/50000, 42 bytes]",
+    "tmux swap-pane -s 0 -t 1": "Panes 0 and 1 swapped.",
+    "tmux swap-pane -U": "Pane swapped up.",
+    "tmux swap-pane -D": "Pane swapped down.",
+    "tmux display-panes": "Displaying pane numbers...\n┌──────────────────────┬──────────────────────┐\n│         [0]          │         [1]          │\n│                      ├──────────────────────┤\n│                      │         [2]          │\n└──────────────────────┴──────────────────────┘\n(press q to cancel, or number to select pane)",
+    "tmux clock-mode": "Displaying clock in current pane:\n\n    ██  ██   ██  ██████\n    ██  ██ ████     ██\n    ██████   ██   ██\n        ██   ██  ██\n        ██   ██  ██████\n\n    14:22:18",
+    "tmux copy-mode": "Entered copy mode. Use arrow keys to scroll, q to exit.\n[0/2048]",
+    "tmux show-options -g": "activity-action other\nassume-paste-time 1\nbase-index 0\nbell-action any\ndefault-command \"\"\ndefault-shell \"/bin/bash\"\ndefault-size \"80x24\"\ndestroy-unattached off\ndetach-on-destroy on\ndisplay-panes-active-colour red\ndisplay-panes-colour blue\ndisplay-panes-time 1000\ndisplay-time 750\nhistory-limit 50000\nlock-after-time 0\nmouse off\nprefix C-b\nrenumber-windows off\nset-clipboard external\nstatus on\nstatus-interval 15\nstatus-keys emacs\nstatus-left \"[#S] \"\nstatus-right \" %H:%M %d-%b-%y\"\nstatus-style bg=green,fg=black\nvisual-activity off\nword-separators \" \"",
+    "tmux set -g mouse on": "Option set: mouse → on",
+    "tmux set -g mouse off": "Option set: mouse → off",
+    "tmux set -g status-interval 5": "Option set: status-interval → 5",
+    "tmux set -g history-limit 100000": "Option set: history-limit → 100000",
+    "tmux set -g base-index 1": "Option set: base-index → 1",
+    "tmux source-file ~/.tmux.conf": "Config reloaded: /home/sre/.tmux.conf\n(14 options applied)",
+    "tmux list-keys": "bind-key    C-b       send-prefix\nbind-key    \"         split-window\nbind-key    %         split-window -h\nbind-key    &         kill-window\nbind-key    '         command-prompt -p index \"select-window -t ':%%'\"\nbind-key    ,         command-prompt -I \"#W\" \"rename-window -- '%%'\"\nbind-key    .         command-prompt -T target \"move-window -t '%%'\"\nbind-key    0         select-window -t :=0\nbind-key    1         select-window -t :=1\nbind-key    2         select-window -t :=2\nbind-key    c         new-window\nbind-key    d         detach-client\nbind-key    l         last-window\nbind-key    n         next-window\nbind-key    o         select-pane -t :.+\nbind-key    p         previous-window\nbind-key    q         display-panes\nbind-key    s         choose-tree -Zs\nbind-key    t         clock-mode\nbind-key    w         choose-tree -Zw\nbind-key    x         confirm-before -p \"kill-pane #P? (y/n)\" kill-pane\nbind-key    z         resize-pane -Z\nbind-key    [         copy-mode\nbind-key    ]         paste-buffer\nbind-key    Left      select-pane -L\nbind-key    Right     select-pane -R\nbind-key    Up        select-pane -U\nbind-key    Down      select-pane -D",
+    "tmux list-keys | grep split": "bind-key    \"         split-window\nbind-key    %         split-window -h",
+    "tmux info": "tmux 3.4, built from source\nPlatform: linux-gnu\nSocket path: /tmp/tmux-1000/default\nProtocol version: 8\nConfiguration file: /home/sre/.tmux.conf (loaded)\nPID: 48291\nStarted: Sun Jun  1 22:05:41 2026\nTerminal: xterm-256color\nFeatures: 256,RGB,clipboard,title\nSessions: 3\nWindows: 9\nPanes: 14",
+    "tmux display-message": "\"sre@jumpbox\" — [incident-2026] 1:logs (3 panes) — 14:22 02-Jun-26",
+    "tmux display-message -p '#{session_name}'": "incident-2026",
+    "tmux display-message -p '#{window_index}:#{window_name}'": "1:logs",
+    "tmux display-message -p '#{pane_current_command}'": "bash",
+    "tmux show-environment": "DISPLAY=:0\nHOME=/home/sre\nLANG=en_US.UTF-8\nPATH=/usr/local/bin:/usr/bin:/bin\nSHELL=/bin/bash\nSSH_AUTH_SOCK=/tmp/ssh-XXXXabc123/agent.48291\nTERM=xterm-256color\nTMUX=/tmp/tmux-1000/default,48291,0\nTMUX_PANE=%2\nUSER=sre",
+    "tmux show-environment -g": "DISPLAY=:0\nHOME=/home/sre\nLANG=en_US.UTF-8\nPATH=/usr/local/bin:/usr/bin:/bin\nSHELL=/bin/bash\nSSH_AUTH_SOCK=/tmp/ssh-XXXXabc123/agent.48291\nTERM=xterm-256color\nUSER=sre",
+    "tmux set-environment INCIDENT_ID INC-20260602-001": "Environment variable set: INCIDENT_ID=INC-20260602-001",
+    "tmux detach": "Detached from session: incident-2026\n[detached (from session incident-2026)]",
+    "tmux detach-client": "Detached from session: incident-2026\n[detached (from session incident-2026)]",
+    "tmux kill-server": "All sessions killed. tmux server exited.",
+    "tmux has-session -t monitoring": "Session 'monitoring' exists.",
+    "tmux has-session -t incident-2026": "Session 'incident-2026' exists.",
+    "tmux send-keys 'tail -f /var/log/app.log' Enter": "Sent keys to pane: tail -f /var/log/app.log\n(command executing in target pane)",
+    "tmux send-keys 'htop' Enter": "Sent keys to pane: htop\n(command executing in target pane)",
+    "tmux capture-pane -p": "sre@jumpbox:~$ tail -f /var/log/app.log\n2026-06-02T14:20:12Z INFO  [api] request method=GET path=/healthz status=200 latency=2ms\n2026-06-02T14:20:15Z WARN  [worker] queue depth high: 1247 messages pending\n2026-06-02T14:20:18Z ERROR [db] connection pool exhausted, waiting for free connection\n2026-06-02T14:20:20Z INFO  [api] request method=POST path=/api/v1/transfer status=201 latency=89ms\n2026-06-02T14:20:22Z ERROR [db] query timeout after 30s: SELECT * FROM transactions WHERE...",
+    "tmux pipe-pane -o 'cat >> ~/tmux-incident.log'": "Pane output is being logged to: ~/tmux-incident.log",
+    "tmux select-layout even-horizontal": "Layout changed to: even-horizontal\n┌────────────┬────────────┬────────────┐\n│   pane 0   │   pane 1   │   pane 2   │\n│            │            │            │\n└────────────┴────────────┴────────────┘",
+    "tmux select-layout even-vertical": "Layout changed to: even-vertical\n┌──────────────────────────────────────┐\n│              pane 0                  │\n├──────────────────────────────────────┤\n│              pane 1                  │\n├──────────────────────────────────────┤\n│              pane 2                  │\n└──────────────────────────────────────┘",
+    "tmux select-layout main-horizontal": "Layout changed to: main-horizontal\n┌──────────────────────────────────────┐\n│              pane 0 (main)           │\n├──────────────────┬───────────────────┤\n│     pane 1       │      pane 2       │\n└──────────────────┴───────────────────┘",
+    "tmux select-layout main-vertical": "Layout changed to: main-vertical\n┌───────────────────┬──────────────────┐\n│                   │     pane 1       │\n│   pane 0 (main)   ├──────────────────┤\n│                   │     pane 2       │\n└───────────────────┴──────────────────┘",
+    "tmux select-layout tiled": "Layout changed to: tiled\n┌──────────────────┬───────────────────┐\n│     pane 0       │      pane 1       │\n├──────────────────┼───────────────────┤\n│     pane 2       │      pane 3       │\n└──────────────────┴───────────────────┘",
+    "tmux resize-pane -Z": "Pane zoomed (fullscreen). Press prefix+z to un-zoom.",
+    "tmux break-pane": "Pane broken out to new window.\n[incident-2026] 3:bash*",
+    "tmux join-pane -t 1": "Pane joined to window 1.\n[incident-2026] 1:logs (4 panes)",
+    "tmux move-window -t 0": "Window moved to index 0.",
+    "tmux last-window": "Switched to last active window.\n[incident-2026] 0:bash*",
+    "tmux next-window": "Switched to next window.\n[incident-2026] 2:comms*",
+    "tmux previous-window": "Switched to previous window.\n[incident-2026] 0:bash*"
+  },
+  "reference": [
+    {
+      "group": "Sessions",
+      "commands": [
+        {
+          "cmd": "tmux new -s incident-2026",
+          "desc": "create named session"
+        },
+        {
+          "cmd": "tmux ls",
+          "desc": "list all sessions"
+        },
+        {
+          "cmd": "tmux attach -t monitoring",
+          "desc": "attach to session"
+        },
+        {
+          "cmd": "tmux kill-session -t deploy",
+          "desc": "kill a session"
+        },
+        {
+          "cmd": "tmux rename-session incident-2026",
+          "desc": "rename session"
+        },
+        {
+          "cmd": "tmux switch -t monitoring",
+          "desc": "switch session"
+        },
+        {
+          "cmd": "tmux detach",
+          "desc": "detach from session"
+        }
+      ]
+    },
+    {
+      "group": "Windows",
+      "commands": [
+        {
+          "cmd": "tmux new-window -n logs",
+          "desc": "create named window"
+        },
+        {
+          "cmd": "tmux list-windows",
+          "desc": "list windows"
+        },
+        {
+          "cmd": "tmux select-window -t 2",
+          "desc": "switch to window"
+        },
+        {
+          "cmd": "tmux rename-window dashboards",
+          "desc": "rename window"
+        },
+        {
+          "cmd": "tmux kill-window",
+          "desc": "kill current window"
+        },
+        {
+          "cmd": "tmux last-window",
+          "desc": "toggle last window"
+        }
+      ]
+    },
+    {
+      "group": "Panes",
+      "commands": [
+        {
+          "cmd": "tmux split-window -h",
+          "desc": "split horizontally"
+        },
+        {
+          "cmd": "tmux split-window -v",
+          "desc": "split vertically"
+        },
+        {
+          "cmd": "tmux select-pane -t 1",
+          "desc": "select pane"
+        },
+        {
+          "cmd": "tmux resize-pane -D 10",
+          "desc": "resize pane down"
+        },
+        {
+          "cmd": "tmux list-panes",
+          "desc": "list panes"
+        },
+        {
+          "cmd": "tmux swap-pane -s 0 -t 1",
+          "desc": "swap panes"
+        },
+        {
+          "cmd": "tmux resize-pane -Z",
+          "desc": "zoom/fullscreen pane"
+        }
+      ]
+    },
+    {
+      "group": "Layouts",
+      "commands": [
+        {
+          "cmd": "tmux select-layout even-horizontal",
+          "desc": "equal columns"
+        },
+        {
+          "cmd": "tmux select-layout even-vertical",
+          "desc": "equal rows"
+        },
+        {
+          "cmd": "tmux select-layout main-horizontal",
+          "desc": "main top, rest below"
+        },
+        {
+          "cmd": "tmux select-layout main-vertical",
+          "desc": "main left, rest right"
+        },
+        {
+          "cmd": "tmux select-layout tiled",
+          "desc": "tiled grid"
+        }
+      ]
+    },
+    {
+      "group": "Navigation",
+      "commands": [
+        {
+          "cmd": "tmux display-panes",
+          "desc": "show pane numbers"
+        },
+        {
+          "cmd": "tmux copy-mode",
+          "desc": "scroll/copy mode"
+        },
+        {
+          "cmd": "tmux clock-mode",
+          "desc": "show clock"
+        },
+        {
+          "cmd": "tmux last-window",
+          "desc": "toggle last window"
+        },
+        {
+          "cmd": "tmux next-window",
+          "desc": "next window"
+        },
+        {
+          "cmd": "tmux previous-window",
+          "desc": "previous window"
+        }
+      ]
+    },
+    {
+      "group": "Configuration",
+      "commands": [
+        {
+          "cmd": "tmux show-options -g",
+          "desc": "show global options"
+        },
+        {
+          "cmd": "tmux set -g mouse on",
+          "desc": "enable mouse"
+        },
+        {
+          "cmd": "tmux source-file ~/.tmux.conf",
+          "desc": "reload config"
+        },
+        {
+          "cmd": "tmux list-keys",
+          "desc": "list key bindings"
+        },
+        {
+          "cmd": "tmux set -g history-limit 100000",
+          "desc": "increase scrollback"
+        }
+      ]
+    },
+    {
+      "group": "Info & Debug",
+      "commands": [
+        {
+          "cmd": "tmux info",
+          "desc": "server information"
+        },
+        {
+          "cmd": "tmux display-message",
+          "desc": "show status info"
+        },
+        {
+          "cmd": "tmux show-environment",
+          "desc": "environment vars"
+        },
+        {
+          "cmd": "tmux capture-pane -p",
+          "desc": "capture pane output"
+        },
+        {
+          "cmd": "tmux pipe-pane -o 'cat >> ~/tmux-incident.log'",
+          "desc": "log pane to file"
+        }
+      ]
+    },
+    {
+      "group": "Scenarios",
+      "commands": [
+        {
+          "cmd": "scenario incident-workspace",
+          "desc": "set up incident workspace"
+        },
+        {
+          "cmd": "scenario recover-session",
+          "desc": "recover disconnected session"
+        }
+      ]
+    }
+  ]
+}

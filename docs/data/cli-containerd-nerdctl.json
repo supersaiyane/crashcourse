@@ -1,0 +1,244 @@
+{
+  "id": "containerd-nerdctl",
+  "prompt": "nerdctl@node:~$",
+  "welcome": "Welcome to the containerd / nerdctl CLI Playground.\nExplore containers at the runtime level — nerdctl (Docker-compatible), ctr (low-level), and crictl (CRI).\nType 'help' for available commands, 'scenario' for guided labs.\n",
+  "scenarios": [
+    {
+      "id": "debug-k8s-node",
+      "title": "Debug Containers on a Kubernetes Node",
+      "steps": [
+        {
+          "instruction": "You have SSH-ed into a Kubernetes worker node. First, list the containerd namespaces to see what is running.",
+          "expect": "nerdctl namespace ls",
+          "hint": "Try: nerdctl namespace ls"
+        },
+        {
+          "instruction": "Kubernetes containers run in the 'k8s.io' namespace. List running containers there.",
+          "expect": "crictl ps",
+          "hint": "Try: crictl ps"
+        },
+        {
+          "instruction": "The 'payment-svc' container shows high restart count (attempt 4). Inspect it for details.",
+          "expect": "crictl inspect a1b2c3d4e5f6",
+          "hint": "Try: crictl inspect a1b2c3d4e5f6"
+        },
+        {
+          "instruction": "Check the logs of the failing container to find the root cause.",
+          "expect": "crictl logs a1b2c3d4e5f6",
+          "hint": "Try: crictl logs a1b2c3d4e5f6"
+        },
+        {
+          "instruction": "The logs mention an image pull error. List images on this node to verify what is cached.",
+          "expect": "crictl images",
+          "hint": "Try: crictl images"
+        },
+        {
+          "instruction": "Check the pod sandbox status — maybe the pod itself is unhealthy.",
+          "expect": "crictl pods",
+          "hint": "Try: crictl pods"
+        },
+        {
+          "instruction": "Let's go deeper. Use ctr to list snapshots and check for disk pressure.",
+          "expect": "ctr snapshots list",
+          "hint": "Try: ctr snapshots list"
+        },
+        {
+          "instruction": "Finally, check the low-level containerd task list to see running and stopped tasks.",
+          "expect": "ctr tasks list",
+          "hint": "Try: ctr tasks list"
+        }
+      ]
+    },
+    {
+      "id": "build-and-run",
+      "title": "Build and Run with nerdctl",
+      "steps": [
+        {
+          "instruction": "Start by checking the nerdctl and containerd versions on this node.",
+          "expect": "nerdctl version",
+          "hint": "Try: nerdctl version"
+        },
+        {
+          "instruction": "Build a container image from the Dockerfile in the current directory.",
+          "expect": "nerdctl build -t myapp:v1.0 .",
+          "hint": "Try: nerdctl build -t myapp:v1.0 ."
+        },
+        {
+          "instruction": "Verify the image was created by listing local images.",
+          "expect": "nerdctl images",
+          "hint": "Try: nerdctl images"
+        },
+        {
+          "instruction": "Create a custom bridge network for our application stack.",
+          "expect": "nerdctl network create app-net",
+          "hint": "Try: nerdctl network create app-net"
+        },
+        {
+          "instruction": "Run the application container on the new network, mapping port 8080.",
+          "expect": "nerdctl run -d --name myapp --net app-net -p 8080:8080 myapp:v1.0",
+          "hint": "Try: nerdctl run -d --name myapp --net app-net -p 8080:8080 myapp:v1.0"
+        },
+        {
+          "instruction": "Check that the container is running.",
+          "expect": "nerdctl ps",
+          "hint": "Try: nerdctl ps"
+        },
+        {
+          "instruction": "Now bring up the full stack using compose (app + redis + postgres).",
+          "expect": "nerdctl compose up -d",
+          "hint": "Try: nerdctl compose up -d"
+        },
+        {
+          "instruction": "Verify all compose services are running.",
+          "expect": "nerdctl compose ps",
+          "hint": "Try: nerdctl compose ps"
+        }
+      ]
+    }
+  ],
+  "commands": {
+    "help": "Available commands:\n\n  — nerdctl (Docker-compatible CLI for containerd) —\n  nerdctl ps / ps -a              — List running / all containers\n  nerdctl images                  — List local images\n  nerdctl run                     — Run a container\n  nerdctl build                   — Build an image from Dockerfile\n  nerdctl pull / push             — Pull or push images\n  nerdctl logs                    — View container logs\n  nerdctl inspect                 — Inspect container or image\n  nerdctl exec                    — Execute command in container\n  nerdctl stop / rm / rmi         — Stop, remove container or image\n  nerdctl compose up/down/ps      — Docker Compose compatible\n  nerdctl network ls/create       — Manage networks\n  nerdctl volume ls               — List volumes\n  nerdctl namespace ls            — List containerd namespaces\n  nerdctl system prune            — Clean unused resources\n  nerdctl info / version          — System information\n\n  — ctr (low-level containerd CLI) —\n  ctr containers list             — List containers\n  ctr images list                 — List images\n  ctr snapshots list              — List snapshots\n  ctr namespaces list             — List namespaces\n  ctr tasks list                  — List running tasks\n  ctr content list                — List content blobs\n\n  — crictl (CRI-compatible CLI for Kubernetes nodes) —\n  crictl ps                       — List containers (CRI)\n  crictl images                   — List images (CRI)\n  crictl pods                     — List pod sandboxes\n  crictl logs                     — View container logs\n  crictl inspect                  — Inspect a container\n\n  scenario                        — Start a guided lab\n  clear                           — Clear the terminal\n  help                            — Show this help",
+
+    "nerdctl version": "Client:\n Version:       1.7.6\n OS/Arch:       linux/amd64\n containerd:    v1.7.18\n\nServer:\n containerd:\n  Version:     1.7.18\n  GitCommit:   ae71819\n runc:\n  Version:     1.1.12",
+    "nerdctl info": "Client:\n Namespace:     default\n Snapshotter:   overlayfs\n\nServer:\n Server Version: 1.7.18\n Storage Driver: overlayfs\n Logging Driver: json-file\n Cgroup Driver:  systemd\n Cgroup Version: 2\n Kernel Version: 5.15.0-91-generic\n Operating System: Ubuntu 22.04.3 LTS\n OSType: linux\n Architecture: x86_64\n CPUs: 4\n Total Memory: 15.63GiB",
+
+    "nerdctl ps": "CONTAINER ID    IMAGE                              COMMAND                  CREATED          STATUS    PORTS                     NAMES\n8f3a1b2c9d4e    docker.io/library/nginx:1.25        \"nginx -g 'daemon of…\"  2 hours ago      Up        0.0.0.0:80->80/tcp        web-proxy\nc7d6e5f4a3b2    docker.io/library/redis:7.2         \"redis-server\"           3 hours ago      Up        0.0.0.0:6379->6379/tcp    cache-redis\n1a2b3c4d5e6f    registry.internal/myapp:v1.0        \"./myapp serve\"          5 hours ago      Up        0.0.0.0:8080->8080/tcp    myapp",
+    "nerdctl ps -a": "CONTAINER ID    IMAGE                              COMMAND                  CREATED          STATUS                       PORTS                     NAMES\n8f3a1b2c9d4e    docker.io/library/nginx:1.25        \"nginx -g 'daemon of…\"  2 hours ago      Up                           0.0.0.0:80->80/tcp        web-proxy\nc7d6e5f4a3b2    docker.io/library/redis:7.2         \"redis-server\"           3 hours ago      Up                           0.0.0.0:6379->6379/tcp    cache-redis\n1a2b3c4d5e6f    registry.internal/myapp:v1.0        \"./myapp serve\"          5 hours ago      Up                           0.0.0.0:8080->8080/tcp    myapp\nd4e5f6a7b8c9    docker.io/library/postgres:15.6     \"docker-entrypoint.s…\"  6 hours ago      Exited (0) 1 hour ago                                  old-db\nf9e8d7c6b5a4    registry.internal/batch-job:v0.3    \"python run_batch.py\"    12 hours ago     Exited (1) 11 hours ago                                 failed-batch",
+    "nerdctl images": "REPOSITORY                        TAG       IMAGE ID       CREATED        SIZE\nregistry.internal/myapp           v1.0      sha256:a1b2c3   5 hours ago    145.2 MiB\ndocker.io/library/nginx           1.25      sha256:d4e5f6   3 days ago     187.3 MiB\ndocker.io/library/redis           7.2       sha256:g7h8i9   5 days ago     138.5 MiB\ndocker.io/library/postgres        15.6      sha256:j0k1l2   7 days ago     432.1 MiB\nregistry.internal/batch-job       v0.3      sha256:m3n4o5   2 days ago     312.7 MiB\ndocker.io/library/alpine          3.19      sha256:p6q7r8   10 days ago    7.4 MiB",
+    "nerdctl run -d --name myapp --net app-net -p 8080:8080 myapp:v1.0": "1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b",
+    "nerdctl run -d --name test-nginx -p 8081:80 nginx:1.25": "a9b8c7d6e5f4a3b2c1d0e9f8a7b6c5d4e3f2a1b0c9d8e7f6a5b4c3d2e1f0a9b8",
+    "nerdctl run --rm -it alpine:3.19 sh": "/ # (interactive shell — type 'exit' to leave)",
+    "nerdctl build -t myapp:v1.0 .": "[+] Building 12.4s (9/9) FINISHED\n => [internal] load build definition from Dockerfile               0.0s\n => [internal] load .dockerignore                                  0.0s\n => [internal] load metadata for docker.io/library/golang:1.22     1.2s\n => [1/5] FROM docker.io/library/golang:1.22@sha256:abc123         0.0s\n => [2/5] WORKDIR /app                                            0.1s\n => [3/5] COPY go.mod go.sum ./                                   0.1s\n => [4/5] RUN go mod download                                     5.8s\n => [5/5] COPY . .                                                0.2s\n => exporting to oci image format                                  4.9s\n => => naming to registry.internal/myapp:v1.0                      0.0s\nUnpacking registry.internal/myapp:v1.0 (sha256:a1b2c3d4)...done",
+    "nerdctl pull nginx:1.25": "docker.io/library/nginx:1.25:                                             resolved       |++++++++++++++++++++++++++++++++++++++|\nindex-sha256:abc123def456:                                                  done           |++++++++++++++++++++++++++++++++++++++|\nmanifest-sha256:789ghi012jkl:                                               done           |++++++++++++++++++++++++++++++++++++++|\nconfig-sha256:345mno678pqr:                                                 done           |++++++++++++++++++++++++++++++++++++++|\nlayer-sha256:layer1:                                                        done           |++++++++++++++++++++++++++++++++++++++|\nlayer-sha256:layer2:                                                        done           |++++++++++++++++++++++++++++++++++++++|\nlayer-sha256:layer3:                                                        done           |++++++++++++++++++++++++++++++++++++++|\nelapsed: 8.2s                                                               total: 67.4 MiB (8.2 MiB/s)\nUnpacking docker.io/library/nginx:1.25 (sha256:abc123def456)...done",
+    "nerdctl pull redis:7.2": "docker.io/library/redis:7.2:                                               resolved       |++++++++++++++++++++++++++++++++++++++|\nelapsed: 5.1s                                                               total: 42.8 MiB (8.4 MiB/s)\nUnpacking docker.io/library/redis:7.2 (sha256:g7h8i9j0k1l2)...done",
+    "nerdctl push registry.internal/myapp:v1.0": "registry.internal/myapp:v1.0:                                              resolved       |++++++++++++++++++++++++++++++++++++++|\nmanifest-sha256:a1b2c3:                                                     done           |++++++++++++++++++++++++++++++++++++++|\nconfig-sha256:d4e5f6:                                                       done           |++++++++++++++++++++++++++++++++++++++|\nlayer-sha256:layer1:                                                        done           |++++++++++++++++++++++++++++++++++++++|\nlayer-sha256:layer2:                                                        done           |++++++++++++++++++++++++++++++++++++++|\nelapsed: 3.4s                                                               total: 145.2 MiB (42.7 MiB/s)",
+    "nerdctl logs myapp": "2026-06-02T08:00:01Z INFO  Starting myapp v1.0 on :8080\n2026-06-02T08:00:01Z INFO  Connected to Redis at cache-redis:6379\n2026-06-02T08:00:01Z INFO  Database migration completed\n2026-06-02T08:00:02Z INFO  Server ready, accepting connections\n2026-06-02T08:15:30Z INFO  GET /api/v1/accounts 200 12ms\n2026-06-02T08:15:45Z INFO  POST /api/v1/transfers 201 89ms\n2026-06-02T09:00:00Z INFO  Health check passed",
+    "nerdctl logs web-proxy": "2026-06-02T09:00:00Z 10.0.1.42 \"GET / HTTP/1.1\" 200 612 \"-\" \"curl/8.4.0\"\n2026-06-02T09:00:15Z 10.0.1.42 \"GET /api/v1/accounts HTTP/1.1\" 200 1024 \"-\" \"Mozilla/5.0\"\n2026-06-02T09:01:00Z 10.0.1.42 \"GET /healthz HTTP/1.1\" 200 2 \"-\" \"kube-probe/1.29\"",
+    "nerdctl logs cache-redis": "1:C 02 Jun 2026 06:00:00.123 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo\n1:C 02 Jun 2026 06:00:00.123 # Redis version=7.2.4, bits=64, commit=00000000\n1:M 02 Jun 2026 06:00:00.124 * Ready to accept connections tcp\n1:M 02 Jun 2026 09:00:00.001 # 2 clients connected (0 replicas), 1.8M memory used",
+    "nerdctl logs --tail 5 myapp": "2026-06-02T08:15:30Z INFO  GET /api/v1/accounts 200 12ms\n2026-06-02T08:15:45Z INFO  POST /api/v1/transfers 201 89ms\n2026-06-02T09:00:00Z INFO  Health check passed\n2026-06-02T09:15:00Z INFO  GET /api/v1/accounts 200 14ms\n2026-06-02T09:30:00Z INFO  Scheduled batch complete: 42 records processed",
+    "nerdctl inspect myapp": "[\n  {\n    \"Id\": \"1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b\",\n    \"Created\": \"2026-06-02T03:00:00.000000000Z\",\n    \"Path\": \"./myapp\",\n    \"Args\": [\"serve\"],\n    \"State\": {\n      \"Status\": \"running\",\n      \"Running\": true,\n      \"Pid\": 4521,\n      \"ExitCode\": 0,\n      \"StartedAt\": \"2026-06-02T03:00:01.000000000Z\"\n    },\n    \"Image\": \"registry.internal/myapp:v1.0\",\n    \"NetworkSettings\": {\n      \"Networks\": {\n        \"app-net\": {\n          \"IPAddress\": \"172.19.0.3\",\n          \"Gateway\": \"172.19.0.1\"\n        }\n      }\n    },\n    \"Mounts\": [],\n    \"Config\": {\n      \"Env\": [\"REDIS_HOST=cache-redis\", \"DB_HOST=old-db\", \"LOG_LEVEL=info\"],\n      \"ExposedPorts\": { \"8080/tcp\": {} }\n    }\n  }\n]",
+    "nerdctl inspect web-proxy": "[\n  {\n    \"Id\": \"8f3a1b2c9d4e\",\n    \"Created\": \"2026-06-02T07:00:00.000000000Z\",\n    \"State\": { \"Status\": \"running\", \"Running\": true, \"Pid\": 5102 },\n    \"Image\": \"docker.io/library/nginx:1.25\",\n    \"NetworkSettings\": {\n      \"Networks\": {\n        \"bridge\": { \"IPAddress\": \"172.17.0.2\", \"Gateway\": \"172.17.0.1\" }\n      }\n    }\n  }\n]",
+    "nerdctl exec -it myapp sh": "/ # (interactive shell inside myapp container — type 'exit' to leave)",
+    "nerdctl exec myapp cat /etc/os-release": "NAME=\"Alpine Linux\"\nID=alpine\nVERSION_ID=3.19.1\nPRETTY_NAME=\"Alpine Linux v3.19\"",
+    "nerdctl stop myapp": "myapp",
+    "nerdctl stop web-proxy": "web-proxy",
+    "nerdctl stop cache-redis": "cache-redis",
+    "nerdctl rm myapp": "myapp",
+    "nerdctl rm old-db": "old-db",
+    "nerdctl rm failed-batch": "failed-batch",
+    "nerdctl rmi registry.internal/batch-job:v0.3": "Untagged: registry.internal/batch-job:v0.3\nDeleted: sha256:m3n4o5p6q7r8s9t0u1v2w3x4y5z6a7b8c9d0e1f2",
+    "nerdctl rmi docker.io/library/alpine:3.19": "Untagged: docker.io/library/alpine:3.19\nDeleted: sha256:p6q7r8s9t0u1v2w3x4y5z6a7b8c9d0e1f2g3h4i5",
+
+    "nerdctl compose up -d": " Container myapp-redis-1   Started\n Container myapp-db-1      Started\n Container myapp-app-1     Started\n Container myapp-nginx-1   Started",
+    "nerdctl compose up": " Container myapp-redis-1   Created\n Container myapp-db-1      Created\n Container myapp-app-1     Created\n Container myapp-nginx-1   Created\nAttaching to myapp-app-1, myapp-db-1, myapp-nginx-1, myapp-redis-1\nmyapp-redis-1  | 1:M 02 Jun 2026 10:00:00 * Ready to accept connections tcp\nmyapp-db-1     | 2026-06-02 10:00:01 LOG  database system is ready to accept connections\nmyapp-app-1    | 2026-06-02T10:00:02Z INFO  Server ready on :8080",
+    "nerdctl compose down": " Container myapp-nginx-1   Stopped\n Container myapp-app-1     Stopped\n Container myapp-db-1      Stopped\n Container myapp-redis-1   Stopped\n Container myapp-nginx-1   Removed\n Container myapp-app-1     Removed\n Container myapp-db-1      Removed\n Container myapp-redis-1   Removed\n Network myapp_default     Removed",
+    "nerdctl compose ps": "NAME              IMAGE                              SERVICE   CREATED          STATUS    PORTS\nmyapp-app-1       registry.internal/myapp:v1.0       app       10 minutes ago   Up        0.0.0.0:8080->8080/tcp\nmyapp-db-1        docker.io/library/postgres:15.6    db        10 minutes ago   Up        5432/tcp\nmyapp-redis-1     docker.io/library/redis:7.2        redis     10 minutes ago   Up        6379/tcp\nmyapp-nginx-1     docker.io/library/nginx:1.25       nginx     10 minutes ago   Up        0.0.0.0:80->80/tcp",
+
+    "nerdctl network ls": "NETWORK ID      NAME        FILE\n17f29b073143    bridge      /etc/cni/net.d/nerdctl-bridge.conflist\ne5a8f3c1d2b0    app-net     /etc/cni/net.d/nerdctl-app-net.conflist\n0000000000000   host        \nb3c4d5e6f7a8    none",
+    "nerdctl network create app-net": "e5a8f3c1d2b09a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d3e2f1a0b9c8d7e6f5a4b",
+    "nerdctl network create backend-net": "f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7",
+    "nerdctl network inspect app-net": "[\n  {\n    \"Name\": \"app-net\",\n    \"Id\": \"e5a8f3c1d2b0\",\n    \"IPAM\": {\n      \"Config\": [{ \"Subnet\": \"172.19.0.0/24\", \"Gateway\": \"172.19.0.1\" }]\n    },\n    \"Containers\": {\n      \"1a2b3c4d5e6f\": { \"Name\": \"myapp\", \"IPv4Address\": \"172.19.0.3\" },\n      \"c7d6e5f4a3b2\": { \"Name\": \"cache-redis\", \"IPv4Address\": \"172.19.0.2\" }\n    }\n  }\n]",
+
+    "nerdctl volume ls": "VOLUME NAME       DIRECTORY\ndb-data           /var/lib/nerdctl/volumes/db-data/_data\nredis-data        /var/lib/nerdctl/volumes/redis-data/_data\napp-logs          /var/lib/nerdctl/volumes/app-logs/_data",
+    "nerdctl namespace ls": "NAME        CONTAINERS    IMAGES    SIZE\ndefault     5             6         1.2 GiB\nk8s.io      24            18        3.8 GiB\nbuildkit    0             2         0.5 GiB",
+
+    "nerdctl system prune": "WARNING! This will remove:\n  - all stopped containers\n  - all networks not used by at least one container\n  - all dangling images\n  - all build cache\n\nTotal reclaimed space: 847.3 MiB\nDeleted containers: old-db, failed-batch\nDeleted images: 2\nDeleted networks: 1",
+    "nerdctl system prune -a": "WARNING! This will remove:\n  - all stopped containers\n  - all networks not used by at least one container\n  - all images without at least one container associated\n  - all build cache\n\nTotal reclaimed space: 2.1 GiB",
+
+    "ctr containers list": "CONTAINER                         IMAGE                                          RUNTIME\n1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c    registry.internal/myapp:v1.0                   io.containerd.runc.v2\n8f3a1b2c9d4e5f6a7b8c9d0e1f2a3b    docker.io/library/nginx:1.25                   io.containerd.runc.v2\nc7d6e5f4a3b2c1d0e9f8a7b6c5d4e3    docker.io/library/redis:7.2                    io.containerd.runc.v2\nd4e5f6a7b8c9d0e1f2a3b4c5d6e7f8    docker.io/library/postgres:15.6                io.containerd.runc.v2\nf9e8d7c6b5a4d3c2b1a0f9e8d7c6b5    registry.internal/batch-job:v0.3               io.containerd.runc.v2",
+    "ctr images list": "REF                                          TYPE                                  DIGEST                    SIZE\ndocker.io/library/alpine:3.19                application/vnd.oci.image.index.v1    sha256:p6q7r8s9   7.4 MiB\ndocker.io/library/nginx:1.25                 application/vnd.oci.image.index.v1    sha256:d4e5f6g7   187.3 MiB\ndocker.io/library/postgres:15.6              application/vnd.oci.image.index.v1    sha256:j0k1l2m3   432.1 MiB\ndocker.io/library/redis:7.2                  application/vnd.oci.image.index.v1    sha256:g7h8i9j0   138.5 MiB\nregistry.internal/batch-job:v0.3             application/vnd.oci.image.index.v1    sha256:m3n4o5p6   312.7 MiB\nregistry.internal/myapp:v1.0                 application/vnd.oci.image.index.v1    sha256:a1b2c3d4   145.2 MiB",
+    "ctr snapshots list": "KEY                                             PARENT                                          KIND\nsha256:layer1-nginx                             sha256:base-layer-nginx                         Committed\nsha256:layer2-nginx                             sha256:layer1-nginx                             Committed\nsha256:layer1-myapp                             sha256:base-layer-golang                        Committed\nsha256:layer2-myapp                             sha256:layer1-myapp                             Committed\nsha256:layer1-redis                             sha256:base-layer-redis                         Committed\nsha256:layer1-postgres                          sha256:base-layer-postgres                      Committed\nsha256:active-1a2b3c                            sha256:layer2-myapp                             Active\nsha256:active-8f3a1b                            sha256:layer2-nginx                             Active\nsha256:active-c7d6e5                            sha256:layer1-redis                             Active",
+    "ctr namespaces list": "NAME     LABELS\ndefault\nk8s.io\nbuildkit",
+    "ctr tasks list": "TASK                              PID      STATUS\n1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c    4521     RUNNING\n8f3a1b2c9d4e5f6a7b8c9d0e1f2a3b    5102     RUNNING\nc7d6e5f4a3b2c1d0e9f8a7b6c5d4e3    5289     RUNNING\nd4e5f6a7b8c9d0e1f2a3b4c5d6e7f8    5501     STOPPED\nf9e8d7c6b5a4d3c2b1a0f9e8d7c6b5    0        STOPPED",
+    "ctr content list": "DIGEST                                    SIZE      AGE       LABELS\nsha256:a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6    3.2 KiB   5h        containerd.io/gc.ref.content.config=true\nsha256:d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9    2.1 KiB   3d        containerd.io/gc.ref.content.config=true\nsha256:j0k1l2m3n4o5p6q7r8s9t0u1v2w3x4y5    1.8 KiB   7d        containerd.io/gc.ref.content.config=true\nsha256:g7h8i9j0k1l2m3n4o5p6q7r8s9t0u1v2    1.5 KiB   5d        containerd.io/gc.ref.content.config=true\nsha256:m3n4o5p6q7r8s9t0u1v2w3x4y5z6a7b8    2.8 KiB   2d        containerd.io/gc.ref.content.config=true\nsha256:p6q7r8s9t0u1v2w3x4y5z6a7b8c9d0e1    0.9 KiB   10d       containerd.io/gc.ref.content.config=true",
+
+    "crictl ps": "CONTAINER       IMAGE                              CREATED         STATE     NAME                 ATTEMPT   POD ID\na1b2c3d4e5f6    registry.internal/payment:v3.1      2 hours ago     Running   payment-svc          4         pod-aaa111\nb2c3d4e5f6a7    registry.internal/gateway:v2.0      5 hours ago     Running   api-gateway          0         pod-bbb222\nc3d4e5f6a7b8    docker.io/library/redis:7.2         5 hours ago     Running   redis-cache          0         pod-ccc333\nd4e5f6a7b8c9    registry.internal/auth:v1.8         5 hours ago     Running   auth-svc             0         pod-ddd444\ne5f6a7b8c9d0    docker.io/prom/node-exporter:1.7    5 hours ago     Running   node-exporter        0         pod-eee555\nf6a7b8c9d0e1    docker.io/fluent/fluent-bit:2.2     5 hours ago     Running   fluent-bit           0         pod-fff666",
+    "crictl ps -a": "CONTAINER       IMAGE                              CREATED         STATE      NAME                 ATTEMPT   POD ID\na1b2c3d4e5f6    registry.internal/payment:v3.1      2 hours ago     Running    payment-svc          4         pod-aaa111\nb2c3d4e5f6a7    registry.internal/gateway:v2.0      5 hours ago     Running    api-gateway          0         pod-bbb222\nc3d4e5f6a7b8    docker.io/library/redis:7.2         5 hours ago     Running    redis-cache          0         pod-ccc333\nd4e5f6a7b8c9    registry.internal/auth:v1.8         5 hours ago     Running    auth-svc             0         pod-ddd444\ne5f6a7b8c9d0    docker.io/prom/node-exporter:1.7    5 hours ago     Running    node-exporter        0         pod-eee555\nf6a7b8c9d0e1    docker.io/fluent/fluent-bit:2.2     5 hours ago     Running    fluent-bit           0         pod-fff666\ng7b8c9d0e1f2    registry.internal/payment:v3.0      3 hours ago     Exited     payment-svc          3         pod-aaa111",
+    "crictl images": "IMAGE                                      TAG        IMAGE ID       SIZE\ndocker.io/fluent/fluent-bit                2.2        sha256:ff1122   172.4MB\ndocker.io/library/redis                    7.2        sha256:g7h8i9   138.5MB\ndocker.io/prom/node-exporter               1.7        sha256:ne3344   24.8MB\nregistry.internal/auth                     v1.8       sha256:au5566   89.2MB\nregistry.internal/gateway                  v2.0       sha256:gw7788   112.6MB\nregistry.internal/payment                  v3.0       sha256:py0011   156.3MB\nregistry.internal/payment                  v3.1       sha256:py2233   157.1MB\nregistry.k8s.io/pause                      3.9        sha256:pa4455   744KB",
+    "crictl pods": "POD ID       CREATED       STATE     NAME                          NAMESPACE     ATTEMPT   RUNTIME\npod-aaa111   2 hours ago   Ready     payment-deploy-7d4b8c-x2k9    production    0         (default)\npod-bbb222   5 hours ago   Ready     gateway-deploy-5f8b9c-p8m3    production    0         (default)\npod-ccc333   5 hours ago   Ready     redis-deploy-6c9a8b-n5v1      production    0         (default)\npod-ddd444   5 hours ago   Ready     auth-deploy-8a7b6c-k7j4       production    0         (default)\npod-eee555   5 hours ago   Ready     node-exporter-daemonset-m3p2   monitoring    0         (default)\npod-fff666   5 hours ago   Ready     fluent-bit-daemonset-d4e5      monitoring    0         (default)",
+    "crictl logs a1b2c3d4e5f6": "2026-06-02T08:00:01Z ERROR  Failed to pull image registry.internal/payment-models:v3.1-data\n2026-06-02T08:00:01Z ERROR  Error: unauthorized — check imagePullSecrets\n2026-06-02T08:00:02Z WARN   Falling back to cached model data (stale 6h)\n2026-06-02T08:00:03Z INFO   Payment service starting on :8443\n2026-06-02T08:00:03Z INFO   Connected to Redis at redis-cache:6379\n2026-06-02T08:15:00Z WARN   High latency on /api/v1/transfers: 1200ms (threshold: 500ms)\n2026-06-02T09:00:00Z INFO   Health check passed (degraded: model data stale)",
+    "crictl logs b2c3d4e5f6a7": "2026-06-02T05:00:00Z INFO  API Gateway v2.0 starting\n2026-06-02T05:00:01Z INFO  Routes loaded: 24 endpoints\n2026-06-02T05:00:01Z INFO  Rate limiter configured: 1000 req/s per client\n2026-06-02T09:30:00Z INFO  Upstream health: payment=degraded auth=healthy redis=healthy",
+    "crictl inspect a1b2c3d4e5f6": "{\n  \"status\": {\n    \"id\": \"a1b2c3d4e5f6\",\n    \"metadata\": { \"name\": \"payment-svc\" },\n    \"state\": \"CONTAINER_RUNNING\",\n    \"createdAt\": \"2026-06-02T07:00:00.000000000Z\",\n    \"startedAt\": \"2026-06-02T07:00:01.000000000Z\",\n    \"image\": {\n      \"image\": \"registry.internal/payment:v3.1\"\n    },\n    \"imageRef\": \"sha256:py2233\",\n    \"logPath\": \"/var/log/pods/production_payment-deploy-7d4b8c-x2k9_uid/payment-svc/4.log\",\n    \"resources\": {\n      \"linux\": {\n        \"cpuPeriod\": 100000,\n        \"cpuQuota\": 200000,\n        \"memoryLimitInBytes\": 536870912\n      }\n    }\n  },\n  \"info\": {\n    \"pid\": 12345,\n    \"runtimeSpec\": {\n      \"ociVersion\": \"1.1.0\"\n    },\n    \"snapshotKey\": \"sha256:active-a1b2c3\"\n  }\n}",
+    "crictl inspect b2c3d4e5f6a7": "{\n  \"status\": {\n    \"id\": \"b2c3d4e5f6a7\",\n    \"metadata\": { \"name\": \"api-gateway\" },\n    \"state\": \"CONTAINER_RUNNING\",\n    \"image\": { \"image\": \"registry.internal/gateway:v2.0\" },\n    \"logPath\": \"/var/log/pods/production_gateway-deploy-5f8b9c-p8m3_uid/api-gateway/0.log\"\n  }\n}"
+  },
+  "reference": [
+    {
+      "group": "nerdctl — Container Lifecycle",
+      "commands": [
+        { "cmd": "nerdctl ps", "desc": "list running containers" },
+        { "cmd": "nerdctl ps -a", "desc": "list all containers (incl. stopped)" },
+        { "cmd": "nerdctl run -d --name <n> -p 8080:8080 <img>", "desc": "run detached container" },
+        { "cmd": "nerdctl exec -it <name> sh", "desc": "shell into container" },
+        { "cmd": "nerdctl stop <name>", "desc": "stop container" },
+        { "cmd": "nerdctl rm <name>", "desc": "remove stopped container" },
+        { "cmd": "nerdctl logs <name>", "desc": "view container logs" },
+        { "cmd": "nerdctl inspect <name>", "desc": "detailed container JSON" }
+      ]
+    },
+    {
+      "group": "nerdctl — Images & Build",
+      "commands": [
+        { "cmd": "nerdctl images", "desc": "list local images" },
+        { "cmd": "nerdctl build -t <tag> .", "desc": "build image from Dockerfile" },
+        { "cmd": "nerdctl pull <image>", "desc": "pull image from registry" },
+        { "cmd": "nerdctl push <image>", "desc": "push image to registry" },
+        { "cmd": "nerdctl rmi <image>", "desc": "remove local image" }
+      ]
+    },
+    {
+      "group": "nerdctl — Compose",
+      "commands": [
+        { "cmd": "nerdctl compose up -d", "desc": "start all services (detached)" },
+        { "cmd": "nerdctl compose down", "desc": "stop and remove services" },
+        { "cmd": "nerdctl compose ps", "desc": "list compose services" }
+      ]
+    },
+    {
+      "group": "nerdctl — Network & Volume",
+      "commands": [
+        { "cmd": "nerdctl network ls", "desc": "list networks" },
+        { "cmd": "nerdctl network create <name>", "desc": "create bridge network" },
+        { "cmd": "nerdctl network inspect <name>", "desc": "network details" },
+        { "cmd": "nerdctl volume ls", "desc": "list volumes" }
+      ]
+    },
+    {
+      "group": "nerdctl — System",
+      "commands": [
+        { "cmd": "nerdctl namespace ls", "desc": "list containerd namespaces" },
+        { "cmd": "nerdctl system prune", "desc": "clean unused resources" },
+        { "cmd": "nerdctl info", "desc": "system and storage info" },
+        { "cmd": "nerdctl version", "desc": "client and server versions" }
+      ]
+    },
+    {
+      "group": "ctr — Low-Level containerd",
+      "commands": [
+        { "cmd": "ctr containers list", "desc": "list all containers" },
+        { "cmd": "ctr images list", "desc": "list all images" },
+        { "cmd": "ctr snapshots list", "desc": "list filesystem snapshots" },
+        { "cmd": "ctr namespaces list", "desc": "list namespaces" },
+        { "cmd": "ctr tasks list", "desc": "list running/stopped tasks" },
+        { "cmd": "ctr content list", "desc": "list content store blobs" }
+      ]
+    },
+    {
+      "group": "crictl — CRI (Kubernetes Nodes)",
+      "commands": [
+        { "cmd": "crictl ps", "desc": "list running containers" },
+        { "cmd": "crictl ps -a", "desc": "all containers incl. exited" },
+        { "cmd": "crictl images", "desc": "list node images" },
+        { "cmd": "crictl pods", "desc": "list pod sandboxes" },
+        { "cmd": "crictl logs <id>", "desc": "container logs" },
+        { "cmd": "crictl inspect <id>", "desc": "container details (JSON)" }
+      ]
+    },
+    {
+      "group": "Scenarios",
+      "commands": [
+        { "cmd": "scenario debug-k8s-node", "desc": "debug containers on a K8s node" },
+        { "cmd": "scenario build-and-run", "desc": "build and run with nerdctl" }
+      ]
+    }
+  ]
+}

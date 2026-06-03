@@ -1,0 +1,297 @@
+{
+  "id": "systemd",
+  "prompt": "sre@prod-web-01:~$",
+  "welcome": "Welcome to the systemd CLI Playground.\nSimulating Ubuntu 22.04 LTS with nginx, node-app, postgresql, and redis services.\nType commands to explore service management and system diagnostics.\nType 'help' for available commands, 'scenario' for guided labs.\n",
+  "scenarios": [
+    {
+      "id": "create-debug-service",
+      "title": "Create and Debug a Custom Service",
+      "steps": [
+        {
+          "instruction": "First, check what unit files exist for our node application.",
+          "expect": "systemctl cat node-app.service",
+          "hint": "Try: systemctl cat node-app.service"
+        },
+        {
+          "instruction": "The service file doesn't exist yet. Let's create it. After writing /etc/systemd/system/node-app.service, reload the daemon to pick up the new file.",
+          "expect": "systemctl daemon-reload",
+          "hint": "Try: systemctl daemon-reload"
+        },
+        {
+          "instruction": "Now enable the service so it starts on boot.",
+          "expect": "systemctl enable node-app.service",
+          "hint": "Try: systemctl enable node-app.service"
+        },
+        {
+          "instruction": "Start the service.",
+          "expect": "systemctl start node-app.service",
+          "hint": "Try: systemctl start node-app.service"
+        },
+        {
+          "instruction": "The service failed to start. Check its status to see what went wrong.",
+          "expect": "systemctl status node-app.service",
+          "hint": "Try: systemctl status node-app.service"
+        },
+        {
+          "instruction": "Status shows an exit code error. Check the full journal logs for the service.",
+          "expect": "journalctl -u node-app.service --no-pager",
+          "hint": "Try: journalctl -u node-app.service --no-pager"
+        },
+        {
+          "instruction": "The logs show a missing environment file. After fixing /etc/default/node-app, restart the service.",
+          "expect": "systemctl restart node-app.service",
+          "hint": "Try: systemctl restart node-app.service"
+        },
+        {
+          "instruction": "Verify the service is now running and healthy.",
+          "expect": "systemctl is-active node-app.service",
+          "hint": "Try: systemctl is-active node-app.service"
+        }
+      ]
+    },
+    {
+      "id": "investigate-boot-failures",
+      "title": "Investigate Boot and Failed Services",
+      "steps": [
+        {
+          "instruction": "The server just rebooted. Check how long the boot took.",
+          "expect": "systemd-analyze",
+          "hint": "Try: systemd-analyze"
+        },
+        {
+          "instruction": "Something slowed boot down. Find which services took the longest.",
+          "expect": "systemd-analyze blame",
+          "hint": "Try: systemd-analyze blame"
+        },
+        {
+          "instruction": "PostgreSQL is slow. Check the critical chain to see what blocked on it.",
+          "expect": "systemd-analyze critical-chain postgresql.service",
+          "hint": "Try: systemd-analyze critical-chain postgresql.service"
+        },
+        {
+          "instruction": "Now list all failed services on the system.",
+          "expect": "systemctl list-units --failed",
+          "hint": "Try: systemctl list-units --failed"
+        },
+        {
+          "instruction": "The backup.timer unit failed. Check its dependencies.",
+          "expect": "systemctl list-dependencies backup.timer",
+          "hint": "Try: systemctl list-dependencies backup.timer"
+        },
+        {
+          "instruction": "Check all active timers to understand the schedule.",
+          "expect": "systemctl list-timers",
+          "hint": "Try: systemctl list-timers"
+        },
+        {
+          "instruction": "The backup timer is inactive. Re-enable and start it.",
+          "expect": "systemctl enable --now backup.timer",
+          "hint": "Try: systemctl enable --now backup.timer"
+        },
+        {
+          "instruction": "Verify the timer is now scheduled by checking timers again.",
+          "expect": "systemctl list-timers",
+          "hint": "Try: systemctl list-timers"
+        }
+      ]
+    }
+  ],
+  "commands": {
+    "help": "Available commands:\n  systemctl status [unit]        — Show service status\n  systemctl start [unit]         — Start a service\n  systemctl stop [unit]          — Stop a service\n  systemctl restart [unit]       — Restart a service\n  systemctl enable [unit]        — Enable at boot\n  systemctl disable [unit]       — Disable at boot\n  systemctl daemon-reload        — Reload unit files\n  systemctl list-units           — List active units\n  systemctl list-unit-files      — List all unit files\n  systemctl list-units --failed  — Show failed units\n  systemctl list-timers          — Show active timers\n  systemctl list-dependencies    — Show unit dependencies\n  systemctl mask/unmask [unit]   — Prevent/allow starting\n  systemctl cat [unit]           — Show unit file contents\n  systemctl show [unit]          — Show unit properties\n  systemctl edit [unit]          — Edit unit overrides\n  systemctl is-active [unit]     — Check if active\n  systemctl is-enabled [unit]    — Check if enabled\n  journalctl -u [unit]           — Logs for a service\n  journalctl -f                  — Follow live logs\n  journalctl -p err              — Show only errors\n  journalctl --since/--until     — Filter by time\n  journalctl --disk-usage        — Journal disk usage\n  journalctl --list-boots        — List boot records\n  systemd-analyze                — Boot time summary\n  systemd-analyze blame          — Slowest units at boot\n  systemd-analyze critical-chain — Boot critical path\n  hostnamectl                    — Hostname info\n  timedatectl                    — Time/date info\n  loginctl                       — Session info\n  systemd-cgls                   — Control group tree\n  systemd-cgtop                  — Control group resource usage\n\n  scenario                       — Start a guided lab\n  clear                          — Clear the terminal\n  help                           — Show this help",
+    "systemctl status nginx.service": "● nginx.service - A high performance web server and reverse proxy\n     Loaded: loaded (/lib/systemd/system/nginx.service; enabled; vendor preset: enabled)\n     Active: active (running) since Mon 2026-06-02 03:14:22 UTC; 23h ago\n       Docs: man:nginx(8)\n    Process: 1842 ExecStartPre=/usr/sbin/nginx -t -q -g daemon on; master_process on; (code=exited, status=0/SUCCESS)\n    Process: 1856 ExecStart=/usr/sbin/nginx -g daemon on; master_process on; (code=exited, status=0/SUCCESS)\n   Main PID: 1857 (nginx)\n      Tasks: 5 (limit: 9402)\n     Memory: 12.4M\n        CPU: 1.245s\n     CGroup: /system.slice/nginx.service\n             ├─1857 \"nginx: master process /usr/sbin/nginx -g daemon on; master_process on;\"\n             ├─1858 \"nginx: worker process\" \"\"\n             ├─1859 \"nginx: worker process\" \"\"\n             ├─1860 \"nginx: worker process\" \"\"\n             └─1861 \"nginx: worker process\" \"\"\n\nJun 02 03:14:22 prod-web-01 systemd[1]: Starting A high performance web server...\nJun 02 03:14:22 prod-web-01 systemd[1]: Started A high performance web server.",
+    "systemctl status nginx": "● nginx.service - A high performance web server and reverse proxy\n     Loaded: loaded (/lib/systemd/system/nginx.service; enabled; vendor preset: enabled)\n     Active: active (running) since Mon 2026-06-02 03:14:22 UTC; 23h ago\n       Docs: man:nginx(8)\n   Main PID: 1857 (nginx)\n      Tasks: 5 (limit: 9402)\n     Memory: 12.4M\n        CPU: 1.245s\n     CGroup: /system.slice/nginx.service\n             ├─1857 \"nginx: master process /usr/sbin/nginx\"\n             └─1858 \"nginx: worker process\"",
+    "systemctl status node-app.service": "● node-app.service - Node.js Production Application\n     Loaded: loaded (/etc/systemd/system/node-app.service; enabled; vendor preset: enabled)\n     Active: failed (Result: exit-code) since Mon 2026-06-02 14:22:10 UTC; 2min ago\n    Process: 4521 ExecStart=/usr/bin/node /opt/node-app/server.js (code=exited, status=1/FAILURE)\n   Main PID: 4521 (code=exited, status=1/FAILURE)\n        CPU: 312ms\n\nJun 02 14:22:10 prod-web-01 systemd[1]: Started Node.js Production Application.\nJun 02 14:22:10 prod-web-01 node[4521]: Error: Cannot find module '/etc/default/node-app'\nJun 02 14:22:10 prod-web-01 node[4521]: Fatal: Missing required environment configuration\nJun 02 14:22:10 prod-web-01 systemd[1]: node-app.service: Main process exited, code=exited, status=1/FAILURE\nJun 02 14:22:10 prod-web-01 systemd[1]: node-app.service: Failed with result 'exit-code'.",
+    "systemctl status node-app": "● node-app.service - Node.js Production Application\n     Loaded: loaded (/etc/systemd/system/node-app.service; enabled; vendor preset: enabled)\n     Active: failed (Result: exit-code) since Mon 2026-06-02 14:22:10 UTC; 2min ago\n   Main PID: 4521 (code=exited, status=1/FAILURE)\n        CPU: 312ms",
+    "systemctl status postgresql.service": "● postgresql.service - PostgreSQL RDBMS\n     Loaded: loaded (/lib/systemd/system/postgresql.service; enabled; vendor preset: enabled)\n     Active: active (exited) since Mon 2026-06-02 03:14:28 UTC; 23h ago\n   Main PID: 1923 (code=exited, status=0/SUCCESS)\n        CPU: 42ms\n\nJun 02 03:14:28 prod-web-01 systemd[1]: Starting PostgreSQL RDBMS...\nJun 02 03:14:28 prod-web-01 systemd[1]: Finished PostgreSQL RDBMS.",
+    "systemctl status postgresql": "● postgresql.service - PostgreSQL RDBMS\n     Loaded: loaded (/lib/systemd/system/postgresql.service; enabled; vendor preset: enabled)\n     Active: active (exited) since Mon 2026-06-02 03:14:28 UTC; 23h ago\n   Main PID: 1923 (code=exited, status=0/SUCCESS)\n        CPU: 42ms",
+    "systemctl status redis.service": "● redis-server.service - Advanced key-value store\n     Loaded: loaded (/lib/systemd/system/redis-server.service; enabled; vendor preset: enabled)\n     Active: active (running) since Mon 2026-06-02 03:14:25 UTC; 23h ago\n       Docs: http://redis.io/documentation\n   Main PID: 1901 (redis-server)\n     Status: \"Ready to accept connections\"\n      Tasks: 5 (limit: 9402)\n     Memory: 8.2M\n        CPU: 45.112s\n     CGroup: /system.slice/redis-server.service\n             └─1901 \"/usr/bin/redis-server 127.0.0.1:6379\"\n\nJun 02 03:14:25 prod-web-01 systemd[1]: Started Advanced key-value store.",
+    "systemctl status redis": "● redis-server.service - Advanced key-value store\n     Loaded: loaded (/lib/systemd/system/redis-server.service; enabled; vendor preset: enabled)\n     Active: active (running) since Mon 2026-06-02 03:14:25 UTC; 23h ago\n   Main PID: 1901 (redis-server)\n     Status: \"Ready to accept connections\"\n     Memory: 8.2M",
+    "systemctl start node-app.service": "Job for node-app.service failed because the control process exited with error code.\nSee \"systemctl status node-app.service\" and \"journalctl -xeu node-app.service\" for details.",
+    "systemctl start node-app": "Job for node-app.service failed because the control process exited with error code.\nSee \"systemctl status node-app.service\" and \"journalctl -xeu node-app.service\" for details.",
+    "systemctl start nginx": "",
+    "systemctl start nginx.service": "",
+    "systemctl stop nginx": "",
+    "systemctl stop nginx.service": "",
+    "systemctl stop node-app.service": "",
+    "systemctl stop redis": "",
+    "systemctl stop redis.service": "",
+    "systemctl restart nginx": "",
+    "systemctl restart nginx.service": "",
+    "systemctl restart node-app.service": "",
+    "systemctl restart node-app": "",
+    "systemctl restart postgresql": "",
+    "systemctl restart postgresql.service": "",
+    "systemctl restart redis": "",
+    "systemctl restart redis.service": "",
+    "systemctl enable node-app.service": "Created symlink /etc/systemd/system/multi-user.target.wants/node-app.service → /etc/systemd/system/node-app.service.",
+    "systemctl enable node-app": "Created symlink /etc/systemd/system/multi-user.target.wants/node-app.service → /etc/systemd/system/node-app.service.",
+    "systemctl enable --now backup.timer": "Created symlink /etc/systemd/system/timers.target.wants/backup.timer → /etc/systemd/system/backup.timer.",
+    "systemctl disable node-app.service": "Removed /etc/systemd/system/multi-user.target.wants/node-app.service.",
+    "systemctl disable node-app": "Removed /etc/systemd/system/multi-user.target.wants/node-app.service.",
+    "systemctl daemon-reload": "",
+    "systemctl is-active nginx": "active",
+    "systemctl is-active nginx.service": "active",
+    "systemctl is-active node-app.service": "active",
+    "systemctl is-active node-app": "active",
+    "systemctl is-active postgresql": "active",
+    "systemctl is-active redis": "active",
+    "systemctl is-enabled nginx": "enabled",
+    "systemctl is-enabled nginx.service": "enabled",
+    "systemctl is-enabled node-app.service": "enabled",
+    "systemctl is-enabled node-app": "enabled",
+    "systemctl is-enabled postgresql": "enabled",
+    "systemctl is-enabled redis": "enabled",
+    "systemctl mask node-app.service": "Created symlink /etc/systemd/system/node-app.service → /dev/null.",
+    "systemctl unmask node-app.service": "Removed /etc/systemd/system/node-app.service.",
+    "systemctl mask nginx.service": "Created symlink /etc/systemd/system/nginx.service → /dev/null.",
+    "systemctl unmask nginx.service": "Removed /etc/systemd/system/nginx.service.",
+    "systemctl edit node-app.service": "# Editing /etc/systemd/system/node-app.service.d/override.conf\n# (opens $EDITOR — add overrides in [Service] section)",
+    "systemctl edit nginx.service": "# Editing /etc/systemd/system/nginx.service.d/override.conf\n# (opens $EDITOR — add overrides in [Service] section)",
+    "systemctl list-units": "UNIT                          LOAD   ACTIVE SUB       DESCRIPTION\nproc-sys-fs-binfmt_misc.automount loaded active waiting   Arbitrary Executable File Formats\nsys-devices-...net.device     loaded active plugged   Elastic Network Adapter\nsys-subsystem-net-...scope     loaded active running   Container scope\ncron.service                  loaded active running   Regular background program processing\ndbus.service                  loaded active running   D-Bus System Message Bus\ngetty@tty1.service            loaded active running   Getty on tty1\nnginx.service                 loaded active running   A high performance web server\nnode-app.service              loaded failed failed    Node.js Production Application\npostgresql.service            loaded active exited    PostgreSQL RDBMS\nredis-server.service          loaded active running   Advanced key-value store\nssh.service                   loaded active running   OpenBSD Secure Shell server\nsystemd-journald.service      loaded active running   Journal Service\nsystemd-logind.service        loaded active running   User Login Management\nsystemd-timesyncd.service     loaded active running   Network Time Synchronization\nsystemd-udevd.service         loaded active running   Rule-based Manager for Device Events\nufw.service                   loaded active exited    Uncomplicated firewall\n\nLOADED = Reflects whether the unit definition was properly loaded.\nACTIVE = The high-level unit activation state.\nSUB    = The low-level unit activation state.\n\n16 loaded units listed. Pass --all to see loaded but inactive units.",
+    "systemctl list-units --type=service": "UNIT                          LOAD   ACTIVE SUB     DESCRIPTION\ncron.service                  loaded active running Regular background program processing\ndbus.service                  loaded active running D-Bus System Message Bus\ngetty@tty1.service            loaded active running Getty on tty1\nnginx.service                 loaded active running A high performance web server\nnode-app.service              loaded failed failed  Node.js Production Application\npostgresql.service            loaded active exited  PostgreSQL RDBMS\nredis-server.service          loaded active running Advanced key-value store\nssh.service                   loaded active running OpenBSD Secure Shell server\nsystemd-journald.service      loaded active running Journal Service\nsystemd-logind.service        loaded active running User Login Management\nsystemd-timesyncd.service     loaded active running Network Time Synchronization\nufw.service                   loaded active exited  Uncomplicated firewall\n\n12 loaded units listed.",
+    "systemctl list-units --failed": "  UNIT                  LOAD   ACTIVE SUB    DESCRIPTION\n● node-app.service      loaded failed failed Node.js Production Application\n● backup.timer          loaded failed failed Daily Backup Timer\n\n2 loaded units listed.",
+    "systemctl list-unit-files": "UNIT FILE                          STATE           VENDOR PRESET\ncron.service                       enabled         enabled\ndbus.service                       static          -\ngetty@.service                     enabled         enabled\nnginx.service                      enabled         enabled\nnode-app.service                   enabled         enabled\npostgresql.service                 enabled         enabled\nredis-server.service               enabled         enabled\nssh.service                        enabled         enabled\nsystemd-journald.service           static          -\nsystemd-logind.service             static          -\nsystemd-timesyncd.service          enabled         enabled\nufw.service                        enabled         enabled\nbackup.service                     static          -\nbackup.timer                       disabled        disabled\nlogrotate.service                  static          -\nlogrotate.timer                    enabled         enabled\napt-daily.timer                    enabled         enabled\napt-daily-upgrade.timer            enabled         enabled\nfstrim.timer                       enabled         enabled\n\n19 unit files listed.",
+    "systemctl list-unit-files --type=service": "UNIT FILE                          STATE           VENDOR PRESET\ncron.service                       enabled         enabled\ndbus.service                       static          -\ngetty@.service                     enabled         enabled\nnginx.service                      enabled         enabled\nnode-app.service                   enabled         enabled\npostgresql.service                 enabled         enabled\nredis-server.service               enabled         enabled\nssh.service                        enabled         enabled\nsystemd-journald.service           static          -\nsystemd-logind.service             static          -\nsystemd-timesyncd.service          enabled         enabled\nufw.service                        enabled         enabled\nbackup.service                     static          -\nlogrotate.service                  static          -\n\n14 unit files listed.",
+    "systemctl list-unit-files --type=timer": "UNIT FILE                          STATE           VENDOR PRESET\nbackup.timer                       disabled        disabled\nlogrotate.timer                    enabled         enabled\napt-daily.timer                    enabled         enabled\napt-daily-upgrade.timer            enabled         enabled\nfstrim.timer                       enabled         enabled\n\n5 unit files listed.",
+    "systemctl list-timers": "NEXT                         LEFT          LAST                         PASSED       UNIT                         ACTIVATES\nTue 2026-06-03 06:30:00 UTC  3h left       Mon 2026-06-02 06:30:00 UTC  20h ago      logrotate.timer              logrotate.service\nTue 2026-06-03 06:45:00 UTC  3h left       Mon 2026-06-02 06:45:00 UTC  20h ago      apt-daily.timer              apt-daily.service\nTue 2026-06-03 12:00:00 UTC  8h left       Mon 2026-06-02 12:00:00 UTC  15h ago      apt-daily-upgrade.timer      apt-daily-upgrade.service\nMon 2026-06-08 00:00:00 UTC  5 days left   Mon 2026-06-01 00:00:00 UTC  1 day ago    fstrim.timer                 fstrim.service\n\n4 timers listed. Pass --all to see loaded but inactive timers.",
+    "systemctl list-timers --all": "NEXT                         LEFT          LAST                         PASSED       UNIT                         ACTIVATES\nTue 2026-06-03 06:30:00 UTC  3h left       Mon 2026-06-02 06:30:00 UTC  20h ago      logrotate.timer              logrotate.service\nTue 2026-06-03 06:45:00 UTC  3h left       Mon 2026-06-02 06:45:00 UTC  20h ago      apt-daily.timer              apt-daily.service\nTue 2026-06-03 12:00:00 UTC  8h left       Mon 2026-06-02 12:00:00 UTC  15h ago      apt-daily-upgrade.timer      apt-daily-upgrade.service\nMon 2026-06-08 00:00:00 UTC  5 days left   Mon 2026-06-01 00:00:00 UTC  1 day ago    fstrim.timer                 fstrim.service\nn/a                          n/a           n/a                          n/a          backup.timer                 backup.service\n\n5 timers listed.",
+    "systemctl list-dependencies nginx.service": "nginx.service\n● ├─system.slice\n● ├─sysinit.target\n● │ ├─systemd-journald.service\n● │ ├─systemd-tmpfiles-setup.service\n● │ └─systemd-udevd.service\n● └─network-online.target\n●   └─systemd-networkd-wait-online.service",
+    "systemctl list-dependencies nginx": "nginx.service\n● ├─system.slice\n● ├─sysinit.target\n● │ ├─systemd-journald.service\n● │ └─systemd-udevd.service\n● └─network-online.target\n●   └─systemd-networkd-wait-online.service",
+    "systemctl list-dependencies postgresql.service": "postgresql.service\n● ├─system.slice\n● ├─sysinit.target\n● │ ├─systemd-journald.service\n● │ └─systemd-tmpfiles-setup.service\n● ├─network-online.target\n● │ └─systemd-networkd-wait-online.service\n● └─local-fs.target\n●   └─var-lib-postgresql.mount",
+    "systemctl list-dependencies backup.timer": "backup.timer\n● ├─timers.target\n● └─sysinit.target\n●   ├─systemd-journald.service\n●   └─systemd-tmpfiles-setup.service",
+    "systemctl show nginx": "Type=forking\nRestart=on-failure\nPIDFile=/run/nginx.pid\nNotifyAccess=main\nRestartUSec=100ms\nTimeoutStartUSec=1min 30s\nTimeoutStopUSec=5s\nWatchdogUSec=0\nLimitNOFILE=65536\nLimitNPROC=4096\nMainPID=1857\nExecMainPID=1857\nExecMainStartTimestamp=Mon 2026-06-02 03:14:22 UTC\nMemoryCurrent=12992512\nTasksCurrent=5\nCPUUsageNSec=1245000000\nFragmentPath=/lib/systemd/system/nginx.service\nUnitFileState=enabled\nActiveState=active\nSubState=running",
+    "systemctl show nginx.service": "Type=forking\nRestart=on-failure\nPIDFile=/run/nginx.pid\nNotifyAccess=main\nRestartUSec=100ms\nTimeoutStartUSec=1min 30s\nTimeoutStopUSec=5s\nWatchdogUSec=0\nLimitNOFILE=65536\nLimitNPROC=4096\nMainPID=1857\nExecMainPID=1857\nExecMainStartTimestamp=Mon 2026-06-02 03:14:22 UTC\nMemoryCurrent=12992512\nTasksCurrent=5\nCPUUsageNSec=1245000000\nFragmentPath=/lib/systemd/system/nginx.service\nUnitFileState=enabled\nActiveState=active\nSubState=running",
+    "systemctl cat nginx.service": "# /lib/systemd/system/nginx.service\n[Unit]\nDescription=A high performance web server and reverse proxy\nDocumentation=man:nginx(8)\nAfter=network-online.target remote-fs.target nss-lookup.target\nWants=network-online.target\n\n[Service]\nType=forking\nPIDFile=/run/nginx.pid\nExecStartPre=/usr/sbin/nginx -t -q -g 'daemon on; master_process on;'\nExecStart=/usr/sbin/nginx -g 'daemon on; master_process on;'\nExecReload=/bin/kill -s HUP $MAINPID\nExecStop=/bin/kill -s QUIT $MAINPID\nPrivateTmp=true\nLimitNOFILE=65536\nRestart=on-failure\nRestartSec=5s\n\n[Install]\nWantedBy=multi-user.target",
+    "systemctl cat nginx": "# /lib/systemd/system/nginx.service\n[Unit]\nDescription=A high performance web server and reverse proxy\nDocumentation=man:nginx(8)\nAfter=network-online.target remote-fs.target nss-lookup.target\nWants=network-online.target\n\n[Service]\nType=forking\nPIDFile=/run/nginx.pid\nExecStartPre=/usr/sbin/nginx -t -q -g 'daemon on; master_process on;'\nExecStart=/usr/sbin/nginx -g 'daemon on; master_process on;'\nExecReload=/bin/kill -s HUP $MAINPID\nExecStop=/bin/kill -s QUIT $MAINPID\nPrivateTmp=true\nLimitNOFILE=65536\nRestart=on-failure\nRestartSec=5s\n\n[Install]\nWantedBy=multi-user.target",
+    "systemctl cat node-app.service": "# /etc/systemd/system/node-app.service\n[Unit]\nDescription=Node.js Production Application\nDocumentation=https://internal.wiki/node-app\nAfter=network-online.target postgresql.service redis-server.service\nWants=network-online.target\nRequires=postgresql.service\n\n[Service]\nType=simple\nUser=nodeapp\nGroup=nodeapp\nWorkingDirectory=/opt/node-app\nEnvironmentFile=/etc/default/node-app\nExecStart=/usr/bin/node /opt/node-app/server.js\nRestart=on-failure\nRestartSec=10s\nStandardOutput=journal\nStandardError=journal\nSyslogIdentifier=node-app\nLimitNOFILE=65536\n\n[Install]\nWantedBy=multi-user.target",
+    "systemctl cat node-app": "# /etc/systemd/system/node-app.service\n[Unit]\nDescription=Node.js Production Application\nDocumentation=https://internal.wiki/node-app\nAfter=network-online.target postgresql.service redis-server.service\nWants=network-online.target\nRequires=postgresql.service\n\n[Service]\nType=simple\nUser=nodeapp\nGroup=nodeapp\nWorkingDirectory=/opt/node-app\nEnvironmentFile=/etc/default/node-app\nExecStart=/usr/bin/node /opt/node-app/server.js\nRestart=on-failure\nRestartSec=10s\nStandardOutput=journal\nStandardError=journal\nSyslogIdentifier=node-app\nLimitNOFILE=65536\n\n[Install]\nWantedBy=multi-user.target",
+    "systemctl cat postgresql.service": "# /lib/systemd/system/postgresql.service\n[Unit]\nDescription=PostgreSQL RDBMS\nAfter=network-online.target\n\n[Service]\nType=oneshot\nExecStart=/bin/true\nRemainAfterExit=yes\n\n[Install]\nWantedBy=multi-user.target",
+    "systemctl cat redis-server.service": "# /lib/systemd/system/redis-server.service\n[Unit]\nDescription=Advanced key-value store\nDocumentation=http://redis.io/documentation\nAfter=network-online.target\n\n[Service]\nType=notify\nExecStart=/usr/bin/redis-server /etc/redis/redis.conf --supervised systemd\nExecStop=/usr/bin/redis-cli shutdown\nRestart=always\nRestartSec=5s\nUser=redis\nGroup=redis\nLimitNOFILE=10032\n\n[Install]\nWantedBy=multi-user.target",
+    "systemd-analyze": "Startup finished in 3.421s (kernel) + 12.876s (userspace) = 16.297s\ngraphical.target reached after 12.876s in userspace.",
+    "systemd-analyze time": "Startup finished in 3.421s (kernel) + 12.876s (userspace) = 16.297s\ngraphical.target reached after 12.876s in userspace.",
+    "systemd-analyze blame": "          8.234s postgresql.service\n          4.112s nginx.service\n          2.876s systemd-udevd.service\n          1.998s redis-server.service\n          1.456s systemd-journald.service\n          1.123s ssh.service\n          0.876s ufw.service\n          0.654s systemd-timesyncd.service\n          0.432s systemd-logind.service\n          0.221s cron.service",
+    "systemd-analyze critical-chain": "graphical.target @12.876s\n└─multi-user.target @12.875s\n  └─nginx.service @8.763s +4.112s\n    └─network-online.target @8.762s\n      └─systemd-networkd-wait-online.service @3.421s +5.341s\n        └─systemd-networkd.service @3.200s +0.221s",
+    "systemd-analyze critical-chain postgresql.service": "postgresql.service @4.529s +8.234s\n└─network-online.target @4.528s\n  └─systemd-networkd-wait-online.service @3.421s +1.107s\n    └─systemd-networkd.service @3.200s +0.221s\n      └─systemd-udevd.service @0.324s +2.876s",
+    "systemd-analyze critical-chain nginx.service": "nginx.service @8.763s +4.112s\n└─network-online.target @8.762s\n  └─systemd-networkd-wait-online.service @3.421s +5.341s\n    └─systemd-networkd.service @3.200s +0.221s",
+    "systemd-analyze plot": "[SVG output redirected — pipe to file: systemd-analyze plot > boot-chart.svg]",
+    "journalctl -u node-app.service": "-- Journal begins at Mon 2026-06-02 03:14:00 UTC --\nJun 02 14:22:10 prod-web-01 systemd[1]: Started Node.js Production Application.\nJun 02 14:22:10 prod-web-01 node[4521]: Starting node-app v3.2.1...\nJun 02 14:22:10 prod-web-01 node[4521]: Loading configuration from /etc/default/node-app\nJun 02 14:22:10 prod-web-01 node[4521]: Error: Cannot find module '/etc/default/node-app'\nJun 02 14:22:10 prod-web-01 node[4521]:     at Function.Module._resolveFilename (node:internal/modules/cjs/loader:1048:15)\nJun 02 14:22:10 prod-web-01 node[4521]: Fatal: Missing required environment configuration\nJun 02 14:22:10 prod-web-01 systemd[1]: node-app.service: Main process exited, code=exited, status=1/FAILURE\nJun 02 14:22:10 prod-web-01 systemd[1]: node-app.service: Failed with result 'exit-code'.",
+    "journalctl -u node-app.service --no-pager": "-- Journal begins at Mon 2026-06-02 03:14:00 UTC --\nJun 02 14:22:10 prod-web-01 systemd[1]: Started Node.js Production Application.\nJun 02 14:22:10 prod-web-01 node[4521]: Starting node-app v3.2.1...\nJun 02 14:22:10 prod-web-01 node[4521]: Loading configuration from /etc/default/node-app\nJun 02 14:22:10 prod-web-01 node[4521]: Error: Cannot find module '/etc/default/node-app'\nJun 02 14:22:10 prod-web-01 node[4521]:     at Function.Module._resolveFilename (node:internal/modules/cjs/loader:1048:15)\nJun 02 14:22:10 prod-web-01 node[4521]: Fatal: Missing required environment configuration\nJun 02 14:22:10 prod-web-01 systemd[1]: node-app.service: Main process exited, code=exited, status=1/FAILURE\nJun 02 14:22:10 prod-web-01 systemd[1]: node-app.service: Failed with result 'exit-code'.",
+    "journalctl -u node-app": "-- Journal begins at Mon 2026-06-02 03:14:00 UTC --\nJun 02 14:22:10 prod-web-01 systemd[1]: Started Node.js Production Application.\nJun 02 14:22:10 prod-web-01 node[4521]: Starting node-app v3.2.1...\nJun 02 14:22:10 prod-web-01 node[4521]: Error: Cannot find module '/etc/default/node-app'\nJun 02 14:22:10 prod-web-01 node[4521]: Fatal: Missing required environment configuration\nJun 02 14:22:10 prod-web-01 systemd[1]: node-app.service: Failed with result 'exit-code'.",
+    "journalctl -u nginx.service": "-- Journal begins at Mon 2026-06-02 03:14:00 UTC --\nJun 02 03:14:22 prod-web-01 systemd[1]: Starting A high performance web server and reverse proxy...\nJun 02 03:14:22 prod-web-01 nginx[1842]: nginx: the configuration file /etc/nginx/nginx.conf syntax is ok\nJun 02 03:14:22 prod-web-01 nginx[1842]: nginx: configuration file /etc/nginx/nginx.conf test is successful\nJun 02 03:14:22 prod-web-01 systemd[1]: Started A high performance web server and reverse proxy.\nJun 02 08:30:15 prod-web-01 nginx[1857]: 2026/06/02 08:30:15 [warn] 1857#1857: *4521 upstream server temporarily disabled\nJun 02 14:00:00 prod-web-01 systemd[1]: Reloading A high performance web server and reverse proxy...\nJun 02 14:00:00 prod-web-01 systemd[1]: Reloaded A high performance web server and reverse proxy.",
+    "journalctl -u nginx": "-- Journal begins at Mon 2026-06-02 03:14:00 UTC --\nJun 02 03:14:22 prod-web-01 systemd[1]: Starting A high performance web server...\nJun 02 03:14:22 prod-web-01 systemd[1]: Started A high performance web server and reverse proxy.\nJun 02 14:00:00 prod-web-01 systemd[1]: Reloading A high performance web server...\nJun 02 14:00:00 prod-web-01 systemd[1]: Reloaded A high performance web server.",
+    "journalctl -u postgresql": "-- Journal begins at Mon 2026-06-02 03:14:00 UTC --\nJun 02 03:14:20 prod-web-01 systemd[1]: Starting PostgreSQL RDBMS...\nJun 02 03:14:28 prod-web-01 postgresql[1923]: 2026-06-02 03:14:28.123 UTC [1923] LOG:  starting PostgreSQL 15.6 on x86_64\nJun 02 03:14:28 prod-web-01 postgresql[1923]: 2026-06-02 03:14:28.456 UTC [1923] LOG:  listening on IPv4 address \"127.0.0.1\", port 5432\nJun 02 03:14:28 prod-web-01 postgresql[1923]: 2026-06-02 03:14:28.789 UTC [1923] LOG:  database system is ready to accept connections\nJun 02 03:14:28 prod-web-01 systemd[1]: Finished PostgreSQL RDBMS.",
+    "journalctl -u redis": "-- Journal begins at Mon 2026-06-02 03:14:00 UTC --\nJun 02 03:14:25 prod-web-01 systemd[1]: Starting Advanced key-value store...\nJun 02 03:14:25 prod-web-01 redis-server[1901]: oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo\nJun 02 03:14:25 prod-web-01 redis-server[1901]: Redis version=7.0.15, bits=64, commit=00000000\nJun 02 03:14:25 prod-web-01 redis-server[1901]: Ready to accept connections\nJun 02 03:14:25 prod-web-01 systemd[1]: Started Advanced key-value store.",
+    "journalctl --since \"1 hour ago\"": "-- Journal begins at Mon 2026-06-02 03:14:00 UTC --\nJun 02 14:00:00 prod-web-01 systemd[1]: Reloading A high performance web server...\nJun 02 14:00:00 prod-web-01 systemd[1]: Reloaded A high performance web server.\nJun 02 14:22:10 prod-web-01 systemd[1]: Started Node.js Production Application.\nJun 02 14:22:10 prod-web-01 node[4521]: Error: Cannot find module '/etc/default/node-app'\nJun 02 14:22:10 prod-web-01 systemd[1]: node-app.service: Failed with result 'exit-code'.\nJun 02 14:25:00 prod-web-01 CRON[4602]: (root) CMD (test -x /usr/sbin/anacron || ( cd / && run-parts --report /etc/cron.daily ))",
+    "journalctl --since \"2026-06-02 14:00:00\"": "-- Journal begins at Mon 2026-06-02 03:14:00 UTC --\nJun 02 14:00:00 prod-web-01 systemd[1]: Reloading A high performance web server...\nJun 02 14:00:00 prod-web-01 systemd[1]: Reloaded A high performance web server.\nJun 02 14:22:10 prod-web-01 systemd[1]: Started Node.js Production Application.\nJun 02 14:22:10 prod-web-01 node[4521]: Fatal: Missing required environment configuration\nJun 02 14:22:10 prod-web-01 systemd[1]: node-app.service: Failed with result 'exit-code'.",
+    "journalctl --since \"2026-06-02 03:00:00\" --until \"2026-06-02 04:00:00\"": "-- Journal begins at Mon 2026-06-02 03:14:00 UTC --\nJun 02 03:14:00 prod-web-01 kernel: Linux version 5.15.0-106-generic (buildd@lcy02-amd64-073)\nJun 02 03:14:10 prod-web-01 systemd[1]: Started Journal Service.\nJun 02 03:14:15 prod-web-01 systemd[1]: Starting Network Service...\nJun 02 03:14:20 prod-web-01 systemd[1]: Starting PostgreSQL RDBMS...\nJun 02 03:14:22 prod-web-01 systemd[1]: Started A high performance web server.\nJun 02 03:14:25 prod-web-01 systemd[1]: Started Advanced key-value store.\nJun 02 03:14:28 prod-web-01 systemd[1]: Finished PostgreSQL RDBMS.",
+    "journalctl -f": "[Following journal — press Ctrl+C to stop]\nJun 02 14:30:01 prod-web-01 CRON[4650]: (root) CMD (test -x /usr/sbin/anacron)\nJun 02 14:30:15 prod-web-01 nginx[1857]: 10.0.1.50 - - [02/Jun/2026:14:30:15 +0000] \"GET /api/health HTTP/1.1\" 200 45\nJun 02 14:30:16 prod-web-01 nginx[1857]: 10.0.1.51 - - [02/Jun/2026:14:30:16 +0000] \"POST /api/v1/transactions HTTP/1.1\" 201 128",
+    "journalctl -p err": "-- Journal begins at Mon 2026-06-02 03:14:00 UTC --\nJun 02 14:22:10 prod-web-01 node[4521]: Error: Cannot find module '/etc/default/node-app'\nJun 02 14:22:10 prod-web-01 node[4521]: Fatal: Missing required environment configuration\nJun 02 14:22:10 prod-web-01 systemd[1]: node-app.service: Main process exited, code=exited, status=1/FAILURE\nJun 02 14:22:10 prod-web-01 systemd[1]: node-app.service: Failed with result 'exit-code'.",
+    "journalctl -p warning": "-- Journal begins at Mon 2026-06-02 03:14:00 UTC --\nJun 02 08:30:15 prod-web-01 nginx[1857]: 2026/06/02 08:30:15 [warn] 1857#1857: *4521 upstream server temporarily disabled\nJun 02 14:22:10 prod-web-01 node[4521]: Error: Cannot find module '/etc/default/node-app'\nJun 02 14:22:10 prod-web-01 node[4521]: Fatal: Missing required environment configuration\nJun 02 14:22:10 prod-web-01 systemd[1]: node-app.service: Main process exited, code=exited, status=1/FAILURE\nJun 02 14:22:10 prod-web-01 systemd[1]: node-app.service: Failed with result 'exit-code'.",
+    "journalctl -p err -u node-app": "-- Journal begins at Mon 2026-06-02 03:14:00 UTC --\nJun 02 14:22:10 prod-web-01 node[4521]: Error: Cannot find module '/etc/default/node-app'\nJun 02 14:22:10 prod-web-01 node[4521]: Fatal: Missing required environment configuration",
+    "journalctl --disk-usage": "Archived and active journals take up 148.2M in the file system.",
+    "journalctl --vacuum-size=100M": "Vacuuming done, freed 48.2M of archived journals from /var/log/journal/abc123.",
+    "journalctl --list-boots": " 0 abc1234def5678 Mon 2026-06-02 03:14:00 UTC—Mon 2026-06-02 14:30:00 UTC\n-1 9876fedcba4321 Sun 2026-06-01 02:30:00 UTC—Mon 2026-06-02 03:12:45 UTC\n-2 1122aabbccdd33 Sat 2026-05-31 10:00:00 UTC—Sun 2026-06-01 02:28:30 UTC",
+    "journalctl -b": "-- Journal begins at Mon 2026-06-02 03:14:00 UTC --\nJun 02 03:14:00 prod-web-01 kernel: Linux version 5.15.0-106-generic\nJun 02 03:14:00 prod-web-01 kernel: Command line: BOOT_IMAGE=/vmlinuz-5.15.0-106-generic root=/dev/mapper/vgroot-lvroot\nJun 02 03:14:05 prod-web-01 systemd[1]: systemd 249.11-0ubuntu3.12 running in system mode\nJun 02 03:14:05 prod-web-01 systemd[1]: Detected virtualization kvm.\nJun 02 03:14:05 prod-web-01 systemd[1]: Set hostname to <prod-web-01>.\n...(truncated, use --since/--until to narrow)...",
+    "journalctl -b -1": "-- Journal begins at Sun 2026-06-01 02:30:00 UTC --\nJun 01 02:30:00 prod-web-01 kernel: Linux version 5.15.0-105-generic\nJun 01 02:30:05 prod-web-01 systemd[1]: systemd 249.11-0ubuntu3.12 running in system mode\n...(previous boot log — truncated)...",
+    "hostnamectl": " Static hostname: prod-web-01\n       Icon name: computer-vm\n         Chassis: vm\n      Machine ID: a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4\n         Boot ID: abc1234def5678abc1234def5678abcd\n  Virtualization: kvm\nOperating System: Ubuntu 22.04.4 LTS\n          Kernel: Linux 5.15.0-106-generic\n    Architecture: x86-64\n Hardware Vendor: Amazon EC2\n  Hardware Model: t3.large",
+    "timedatectl": "               Local time: Mon 2026-06-02 14:30:00 UTC\n           Universal time: Mon 2026-06-02 14:30:00 UTC\n                 RTC time: Mon 2026-06-02 14:30:00\n                Time zone: UTC (UTC, +0000)\nSystem clock synchronized: yes\n              NTP service: active\n          RTC in local TZ: no",
+    "loginctl": "SESSION  UID USER   SEAT TTY\n      1 1000 sre         pts/0\n      4 1000 sre         pts/1\n\n2 sessions listed.",
+    "loginctl list-sessions": "SESSION  UID USER   SEAT TTY\n      1 1000 sre         pts/0\n      4 1000 sre         pts/1\n\n2 sessions listed.",
+    "loginctl list-users": "UID  USER\n1000 sre\n\n1 users listed.",
+    "systemd-cgls": "Control group /:\n├─user.slice\n│ └─user-1000.slice\n│   ├─session-1.scope\n│   │ ├─2345 sshd: sre [priv]\n│   │ ├─2356 sshd: sre@pts/0\n│   │ └─2357 -bash\n│   └─session-4.scope\n│     ├─4800 sshd: sre [priv]\n│     └─4812 -bash\n├─init.scope\n│ └─1 /sbin/init\n└─system.slice\n  ├─nginx.service\n  │ ├─1857 nginx: master process /usr/sbin/nginx\n  │ ├─1858 nginx: worker process\n  │ ├─1859 nginx: worker process\n  │ ├─1860 nginx: worker process\n  │ └─1861 nginx: worker process\n  ├─redis-server.service\n  │ └─1901 /usr/bin/redis-server 127.0.0.1:6379\n  ├─postgresql.service\n  │ └─1923 /usr/lib/postgresql/15/bin/postgres -D /var/lib/postgresql/15/main\n  ├─ssh.service\n  │ └─1100 sshd: /usr/sbin/sshd -D\n  └─cron.service\n    └─1050 /usr/sbin/cron -f",
+    "systemd-cgtop": "Control Group                          Tasks   %CPU   Memory  Input/s Output/s\n/                                         45   4.2%   1.8G        -        -\n/system.slice                             32   3.8%   1.2G        -        -\n/system.slice/nginx.service                5   0.4%  12.4M        -        -\n/system.slice/redis-server.service         5   0.8%   8.2M        -        -\n/system.slice/postgresql.service            8   2.1% 256.0M        -        -\n/user.slice                                8   0.3%  64.0M        -        -",
+    "systemctl show nginx -p MainPID": "MainPID=1857",
+    "systemctl show nginx -p ActiveState": "ActiveState=active",
+    "systemctl show nginx -p SubState": "SubState=running",
+    "systemctl show nginx -p MemoryCurrent": "MemoryCurrent=12992512",
+    "systemctl show redis-server -p MainPID": "MainPID=1901",
+    "systemctl show postgresql -p ActiveState": "ActiveState=active"
+  },
+  "reference": [
+    {
+      "group": "Service Lifecycle",
+      "commands": [
+        { "cmd": "systemctl start nginx", "desc": "start a service" },
+        { "cmd": "systemctl stop nginx", "desc": "stop a service" },
+        { "cmd": "systemctl restart nginx", "desc": "restart a service" },
+        { "cmd": "systemctl reload nginx", "desc": "reload config (no downtime)" },
+        { "cmd": "systemctl enable nginx", "desc": "enable at boot" },
+        { "cmd": "systemctl disable nginx", "desc": "disable at boot" },
+        { "cmd": "systemctl enable --now backup.timer", "desc": "enable and start immediately" },
+        { "cmd": "systemctl daemon-reload", "desc": "reload unit files after editing" }
+      ]
+    },
+    {
+      "group": "Inspection",
+      "commands": [
+        { "cmd": "systemctl status nginx", "desc": "detailed service status" },
+        { "cmd": "systemctl is-active nginx", "desc": "check if running" },
+        { "cmd": "systemctl is-enabled nginx", "desc": "check if enabled at boot" },
+        { "cmd": "systemctl show nginx", "desc": "all unit properties" },
+        { "cmd": "systemctl show nginx -p MainPID", "desc": "single property" },
+        { "cmd": "systemctl cat nginx.service", "desc": "show unit file contents" },
+        { "cmd": "systemctl edit nginx.service", "desc": "create override drop-in" }
+      ]
+    },
+    {
+      "group": "Listing & Discovery",
+      "commands": [
+        { "cmd": "systemctl list-units", "desc": "all active units" },
+        { "cmd": "systemctl list-units --type=service", "desc": "only services" },
+        { "cmd": "systemctl list-units --failed", "desc": "failed units" },
+        { "cmd": "systemctl list-unit-files", "desc": "all installed unit files" },
+        { "cmd": "systemctl list-unit-files --type=timer", "desc": "timer files" },
+        { "cmd": "systemctl list-timers", "desc": "active timers and schedules" },
+        { "cmd": "systemctl list-dependencies nginx", "desc": "dependency tree" }
+      ]
+    },
+    {
+      "group": "Masking & Protection",
+      "commands": [
+        { "cmd": "systemctl mask nginx.service", "desc": "prevent starting entirely" },
+        { "cmd": "systemctl unmask nginx.service", "desc": "remove mask" }
+      ]
+    },
+    {
+      "group": "Journal (journalctl)",
+      "commands": [
+        { "cmd": "journalctl -u nginx", "desc": "logs for a service" },
+        { "cmd": "journalctl -u node-app --no-pager", "desc": "logs without paging" },
+        { "cmd": "journalctl -f", "desc": "follow live logs (tail -f)" },
+        { "cmd": "journalctl -p err", "desc": "only error priority and above" },
+        { "cmd": "journalctl --since \"1 hour ago\"", "desc": "filter by time" },
+        { "cmd": "journalctl -b", "desc": "current boot only" },
+        { "cmd": "journalctl -b -1", "desc": "previous boot" },
+        { "cmd": "journalctl --list-boots", "desc": "list boot records" },
+        { "cmd": "journalctl --disk-usage", "desc": "journal size on disk" },
+        { "cmd": "journalctl --vacuum-size=100M", "desc": "shrink journal to 100M" }
+      ]
+    },
+    {
+      "group": "Boot Analysis",
+      "commands": [
+        { "cmd": "systemd-analyze", "desc": "total boot time" },
+        { "cmd": "systemd-analyze blame", "desc": "slowest services at boot" },
+        { "cmd": "systemd-analyze critical-chain", "desc": "boot critical path" },
+        { "cmd": "systemd-analyze critical-chain postgresql.service", "desc": "critical path for a unit" },
+        { "cmd": "systemd-analyze plot", "desc": "SVG boot chart" }
+      ]
+    },
+    {
+      "group": "System Info",
+      "commands": [
+        { "cmd": "hostnamectl", "desc": "hostname and OS info" },
+        { "cmd": "timedatectl", "desc": "time, timezone, NTP status" },
+        { "cmd": "loginctl", "desc": "active user sessions" },
+        { "cmd": "loginctl list-users", "desc": "logged-in users" }
+      ]
+    },
+    {
+      "group": "Resource & CGroups",
+      "commands": [
+        { "cmd": "systemd-cgls", "desc": "control group tree" },
+        { "cmd": "systemd-cgtop", "desc": "top-like view of cgroups" }
+      ]
+    }
+  ]
+}
