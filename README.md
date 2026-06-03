@@ -1,17 +1,17 @@
 <p align="center">
-  <a href="https://github.com/supersaiyane/crashcourse/stargazers"><img src="https://img.shields.io/github/stars/supersaiyane/crashcourse?style=social" alt="Star on GitHub"/></a>
+  <a href="https://github.com/supersaiyane/crashcourse/stargazers"><img src="https://img.shields.io/github/stars/supersaiyane/crashcourse?style=social&cacheSeconds=3600" alt="Star on GitHub"/></a>
   &nbsp;&nbsp;
-  <a href="https://github.com/supersaiyane/crashcourse/network/members"><img src="https://img.shields.io/github/forks/supersaiyane/crashcourse?style=social" alt="Fork on GitHub"/></a>
+  <a href="https://github.com/supersaiyane/crashcourse/network/members"><img src="https://img.shields.io/github/forks/supersaiyane/crashcourse?style=social&cacheSeconds=3600" alt="Fork on GitHub"/></a>
   &nbsp;&nbsp;
-  <a href="https://github.com/supersaiyane/crashcourse/watchers"><img src="https://img.shields.io/github/watchers/supersaiyane/crashcourse?style=social" alt="Watch on GitHub"/></a>
+  <a href="https://github.com/supersaiyane/crashcourse/watchers"><img src="https://img.shields.io/github/watchers/supersaiyane/crashcourse?style=social&cacheSeconds=3600" alt="Watch on GitHub"/></a>
 </p>
 
 <p align="center">
   <img src="https://img.shields.io/badge/Crash_Courses-153-blue?style=for-the-badge" alt="Courses"/>
   <img src="https://img.shields.io/badge/Categories-20-green?style=for-the-badge" alt="Categories"/>
   <img src="https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge" alt="License"/>
-  <img src="https://img.shields.io/github/stars/supersaiyane/crashcourse?style=for-the-badge&color=orange" alt="Stars"/>
-  <img src="https://img.shields.io/github/forks/supersaiyane/crashcourse?style=for-the-badge" alt="Forks"/>
+  <img src="https://img.shields.io/github/stars/supersaiyane/crashcourse?style=for-the-badge&color=orange&cacheSeconds=3600" alt="Stars"/>
+  <img src="https://img.shields.io/github/forks/supersaiyane/crashcourse?style=for-the-badge&cacheSeconds=3600" alt="Forks"/>
 </p>
 
 <p align="center">
