@@ -1,0 +1,84 @@
+# ---
+# Service: frontend
+#
+# The frontend service exposes the nginx web server to other Pods
+# and (via port-forward or Ingress) to the outside world.
+#
+# In this setup, we use ClusterIP and rely on either:
+#   - kubectl port-forward to access it locally
+#   - An Ingress to route external traffic to it
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+  namespace: cutlink
+  labels:
+    app: cutlink
+    component: frontend
+spec:
+  type: ClusterIP
+  ports:
+    # Standard HTTP port. The Ingress will route port 80 traffic here.
+    - port: 80
+      targetPort: 80
+      protocol: TCP
+      name: http
+  selector:
+    app: cutlink
+    component: frontend
+
+---
+# Deployment: frontend
+#
+# Serves the static HTML/JS/CSS and proxies /api/ requests to the backend.
+# The nginx.conf (from the sample app) handles the proxy rules.
+#
+# This is a stateless service — no persistent storage needed.
+# All state is in Postgres/Redis. If all frontend Pods die and come back,
+# users see the same data (after a brief outage).
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  namespace: cutlink
+  labels:
+    app: cutlink
+    component: frontend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: cutlink
+      component: frontend
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: cutlink
+        component: frontend
+    spec:
+      containers:
+        - name: frontend
+          image: cutlink-frontend:latest
+          ports:
+            - containerPort: 80
+              name: http
+          # Readiness probe: nginx responds on port 80 when ready.
+          # Since nginx serves static files, this is near-instant.
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 3
+            periodSeconds: 5
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi

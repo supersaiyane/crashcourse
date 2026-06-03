@@ -1,0 +1,38 @@
+# Kustomization: cutlink
+#
+# Kustomize is a configuration management tool built into kubectl.
+# It lets you define a set of Kubernetes resources and customize them
+# for different environments (dev/staging/prod) without template files.
+#
+# Instead of running 10 separate kubectl apply commands, you run one:
+#   kubectl apply -k manifests/
+#
+# Kustomize reads this file, finds all resources listed under `resources`,
+# optionally applies patches or name prefixes, and sends the combined
+# output to kubectl apply.
+#
+# In this learning setup, we keep it simple — just list all resources
+# so they're applied in a single command with the correct ordering.
+# The api-server handles inter-resource dependencies (e.g., it won't
+# create a Pod in a namespace that doesn't exist yet).
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# All resource files to include in this kustomization.
+# Kustomize reads these, parses them, and sends them to kubectl as
+# a single multi-document YAML stream. Order here doesn't strictly
+# matter — Kubernetes handles dependency ordering.
+resources:
+  - namespace.yaml
+  - postgres.yaml        # ConfigMap + PVC + Service + StatefulSet
+  - redis.yaml           # Service + Deployment
+  - backend.yaml         # ConfigMap + Secret + Service + Deployment
+  - frontend.yaml        # Service + Deployment
+  - ingress.yaml
+  - hpa.yaml
+
+# Optional: namespace can be set for all resources via a namespace
+# directive. But we've already set namespace: cutlink in each resource
+# for clarity. If we set it here, Kustomize would inject it into any
+# resource that doesn't have one or override it if configured to do so.
+# For learning, explicit namespace in each file is better.

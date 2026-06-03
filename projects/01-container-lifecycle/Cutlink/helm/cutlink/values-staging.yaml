@@ -1,0 +1,50 @@
+# vim: set ft=yaml:
+# Staging overrides — moderate replicas, HPA enabled, Ingress enabled.
+backend:
+  replicas: 2
+  image:
+    tag: staging
+
+frontend:
+  replicas: 2
+  image:
+    tag: staging
+
+postgresql:
+  enabled: false
+
+redis:
+  enabled: false
+
+externalServices:
+  postgresql:
+    host: staging-db.internal
+  redis:
+    host: staging-redis.internal
+
+ingress:
+  enabled: true
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  rules:
+    - host: staging.cutlink.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - hosts:
+        - staging.cutlink.example.com
+      secretName: cutlink-staging-tls
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 6
+  targetCPUUtilizationPercentage: 70
+
+secrets:
+  existingSecret: cutlink-staging-secrets
+
+hooks:
+  enabled: true

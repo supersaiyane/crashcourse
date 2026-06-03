@@ -1,0 +1,78 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: cutlink
+      POSTGRES_USER: cutlink
+      POSTGRES_PASSWORD: cutlink
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cutlink"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - cutlink-net
+    deploy:
+      resources:
+        limits: { memory: 256M }
+        reservations: { memory: 128M }
+
+  redis:
+    image: redis:7-alpine
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - cutlink-net
+    deploy:
+      resources:
+        limits: { memory: 128M }
+        reservations: { memory: 64M }
+
+  backend:
+    build: ./backend
+    environment:
+      DB_HOST: postgres
+      DB_NAME: cutlink
+      DB_USER: cutlink
+      DB_PASS: cutlink
+      REDIS_HOST: redis
+      BASE_URL: http://localhost:8082/r
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_healthy }
+    networks:
+      - cutlink-net
+    deploy:
+      resources:
+        limits: { memory: 256M }
+        reservations: { memory: 128M }
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "8082:80"
+    depends_on:
+      - backend
+    networks:
+      - cutlink-net
+    deploy:
+      resources:
+        limits: { memory: 64M }
+        reservations: { memory: 32M }
+
+volumes:
+  pgdata:
+  redisdata:
+
+networks:
+  cutlink-net:
+    driver: bridge

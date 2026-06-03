@@ -1,0 +1,22 @@
+# vim: set ft=yaml:
+# CI values — minimal valid configuration for "helm lint --strict".
+nameOverride: ci-test
+backend:
+  image:
+    tag: ci
+  replicas: 1
+frontend:
+  image:
+    tag: ci
+  replicas: 1
+secrets:
+  db_pass: changeme
+ingress:
+  enabled: false
+autoscaling:
+  enabled: false
+hooks:
+  enabled: false
+postgres:
+  initScript:
+    enabled: true

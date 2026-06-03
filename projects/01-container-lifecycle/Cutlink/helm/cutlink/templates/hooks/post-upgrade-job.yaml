@@ -1,0 +1,30 @@
+{{- if .Values.hooks.enabled }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: "{{ include "cutlink.fullname" . }}-smoke-test"
+  namespace: {{ include "cutlink.namespace" . }}
+  labels:
+    {{- include "cutlink.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": post-upgrade
+    "helm.sh/hook-weight": "5"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: smoke-test
+          image: "{{ .Values.hooks.smokeTest.image.repository }}:{{ .Values.hooks.smokeTest.image.tag }}"
+          command:
+            - sh
+            - -c
+            - |
+              echo "=== Smoke test after upgrade ==="
+              echo "Checking backend health..."
+              wget -q -O /dev/null --timeout=5 \
+                http://{{ include "cutlink.fullname" . }}-backend:{{ .Values.backend.service.port }}/health \
+                && echo "Backend: OK" || (echo "Backend: FAIL" && exit 1)
+              echo "Smoke test passed."
+{{- end }}

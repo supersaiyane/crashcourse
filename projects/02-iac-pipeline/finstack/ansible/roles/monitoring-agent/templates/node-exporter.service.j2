@@ -1,0 +1,35 @@
+# -----------------------------------------------------------------------------
+# Prometheus Node Exporter — systemd unit file
+#
+# Managed by Ansible (monitoring-agent role). Do not edit manually.
+# Template variables:
+#   exporter_port — listen port (default 9100)
+# -----------------------------------------------------------------------------
+[Unit]
+Description=Prometheus Node Exporter
+Documentation=https://prometheus.io/docs/guides/node-exporter/
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+User=node_exporter
+Group=node_exporter
+Type=simple
+ExecStart=/usr/local/bin/node_exporter \
+  --web.listen-address=":{{ exporter_port | default('9100') }}" \
+  --collector.systemd \
+  --collector.processes \
+  --no-collector.infiniband \
+  --no-collector.nfs
+Restart=on-failure
+RestartSec=5
+SyslogIdentifier=node_exporter
+
+# Security hardening
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+ReadOnlyPaths=/
+
+[Install]
+WantedBy=multi-user.target

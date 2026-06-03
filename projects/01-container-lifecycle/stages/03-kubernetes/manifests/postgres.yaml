@@ -1,0 +1,231 @@
+# ---
+# ConfigMap: postgres-init
+#
+# A ConfigMap holds non-sensitive configuration data as key-value pairs.
+# Here we use it to store the SQL initialization script that creates
+# the urls and clicks tables. PostgreSQL's Docker entrypoint automatically
+# runs any .sql file mounted into /docker-entrypoint-initdb.d/.
+#
+# ConfigMaps can be consumed as environment variables or mounted as files.
+# We mount this one as a file so PostgreSQL's init system picks it up.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-init
+  namespace: cutlink
+data:
+  # The key becomes the filename when mounted. The value is the file content.
+  init.sql: |
+    CREATE TABLE IF NOT EXISTS urls (
+        id SERIAL PRIMARY KEY,
+        short_code VARCHAR(10) UNIQUE NOT NULL,
+        original_url TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT NOW(),
+        click_count INTEGER DEFAULT 0
+    );
+    CREATE TABLE IF NOT EXISTS clicks (
+        id SERIAL PRIMARY KEY,
+        short_code VARCHAR(10) NOT NULL,
+        clicked_at TIMESTAMP DEFAULT NOW(),
+        user_agent TEXT,
+        ip_address VARCHAR(45)
+    );
+    CREATE INDEX IF NOT EXISTS idx_clicks_short_code ON clicks(short_code);
+
+---
+# PersistentVolumeClaim: postgres-pvc
+#
+# Pods are ephemeral — they can be killed and recreated at any time.
+# A PVC requests persistent storage that survives Pod restarts.
+# The cluster's StorageClass provisions the actual disk (PV) automatically.
+#
+# Once bound, this PVC is mounted into the PostgreSQL container at /var/lib/postgresql/data.
+# If the Pod dies and a new one starts, it gets the same data.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-pvc
+  namespace: cutlink
+spec:
+  # ReadWriteOnce means only a single Pod can mount this volume at a time.
+  # That's fine for Postgres since we're running a single instance.
+  # For multi-replica databases you'd need ReadWriteMany.
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      # 1 GiB is plenty for a learning cluster. In production,
+      # monitor actual usage and the volume will auto-expand if
+      # the StorageClass supports it.
+      storage: 1Gi
+
+---
+# Service: postgres
+#
+# A Service provides a stable network endpoint for a set of Pods.
+# Without a Service, when a Pod dies and gets recreated, its IP changes.
+# The Service intercepts traffic to a fixed ClusterIP and forwards it
+# to the currently healthy Pods matching its label selector.
+#
+# This Service is named "postgres" and listens on port 5432 (the standard
+# PostgreSQL port). Other Pods in the cluster can reach it at:
+#   postgres.cutlink.svc.cluster.local:5432
+# Or simply "postgres:5432" from within the same namespace.
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  namespace: cutlink
+  labels:
+    app: cutlink
+    component: postgres
+spec:
+  # ClusterIP is the default Service type. It's only reachable from
+  # inside the cluster — not from outside. This is perfect for a database.
+  type: ClusterIP
+  ports:
+    # port: The port the Service listens on
+    # targetPort: The port on the Pod that traffic is forwarded to
+    # protocol: TCP/UDP/SCTP. Postgres uses TCP.
+    - port: 5432
+      targetPort: 5432
+      protocol: TCP
+      name: postgres
+  # The Service routes traffic to any Pod with these labels.
+  # The StatefulSet below creates Pods with "app: cutlink, component: postgres".
+  selector:
+    app: cutlink
+    component: postgres
+
+---
+# StatefulSet: postgres
+#
+# A StatefulSet is like a Deployment but with guarantees about:
+# 1. Stable, unique network identities (pod-name-0, pod-name-1, ...)
+# 2. Stable, persistent storage (each replica gets its own PVC)
+# 3. Ordered, graceful deployment and scaling
+#
+# Why StatefulSet instead of Deployment for PostgreSQL?
+#   - Databases need stable hostnames. With a Deployment, Pods get
+#     random suffixes (postgres-abc12). With a StatefulSet, the first
+#     Pod is always "postgres-0". This matters for replication.
+#   - Each replica can have its own PVC that sticks to it.
+#   - If the Pod dies, the replacement gets the same name and the same disk.
+#
+# For a single-replica Postgres (like our learning setup), a Deployment
+# with a shared PVC would also work. But using a StatefulSet is the
+# production-standard pattern that scales correctly when you add replicas.
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres
+  namespace: cutlink
+  labels:
+    app: cutlink
+    component: postgres
+spec:
+  # serviceName links the StatefulSet to a governing Service.
+  # It must match the name of a Service in the same namespace.
+  # The Service doesn't need to do anything special — it exists so
+  # the StatefulSet can create DNS entries like postgres-0.postgres.cutlink.svc...
+  serviceName: postgres
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cutlink
+      component: postgres
+  template:
+    metadata:
+      labels:
+        app: cutlink
+        component: postgres
+    spec:
+      # terminationGracePeriodSeconds: How long Kubernetes waits for
+      # the container to shut down gracefully before sending SIGKILL.
+      # Postgres needs time to flush buffers and close connections.
+      terminationGracePeriodSeconds: 60
+      containers:
+        - name: postgres
+          # Official PostgreSQL 16 image. Pinned to a specific minor
+          # version for reproducibility — never use :latest in production.
+          image: postgres:16-alpine
+          ports:
+            - containerPort: 5432
+              name: postgres
+          env:
+            # Postgres image uses these env vars to configure the database.
+            # The password comes from a Secret — never hardcode it.
+            - name: POSTGRES_USER
+              value: cutlink
+            - name: POSTGRES_DB
+              value: cutlink
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: cutlink-secrets
+                  key: DB_PASS
+          volumeMounts:
+            # Persistent data storage. Survives Pod restarts.
+            - name: postgres-data
+              mountPath: /var/lib/postgresql/data
+              subPath: postgres
+            # Init SQL from the ConfigMap. The Postgres entrypoint
+            # executes any .sql file found here on first startup.
+            - name: postgres-init
+              mountPath: /docker-entrypoint-initdb.d
+              readOnly: true
+          resources:
+            requests:
+              cpu: 250m        # 1/4 of a CPU core
+              memory: 256Mi
+            limits:
+              cpu: 1            # 1 full core maximum
+              memory: 512Mi
+          # Startup probe: gives slow-starting containers time to initialize
+          # before the liveness probe takes over. Postgres can take a few
+          # seconds to start on the first run.
+          startupProbe:
+            exec:
+              command:
+                - pg_isready
+                - -U
+                - cutlink
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            failureThreshold: 10
+          # Liveness probe: if this fails, K8s kills the container and
+          # restarts it. This detects deadlocks or hung processes.
+          livenessProbe:
+            exec:
+              command:
+                - pg_isready
+                - -U
+                - cutlink
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+          # Readiness probe: if this fails, K8s removes the Pod from the
+          # Service's endpoints. Traffic won't reach it until it's ready.
+          readinessProbe:
+            exec:
+              command:
+                - pg_isready
+                - -U
+                - cutlink
+            initialDelaySeconds: 5
+            periodSeconds: 5
+      # Node selector for development: we can pin Postgres to a specific
+      # node type later. For now, it runs on whatever node is available.
+      # In production, you might add tolerations or affinity rules.
+  # volumeClaimTemplates tells the StatefulSet to create a unique PVC
+  # for each replica. The PVC name is "<template-name>-<statefulset-name>-<ordinal>",
+  # e.g., "postgres-data-postgres-0".
+  volumeClaimTemplates:
+    - metadata:
+        name: postgres-data
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi

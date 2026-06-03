@@ -1,0 +1,59 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: cutlink-backend
+  namespace: monitoring
+  labels:
+    # kube-prometheus-stack requires this label to select this ServiceMonitor.
+    # Without it, Prometheus won't discover the scrape target.
+    release: prometheus
+spec:
+  # Which Services to scrape based on their labels.
+  # Our Cutlink backend Service has the label "app: cutlink-backend".
+  selector:
+    matchLabels:
+      app: cutlink-backend
+
+  # Which namespaces to look in.
+  # Since Cutlink runs in the "cutlink" namespace (not "monitoring"),
+  # we need explicit namespaceSelector.
+  namespaceSelector:
+    matchNames:
+      - cutlink
+
+  # The list of endpoints to scrape on the matched Services.
+  endpoints:
+    - port: metrics
+      interval: 15s
+      scrapeTimeout: 10s
+      path: /metrics
+
+    # You can define multiple endpoints per ServiceMonitor.
+    # For example, if Cutlink also exposes a health-check endpoint
+    # that returns Prometheus-formatted metrics, you could add it here.
+    # - port: management
+    #   interval: 30s
+    #   path: /healthz/metrics
+---
+# Additional ServiceMonitor for monitoring infrastructure services
+# that the kube-prometheus-stack doesn't cover by default.
+# This is optional and shown here for educational reference.
+#
+# apiVersion: monitoring.coreos.com/v1
+# kind: ServiceMonitor
+# metadata:
+#   name: cutlink-redis
+#   namespace: monitoring
+#   labels:
+#     release: prometheus
+# spec:
+#   selector:
+#     matchLabels:
+#       app: redis
+#   namespaceSelector:
+#     matchNames:
+#       - cutlink
+#   endpoints:
+#     - port: metrics
+#       interval: 30s
+#       path: /metrics

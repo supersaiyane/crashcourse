@@ -1,0 +1,52 @@
+# Stage 5: ArgoCD — Child Application for the backend service.
+#
+# This is a CHILD Application, managed by the Root Application (root.yaml).
+# You do NOT apply this file directly — you commit it to Git, and the Root App
+# picks it up automatically.
+#
+# This Application deploys the backend service from its Helm chart.
+# Sync wave 2 ensures it deploys AFTER infrastructure (wave 1) but BEFORE frontend (wave 3).
+
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+
+metadata:
+  name: backend
+  namespace: argocd
+
+  labels:
+    app: cutlink
+    tier: backend
+
+  annotations:
+    # Sync wave controls the order of deployment within the parent's sync.
+    # Lower numbers deploy first. Resources at the same wave deploy in parallel.
+    # Wave 1: infrastructure (postgres, redis)
+    # Wave 2: backend (this app) — waits for infra to be healthy
+    # Wave 3: frontend
+    argocd.argoproj.io/sync-wave: "2"
+
+spec:
+  project: default
+
+  source:
+    repoURL: https://github.com/your-org/cutlink.git
+    path: sample-app/helm/backend
+    targetRevision: HEAD
+    helm:
+      valueFiles:
+        - values-production.yaml
+      parameters:
+        - name: ingress.host
+          value: api.cutlink.example.com
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: cutlink
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

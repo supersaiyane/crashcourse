@@ -1,0 +1,167 @@
+# -----------------------------------------------------------------------------
+# Bootstrap Playbook — FinStack
+#
+# Post-provision configuration for all FinStack hosts:
+#   1. Harden SSH (CIS baseline)
+#   2. Configure NTP (chrony)
+#   3. Install and start the monitoring agent (node_exporter)
+#   4. Set up log shipping (CloudWatch agent)
+#
+# Usage:
+#   ansible-playbook playbooks/bootstrap.yml
+#   ansible-playbook playbooks/bootstrap.yml --limit web
+#   ansible-playbook playbooks/bootstrap.yml --check   # dry-run
+# -----------------------------------------------------------------------------
+---
+- name: Bootstrap FinStack hosts
+  hosts: finstack
+  become: true
+  gather_facts: true
+
+  vars:
+    # Override these in inventory or at runtime with -e
+    node_exporter_version: "1.7.0"
+    node_exporter_port: 9100
+    ntp_server: "169.254.169.123"           # AWS NTP (time.aws.com)
+    cloudwatch_log_group: "/finstack/{{ environment }}/syslog"
+
+  # -----------------------------------------
+  # Task 1: SSH hardening
+  # -----------------------------------------
+  tasks:
+    - name: Harden SSH — disable root login
+      ansible.builtin.lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: "^#?PermitRootLogin"
+        line: "PermitRootLogin no"
+        validate: "sshd -t -f %s"
+      notify: restart sshd
+
+    - name: Harden SSH — disable password authentication
+      ansible.builtin.lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: "^#?PasswordAuthentication"
+        line: "PasswordAuthentication no"
+        validate: "sshd -t -f %s"
+      notify: restart sshd
+
+    - name: Harden SSH — disable X11 forwarding
+      ansible.builtin.lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: "^#?X11Forwarding"
+        line: "X11Forwarding no"
+        validate: "sshd -t -f %s"
+      notify: restart sshd
+
+    - name: Harden SSH — limit max auth tries
+      ansible.builtin.lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: "^#?MaxAuthTries"
+        line: "MaxAuthTries 3"
+        validate: "sshd -t -f %s"
+      notify: restart sshd
+
+    - name: Harden SSH — set idle timeout
+      ansible.builtin.lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: "^#?ClientAliveInterval"
+        line: "ClientAliveInterval 300"
+        validate: "sshd -t -f %s"
+      notify: restart sshd
+
+    # -----------------------------------------
+    # Task 2: NTP configuration (chrony)
+    # -----------------------------------------
+    - name: Install chrony
+      ansible.builtin.yum:
+        name: chrony
+        state: present
+
+    - name: Configure chrony NTP server
+      ansible.builtin.lineinfile:
+        path: /etc/chrony.conf
+        regexp: "^server "
+        line: "server {{ ntp_server }} iburst"
+      notify: restart chronyd
+
+    - name: Enable and start chrony
+      ansible.builtin.systemd:
+        name: chronyd
+        enabled: true
+        state: started
+
+    # -----------------------------------------
+    # Task 3: Monitoring agent (node_exporter)
+    # -----------------------------------------
+    - name: Install monitoring agent (node_exporter)
+      ansible.builtin.include_role:
+        name: monitoring-agent
+      vars:
+        exporter_version: "{{ node_exporter_version }}"
+        exporter_port: "{{ node_exporter_port }}"
+
+    # -----------------------------------------
+    # Task 4: Log shipping (CloudWatch agent)
+    # -----------------------------------------
+    - name: Install CloudWatch agent
+      ansible.builtin.yum:
+        name: amazon-cloudwatch-agent
+        state: present
+
+    - name: Deploy CloudWatch agent config
+      ansible.builtin.copy:
+        dest: /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json
+        mode: "0644"
+        content: |
+          {
+            "agent": {
+              "metrics_collection_interval": 60,
+              "run_as_user": "root"
+            },
+            "logs": {
+              "logs_collected": {
+                "files": {
+                  "collect_list": [
+                    {
+                      "file_path": "/var/log/messages",
+                      "log_group_name": "{{ cloudwatch_log_group }}",
+                      "log_stream_name": "{instance_id}/messages",
+                      "retention_in_days": 90
+                    },
+                    {
+                      "file_path": "/var/log/secure",
+                      "log_group_name": "{{ cloudwatch_log_group }}",
+                      "log_stream_name": "{instance_id}/secure",
+                      "retention_in_days": 365
+                    }
+                  ]
+                }
+              }
+            }
+          }
+      notify: restart cloudwatch agent
+
+    - name: Enable and start CloudWatch agent
+      ansible.builtin.systemd:
+        name: amazon-cloudwatch-agent
+        enabled: true
+        state: started
+
+  # -----------------------------------------
+  # Handlers — restart services only when notified
+  # -----------------------------------------
+  handlers:
+    - name: restart sshd
+      ansible.builtin.systemd:
+        name: sshd
+        state: restarted
+
+    - name: restart chronyd
+      ansible.builtin.systemd:
+        name: chronyd
+        state: restarted
+
+    - name: restart cloudwatch agent
+      ansible.builtin.systemd:
+        name: amazon-cloudwatch-agent
+        state: restarted

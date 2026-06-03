@@ -1,0 +1,164 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: cutlink-alerts
+  namespace: monitoring
+  labels:
+    release: prometheus
+spec:
+  groups:
+    # ──────────────────────────────────────────────
+    # Alerting Rules — fire notifications when something is wrong
+    # ──────────────────────────────────────────────
+    - name: cutlink.alerts
+      interval: 30s
+      rules:
+        # High error rate: more than 5% of HTTP requests are 5xx
+        # for at least 5 minutes.
+        - alert: CutlinkHighErrorRate
+          expr: |
+            (
+              rate(flask_http_request_total{status=~"5.."}[5m])
+              /
+              rate(flask_http_request_total[5m])
+            ) > 0.05
+          for: 5m
+          labels:
+            severity: warning
+            team: backend
+            service: cutlink
+          annotations:
+            summary: "Cutlink backend error rate is high"
+            description: >
+              Error rate is {{ $value | humanizePercentage }} —
+              above the 5% threshold for the last 5 minutes.
+            runbook_url: "https://wiki.team.com/runbooks/cutlink-high-errors"
+            dashboard_url: "https://grafana.example.com/d/cutlink?var-namespace=cutlink"
+
+        # Latency spike: p99 request duration exceeds 2 seconds
+        # for at least 10 minutes.
+        - alert: CutlinkHighLatency
+          expr: |
+            histogram_quantile(
+              0.99,
+              sum by(le) (rate(flask_http_request_duration_seconds_bucket[5m]))
+            ) > 2.0
+          for: 10m
+          labels:
+            severity: warning
+            team: backend
+            service: cutlink
+          annotations:
+            summary: "Cutlink p99 latency is high"
+            description: >
+              p99 latency is {{ $value | humanizeDuration }} —
+              above the 2-second threshold for the last 10 minutes.
+            runbook_url: "https://wiki.team.com/runbooks/cutlink-latency"
+
+        # Service down: no successful scrapes for 5 minutes.
+        # ($value will be 0 or NaN when the target is unreachable.)
+        - alert: CutlinkDown
+          expr: |
+            up{job="cutlink-backend"} == 0
+          for: 5m
+          labels:
+            severity: critical
+            team: backend
+            service: cutlink
+          annotations:
+            summary: "Cutlink backend is down"
+            description: >
+              Cutlink metrics endpoint has not responded
+              for the last 5 minutes. Immediate investigation required.
+
+        # Pod restart detected: a container has restarted in the last 10 minutes.
+        # Sudden restarts often indicate OOM kills, liveness probe failures,
+        # or panic crashes.
+        - alert: CutlinkPodRestart
+          expr: |
+            increase(kube_pod_container_status_restarts_total{namespace="cutlink"}[10m]) > 0
+          for: 2m
+          labels:
+            severity: warning
+            team: backend
+            service: cutlink
+          annotations:
+            summary: "Cutlink pod restarted"
+            description: >
+              Pod {{ $labels.pod }} has restarted.
+              Restart count increased in the last 10 minutes.
+
+        # Disk space running low on Cutlink nodes (below 10% free).
+        - alert: CutlinkNodeDiskSpace
+          expr: |
+            (
+              node_filesystem_avail_bytes{mountpoint="/"}
+              /
+              node_filesystem_size_bytes{mountpoint="/"}
+            ) < 0.10
+          for: 5m
+          labels:
+            severity: warning
+            team: infrastructure
+            service: cutlink
+          annotations:
+            summary: "Cutlink node disk is nearly full"
+            description: >
+              Node {{ $labels.instance }} has less than 10% disk space remaining
+              on its root filesystem ({{ $value | humanizePercentage }} free).
+
+    # ──────────────────────────────────────────────
+    # Recording Rules — pre-compute expensive queries
+    # ──────────────────────────────────────────────
+    - name: cutlink.recording
+      interval: 30s
+      rules:
+        # Per-namespace request rate (5-minute average).
+        # Saves recomputing rate() across many dashboard panels.
+        - record: namespace:flask_http_request_total:rate5m
+          expr: |
+            sum by(namespace) (rate(flask_http_request_total[5m]))
+
+        # Per-namespace error rate (5-minute average).
+        - record: namespace:flask_http_request_errors:rate5m
+          expr: |
+            sum by(namespace) (
+              rate(flask_http_request_total{status=~"5.."}[5m])
+            )
+
+        # Per-namespace error ratio (errors / total).
+        # This is the query used in the CutlinkHighErrorRate alert;
+        # pre-computing it avoids a double rate() on every evaluation.
+        - record: namespace:flask_http_request_error_ratio:rate5m
+          expr: |
+            sum by(namespace) (
+              rate(flask_http_request_total{status=~"5.."}[5m])
+            )
+            /
+            sum by(namespace) (
+              rate(flask_http_request_total[5m])
+            )
+
+        # Average request duration per namespace.
+        # sum(rate(duration_sum)) / sum(rate(duration_count)) = average
+        - record: namespace:flask_http_request_duration_seconds:avg5m
+          expr: |
+            sum by(namespace) (
+              rate(flask_http_request_duration_seconds_sum[5m])
+            )
+            /
+            sum by(namespace) (
+              rate(flask_http_request_duration_seconds_count[5m])
+            )
+
+        # Per-namespace p99 request duration.
+        # This is the expensive histogram_quantile query used in the
+        # CutlinkHighLatency alert. Pre-computing saves CPU on every eval.
+        - record: namespace:flask_http_request_duration_seconds:p99_5m
+          expr: |
+            histogram_quantile(
+              0.99,
+              sum by(namespace, le) (
+                rate(flask_http_request_duration_seconds_bucket[5m])
+              )
+            )

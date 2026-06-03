@@ -1,0 +1,79 @@
+# HorizontalPodAutoscaler: backend-hpa
+#
+# An HPA automatically scales the number of Pod replicas based on
+# observed CPU/memory utilization or custom metrics.
+#
+# How it works:
+#   1. The HPA controller queries the metrics-server every 15 seconds
+#      (configurable with --horizontal-pod-autoscaler-sync-period).
+#   2. It calculates the desired replicas as:
+#        desiredReplicas = ceil(currentReplicas * (currentMetricValue / targetMetricValue))
+#   3. If the result differs from current replicas, it updates the
+#      Deployment's replicas field.
+#
+# Example: If CPU is at 140% and target is 70%, with 2 current replicas:
+#   desired = ceil(2 * (140 / 70)) = ceil(2 * 2) = 4 replicas
+#
+# The HPA won't scale below minReplicas or above maxReplicas.
+# It also has built-in hysteresis to prevent flapping:
+#   - Only scales up if the target ratio is exceeded for 3+ minutes
+#   - Only scales down if the target ratio is below for 5+ minutes
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: backend-hpa
+  namespace: cutlink
+spec:
+  # scaleTargetRef tells the HPA which resource to scale.
+  # It can target Deployments, StatefulSets, or ReplicaSets.
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: backend
+  # Min/max bounds:
+  #   minReplicas: at least 2 Pods are always running (basic HA)
+  #   maxReplicas: at most 10 Pods (cluster resource limit)
+  minReplicas: 2
+  maxReplicas: 10
+  # metrics: the signal(s) that trigger scaling.
+  # You can have multiple metrics — the HPA takes the largest
+  # desired replica count across all of them.
+  metrics:
+    # resource metric: based on Kubernetes resource requests.
+    # The metrics-server must be installed (see Exercise 1).
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          # Utilization = (actual usage) / (resource request) * 100
+          # If a Pod requests 100m CPU and uses 80m, utilization = 80%.
+          type: Utilization
+          # Target: scale up when average CPU across all Pods exceeds 70%.
+          averageUtilization: 70
+    # Uncomment to also scale on memory:
+    # - type: Resource
+    #   resource:
+    #     name: memory
+    #     target:
+    #       type: Utilization
+    #       averageUtilization: 80
+  # Behavior: fine-tune the scaling speed.
+  # Without this, HPA uses conservative defaults (scale up every 3 min,
+  # scale down every 5 min). We speed it up a bit for the demo.
+  behavior:
+    scaleUp:
+      # stabilizationWindowSeconds: how long to wait before acting.
+      # If CPU spikes briefly, we don't want to trigger a scale-up.
+      stabilizationWindowSeconds: 30
+      policies:
+        # At most double the current replica count every 60 seconds.
+        - type: Percent
+          value: 100
+          periodSeconds: 60
+    scaleDown:
+      stabilizationWindowSeconds: 60
+      policies:
+        # At most halve the current replica count every 60 seconds.
+        - type: Percent
+          value: 50
+          periodSeconds: 60

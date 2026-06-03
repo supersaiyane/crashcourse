@@ -1,0 +1,44 @@
+# Stage 5: ArgoCD — Child Application for the frontend service.
+#
+# This Application deploys the frontend using its Helm chart.
+# Sync wave 3 ensures the frontend UI deploys AFTER the backend API is healthy.
+# This prevents the frontend from crashing on startup because the backend isn't ready.
+
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+
+metadata:
+  name: frontend
+  namespace: argocd
+
+  labels:
+    app: cutlink
+    tier: frontend
+
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
+
+spec:
+  project: default
+
+  source:
+    repoURL: https://github.com/your-org/cutlink.git
+    path: sample-app/helm/frontend
+    targetRevision: HEAD
+    helm:
+      valueFiles:
+        - values-production.yaml
+      parameters:
+        - name: backend.url
+          value: http://backend.cutlink.svc.cluster.local:8080
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: cutlink
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

@@ -1,0 +1,82 @@
+# FinStack local development environment
+# Provides LocalStack (free AWS emulation) and Vault (dev mode) so you can
+# complete Stages 1-6 without an AWS account or any cloud spend.
+#
+# Usage:
+#   docker compose up -d
+#   docker compose ps
+#   docker compose down -v
+
+services:
+  # ---------------------------------------------------------------------------
+  # LocalStack — emulates AWS services (S3, IAM, STS, EC2, EKS, RDS, etc.)
+  # Free tier covers everything FinStack needs.
+  # ---------------------------------------------------------------------------
+  localstack:
+    image: localstack/localstack:3.5
+    container_name: finstack-localstack
+    ports:
+      - "4566:4566"            # Gateway — all AWS services on one port
+      - "4510-4559:4510-4559"  # Service-specific ports (optional)
+    environment:
+      - SERVICES=s3,iam,sts,ec2,rds,eks,secretsmanager,ssm,kms
+      - DEFAULT_REGION=ap-south-1
+      - DEBUG=0
+      - DOCKER_HOST=unix:///var/run/docker.sock
+    volumes:
+      - localstack-data:/var/lib/localstack
+      - /var/run/docker.sock:/var/run/docker.sock
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4566/_localstack/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ---------------------------------------------------------------------------
+  # Vault — runs in dev mode (unsealed, root token = "root")
+  # Dev mode is ephemeral — data is lost on restart. That is fine for learning.
+  # ---------------------------------------------------------------------------
+  vault:
+    image: hashicorp/vault:1.17
+    container_name: finstack-vault
+    ports:
+      - "8200:8200"
+    environment:
+      - VAULT_DEV_ROOT_TOKEN_ID=root
+      - VAULT_DEV_LISTEN_ADDRESS=0.0.0.0:8200
+      - VAULT_ADDR=http://127.0.0.1:8200
+    cap_add:
+      - IPC_LOCK
+    healthcheck:
+      test: ["CMD", "vault", "status"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # ---------------------------------------------------------------------------
+  # Payment API — the FinStack Flask app (optional, for end-to-end testing)
+  # ---------------------------------------------------------------------------
+  payment-api:
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+    container_name: finstack-api
+    ports:
+      - "8080:8080"
+    environment:
+      - DB_HOST=localhost
+      - DB_PORT=5432
+      - DB_NAME=finstack
+      - DB_USER=finstack_app
+      - DB_PASS=changeme
+      - S3_BUCKET=finstack-statements-dev
+      - AWS_REGION=ap-south-1
+      - AWS_ENDPOINT_URL=http://localstack:4566
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+    depends_on:
+      localstack:
+        condition: service_healthy
+
+volumes:
+  localstack-data:

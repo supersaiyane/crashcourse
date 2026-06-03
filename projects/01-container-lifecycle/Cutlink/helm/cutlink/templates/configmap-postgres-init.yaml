@@ -1,0 +1,12 @@
+{{- if .Values.postgres.initScript.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "cutlink.fullname" . }}-postgres-init
+  namespace: {{ include "cutlink.namespace" . }}
+  labels:
+    {{- include "cutlink.labels" . | nindent 4 }}
+data:
+  init.sql: |
+    {{- .Values.postgres.initScript.sql | nindent 4 }}
+{{- end }}

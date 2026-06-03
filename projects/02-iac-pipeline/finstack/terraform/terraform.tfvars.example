@@ -1,0 +1,51 @@
+# -----------------------------------------------------------------------------
+# terraform.tfvars.example — copy to terraform.tfvars and fill in real values
+#
+# cp terraform.tfvars.example terraform.tfvars
+#
+# NEVER commit terraform.tfvars to Git — it may contain secrets.
+# The .gitignore should already exclude *.tfvars.
+# -----------------------------------------------------------------------------
+
+# ---------------------------------------------------------------------------
+# General
+# ---------------------------------------------------------------------------
+project     = "finstack"
+environment = "dev"
+owner       = "sre-team"
+aws_region  = "ap-south-1"
+
+# ---------------------------------------------------------------------------
+# VPC
+# ---------------------------------------------------------------------------
+vpc_cidr = "10.0.0.0/16"
+azs      = ["ap-south-1a", "ap-south-1b"]
+
+# ---------------------------------------------------------------------------
+# EKS
+# ---------------------------------------------------------------------------
+eks_cluster_version     = "1.29"
+eks_public_access       = false          # set true only for dev/debugging
+eks_node_instance_types = ["t3.medium"]
+eks_node_desired_size   = 2
+eks_node_max_size       = 4
+eks_node_min_size       = 1
+
+# ---------------------------------------------------------------------------
+# RDS
+# ---------------------------------------------------------------------------
+rds_engine_version      = "16.3"
+rds_instance_class      = "db.t3.micro"  # use db.r6g.large+ in production
+rds_allocated_storage   = 20
+rds_db_name             = "finstack"
+rds_db_username         = "finstack_admin"
+rds_db_password         = "CHANGE_ME_use_vault_in_production"  # rotate immediately
+rds_multi_az            = false           # set true in production
+rds_skip_final_snapshot = true            # set false in production
+rds_deletion_protection = false           # set true in production
+
+# ---------------------------------------------------------------------------
+# Application (IRSA)
+# ---------------------------------------------------------------------------
+app_namespace       = "finstack"
+app_service_account = "payment-api"

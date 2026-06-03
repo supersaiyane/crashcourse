@@ -1,0 +1,61 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: node-exporter
+  namespace: monitoring
+  labels:
+    release: prometheus
+spec:
+  # Which Pods to scrape based on their labels.
+  # The kube-prometheus-stack's node-exporter DaemonSet pods
+  # have the label "app.kubernetes.io/component: node-exporter".
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: node-exporter
+
+  # node-exporter runs in the "monitoring" namespace.
+  namespaceSelector:
+    matchNames:
+      - monitoring
+
+  # The list of pod endpoints to scrape.
+  podMetricsEndpoints:
+    - port: http-metrics
+      interval: 30s
+      scrapeTimeout: 10s
+      path: /metrics
+
+    # node-exporter also exposes a textfile collector directory
+    # at /metrics/textfile. This is optional but useful for
+    # exposing custom node-level metrics via cron jobs.
+    # - port: http-metrics
+    #   interval: 60s
+    #   path: /metrics/textfile
+---
+# Important note:
+# The kube-prometheus-stack Helm chart already creates a PodMonitor
+# for node-exporter automatically as part of its default configuration.
+# You generally do NOT need to create this PodMonitor yourself.
+#
+# This file exists for educational purposes — to show you what a
+# PodMonitor looks like and how it targets pods directly (without
+# requiring a Service to route traffic through).
+#
+# Key differences between ServiceMonitor and PodMonitor:
+#
+# ServiceMonitor:
+#   - Targets a Service's endpoints
+#   - Traffic goes through Service load-balancing
+#   - You scrape via Service IP + port
+#
+# PodMonitor:
+#   - Targets individual Pods directly
+#   - You scrape via Pod IP + port
+#   - Each pod is scraped individually (no load-balancing)
+#   - Useful for DaemonSets (like node-exporter) where you want
+#     metrics from every pod separately
+#
+# When to use each:
+#   - ServiceMonitor: your app has a Service exposing /metrics
+#   - PodMonitor: no Service exists, or you need per-pod granularity
+#     (e.g., node-exporter, where each node's metrics are different)

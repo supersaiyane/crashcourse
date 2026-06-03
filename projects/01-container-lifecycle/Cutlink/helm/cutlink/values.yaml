@@ -1,0 +1,245 @@
+# vim: set ft=yaml:
+# ──────────────────────────────────────────────────────────────
+# CUTLINK Helm — Default Values
+# ──────────────────────────────────────────────────────────────
+
+# ── Overrides ─────────────────────────────────────────────────
+nameOverride: ""
+fullnameOverride: ""
+namespace: {}
+#  namespace:
+#    create: true
+#    name: cutlink
+
+# ── Image defaults ────────────────────────────────────────────
+imagePullSecrets: []
+image:
+  registry: docker.io
+  pullPolicy: IfNotPresent
+
+# ── Service Account ──────────────────────────────────────────
+serviceAccount:
+  create: false
+  name: ""
+  annotations: {}
+
+# ── Backend ──────────────────────────────────────────────────
+backend:
+  enabled: true
+
+  image:
+    repository: cutlink-backend
+    tag: latest
+
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  minReadySeconds: 10
+
+  port: 5000
+
+  env:
+    DB_NAME: cutlink
+    DB_USER: cutlink
+    BASE_URL: "http://localhost:8080"
+
+  service:
+    type: ClusterIP
+    port: 5000
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 256Mi
+
+  livenessProbe:
+    httpGet:
+      path: /health
+      port: http
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+
+  readinessProbe:
+    httpGet:
+      path: /ready
+      port: http
+    initialDelaySeconds: 5
+    periodSeconds: 5
+    timeoutSeconds: 3
+
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+# ── Frontend ─────────────────────────────────────────────────
+frontend:
+  enabled: true
+
+  image:
+    repository: cutlink-frontend
+    tag: latest
+
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+
+  port: 80
+
+  service:
+    type: ClusterIP
+    port: 80
+
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 128Mi
+
+  livenessProbe:
+    httpGet:
+      path: /
+      port: http
+    initialDelaySeconds: 15
+    periodSeconds: 10
+
+  readinessProbe:
+    httpGet:
+      path: /
+      port: http
+    initialDelaySeconds: 5
+    periodSeconds: 5
+
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+# ── PostgreSQL (subchart) ────────────────────────────────────
+postgresql:
+  enabled: false
+  auth:
+    database: cutlink
+    username: cutlink
+    password: ""
+  primary:
+    persistence:
+      size: 1Gi
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+
+# ── Redis (subchart) ─────────────────────────────────────────
+redis:
+  enabled: false
+  auth:
+    enabled: false
+  master:
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+
+# ── External services (when subcharts are disabled) ──────────
+externalServices:
+  postgresql:
+    host: ""
+    port: 5432
+  redis:
+    host: ""
+    port: 6379
+
+# ── Ingress ─────────────────────────────────────────────────
+ingress:
+  enabled: false
+  className: nginx
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/proxy-body-size: "1m"
+  rules:
+    - host: cutlink.local
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+  #  - hosts:
+  #      - cutlink.example.com
+  #    secretName: cutlink-tls
+
+# ── Autoscaling (HPA) ───────────────────────────────────────
+autoscaling:
+  enabled: false
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+
+# ── Secrets ─────────────────────────────────────────────────
+secrets:
+  db_pass: ""
+  existingSecret: ""
+  # tls: ""
+
+# ── Init scripts ────────────────────────────────────────────
+postgres:
+  initScript:
+    enabled: true
+    sql: |-
+      CREATE TABLE IF NOT EXISTS urls (
+          id SERIAL PRIMARY KEY,
+          short_code VARCHAR(10) UNIQUE NOT NULL,
+          original_url TEXT NOT NULL,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          clicks INTEGER DEFAULT 0
+      );
+
+      CREATE TABLE IF NOT EXISTS clicks (
+          id SERIAL PRIMARY KEY,
+          short_code VARCHAR(10) NOT NULL,
+          clicked_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          user_agent TEXT,
+          referer TEXT,
+          ip_address VARCHAR(45)
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_clicks_short_code ON clicks(short_code);
+
+# ── Hooks ────────────────────────────────────────────────────
+hooks:
+  enabled: false
+  dbMigrate:
+    image:
+      repository: bitnami/postgresql
+      tag: 15
+  smokeTest:
+    image:
+      repository: busybox
+      tag: "1.36"
+
+# ── NetworkPolicy ───────────────────────────────────────────
+networkPolicy:
+  enabled: false
+
+# ── PodDisruptionBudget ─────────────────────────────────────
+pdb:
+  enabled: false
+  minAvailable: 1
+
+# ── ServiceMonitor (Prometheus Operator) ───────────────────
+serviceMonitor:
+  enabled: false
+  interval: 30s
+  path: /metrics
+  port: http

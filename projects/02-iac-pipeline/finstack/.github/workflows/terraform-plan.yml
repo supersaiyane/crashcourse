@@ -1,0 +1,212 @@
+# -----------------------------------------------------------------------------
+# GitHub Actions — Terraform Plan on Pull Request
+#
+# Runs on every PR that touches infrastructure files:
+#   1. Configures AWS credentials via OIDC (no long-lived keys)
+#   2. Runs terraform fmt and validate
+#   3. Runs terraform plan and saves the plan output
+#   4. Runs OPA/conftest policy checks against the plan
+#   5. Posts the plan as a PR comment for review
+#
+# ⚠️  This workflow NEVER runs `terraform apply`.
+#     Apply only happens on merge to main (see terraform-apply.yml).
+#
+# Required GitHub Secrets:
+#   AWS_ROLE_ARN — IAM role ARN for OIDC federation (no access keys needed)
+# -----------------------------------------------------------------------------
+
+name: "Terraform Plan"
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "finstack/terraform/**"
+      - "finstack/terragrunt/**"
+      - "finstack/policies/**"
+      - "finstack/.github/workflows/terraform-plan.yml"
+
+# Cancel in-progress runs for the same PR (saves CI minutes)
+concurrency:
+  group: terraform-plan-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  id-token: write        # OIDC token for AWS authentication
+  contents: read         # checkout the repo
+  pull-requests: write   # post plan as PR comment
+
+env:
+  TF_VERSION: "1.7.0"
+  AWS_REGION: "ap-south-1"
+  WORKING_DIR: "finstack/terraform/environments"
+  POLICY_DIR: "finstack/policies"
+
+jobs:
+  plan:
+    name: "Plan & Policy Check"
+    runs-on: ubuntu-latest
+
+    steps:
+      # -----------------------------------------
+      # Step 1: Checkout code
+      # -----------------------------------------
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # -----------------------------------------
+      # Step 2: Configure AWS credentials via OIDC
+      # ⚠️ No long-lived access keys — OIDC is the safe way
+      # -----------------------------------------
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+          role-session-name: github-actions-terraform-plan
+
+      # -----------------------------------------
+      # Step 3: Setup Terraform
+      # -----------------------------------------
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+          terraform_wrapper: false   # raw output for plan parsing
+
+      # -----------------------------------------
+      # Step 4: Terraform fmt check
+      # -----------------------------------------
+      - name: Terraform Format Check
+        id: fmt
+        run: terraform fmt -check -recursive
+        working-directory: finstack/terraform
+        continue-on-error: true
+
+      # -----------------------------------------
+      # Step 5: Terraform init
+      # -----------------------------------------
+      - name: Terraform Init
+        id: init
+        run: terraform init -input=false
+        working-directory: ${{ env.WORKING_DIR }}
+
+      # -----------------------------------------
+      # Step 6: Terraform validate
+      # -----------------------------------------
+      - name: Terraform Validate
+        id: validate
+        run: terraform validate -no-color
+        working-directory: ${{ env.WORKING_DIR }}
+
+      # -----------------------------------------
+      # Step 7: Terraform plan
+      # -----------------------------------------
+      - name: Terraform Plan
+        id: plan
+        run: |
+          terraform plan \
+            -input=false \
+            -no-color \
+            -out=tfplan \
+            2>&1 | tee plan_output.txt
+
+          # Export plan as JSON for OPA policy evaluation
+          terraform show -json tfplan > tfplan.json
+        working-directory: ${{ env.WORKING_DIR }}
+        continue-on-error: true
+
+      # -----------------------------------------
+      # Step 8: OPA policy check with conftest
+      # -----------------------------------------
+      - name: Install conftest
+        run: |
+          LATEST=$(curl -s https://api.github.com/repos/open-policy-agent/conftest/releases/latest | grep tag_name | cut -d '"' -f 4 | sed 's/v//')
+          curl -sSL "https://github.com/open-policy-agent/conftest/releases/download/v${LATEST}/conftest_${LATEST}_Linux_x86_64.tar.gz" | tar xz
+          sudo mv conftest /usr/local/bin/
+
+      - name: Run OPA Policy Checks
+        id: opa
+        run: |
+          conftest test \
+            --policy ../../../${{ env.POLICY_DIR }} \
+            --no-color \
+            tfplan.json \
+            2>&1 | tee opa_output.txt
+        working-directory: ${{ env.WORKING_DIR }}
+        continue-on-error: true
+
+      # -----------------------------------------
+      # Step 9: Post plan and policy results as PR comment
+      # -----------------------------------------
+      - name: Post Plan to PR
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const planOutput = fs.readFileSync('${{ env.WORKING_DIR }}/plan_output.txt', 'utf8').slice(-60000);
+            let opaOutput = '';
+            try {
+              opaOutput = fs.readFileSync('${{ env.WORKING_DIR }}/opa_output.txt', 'utf8');
+            } catch (e) {
+              opaOutput = 'OPA check did not run.';
+            }
+
+            const fmtResult = '${{ steps.fmt.outcome }}';
+            const initResult = '${{ steps.init.outcome }}';
+            const validateResult = '${{ steps.validate.outcome }}';
+            const planResult = '${{ steps.plan.outcome }}';
+            const opaResult = '${{ steps.opa.outcome }}';
+
+            const icon = (r) => r === 'success' ? '✅' : '❌';
+
+            const body = `## Terraform Plan Results
+
+            | Step | Status |
+            |------|--------|
+            | Format | ${icon(fmtResult)} \`${fmtResult}\` |
+            | Init | ${icon(initResult)} \`${initResult}\` |
+            | Validate | ${icon(validateResult)} \`${validateResult}\` |
+            | Plan | ${icon(planResult)} \`${planResult}\` |
+            | OPA Policy | ${icon(opaResult)} \`${opaResult}\` |
+
+            <details><summary>Show Plan Output</summary>
+
+            \`\`\`
+            ${planOutput}
+            \`\`\`
+
+            </details>
+
+            <details><summary>Show OPA Policy Results</summary>
+
+            \`\`\`
+            ${opaOutput}
+            \`\`\`
+
+            </details>
+
+            *Pushed by: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
+
+      # -----------------------------------------
+      # Step 10: Fail the workflow if plan or OPA failed
+      # -----------------------------------------
+      - name: Check results
+        run: |
+          if [ "${{ steps.plan.outcome }}" != "success" ]; then
+            echo "::error::Terraform plan failed"
+            exit 1
+          fi
+          if [ "${{ steps.opa.outcome }}" != "success" ]; then
+            echo "::error::OPA policy check failed — fix policy violations before merging"
+            exit 1
+          fi

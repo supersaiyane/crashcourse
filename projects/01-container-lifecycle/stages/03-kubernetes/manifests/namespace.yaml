@@ -1,0 +1,20 @@
+# Namespace: cutlink
+# 
+# Namespaces provide logical isolation within a Kubernetes cluster.
+# Think of them as virtual clusters inside your physical cluster.
+# They let you organize resources by team, project, or environment
+# without risking name collisions or cross-team interference.
+#
+# Why use a namespace for Cutlink instead of the default namespace?
+# 1. Isolation — Cutlink's resources are grouped together and won't
+#    accidentally conflict with other apps in the cluster.
+# 2. Cleanup — `kubectl delete ns cutlink` removes every Cutlink
+#    resource in one command (pods, services, volumes, everything).
+# 3. Policy — You can attach ResourceQuota, LimitRange, and NetworkPolicy
+#    to a namespace to govern everything inside it.
+apiVersion: v1
+kind: Namespace
+metadata:
+  # The namespace name is referenced in every other manifest's
+  # `metadata.namespace` field. Keep them consistent.
+  name: cutlink

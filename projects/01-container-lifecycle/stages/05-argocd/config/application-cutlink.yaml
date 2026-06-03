@@ -1,0 +1,99 @@
+# Stage 5: ArgoCD — Application manifest for Cutlink deployment via GitOps.
+#
+# This is the core ArgoCD resource. It tells ArgoCD:
+#   - WHERE to find the desired state (Git repo, path, branch)
+#   - WHERE to deploy (cluster + namespace)
+#   - HOW to sync (automatic, with pruning and self-healing)
+#
+# Apply with: kubectl apply -f application-cutlink.yaml
+
+apiVersion: argoproj.io/v1alpha1
+# ArgoCD extends Kubernetes with Custom Resources. Application is the primary one.
+kind: Application
+
+metadata:
+  # The Application name shows up in the ArgoCD UI and CLI.
+  name: cutlink
+
+  # Applications must be created in the namespace where ArgoCD is installed.
+  namespace: argocd
+
+  # Labels help organize Applications at scale.
+  labels:
+    app: cutlink
+    tier: application
+    environment: production
+
+spec:
+  # --- PROJECT ---
+  # Logical grouping for RBAC. The "default" project ships with ArgoCD
+  # and allows all source repos and all destinations.
+  # In production, create a dedicated project with restricted sources/destinations.
+  project: default
+
+  # --- SOURCE ---
+  # Defines WHERE ArgoCD reads the desired state from.
+  source:
+    # The Git repository URL. Replace with your actual repo.
+    # ArgoCD supports HTTPS, SSH, and GitHub App authentication.
+    repoURL: https://github.com/your-org/cutlink.git
+
+    # The path within the repo where the Helm chart lives.
+    path: sample-app/helm/cutlink
+
+    # Which branch, tag, or commit SHA to track.
+    # "HEAD" means the default branch (usually main or master).
+    targetRevision: HEAD
+
+    # Helm-specific configuration.
+    helm:
+      # List of value files to apply, in order. Each file is relative to the source path.
+      # Later files override earlier ones. The chart's built-in values.yaml is always applied first.
+      valueFiles:
+        - values-production.yaml
+
+      # You can also set individual values inline, overriding anything in the value files.
+      # parameters:
+      #   - name: image.tag
+      #     value: v1.2.3
+
+  # --- DESTINATION ---
+  # Defines WHERE ArgoCD deploys the rendered manifests.
+  destination:
+    # The target cluster. "https://kubernetes.default.svc" means the same cluster ArgoCD runs in.
+    server: https://kubernetes.default.svc
+
+    # The namespace to deploy into. ArgoCD will create it if CreateNamespace is set.
+    namespace: cutlink
+
+  # --- SYNC POLICY ---
+  # Defines HOW and WHEN ArgoCD reconciles desired state vs live state.
+  syncPolicy:
+    # Automated sync: ArgoCD will sync whenever Git changes.
+    automated:
+      # prune: true — if a resource is removed from Git, ArgoCD deletes it from the cluster.
+      # Without this, removed resources become orphaned.
+      prune: true
+
+      # selfHeal: true — if someone manually changes a resource in the cluster,
+      # ArgoCD reverts it to match Git on the next reconciliation cycle.
+      # This enforces Git as the single source of truth.
+      selfHeal: true
+
+    # Additional sync behavior tweaks.
+    syncOptions:
+      # Auto-create the destination namespace if it doesn't exist.
+      # Without this, ArgoCD will fail if the namespace is missing.
+      - CreateNamespace=true
+
+      # Apply resources in the order they appear, respecting sync waves.
+      - RespectIgnoreDifferences=true
+
+  # --- IGNORE DIFFERENCES (optional) ---
+  # Sometimes the live cluster has fields that Git doesn't set (e.g., status fields,
+  # defaulted values). You can tell ArgoCD to ignore these fields when comparing.
+  # ignoreDifferences:
+  #   - group: apps
+  #     kind: Deployment
+  #     jsonPointers:
+  #       - /spec/replicas

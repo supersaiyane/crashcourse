@@ -1,0 +1,43 @@
+# vim: set ft=yaml:
+# Development overrides — single replicas, no HPA, no Ingress, subcharts enabled.
+backend:
+  replicas: 1
+  image:
+    tag: latest
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 256Mi
+
+frontend:
+  replicas: 1
+  image:
+    tag: latest
+
+postgresql:
+  enabled: true
+  auth:
+    password: devpass
+  primary:
+    persistence:
+      enabled: false
+
+redis:
+  enabled: true
+  auth:
+    enabled: false
+
+ingress:
+  enabled: false
+
+autoscaling:
+  enabled: false
+
+secrets:
+  db_pass: devpass
+
+hooks:
+  enabled: false

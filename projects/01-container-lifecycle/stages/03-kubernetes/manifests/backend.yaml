@@ -1,0 +1,184 @@
+# ---
+# ConfigMap: backend-config
+#
+# Holds non-sensitive environment variables for the backend.
+# These values are the same for every replica.
+# Sensitive values (like passwords) go in a Secret.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backend-config
+  namespace: cutlink
+data:
+  # These match what app.py reads from os.getenv().
+  # The service names "postgres" and "redis" resolve via Kubernetes DNS
+  # to the ClusterIP of their respective Services within the cutlink namespace.
+  DB_HOST: "postgres"
+  DB_NAME: "cutlink"
+  DB_USER: "cutlink"
+  REDIS_HOST: "redis"
+  # BASE_URL is set to the Ingress hostname. When traffic comes through
+  # the Ingress, the frontend constructs short URLs using this base.
+  BASE_URL: "http://cutlink.local"
+
+---
+# Secret: cutlink-secrets
+#
+# A Secret is like a ConfigMap but base64-encoded and intended for
+# sensitive data (passwords, API keys, TLS certs).
+#
+# IMPORTANT: Base64 is NOT encryption! It's just encoding.
+# Anyone with `kubectl get secret` can decode it:
+#   kubectl get secret cutlink-secrets -n cutlink -o jsonpath='{.data.DB_PASS}' | base64 -d
+#
+# Real secrets should be encrypted at rest using KMS (Amazon EKS, GKE, AKS)
+# and managed with external tools like HashiCorp Vault, External Secrets Operator,
+# or Sealed Secrets. This is fine for learning.
+apiVersion: v1
+kind: Secret
+metadata:
+  name: cutlink-secrets
+  namespace: cutlink
+type: Opaque
+data:
+  # echo -n "cutlink_secret_2024" | base64
+  DB_PASS: Y3V0bGlua19zZWNyZXRfMjAyNA==
+
+---
+# Service: backend
+#
+# Internal service that exposes the Flask API to other Pods.
+# The frontend nginx proxies /api/ requests here.
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+  namespace: cutlink
+  labels:
+    app: cutlink
+    component: backend
+spec:
+  type: ClusterIP
+  ports:
+    - port: 5000
+      targetPort: 5000
+      protocol: TCP
+      name: http
+  selector:
+    app: cutlink
+    component: backend
+
+---
+# Deployment: backend
+#
+# The Flask API that powers URL shortening. This is the most
+# feature-rich manifest in the set — it demonstrates probes,
+# rolling updates, resource limits, and security context.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: cutlink
+  labels:
+    app: cutlink
+    component: backend
+spec:
+  # 2 replicas for basic high availability. If one Pod fails,
+  # the other keeps serving. Also enables zero-downtime updates.
+  replicas: 2
+  selector:
+    matchLabels:
+      app: cutlink
+      component: backend
+  # Rolling update strategy: gradually replace old Pods with new ones.
+  # This enables zero-downtime deployments.
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      # maxSurge: how many extra Pods can be created above the desired count.
+      # 1 means during update we'll have at most 3 Pods (2 desired + 1 surge).
+      maxSurge: 1
+      # maxUnavailable: how many Pods can be unavailable during the update.
+      # 0 means we keep all 2 replicas serving at all times.
+      # Combined with maxSurge: 1, K8s creates a new Pod first, waits for it
+      # to be ready, then terminates an old one.
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: cutlink
+        component: backend
+    spec:
+      # Security context at the Pod level applies to all containers.
+      # fsGroup sets the group that owns any volumes mounted.
+      securityContext:
+        fsGroup: 1000
+      containers:
+        - name: backend
+          image: cutlink-backend:latest
+          ports:
+            - containerPort: 5000
+              name: http
+          # Environment variables: merge ConfigMap + Secret
+          envFrom:
+            # Load all keys from the ConfigMap as env vars
+            - configMapRef:
+                name: backend-config
+            # Load all keys from the Secret as env vars
+            - secretRef:
+                name: cutlink-secrets
+          # Container-level security context.
+          # In production, ALWAYS set these to reduce blast radius
+          # if a container is compromised.
+          securityContext:
+            # runAsNonRoot: block if the image tries to run as root
+            runAsNonRoot: true
+            # runAsUser: force the container to run as a specific UID.
+            # 1000 is a non-root user we create in the Dockerfile.
+            runAsUser: 1000
+            # readOnlyRootFilesystem: prevent writes to the container's
+            # filesystem. If the app needs to write temp files, mount
+            # an emptyDir volume at the temp location.
+            readOnlyRootFilesystem: true
+            # capabilities: drop all Linux capabilities (privileges).
+            # Our app doesn't need any special kernel permissions.
+            capabilities:
+              drop:
+                - ALL
+            # allowPrivilegeEscalation: prevent the process from gaining
+            # more privileges than its parent. Always set to false.
+            allowPrivilegeEscalation: false
+          # Readiness probe: K8s checks this before sending traffic.
+          # If /health returns HTTP 200, the Pod is ready.
+          # This prevents routing requests to a Pod that's still starting.
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 5000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 3
+            successThreshold: 1
+            failureThreshold: 3
+          # Liveness probe: K8s checks this to see if the app is alive.
+          # If /health fails repeatedly, K8s kills and restarts the Pod.
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 5000
+            initialDelaySeconds: 15
+            periodSeconds: 15
+            timeoutSeconds: 3
+            failureThreshold: 5
+          # Resources: tell the scheduler how much CPU/memory this Pod needs.
+          #   requests: guaranteed minimum — the scheduler ensures this
+          #             much is available on a node before placing the Pod.
+          #   limits:   maximum allowed — the container can burst up to this
+          #             but will be throttled (CPU) or killed (memory) beyond it.
+          resources:
+            requests:
+              cpu: 100m        # 0.1 CPU core
+              memory: 128Mi
+            limits:
+              cpu: 500m         # 0.5 CPU core max
+              memory: 256Mi

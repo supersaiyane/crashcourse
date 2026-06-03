@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cutlink - URL Shortener</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1>Cutlink</h1>
+        <p class="subtitle">Production-grade URL shortener</p>
+    </header>
+
+    <section class="shorten-card">
+        <h2>Shorten a URL</h2>
+        <div class="input-group">
+            <input type="url" id="urlInput" placeholder="https://example.com/very/long/url" required>
+            <button id="shortenBtn">Shorten</button>
+        </div>
+        <div class="input-group optional">
+            <input type="text" id="customInput" placeholder="Custom code (optional)">
+        </div>
+        <div id="result" class="hidden">
+            <p>Short URL:</p>
+            <a id="shortUrl" href="#" target="_blank"></a>
+            <button id="copyBtn">Copy</button>
+        </div>
+        <div id="error" class="hidden error"></div>
+    </section>
+
+    <section class="stats-section">
+        <h2>Recent URLs</h2>
+        <div id="urlList">
+            <p class="loading">Loading...</p>
+        </div>
+    </section>
+
+    <section class="health-section">
+        <h2>System Health</h2>
+        <div id="healthStatus" class="health-cards">
+            <div class="health-card">
+                <span class="label">API</span>
+                <span id="apiStatus" class="status unknown">Unknown</span>
+            </div>
+            <div class="health-card">
+                <span class="label">Database</span>
+                <span id="dbStatus" class="status unknown">Unknown</span>
+            </div>
+            <div class="health-card">
+                <span class="label">Redis</span>
+                <span id="redisStatus" class="status unknown">Unknown</span>
+            </div>
+        </div>
+    </section>
+</div>
+<script src="app.js"></script>
+</body>
+</html>

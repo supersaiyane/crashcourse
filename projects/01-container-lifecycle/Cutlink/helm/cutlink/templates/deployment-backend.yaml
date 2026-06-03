@@ -1,0 +1,89 @@
+{{- if .Values.backend.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "cutlink.fullname" . }}-backend
+  namespace: {{ include "cutlink.namespace" . }}
+  labels:
+    {{- include "cutlink.labels" . | nindent 4 }}
+    component: backend
+spec:
+  replicas: {{ .Values.backend.replicas }}
+  strategy:
+    type: {{ .Values.backend.strategy.type }}
+    rollingUpdate:
+      maxUnavailable: {{ .Values.backend.strategy.rollingUpdate.maxUnavailable }}
+      maxSurge: {{ .Values.backend.strategy.rollingUpdate.maxSurge }}
+  minReadySeconds: {{ .Values.backend.minReadySeconds }}
+  selector:
+    matchLabels:
+      {{- include "cutlink.selectorLabels" . | nindent 6 }}
+      component: backend
+  template:
+    metadata:
+      labels:
+        {{- include "cutlink.selectorLabels" . | nindent 8 }}
+        component: backend
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap-backend.yaml") . | sha256sum | trunc 40 }}
+        checksum/secret: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum | trunc 40 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "cutlink.serviceAccountName" . }}
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+      containers:
+        - name: backend
+          image: "{{ .Values.image.registry }}/{{ .Values.backend.image.repository }}:{{ .Values.backend.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.backend.port }}
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: {{ include "cutlink.fullname" . }}-backend
+          env:
+            - name: DB_PASS
+              valueFrom:
+                secretKeyRef:
+                  {{- if .Values.secrets.existingSecret }}
+                  name: {{ .Values.secrets.existingSecret }}
+                  {{- else }}
+                  name: {{ include "cutlink.fullname" . }}-backend
+                  {{- end }}
+                  key: DB_PASS
+          livenessProbe:
+            httpGet:
+              path: {{ .Values.backend.livenessProbe.httpGet.path }}
+              port: {{ .Values.backend.livenessProbe.httpGet.port }}
+            initialDelaySeconds: {{ .Values.backend.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.backend.livenessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.backend.livenessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.backend.livenessProbe.failureThreshold }}
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.backend.readinessProbe.httpGet.path }}
+              port: {{ .Values.backend.readinessProbe.httpGet.port }}
+            initialDelaySeconds: {{ .Values.backend.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.backend.readinessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.backend.readinessProbe.timeoutSeconds }}
+          resources:
+            {{- toYaml .Values.backend.resources | nindent 12 }}
+      {{- with .Values.backend.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.backend.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.backend.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}

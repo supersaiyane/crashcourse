@@ -1,0 +1,11 @@
+# Patterns to ignore when building Helm charts.
+# Supports standard Unix-style glob patterns.
+.git
+.DS_Store
+*.tgz
+*.md
+*.swp
+*.swo
+*.log
+/.idea
+/.vscode

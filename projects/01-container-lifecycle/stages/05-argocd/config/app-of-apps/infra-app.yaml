@@ -1,0 +1,41 @@
+# Stage 5: ArgoCD — Child Application for infrastructure (postgres, redis).
+#
+# This Application deploys the infrastructure services using Helm charts.
+# Sync wave 1 ensures database and cache are running BEFORE the backend starts.
+# This prevents application crash-loops due to missing database connections.
+
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+
+metadata:
+  name: infrastructure
+  namespace: argocd
+
+  labels:
+    app: cutlink
+    tier: infrastructure
+
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+
+spec:
+  project: default
+
+  source:
+    repoURL: https://github.com/your-org/cutlink.git
+    path: sample-app/helm/infrastructure
+    targetRevision: HEAD
+    helm:
+      valueFiles:
+        - values-production.yaml
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: cutlink
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

@@ -1,0 +1,13 @@
+# -----------------------------------------------------------------------------
+# monitoring-agent role — handlers/main.yml
+#
+# Handlers are triggered by "notify" in tasks. They run once at the end of
+# the play, even if notified multiple times (e.g. binary update + unit change).
+# -----------------------------------------------------------------------------
+---
+- name: restart node_exporter
+  ansible.builtin.systemd:
+    name: node_exporter
+    daemon_reload: true
+    state: restarted
+    enabled: true

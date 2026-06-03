@@ -1,0 +1,55 @@
+# Stage 5: ArgoCD — Root Application for the App of Apps pattern.
+#
+# The "App of Apps" pattern solves the problem of managing many Applications.
+# A single Root Application watches a directory in Git containing Application YAMLs.
+# When you add a new file to that directory, the Root App creates a new child Application.
+#
+# This creates a recursive self-managing structure:
+#   Root App → creates child Apps → child Apps deploy the actual resources
+#
+# Flow:
+#   1. User commits a new Application YAML to argocd/apps/
+#   2. Root App's reconciliation detects the new file
+#   3. Root App applies it to the cluster, creating the child Application
+#   4. The child Application's own reconciliation loop deploys the resources
+#
+# Apply with: kubectl apply -f root.yaml
+
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+
+metadata:
+  name: root
+  namespace: argocd
+
+  labels:
+    app: root
+    pattern: app-of-apps
+
+spec:
+  project: default
+
+  source:
+    repoURL: https://github.com/your-org/cutlink.git
+    # The root Application watches the directory containing child Application manifests.
+    # Each YAML file in this directory becomes a separate ArgoCD Application.
+    path: argocd/apps
+
+    targetRevision: HEAD
+
+    # Using directory mode (not Helm) because the child Application manifests are
+    # plain Kubernetes YAML, not a Helm chart.
+    directory:
+      recurse: true
+
+  destination:
+    # Child Applications are CRDs, so they must be created in the same namespace as ArgoCD.
+    server: https://kubernetes.default.svc
+    namespace: argocd
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

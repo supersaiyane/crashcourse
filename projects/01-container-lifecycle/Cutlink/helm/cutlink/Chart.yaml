@@ -1,0 +1,18 @@
+apiVersion: v2
+name: cutlink
+description: Cutlink URL shortener — a Helm chart for Kubernetes
+type: application
+version: 0.1.0
+appVersion: "1.0.0"
+kubeVersion: ">=1.22.0-0"
+keywords:
+  - url-shortener
+  - cutlink
+  - helm
+home: https://github.com/your-org/cutlink
+maintainers:
+  - name: Your Name
+    email: your@email.com
+icon: https://helm.sh/img/helm.svg
+sources:
+  - https://github.com/your-org/cutlink

@@ -1,0 +1,48 @@
+{{- if .Values.hooks.enabled }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: "{{ include "cutlink.fullname" . }}-db-init"
+  namespace: {{ include "cutlink.namespace" . }}
+  labels:
+    {{- include "cutlink.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": pre-install
+    "helm.sh/hook-weight": "-5"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: db-init
+          image: "{{ .Values.hooks.dbMigrate.image.repository }}:{{ .Values.hooks.dbMigrate.image.tag }}"
+          command:
+            - psql
+            - -h
+            - {{ include "cutlink.db.host" . }}
+            - -U
+            - {{ .Values.backend.env.DB_USER }}
+            - -d
+            - {{ .Values.backend.env.DB_NAME }}
+            - -f
+            - /scripts/init.sql
+          env:
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  {{- if .Values.secrets.existingSecret }}
+                  name: {{ .Values.secrets.existingSecret }}
+                  {{- else }}
+                  name: {{ include "cutlink.fullname" . }}-backend
+                  {{- end }}
+                  key: DB_PASS
+          volumeMounts:
+            - name: init-script
+              mountPath: /scripts
+              readOnly: true
+      volumes:
+        - name: init-script
+          configMap:
+            name: {{ include "cutlink.fullname" . }}-postgres-init
+{{- end }}

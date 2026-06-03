@@ -1,0 +1,56 @@
+# vim: set ft=yaml:
+# Production overrides — higher replicas, HPA, Ingress + TLS, resource limits.
+backend:
+  replicas: 3
+  image:
+    tag: prod
+
+frontend:
+  replicas: 2
+  image:
+    tag: prod
+
+postgresql:
+  enabled: false
+
+redis:
+  enabled: false
+
+externalServices:
+  postgresql:
+    host: prod-db.internal
+  redis:
+    host: prod-redis.internal
+
+ingress:
+  enabled: true
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+  rules:
+    - host: cutlink.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - hosts:
+        - cutlink.example.com
+      secretName: cutlink-prod-tls
+
+autoscaling:
+  enabled: true
+  minReplicas: 3
+  maxReplicas: 15
+  targetCPUUtilizationPercentage: 70
+
+secrets:
+  existingSecret: cutlink-prod-secrets
+
+hooks:
+  enabled: true
+
+pdb:
+  enabled: true
+  minAvailable: 2

@@ -1,0 +1,103 @@
+# ---
+# Service: redis
+#
+# Redis is a cache. It doesn't need persistence — if the Pod dies,
+# the cache is cold but the app still works (it falls back to Postgres).
+# So we use a simple Deployment with no PersistentVolumeClaim.
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis
+  namespace: cutlink
+  labels:
+    app: cutlink
+    component: redis
+spec:
+  type: ClusterIP
+  ports:
+    # Standard Redis port: 6379
+    - port: 6379
+      targetPort: 6379
+      protocol: TCP
+      name: redis
+  selector:
+    app: cutlink
+    component: redis
+
+---
+# Deployment: redis
+#
+# A Deployment manages a ReplicaSet, which in turn manages Pods.
+# The key insight: Deployments are for stateless apps (like caches and
+# frontend servers). Stateful apps (like databases) should use StatefulSets.
+#
+# For Redis in Cutlink, we only use it as a read-through cache for
+# shortened URLs. If Redis goes down, the app still works — it queries
+# Postgres directly. That makes Redis a great candidate for a simple
+# Deployment with no persistent storage.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis
+  namespace: cutlink
+  labels:
+    app: cutlink
+    component: redis
+spec:
+  # Single replica — enough for our learning cluster.
+  # In production, you'd use Redis Sentinel or Redis Cluster for HA.
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cutlink
+      component: redis
+  template:
+    metadata:
+      labels:
+        app: cutlink
+        component: redis
+    spec:
+      containers:
+        - name: redis
+          # Official Redis 7 Alpine image. Small and fast.
+          image: redis:7-alpine
+          ports:
+            - containerPort: 6379
+              name: redis
+          args:
+            # --requirepass tells Redis to require a password on all connections.
+            # The Cutlink backend doesn't set a password (it connects with no auth),
+            # so we leave this commented out in the learning setup.
+            # In production: uncomment this and set the password via a Secret.
+            # - --requirepass
+            # - $(REDIS_PASSWORD)
+            #
+            # --appendonly enables AOF persistence (logs every write).
+            # We skip this because Cutlink treats Redis as an ephemeral cache.
+            # - --appendonly
+            # - "yes"
+          resources:
+            requests:
+              cpu: 100m
+              memory: 64Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+          # Readiness probe: Redis responds to PING when it's ready to serve.
+          readinessProbe:
+            exec:
+              command:
+                - redis-cli
+                - ping
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+          # Liveness probe: if PING stops responding, restart the container.
+          livenessProbe:
+            exec:
+              command:
+                - redis-cli
+                - ping
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            timeoutSeconds: 3

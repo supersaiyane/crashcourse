@@ -1,0 +1,134 @@
+# -----------------------------------------------------------------------------
+# GitHub Actions — Terraform Apply on Merge to Main
+#
+# Runs ONLY when a PR is merged to main and infrastructure files changed:
+#   1. Configures AWS credentials via OIDC
+#   2. Runs terraform plan (again, for safety)
+#   3. Runs OPA policy checks (again, belt-and-braces)
+#   4. Applies the plan
+#
+# ⚠️  This workflow runs `terraform apply`. It only triggers on main.
+#     Never push directly to main — always go through a PR.
+#
+# Required GitHub Secrets:
+#   AWS_ROLE_ARN — IAM role ARN for OIDC federation
+# -----------------------------------------------------------------------------
+
+name: "Terraform Apply"
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "finstack/terraform/**"
+      - "finstack/terragrunt/**"
+      - "finstack/.github/workflows/terraform-apply.yml"
+
+# Only one apply at a time (prevent state corruption)
+concurrency:
+  group: terraform-apply
+  cancel-in-progress: false   # never cancel an in-progress apply
+
+permissions:
+  id-token: write        # OIDC token for AWS authentication
+  contents: read         # checkout the repo
+
+env:
+  TF_VERSION: "1.7.0"
+  AWS_REGION: "ap-south-1"
+  WORKING_DIR: "finstack/terraform/environments"
+  POLICY_DIR: "finstack/policies"
+
+jobs:
+  apply:
+    name: "Plan & Apply"
+    runs-on: ubuntu-latest
+    environment: production   # requires environment approval rules in GitHub
+
+    steps:
+      # -----------------------------------------
+      # Step 1: Checkout code
+      # -----------------------------------------
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # -----------------------------------------
+      # Step 2: Configure AWS credentials via OIDC
+      # -----------------------------------------
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+          role-session-name: github-actions-terraform-apply
+
+      # -----------------------------------------
+      # Step 3: Setup Terraform
+      # -----------------------------------------
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+          terraform_wrapper: false
+
+      # -----------------------------------------
+      # Step 4: Terraform init
+      # -----------------------------------------
+      - name: Terraform Init
+        run: terraform init -input=false
+        working-directory: ${{ env.WORKING_DIR }}
+
+      # -----------------------------------------
+      # Step 5: Terraform plan (re-plan for safety)
+      # -----------------------------------------
+      - name: Terraform Plan
+        run: |
+          terraform plan \
+            -input=false \
+            -no-color \
+            -out=tfplan
+
+          # Export plan as JSON for OPA policy evaluation
+          terraform show -json tfplan > tfplan.json
+        working-directory: ${{ env.WORKING_DIR }}
+
+      # -----------------------------------------
+      # Step 6: OPA policy gate (belt-and-braces)
+      # -----------------------------------------
+      - name: Install conftest
+        run: |
+          LATEST=$(curl -s https://api.github.com/repos/open-policy-agent/conftest/releases/latest | grep tag_name | cut -d '"' -f 4 | sed 's/v//')
+          curl -sSL "https://github.com/open-policy-agent/conftest/releases/download/v${LATEST}/conftest_${LATEST}_Linux_x86_64.tar.gz" | tar xz
+          sudo mv conftest /usr/local/bin/
+
+      - name: Run OPA Policy Checks
+        run: |
+          echo "Running OPA policy gate before apply..."
+          conftest test \
+            --policy ../../../${{ env.POLICY_DIR }} \
+            --no-color \
+            tfplan.json
+        working-directory: ${{ env.WORKING_DIR }}
+
+      # -----------------------------------------
+      # Step 7: Terraform apply
+      # ⚠️ This modifies real infrastructure
+      # -----------------------------------------
+      - name: Terraform Apply
+        run: terraform apply -input=false -no-color tfplan
+        working-directory: ${{ env.WORKING_DIR }}
+
+      # -----------------------------------------
+      # Step 8: Post-apply verification
+      # -----------------------------------------
+      - name: Verify deployment
+        run: |
+          echo "=== Post-apply state summary ==="
+          terraform output -no-color 2>/dev/null || echo "No outputs defined"
+          echo ""
+          echo "=== Apply complete ==="
+          echo "Commit: ${{ github.sha }}"
+          echo "Actor:  ${{ github.actor }}"
+          echo "Ref:    ${{ github.ref }}"
+        working-directory: ${{ env.WORKING_DIR }}

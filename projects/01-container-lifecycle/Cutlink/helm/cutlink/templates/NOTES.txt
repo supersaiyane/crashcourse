@@ -1,0 +1,56 @@
+Thank you for installing {{ .Chart.Name }} v{{ .Chart.Version }}.
+
+Release name:      {{ .Release.Name }}
+Namespace:         {{ include "cutlink.namespace" . }}
+App version:       {{ .Chart.AppVersion }}
+
+** Access the application **
+
+  Backend API:      {{ include "cutlink.fullname" . }}-backend:{{ .Values.backend.service.port }}
+  Frontend UI:      {{ include "cutlink.fullname" . }}-frontend:{{ .Values.frontend.service.port }}
+
+  Port-forward to frontend:
+
+    kubectl port-forward -n {{ include "cutlink.namespace" . }} \
+      svc/{{ include "cutlink.fullname" . }}-frontend \
+      {{ .Values.frontend.service.port }}:{{ .Values.frontend.service.port }}
+
+{{- if .Values.ingress.enabled }}
+  Ingress URL: http{{ if .Values.ingress.tls }}s{{ end }}://{{ include "cutlink.ingress.host" . }}
+{{- end }}
+
+** Verify the deployment **
+
+  helm test {{ .Release.Name }} -n {{ include "cutlink.namespace" . }}
+
+** Useful commands **
+
+  # Watch backend pods
+  kubectl get pods -n {{ include "cutlink.namespace" . }} -l component=backend -w
+
+  # Watch frontend pods
+  kubectl get pods -n {{ include "cutlink.namespace" . }} -l component=frontend -w
+
+  # Tail backend logs
+  kubectl logs -n {{ include "cutlink.namespace" . }} -l component=backend -f
+
+  # Tail frontend logs
+  kubectl logs -n {{ include "cutlink.namespace" . }} -l component=frontend -f
+
+  # Get values in use
+  helm get values {{ .Release.Name }} -n {{ include "cutlink.namespace" . }}
+
+** Configuration **
+
+  {{- if .Values.postgresql.enabled }}
+  PostgreSQL:       internal (subchart)
+  {{- else }}
+  PostgreSQL:       external ({{ .Values.externalServices.postgresql.host }})
+  {{- end }}
+  {{- if .Values.redis.enabled }}
+  Redis:            internal (subchart)
+  {{- else }}
+  Redis:            external ({{ .Values.externalServices.redis.host }})
+  {{- end }}
+  HPA:              {{ if .Values.autoscaling.enabled }}enabled ({{ .Values.autoscaling.minReplicas }}-{{ .Values.autoscaling.maxReplicas }}){{ else }}disabled{{ end }}
+  Ingress:          {{ if .Values.ingress.enabled }}enabled{{ else }}disabled{{ end }}
