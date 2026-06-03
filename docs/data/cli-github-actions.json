@@ -1,0 +1,380 @@
+{
+  "id": "github-actions",
+  "prompt": "gh@devops:~/repo$",
+  "welcome": "Welcome to the GitHub Actions CLI Playground.\nType commands to explore a simulated CI/CD environment.\nType 'help' for available commands, 'scenario' for guided labs.\n",
+  "scenarios": [
+    {
+      "id": "debug-failing-workflow",
+      "title": "Debug a Failing Workflow",
+      "steps": [
+        {
+          "instruction": "A developer reports the CI pipeline is broken. List recent workflow runs to find failures.",
+          "expect": "gh run list",
+          "hint": "Try: gh run list"
+        },
+        {
+          "instruction": "Run 7834521 failed on the 'CI Pipeline' workflow. View its details to find which job failed.",
+          "expect": "gh run view 7834521",
+          "hint": "Try: gh run view 7834521"
+        },
+        {
+          "instruction": "The 'test' job failed. View the logs for that specific job to see the error.",
+          "expect": "gh run view 7834521 --log-failed",
+          "hint": "Try: gh run view 7834521 --log-failed"
+        },
+        {
+          "instruction": "The test failure looks like a flaky integration test. Check what secrets are available in case a DB credential expired.",
+          "expect": "gh secret list",
+          "hint": "Try: gh secret list"
+        },
+        {
+          "instruction": "The DB_PASSWORD secret was last updated 90 days ago. Update it with the new credential.",
+          "expect": "gh secret set DB_PASSWORD",
+          "hint": "Try: gh secret set DB_PASSWORD"
+        },
+        {
+          "instruction": "Now re-run the failed jobs only (not the entire workflow) to save time.",
+          "expect": "gh run rerun 7834521 --failed",
+          "hint": "Try: gh run rerun 7834521 --failed"
+        },
+        {
+          "instruction": "Watch the re-run in real time to see if it passes now.",
+          "expect": "gh run watch 7834521",
+          "hint": "Try: gh run watch 7834521"
+        },
+        {
+          "instruction": "The run passed. Download the test artifacts to verify coverage reports.",
+          "expect": "gh run download 7834521",
+          "hint": "Try: gh run download 7834521"
+        }
+      ]
+    },
+    {
+      "id": "trigger-and-monitor-deployments",
+      "title": "Trigger and Monitor Deployments",
+      "steps": [
+        {
+          "instruction": "List all available workflows to find the deployment pipeline.",
+          "expect": "gh workflow list",
+          "hint": "Try: gh workflow list"
+        },
+        {
+          "instruction": "View the 'Deploy Production' workflow details to check its trigger configuration.",
+          "expect": "gh workflow view deploy-production.yml",
+          "hint": "Try: gh workflow view deploy-production.yml"
+        },
+        {
+          "instruction": "Before deploying, check that the latest CI on main is green using PR checks.",
+          "expect": "gh pr checks 142",
+          "hint": "Try: gh pr checks 142"
+        },
+        {
+          "instruction": "CI is green. Trigger the production deployment workflow manually with the release tag.",
+          "expect": "gh workflow run deploy-production.yml -f environment=production -f version=v2.4.1",
+          "hint": "Try: gh workflow run deploy-production.yml -f environment=production -f version=v2.4.1"
+        },
+        {
+          "instruction": "List recent runs to find the triggered deployment run ID.",
+          "expect": "gh run list --workflow=deploy-production.yml",
+          "hint": "Try: gh run list --workflow=deploy-production.yml"
+        },
+        {
+          "instruction": "Watch run 7834590 as it progresses through build, test, and deploy stages.",
+          "expect": "gh run watch 7834590",
+          "hint": "Try: gh run watch 7834590"
+        },
+        {
+          "instruction": "Deployment succeeded. Create a GitHub release to mark this version.",
+          "expect": "gh release create v2.4.1 --title \"v2.4.1\" --notes \"Production release with payment gateway fix\"",
+          "hint": "Try: gh release create v2.4.1 --title \"v2.4.1\" --notes \"Production release with payment gateway fix\""
+        },
+        {
+          "instruction": "Verify the release was created and list recent releases.",
+          "expect": "gh release list",
+          "hint": "Try: gh release list"
+        }
+      ]
+    }
+  ],
+  "commands": {
+    "help": "Available commands:\n  gh run list                    \u2014 List recent workflow runs\n  gh run view <run-id>           \u2014 View a workflow run\n  gh run watch <run-id>          \u2014 Watch a run in progress\n  gh run rerun <run-id>          \u2014 Re-run a workflow\n  gh run cancel <run-id>         \u2014 Cancel a workflow run\n  gh run download <run-id>       \u2014 Download run artifacts\n  gh workflow list               \u2014 List workflows\n  gh workflow view <file>        \u2014 View workflow details\n  gh workflow run <file>         \u2014 Trigger a workflow\n  gh workflow enable <file>      \u2014 Enable a workflow\n  gh workflow disable <file>     \u2014 Disable a workflow\n  gh secret list                 \u2014 List repository secrets\n  gh secret set <name>           \u2014 Set a secret\n  gh secret delete <name>        \u2014 Delete a secret\n  gh variable list               \u2014 List repository variables\n  gh variable set <name>         \u2014 Set a variable\n  gh pr checks <pr>              \u2014 View CI checks on a PR\n  gh release create              \u2014 Create a release\n  gh release list                \u2014 List releases\n  gh api                         \u2014 Query the GitHub API\n\n  scenario                       \u2014 Start a guided lab\n  clear                          \u2014 Clear the terminal\n  help                           \u2014 Show this help",
+    "gh run list": "STATUS  TITLE                          WORKFLOW        BRANCH  EVENT  ID       ELAPSED  AGE\nX       Fix payment gateway timeout    CI Pipeline     main    push   7834521  4m32s    2m ago\n\u2713       Add user export endpoint       CI Pipeline     main    push   7834498  6m12s    25m ago\n\u2713       Update dependencies            CI Pipeline     main    push   7834412  5m45s    1h ago\n\u2713       Nightly security scan          Security Scan   main    schedule 7834301 12m08s  6h ago\nX       Bump Node to v20               CI Pipeline     feat/node-20  push  7834287  3m18s  8h ago\n\u2713       Deploy staging v2.4.0          Deploy Staging  main    workflow_dispatch 7834201 8m22s 12h ago\n\u2713       Release v2.3.9                 Deploy Production main  workflow_dispatch 7834102 11m45s 1d ago\n\u2713       Weekly dependency review       Dependency Review main  schedule 7834001 2m30s   2d ago",
+    "gh run list --workflow=ci.yml": "STATUS  TITLE                          WORKFLOW     BRANCH         EVENT  ID       ELAPSED  AGE\nX       Fix payment gateway timeout    CI Pipeline  main           push   7834521  4m32s    2m ago\n\u2713       Add user export endpoint       CI Pipeline  main           push   7834498  6m12s    25m ago\n\u2713       Update dependencies            CI Pipeline  main           push   7834412  5m45s    1h ago\nX       Bump Node to v20               CI Pipeline  feat/node-20   push   7834287  3m18s    8h ago",
+    "gh run list --workflow=deploy-production.yml": "STATUS  TITLE                          WORKFLOW           BRANCH  EVENT              ID       ELAPSED  AGE\n*       Deploy v2.4.1 to production    Deploy Production  main    workflow_dispatch  7834590  --       just now\n\u2713       Release v2.3.9                 Deploy Production  main    workflow_dispatch  7834102  11m45s   1d ago\n\u2713       Release v2.3.8                 Deploy Production  main    workflow_dispatch  7833801  10m32s   5d ago\n\u2713       Release v2.3.7                 Deploy Production  main    workflow_dispatch  7833502  12m01s   12d ago",
+    "gh run list --workflow=deploy-staging.yml": "STATUS  TITLE                          WORKFLOW        BRANCH  EVENT              ID       ELAPSED  AGE\n\u2713       Deploy staging v2.4.0          Deploy Staging  main    workflow_dispatch  7834201  8m22s    12h ago\n\u2713       Deploy staging v2.3.9          Deploy Staging  main    workflow_dispatch  7834050  7m55s    2d ago\n\u2713       Deploy staging v2.3.8          Deploy Staging  main    workflow_dispatch  7833750  9m10s    6d ago",
+    "gh run list --status=failure": "STATUS  TITLE                          WORKFLOW     BRANCH         EVENT  ID       ELAPSED  AGE\nX       Fix payment gateway timeout    CI Pipeline  main           push   7834521  4m32s    2m ago\nX       Bump Node to v20               CI Pipeline  feat/node-20   push   7834287  3m18s    8h ago",
+    "gh run list --limit=3": "STATUS  TITLE                          WORKFLOW        BRANCH  EVENT  ID       ELAPSED  AGE\nX       Fix payment gateway timeout    CI Pipeline     main    push   7834521  4m32s    2m ago\n\u2713       Add user export endpoint       CI Pipeline     main    push   7834498  6m12s    25m ago\n\u2713       Update dependencies            CI Pipeline     main    push   7834412  5m45s    1h ago",
+    "gh run view 7834521": "CI Pipeline \u00b7 7834521\nTriggered via push \u2014 Fix payment gateway timeout\n\nJOBS\n\u2713  lint          (ID 18234001)    5s\n\u2713  build         (ID 18234002)    1m12s\nX  test          (ID 18234003)    3m02s\n-  deploy-staging (ID 18234004)   skipped\n\nANNOTATIONS\nX  test: Process completed with exit code 1\n   integration/payment_test.go:47: connection refused to db.test.internal:5432\n\nFor more details: gh run view 7834521 --log-failed",
+    "gh run view 7834521 --log": "CI Pipeline \u00b7 7834521\n\nlint  \u2713\n  2026-06-02T10:28:01Z Set up job\n  2026-06-02T10:28:05Z Run golangci-lint run ./...\n  2026-06-02T10:28:06Z \u2713 No issues found\n\nbuild  \u2713\n  2026-06-02T10:28:10Z Set up job\n  2026-06-02T10:28:15Z Run docker build -t api:7834521 .\n  2026-06-02T10:29:22Z Successfully built api:7834521\n\ntest  X\n  2026-06-02T10:29:30Z Set up job\n  2026-06-02T10:29:35Z Run go test -v -count=1 ./...\n  2026-06-02T10:31:10Z --- FAIL: TestPaymentGatewayTimeout (integration/payment_test.go:47)\n  2026-06-02T10:31:10Z     Error: dial tcp 10.0.3.12:5432: connect: connection refused\n  2026-06-02T10:31:10Z     Expected DB connection to be available in test environment\n  2026-06-02T10:32:32Z FAIL\texit status 1\n\ndeploy-staging  -  (skipped)",
+    "gh run view 7834521 --log-failed": "test  X\n  2026-06-02T10:29:30Z Set up job\n  2026-06-02T10:29:35Z Run go test -v -count=1 ./...\n  2026-06-02T10:31:10Z --- FAIL: TestPaymentGatewayTimeout (integration/payment_test.go:47)\n  2026-06-02T10:31:10Z     Error: dial tcp 10.0.3.12:5432: connect: connection refused\n  2026-06-02T10:31:10Z     Expected DB connection to be available in test environment\n  2026-06-02T10:31:10Z     Secret DB_PASSWORD may have expired \u2014 last rotated 90 days ago\n  2026-06-02T10:32:32Z FAIL\texit status 1",
+    "gh run view 7834521 --json status,conclusion,jobs": "{\n  \"status\": \"completed\",\n  \"conclusion\": \"failure\",\n  \"jobs\": [\n    {\"name\": \"lint\", \"status\": \"completed\", \"conclusion\": \"success\"},\n    {\"name\": \"build\", \"status\": \"completed\", \"conclusion\": \"success\"},\n    {\"name\": \"test\", \"status\": \"completed\", \"conclusion\": \"failure\"},\n    {\"name\": \"deploy-staging\", \"status\": \"completed\", \"conclusion\": \"skipped\"}\n  ]\n}",
+    "gh run view 7834498": "CI Pipeline \u00b7 7834498\nTriggered via push \u2014 Add user export endpoint\n\nJOBS\n\u2713  lint          (ID 18233901)    4s\n\u2713  build         (ID 18233902)    1m05s\n\u2713  test          (ID 18233903)    2m48s\n\u2713  deploy-staging (ID 18233904)   2m15s\n\nNo annotations.",
+    "gh run view 7834590": "Deploy Production \u00b7 7834590\nTriggered via workflow_dispatch \u2014 Deploy v2.4.1 to production\n\nINPUTS\n  environment:  production\n  version:      v2.4.1\n\nJOBS\n\u2713  build         (ID 18235001)    1m30s\n\u2713  test          (ID 18235002)    2m45s\n\u2713  deploy        (ID 18235003)    4m12s\n\u2713  smoke-test    (ID 18235004)    1m08s\n\nNo annotations.\n\u2713 Deploy Production completed successfully",
+    "gh run view 7834287": "CI Pipeline \u00b7 7834287\nTriggered via push \u2014 Bump Node to v20\n\nJOBS\n\u2713  lint          (ID 18233501)    5s\nX  build         (ID 18233502)    1m45s\n-  test          (ID 18233503)    skipped\n-  deploy-staging (ID 18233504)   skipped\n\nANNOTATIONS\nX  build: npm ERR! Could not resolve dependency peer webpack@\"^4.0.0\" from legacy-plugin@1.2.3",
+    "gh run watch 7834521": "Refreshing run status every 3 seconds...\n\n\u2713  lint          5s\n\u2713  build         1m12s\n\u2713  test          2m55s      \u2190 passed on re-run\n\u2713  deploy-staging 2m10s\n\n\u2713 CI Pipeline run 7834521 completed successfully",
+    "gh run watch 7834590": "Refreshing run status every 3 seconds...\n\n\u2713  build         1m30s\n\u2713  test          2m45s\n*  deploy        running... (2m elapsed)\n-  smoke-test    waiting\n\n...\n\n\u2713  build         1m30s\n\u2713  test          2m45s\n\u2713  deploy        4m12s\n\u2713  smoke-test    1m08s\n\n\u2713 Deploy Production run 7834590 completed successfully",
+    "gh run rerun 7834521": "\u2713 Created rerun for run 7834521\nTo watch: gh run watch 7834521",
+    "gh run rerun 7834521 --failed": "\u2713 Created rerun for failed jobs of run 7834521 (test)\nTo watch: gh run watch 7834521",
+    "gh run rerun 7834287": "\u2713 Created rerun for run 7834287\nTo watch: gh run watch 7834287",
+    "gh run cancel 7834590": "\u2713 Cancelled run 7834590",
+    "gh run cancel 7834521": "\u2713 Cancelled run 7834521",
+    "gh run download 7834521": "Downloading artifacts for run 7834521...\n\u2713  test-coverage-report  (245 KB)  \u2192 ./test-coverage-report/\n\u2713  build-artifact        (12 MB)   \u2192 ./build-artifact/\n\u2713  lint-results          (8 KB)    \u2192 ./lint-results/\nDownloaded 3 artifacts.",
+    "gh run download 7834521 -n test-coverage-report": "Downloading artifact test-coverage-report for run 7834521...\n\u2713  test-coverage-report  (245 KB)  \u2192 ./test-coverage-report/\nDownloaded 1 artifact.",
+    "gh run download 7834590": "Downloading artifacts for run 7834590...\n\u2713  deploy-manifest       (4 KB)    \u2192 ./deploy-manifest/\n\u2713  smoke-test-results    (18 KB)   \u2192 ./smoke-test-results/\nDownloaded 2 artifacts.",
+    "gh workflow list": "NAME                 STATE   ID       FILE\nCI Pipeline          active  4501001  ci.yml\nDeploy Staging       active  4501002  deploy-staging.yml\nDeploy Production    active  4501003  deploy-production.yml\nSecurity Scan        active  4501004  security-scan.yml\nDependency Review    active  4501005  dependency-review.yml\nRelease Drafter      active  4501006  release-drafter.yml\nStale Issues         disabled 4501007 stale.yml",
+    "gh workflow view ci.yml": "CI Pipeline \u2014 ci.yml\nID: 4501001\nState: active\n\nTriggers: push (main, feat/**), pull_request (main)\n\nRecent runs:\nSTATUS  TITLE                          BRANCH         EVENT  ID       AGE\nX       Fix payment gateway timeout    main           push   7834521  2m ago\n\u2713       Add user export endpoint       main           push   7834498  25m ago\n\u2713       Update dependencies            main           push   7834412  1h ago",
+    "gh workflow view deploy-production.yml": "Deploy Production \u2014 deploy-production.yml\nID: 4501003\nState: active\n\nTriggers: workflow_dispatch\nInputs:\n  environment (required):  Target environment [staging, production]\n  version (required):      Release version tag (e.g. v2.4.1)\n\nRecent runs:\nSTATUS  TITLE                          BRANCH  EVENT              ID       AGE\n\u2713       Release v2.3.9                 main    workflow_dispatch  7834102  1d ago\n\u2713       Release v2.3.8                 main    workflow_dispatch  7833801  5d ago",
+    "gh workflow view deploy-staging.yml": "Deploy Staging \u2014 deploy-staging.yml\nID: 4501002\nState: active\n\nTriggers: workflow_dispatch, workflow_call\nInputs:\n  version (optional):  Version to deploy (defaults to latest main)\n\nRecent runs:\nSTATUS  TITLE                          BRANCH  EVENT              ID       AGE\n\u2713       Deploy staging v2.4.0          main    workflow_dispatch  7834201  12h ago\n\u2713       Deploy staging v2.3.9          main    workflow_dispatch  7834050  2d ago",
+    "gh workflow view security-scan.yml": "Security Scan \u2014 security-scan.yml\nID: 4501004\nState: active\n\nTriggers: schedule (cron: 0 2 * * *), workflow_dispatch\n\nRecent runs:\nSTATUS  TITLE                          BRANCH  EVENT     ID       AGE\n\u2713       Nightly security scan          main    schedule  7834301  6h ago\n\u2713       Nightly security scan          main    schedule  7834100  1d ago",
+    "gh workflow run ci.yml": "\u2713 Created workflow_dispatch event for ci.yml\nTo view: gh run list --workflow=ci.yml",
+    "gh workflow run deploy-production.yml -f environment=production -f version=v2.4.1": "\u2713 Created workflow_dispatch event for deploy-production.yml\n  environment: production\n  version: v2.4.1\nTo view: gh run list --workflow=deploy-production.yml",
+    "gh workflow run deploy-staging.yml": "\u2713 Created workflow_dispatch event for deploy-staging.yml\nTo view: gh run list --workflow=deploy-staging.yml",
+    "gh workflow run deploy-staging.yml -f version=v2.4.0": "\u2713 Created workflow_dispatch event for deploy-staging.yml\n  version: v2.4.0\nTo view: gh run list --workflow=deploy-staging.yml",
+    "gh workflow enable stale.yml": "\u2713 Enabled stale.yml",
+    "gh workflow enable 4501007": "\u2713 Enabled Stale Issues (stale.yml)",
+    "gh workflow disable stale.yml": "\u2713 Disabled stale.yml",
+    "gh workflow disable security-scan.yml": "\u2713 Disabled security-scan.yml",
+    "gh secret list": "NAME              UPDATED\nAWS_ACCESS_KEY_ID 2026-03-15\nAWS_SECRET_KEY    2026-03-15\nDB_PASSWORD       2026-03-04\nDOCKER_TOKEN      2026-05-20\nSLACK_WEBHOOK     2026-04-10\nSONAR_TOKEN       2026-01-22\nDEPLOY_KEY        2026-05-01",
+    "gh secret list --env production": "NAME              UPDATED\nDB_HOST           2026-05-01\nDB_PASSWORD       2026-05-01\nREDIS_URL         2026-05-01\nSENTRY_DSN        2026-04-15\nNEW_RELIC_KEY     2026-04-15",
+    "gh secret set DB_PASSWORD": "\u2713 Set secret DB_PASSWORD for repo devops-org/payment-api\n\u26a0  Remember to rotate this credential in your database as well",
+    "gh secret set DEPLOY_KEY": "\u2713 Set secret DEPLOY_KEY for repo devops-org/payment-api",
+    "gh secret delete SONAR_TOKEN": "\u2713 Deleted secret SONAR_TOKEN from repo devops-org/payment-api",
+    "gh secret delete DB_PASSWORD": "\u2713 Deleted secret DB_PASSWORD from repo devops-org/payment-api",
+    "gh variable list": "NAME                VALUE                   UPDATED\nNODE_VERSION        20.11.1                 2026-05-15\nGO_VERSION          1.22.3                  2026-05-15\nDEPLOY_REGION       ap-south-1              2026-04-01\nREGISTRY_URL        ghcr.io/devops-org      2026-03-01\nSLACK_CHANNEL       #deployments            2026-03-01\nMIN_COVERAGE        80                      2026-02-15",
+    "gh variable list --env production": "NAME                VALUE                   UPDATED\nREPLICAS            3                       2026-05-15\nLOG_LEVEL           info                    2026-05-01\nENABLE_CACHE        true                    2026-04-20\nMAX_CONNECTIONS     100                     2026-04-01",
+    "gh variable set NODE_VERSION --body 20.12.0": "\u2713 Set variable NODE_VERSION for repo devops-org/payment-api",
+    "gh variable set MIN_COVERAGE --body 85": "\u2713 Set variable MIN_COVERAGE for repo devops-org/payment-api",
+    "gh variable set REPLICAS --body 5 --env production": "\u2713 Set variable REPLICAS for environment production in repo devops-org/payment-api",
+    "gh api repos/devops-org/payment-api/actions/runs": "{\n  \"total_count\": 847,\n  \"workflow_runs\": [\n    {\n      \"id\": 7834521,\n      \"name\": \"CI Pipeline\",\n      \"status\": \"completed\",\n      \"conclusion\": \"failure\",\n      \"head_branch\": \"main\",\n      \"event\": \"push\",\n      \"created_at\": \"2026-06-02T10:27:45Z\",\n      \"run_attempt\": 1\n    },\n    {\n      \"id\": 7834498,\n      \"name\": \"CI Pipeline\",\n      \"status\": \"completed\",\n      \"conclusion\": \"success\",\n      \"head_branch\": \"main\",\n      \"event\": \"push\",\n      \"created_at\": \"2026-06-02T10:02:30Z\",\n      \"run_attempt\": 1\n    }\n  ]\n}",
+    "gh api repos/devops-org/payment-api/actions/runs --jq '.workflow_runs[] | select(.conclusion==\"failure\") | .id'": "7834521\n7834287",
+    "gh api repos/devops-org/payment-api/actions/runs/7834521": "{\n  \"id\": 7834521,\n  \"name\": \"CI Pipeline\",\n  \"status\": \"completed\",\n  \"conclusion\": \"failure\",\n  \"head_branch\": \"main\",\n  \"head_sha\": \"a1b2c3d4e5f6\",\n  \"event\": \"push\",\n  \"run_attempt\": 1,\n  \"created_at\": \"2026-06-02T10:27:45Z\",\n  \"updated_at\": \"2026-06-02T10:32:17Z\",\n  \"triggering_actor\": {\n    \"login\": \"dev-priya\"\n  }\n}",
+    "gh api repos/devops-org/payment-api/actions/runs/7834521/jobs": "{\n  \"total_count\": 4,\n  \"jobs\": [\n    {\"id\": 18234001, \"name\": \"lint\", \"status\": \"completed\", \"conclusion\": \"success\", \"started_at\": \"2026-06-02T10:28:01Z\", \"completed_at\": \"2026-06-02T10:28:06Z\"},\n    {\"id\": 18234002, \"name\": \"build\", \"status\": \"completed\", \"conclusion\": \"success\", \"started_at\": \"2026-06-02T10:28:10Z\", \"completed_at\": \"2026-06-02T10:29:22Z\"},\n    {\"id\": 18234003, \"name\": \"test\", \"status\": \"completed\", \"conclusion\": \"failure\", \"started_at\": \"2026-06-02T10:29:30Z\", \"completed_at\": \"2026-06-02T10:32:32Z\"},\n    {\"id\": 18234004, \"name\": \"deploy-staging\", \"status\": \"completed\", \"conclusion\": \"skipped\", \"started_at\": null, \"completed_at\": null}\n  ]\n}",
+    "gh api repos/devops-org/payment-api/actions/workflows": "{\n  \"total_count\": 7,\n  \"workflows\": [\n    {\"id\": 4501001, \"name\": \"CI Pipeline\", \"state\": \"active\", \"path\": \".github/workflows/ci.yml\"},\n    {\"id\": 4501002, \"name\": \"Deploy Staging\", \"state\": \"active\", \"path\": \".github/workflows/deploy-staging.yml\"},\n    {\"id\": 4501003, \"name\": \"Deploy Production\", \"state\": \"active\", \"path\": \".github/workflows/deploy-production.yml\"},\n    {\"id\": 4501004, \"name\": \"Security Scan\", \"state\": \"active\", \"path\": \".github/workflows/security-scan.yml\"},\n    {\"id\": 4501005, \"name\": \"Dependency Review\", \"state\": \"active\", \"path\": \".github/workflows/dependency-review.yml\"},\n    {\"id\": 4501006, \"name\": \"Release Drafter\", \"state\": \"active\", \"path\": \".github/workflows/release-drafter.yml\"},\n    {\"id\": 4501007, \"name\": \"Stale Issues\", \"state\": \"disabled_manually\", \"path\": \".github/workflows/stale.yml\"}\n  ]\n}",
+    "gh api repos/devops-org/payment-api/actions/runners": "{\n  \"total_count\": 3,\n  \"runners\": [\n    {\"id\": 1, \"name\": \"linux-runner-1\", \"os\": \"Linux\", \"status\": \"online\", \"busy\": true, \"labels\": [\"self-hosted\", \"linux\", \"x64\"]},\n    {\"id\": 2, \"name\": \"linux-runner-2\", \"os\": \"Linux\", \"status\": \"online\", \"busy\": false, \"labels\": [\"self-hosted\", \"linux\", \"x64\"]},\n    {\"id\": 3, \"name\": \"arm-runner-1\", \"os\": \"Linux\", \"status\": \"offline\", \"busy\": false, \"labels\": [\"self-hosted\", \"linux\", \"arm64\"]}\n  ]\n}",
+    "gh api repos/devops-org/payment-api/actions/cache/usage": "{\n  \"full_name\": \"devops-org/payment-api\",\n  \"active_caches_size_in_bytes\": 1073741824,\n  \"active_caches_count\": 12\n}",
+    "gh pr checks 142": "Some checks were not successful\n  0 cancelled, 1 failing, 0 pending, 5 successful\n\n\u2713  lint            5s       github.com/devops-org/payment-api/actions/runs/7834498\n\u2713  build           1m05s    github.com/devops-org/payment-api/actions/runs/7834498\n\u2713  test            2m48s    github.com/devops-org/payment-api/actions/runs/7834498\n\u2713  deploy-staging  2m15s    github.com/devops-org/payment-api/actions/runs/7834498\n\u2713  codecov         45s      https://codecov.io/gh/devops-org/payment-api\nX  sonarcloud      --       https://sonarcloud.io/dashboard?id=payment-api",
+    "gh pr checks 140": "All checks were successful\n  0 cancelled, 0 failing, 0 pending, 5 successful\n\n\u2713  lint            4s       github.com/devops-org/payment-api/actions/runs/7834412\n\u2713  build           1m12s    github.com/devops-org/payment-api/actions/runs/7834412\n\u2713  test            2m32s    github.com/devops-org/payment-api/actions/runs/7834412\n\u2713  deploy-staging  2m05s    github.com/devops-org/payment-api/actions/runs/7834412\n\u2713  codecov         38s      https://codecov.io/gh/devops-org/payment-api",
+    "gh pr checks 142 --json name,state,conclusion": "[\n  {\"name\": \"lint\", \"state\": \"COMPLETED\", \"conclusion\": \"SUCCESS\"},\n  {\"name\": \"build\", \"state\": \"COMPLETED\", \"conclusion\": \"SUCCESS\"},\n  {\"name\": \"test\", \"state\": \"COMPLETED\", \"conclusion\": \"SUCCESS\"},\n  {\"name\": \"deploy-staging\", \"state\": \"COMPLETED\", \"conclusion\": \"SUCCESS\"},\n  {\"name\": \"codecov\", \"state\": \"COMPLETED\", \"conclusion\": \"SUCCESS\"},\n  {\"name\": \"sonarcloud\", \"state\": \"COMPLETED\", \"conclusion\": \"FAILURE\"}\n]",
+    "gh release create v2.4.1 --title \"v2.4.1\" --notes \"Production release with payment gateway fix\"": "\u2713 Created release v2.4.1\nhttps://github.com/devops-org/payment-api/releases/tag/v2.4.1",
+    "gh release create v2.4.1 --generate-notes": "\u2713 Created release v2.4.1\nhttps://github.com/devops-org/payment-api/releases/tag/v2.4.1\n\nGenerated notes from 8 merged PRs since v2.3.9",
+    "gh release list": "TITLE    TAG      PUBLISHED       STATUS\nv2.4.1   v2.4.1   just now        Latest\nv2.3.9   v2.3.9   1d ago          \nv2.3.8   v2.3.8   5d ago          \nv2.3.7   v2.3.7   12d ago         \nv2.3.6   v2.3.6   20d ago         ",
+    "gh release view v2.4.1": "v2.4.1\nLatest\n\nPublished: 2026-06-02T10:45:00Z\nAuthor: devops-admin\n\nProduction release with payment gateway fix\n\nAssets: (none)",
+    "gh release view v2.3.9": "v2.3.9\n\nPublished: 2026-06-01T14:30:00Z\nAuthor: devops-admin\n\nMonthly security patches and dependency updates\n\nAssets:\n  payment-api-linux-amd64.tar.gz  (24 MB)\n  payment-api-linux-arm64.tar.gz  (22 MB)\n  checksums.txt                   (256 B)",
+    "gh release delete v2.4.1 --yes": "\u2713 Deleted release v2.4.1",
+    "gh run view 7834301": "Security Scan \u00b7 7834301\nTriggered via schedule \u2014 Nightly security scan\n\nJOBS\n\u2713  trivy-scan     (ID 18234101)    8m02s\n\u2713  grype-scan     (ID 18234102)    3m45s\n\u2713  secret-scan    (ID 18234103)    0m21s\n\nNo annotations.",
+    "gh run view 7834201": "Deploy Staging \u00b7 7834201\nTriggered via workflow_dispatch \u2014 Deploy staging v2.4.0\n\nJOBS\n\u2713  build          (ID 18234201)    1m22s\n\u2713  test           (ID 18234202)    2m38s\n\u2713  deploy         (ID 18234203)    3m55s\n\u2713  smoke-test     (ID 18234204)    0m27s\n\nNo annotations.",
+    "gh run view 7834102": "Deploy Production \u00b7 7834102\nTriggered via workflow_dispatch \u2014 Release v2.3.9\n\nINPUTS\n  environment:  production\n  version:      v2.3.9\n\nJOBS\n\u2713  build         (ID 18234301)    1m28s\n\u2713  test          (ID 18234302)    2m50s\n\u2713  deploy        (ID 18234303)    4m30s\n\u2713  smoke-test    (ID 18234304)    1m02s\n\u2713  notify        (ID 18234305)    0m05s\n\nNo annotations."
+  },
+  "reference": [
+    {
+      "group": "Workflow Runs",
+      "commands": [
+        {
+          "cmd": "gh run list",
+          "desc": "list recent runs"
+        },
+        {
+          "cmd": "gh run list --workflow=ci.yml",
+          "desc": "filter by workflow"
+        },
+        {
+          "cmd": "gh run list --status=failure",
+          "desc": "show only failures"
+        },
+        {
+          "cmd": "gh run list --limit=3",
+          "desc": "limit results"
+        },
+        {
+          "cmd": "gh run view 7834521",
+          "desc": "view run details"
+        },
+        {
+          "cmd": "gh run view 7834521 --log",
+          "desc": "full run logs"
+        },
+        {
+          "cmd": "gh run view 7834521 --log-failed",
+          "desc": "failed job logs only"
+        },
+        {
+          "cmd": "gh run view 7834521 --json status,conclusion,jobs",
+          "desc": "JSON output"
+        },
+        {
+          "cmd": "gh run watch 7834521",
+          "desc": "watch live progress"
+        },
+        {
+          "cmd": "gh run rerun 7834521",
+          "desc": "re-run entire workflow"
+        },
+        {
+          "cmd": "gh run rerun 7834521 --failed",
+          "desc": "re-run failed jobs only"
+        },
+        {
+          "cmd": "gh run cancel 7834521",
+          "desc": "cancel a run"
+        },
+        {
+          "cmd": "gh run download 7834521",
+          "desc": "download all artifacts"
+        },
+        {
+          "cmd": "gh run download 7834521 -n test-coverage-report",
+          "desc": "download specific artifact"
+        }
+      ]
+    },
+    {
+      "group": "Workflows",
+      "commands": [
+        {
+          "cmd": "gh workflow list",
+          "desc": "list all workflows"
+        },
+        {
+          "cmd": "gh workflow view ci.yml",
+          "desc": "view workflow details"
+        },
+        {
+          "cmd": "gh workflow view deploy-production.yml",
+          "desc": "view deploy workflow"
+        },
+        {
+          "cmd": "gh workflow run ci.yml",
+          "desc": "trigger workflow"
+        },
+        {
+          "cmd": "gh workflow run deploy-production.yml -f environment=production -f version=v2.4.1",
+          "desc": "trigger with inputs"
+        },
+        {
+          "cmd": "gh workflow enable stale.yml",
+          "desc": "enable workflow"
+        },
+        {
+          "cmd": "gh workflow disable security-scan.yml",
+          "desc": "disable workflow"
+        }
+      ]
+    },
+    {
+      "group": "Secrets & Variables",
+      "commands": [
+        {
+          "cmd": "gh secret list",
+          "desc": "list repo secrets"
+        },
+        {
+          "cmd": "gh secret list --env production",
+          "desc": "list env secrets"
+        },
+        {
+          "cmd": "gh secret set DB_PASSWORD",
+          "desc": "set a secret"
+        },
+        {
+          "cmd": "gh secret delete SONAR_TOKEN",
+          "desc": "delete a secret"
+        },
+        {
+          "cmd": "gh variable list",
+          "desc": "list repo variables"
+        },
+        {
+          "cmd": "gh variable list --env production",
+          "desc": "list env variables"
+        },
+        {
+          "cmd": "gh variable set NODE_VERSION --body 20.12.0",
+          "desc": "set a variable"
+        },
+        {
+          "cmd": "gh variable set REPLICAS --body 5 --env production",
+          "desc": "set env variable"
+        }
+      ]
+    },
+    {
+      "group": "PR Checks & Releases",
+      "commands": [
+        {
+          "cmd": "gh pr checks 142",
+          "desc": "view PR check status"
+        },
+        {
+          "cmd": "gh pr checks 142 --json name,state,conclusion",
+          "desc": "checks as JSON"
+        },
+        {
+          "cmd": "gh release create v2.4.1 --title \"v2.4.1\" --notes \"...\"",
+          "desc": "create release"
+        },
+        {
+          "cmd": "gh release create v2.4.1 --generate-notes",
+          "desc": "release with auto notes"
+        },
+        {
+          "cmd": "gh release list",
+          "desc": "list releases"
+        },
+        {
+          "cmd": "gh release view v2.4.1",
+          "desc": "view release details"
+        },
+        {
+          "cmd": "gh release delete v2.4.1 --yes",
+          "desc": "delete a release"
+        }
+      ]
+    },
+    {
+      "group": "API (Advanced)",
+      "commands": [
+        {
+          "cmd": "gh api repos/devops-org/payment-api/actions/runs",
+          "desc": "list runs via API"
+        },
+        {
+          "cmd": "gh api repos/devops-org/payment-api/actions/runs/7834521",
+          "desc": "run detail via API"
+        },
+        {
+          "cmd": "gh api repos/devops-org/payment-api/actions/runs/7834521/jobs",
+          "desc": "jobs via API"
+        },
+        {
+          "cmd": "gh api repos/devops-org/payment-api/actions/workflows",
+          "desc": "workflows via API"
+        },
+        {
+          "cmd": "gh api repos/devops-org/payment-api/actions/runners",
+          "desc": "self-hosted runners"
+        },
+        {
+          "cmd": "gh api repos/devops-org/payment-api/actions/cache/usage",
+          "desc": "cache usage"
+        },
+        {
+          "cmd": "gh api repos/.../actions/runs --jq '.workflow_runs[] | select(.conclusion==\"failure\") | .id'",
+          "desc": "filter failures with jq"
+        }
+      ]
+    },
+    {
+      "group": "Scenarios",
+      "commands": [
+        {
+          "cmd": "scenario debug-failing-workflow",
+          "desc": "debug a broken CI run"
+        },
+        {
+          "cmd": "scenario trigger-and-monitor-deployments",
+          "desc": "deploy and release"
+        }
+      ]
+    }
+  ]
+}

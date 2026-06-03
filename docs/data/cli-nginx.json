@@ -1,0 +1,351 @@
+{
+  "id": "nginx",
+  "prompt": "sre@web-01:~$",
+  "welcome": "Welcome to the Nginx CLI Playground.\nType commands to explore a simulated production reverse proxy.\nType 'help' for available commands, 'scenario' for guided labs.\n",
+  "scenarios": [
+    {
+      "id": "configure-reverse-proxy-tls",
+      "title": "Configure Reverse Proxy and TLS",
+      "steps": [
+        {
+          "instruction": "First, check the installed Nginx version and compiled modules.",
+          "expect": "nginx -V",
+          "hint": "Try: nginx -V"
+        },
+        {
+          "instruction": "View the main Nginx configuration file to understand the current setup.",
+          "expect": "cat /etc/nginx/nginx.conf",
+          "hint": "Try: cat /etc/nginx/nginx.conf"
+        },
+        {
+          "instruction": "Now view the existing site configuration that we will modify for reverse proxy.",
+          "expect": "cat /etc/nginx/sites-available/app.example.com",
+          "hint": "Try: cat /etc/nginx/sites-available/app.example.com"
+        },
+        {
+          "instruction": "Check the upstream backend configuration for the Node.js app servers.",
+          "expect": "cat /etc/nginx/conf.d/upstream.conf",
+          "hint": "Try: cat /etc/nginx/conf.d/upstream.conf"
+        },
+        {
+          "instruction": "Test the configuration for syntax errors before reloading.",
+          "expect": "nginx -t",
+          "hint": "Try: nginx -t"
+        },
+        {
+          "instruction": "Reload Nginx to apply the new reverse proxy and TLS configuration.",
+          "expect": "nginx -s reload",
+          "hint": "Try: nginx -s reload"
+        },
+        {
+          "instruction": "Verify TLS is working by checking the certificate presented on port 443.",
+          "expect": "openssl s_client -connect localhost:443 -servername app.example.com </dev/null",
+          "hint": "Try: openssl s_client -connect localhost:443 -servername app.example.com </dev/null"
+        },
+        {
+          "instruction": "Test the reverse proxy end-to-end by sending an HTTP request through Nginx.",
+          "expect": "curl -s -o /dev/null -w '%{http_code}' https://localhost/healthz -k",
+          "hint": "Try: curl -s -o /dev/null -w '%{http_code}' https://localhost/healthz -k"
+        }
+      ]
+    },
+    {
+      "id": "debug-502-bad-gateway",
+      "title": "Debug 502 Bad Gateway",
+      "steps": [
+        {
+          "instruction": "Users report 502 errors. Start by checking if Nginx itself is running.",
+          "expect": "systemctl status nginx",
+          "hint": "Try: systemctl status nginx"
+        },
+        {
+          "instruction": "Nginx is active. Check the error log for clues about the 502.",
+          "expect": "tail -20 /var/log/nginx/error.log",
+          "hint": "Try: tail -20 /var/log/nginx/error.log"
+        },
+        {
+          "instruction": "The error log shows 'connection refused' to upstream. Check the access log to confirm the pattern.",
+          "expect": "tail -20 /var/log/nginx/access.log",
+          "hint": "Try: tail -20 /var/log/nginx/access.log"
+        },
+        {
+          "instruction": "Verify which upstream backends are configured.",
+          "expect": "cat /etc/nginx/conf.d/upstream.conf",
+          "hint": "Try: cat /etc/nginx/conf.d/upstream.conf"
+        },
+        {
+          "instruction": "Test if the Node.js backend on port 3000 is actually responding.",
+          "expect": "curl -s http://127.0.0.1:3000/healthz",
+          "hint": "Try: curl -s http://127.0.0.1:3000/healthz"
+        },
+        {
+          "instruction": "Backend is down. Check the stub_status module to see current Nginx connection metrics.",
+          "expect": "curl -s http://127.0.0.1:8080/nginx_status",
+          "hint": "Try: curl -s http://127.0.0.1:8080/nginx_status"
+        },
+        {
+          "instruction": "Restart the Node.js backend (simulated), then test the proxy again.",
+          "expect": "systemctl restart nodejs-app",
+          "hint": "Try: systemctl restart nodejs-app"
+        },
+        {
+          "instruction": "Confirm the 502 is resolved by curling through the reverse proxy.",
+          "expect": "curl -s -o /dev/null -w '%{http_code}' http://localhost/",
+          "hint": "Try: curl -s -o /dev/null -w '%{http_code}' http://localhost/"
+        }
+      ]
+    }
+  ],
+  "commands": {
+    "help": "Available commands:\n  nginx -t                        — Test configuration for syntax errors\n  nginx -T                        — Test and dump full configuration\n  nginx -s reload|stop|quit|reopen — Send signal to master process\n  nginx -V                        — Show version and compiled modules\n  nginx -v                        — Show version only\n  cat <config file>               — View configuration files\n  curl <url>                      — Test HTTP endpoints\n  tail <log file>                 — View recent log entries\n  systemctl status|restart nginx  — Manage Nginx service\n  openssl s_client                — Test TLS certificates\n\n  scenario                        — Start a guided lab\n  clear                           — Clear the terminal\n  help                            — Show this help",
+    "nginx -v": "nginx version: nginx/1.26.1",
+    "nginx -V": "nginx version: nginx/1.26.1\nbuilt with OpenSSL 3.0.13 30 Jan 2024\nTLS SNI support enabled\nconfigure arguments: --prefix=/etc/nginx --sbin-path=/usr/sbin/nginx --modules-path=/usr/lib64/nginx/modules --conf-path=/etc/nginx/nginx.conf --error-log-path=/var/log/nginx/error.log --http-log-path=/var/log/nginx/access.log --pid-path=/var/run/nginx.pid --with-http_ssl_module --with-http_v2_module --with-http_realip_module --with-http_stub_status_module --with-http_gzip_static_module --with-stream --with-stream_ssl_module",
+    "nginx -t": "nginx: the configuration file /etc/nginx/nginx.conf syntax is ok\nnginx: configuration file /etc/nginx/nginx.conf test is successful",
+    "nginx -T": "nginx: the configuration file /etc/nginx/nginx.conf syntax is ok\nnginx: configuration file /etc/nginx/nginx.conf test is successful\n# configuration file /etc/nginx/nginx.conf:\nuser  nginx;\nworker_processes  auto;\nerror_log  /var/log/nginx/error.log warn;\npid        /var/run/nginx.pid;\n\nevents {\n    worker_connections  1024;\n}\n\nhttp {\n    include       /etc/nginx/mime.types;\n    default_type  application/octet-stream;\n\n    log_format main '$remote_addr - $remote_user [$time_local] \"$request\" '\n                    '$status $body_bytes_sent \"$http_referer\" '\n                    '\"$http_user_agent\" rt=$request_time uct=$upstream_connect_time';\n\n    access_log  /var/log/nginx/access.log  main;\n\n    sendfile        on;\n    keepalive_timeout  65;\n    gzip  on;\n\n    include /etc/nginx/conf.d/*.conf;\n    include /etc/nginx/sites-enabled/*;\n}\n\n# configuration file /etc/nginx/conf.d/upstream.conf:\nupstream nodejs_backend {\n    least_conn;\n    server 127.0.0.1:3000 weight=3;\n    server 127.0.0.1:3001 weight=2;\n    server 127.0.0.1:3002 backup;\n    keepalive 32;\n}\n\n# configuration file /etc/nginx/sites-enabled/app.example.com:\nserver {\n    listen 80;\n    server_name app.example.com;\n    return 301 https://$host$request_uri;\n}\n\nserver {\n    listen 443 ssl http2;\n    server_name app.example.com;\n\n    ssl_certificate     /etc/nginx/ssl/app.example.com.crt;\n    ssl_certificate_key /etc/nginx/ssl/app.example.com.key;\n    ssl_protocols       TLSv1.2 TLSv1.3;\n    ssl_ciphers         HIGH:!aNULL:!MD5;\n\n    location / {\n        proxy_pass http://nodejs_backend;\n        proxy_set_header Host $host;\n        proxy_set_header X-Real-IP $remote_addr;\n        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\n        proxy_set_header X-Forwarded-Proto $scheme;\n        proxy_connect_timeout 5s;\n        proxy_read_timeout 30s;\n    }\n\n    location /nginx_status {\n        stub_status;\n        allow 127.0.0.1;\n        deny all;\n    }\n\n    location /healthz {\n        access_log off;\n        proxy_pass http://nodejs_backend;\n    }\n}",
+    "nginx -s reload": "signal sent: reload",
+    "nginx -s stop": "signal sent: stop",
+    "nginx -s quit": "signal sent: quit (graceful shutdown)",
+    "nginx -s reopen": "signal sent: reopen (log files reopened)",
+    "cat /etc/nginx/nginx.conf": "user  nginx;\nworker_processes  auto;\nerror_log  /var/log/nginx/error.log warn;\npid        /var/run/nginx.pid;\n\nevents {\n    worker_connections  1024;\n}\n\nhttp {\n    include       /etc/nginx/mime.types;\n    default_type  application/octet-stream;\n\n    log_format main '$remote_addr - $remote_user [$time_local] \"$request\" '\n                    '$status $body_bytes_sent \"$http_referer\" '\n                    '\"$http_user_agent\" rt=$request_time uct=$upstream_connect_time';\n\n    access_log  /var/log/nginx/access.log  main;\n\n    sendfile        on;\n    keepalive_timeout  65;\n    gzip  on;\n\n    include /etc/nginx/conf.d/*.conf;\n    include /etc/nginx/sites-enabled/*;\n}",
+    "cat /etc/nginx/conf.d/upstream.conf": "upstream nodejs_backend {\n    least_conn;                        # route to server with fewest active connections\n    server 127.0.0.1:3000 weight=3;   # primary backend (Node.js app)\n    server 127.0.0.1:3001 weight=2;   # secondary backend\n    server 127.0.0.1:3002 backup;     # only used when others are down\n    keepalive 32;                      # persistent connections to backends\n}",
+    "cat /etc/nginx/sites-available/app.example.com": "# HTTP — redirect all traffic to HTTPS\nserver {\n    listen 80;\n    server_name app.example.com;\n    return 301 https://$host$request_uri;\n}\n\n# HTTPS — reverse proxy to Node.js upstream\nserver {\n    listen 443 ssl http2;\n    server_name app.example.com;\n\n    ssl_certificate     /etc/nginx/ssl/app.example.com.crt;\n    ssl_certificate_key /etc/nginx/ssl/app.example.com.key;\n    ssl_protocols       TLSv1.2 TLSv1.3;\n    ssl_ciphers         HIGH:!aNULL:!MD5;\n    ssl_prefer_server_ciphers on;\n    ssl_session_cache   shared:SSL:10m;\n    ssl_session_timeout 10m;\n\n    # Security headers\n    add_header Strict-Transport-Security \"max-age=31536000; includeSubDomains\" always;\n    add_header X-Content-Type-Options nosniff;\n    add_header X-Frame-Options DENY;\n\n    location / {\n        proxy_pass http://nodejs_backend;\n        proxy_set_header Host $host;\n        proxy_set_header X-Real-IP $remote_addr;\n        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\n        proxy_set_header X-Forwarded-Proto $scheme;\n        proxy_http_version 1.1;\n        proxy_set_header Connection \"\";\n        proxy_connect_timeout 5s;\n        proxy_read_timeout 30s;\n        proxy_send_timeout 30s;\n    }\n\n    location /nginx_status {\n        stub_status;\n        allow 127.0.0.1;\n        deny all;\n    }\n\n    location /healthz {\n        access_log off;\n        proxy_pass http://nodejs_backend;\n    }\n\n    error_page 502 /502.html;\n    location = /502.html {\n        root /usr/share/nginx/html;\n        internal;\n    }\n}",
+    "cat /etc/nginx/sites-enabled/app.example.com": "# HTTP — redirect all traffic to HTTPS\nserver {\n    listen 80;\n    server_name app.example.com;\n    return 301 https://$host$request_uri;\n}\n\n# HTTPS — reverse proxy to Node.js upstream\nserver {\n    listen 443 ssl http2;\n    server_name app.example.com;\n\n    ssl_certificate     /etc/nginx/ssl/app.example.com.crt;\n    ssl_certificate_key /etc/nginx/ssl/app.example.com.key;\n    ssl_protocols       TLSv1.2 TLSv1.3;\n    ssl_ciphers         HIGH:!aNULL:!MD5;\n    ssl_prefer_server_ciphers on;\n    ssl_session_cache   shared:SSL:10m;\n    ssl_session_timeout 10m;\n\n    add_header Strict-Transport-Security \"max-age=31536000; includeSubDomains\" always;\n    add_header X-Content-Type-Options nosniff;\n    add_header X-Frame-Options DENY;\n\n    location / {\n        proxy_pass http://nodejs_backend;\n        proxy_set_header Host $host;\n        proxy_set_header X-Real-IP $remote_addr;\n        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\n        proxy_set_header X-Forwarded-Proto $scheme;\n        proxy_http_version 1.1;\n        proxy_set_header Connection \"\";\n        proxy_connect_timeout 5s;\n        proxy_read_timeout 30s;\n        proxy_send_timeout 30s;\n    }\n\n    location /nginx_status {\n        stub_status;\n        allow 127.0.0.1;\n        deny all;\n    }\n\n    location /healthz {\n        access_log off;\n        proxy_pass http://nodejs_backend;\n    }\n\n    error_page 502 /502.html;\n    location = /502.html {\n        root /usr/share/nginx/html;\n        internal;\n    }\n}",
+    "ls /etc/nginx/sites-enabled/": "app.example.com -> /etc/nginx/sites-available/app.example.com",
+    "ls /etc/nginx/sites-available/": "app.example.com\ndefault",
+    "ls /etc/nginx/conf.d/": "upstream.conf\ngzip.conf\nsecurity-headers.conf",
+    "ls /etc/nginx/ssl/": "app.example.com.crt\napp.example.com.key\ndhparam.pem",
+    "systemctl status nginx": "● nginx.service - A high performance web server and reverse proxy server\n     Loaded: loaded (/lib/systemd/system/nginx.service; enabled; preset: enabled)\n     Active: active (running) since Mon 2026-06-01 08:00:00 UTC; 1 day ago\n    Process: 1234 ExecStartPre=/usr/sbin/nginx -t (code=exited, status=0/SUCCESS)\n   Main PID: 1235 (nginx)\n      Tasks: 5 (limit: 4915)\n     Memory: 12.4M\n        CPU: 1.842s\n     CGroup: /system.slice/nginx.service\n             ├─1235 \"nginx: master process /usr/sbin/nginx\"\n             ├─1236 \"nginx: worker process\"\n             ├─1237 \"nginx: worker process\"\n             ├─1238 \"nginx: worker process\"\n             └─1239 \"nginx: worker process\"\n\nJun 01 08:00:00 web-01 systemd[1]: Starting A high performance web server...\nJun 01 08:00:00 web-01 systemd[1]: Started A high performance web server.",
+    "systemctl restart nginx": "nginx.service restarted successfully.",
+    "systemctl reload nginx": "nginx.service reloaded successfully.",
+    "systemctl stop nginx": "nginx.service stopped.",
+    "systemctl start nginx": "nginx.service started.",
+    "systemctl enable nginx": "Synchronizing state of nginx.service...\nCreated symlink /etc/systemd/system/multi-user.target.wants/nginx.service.",
+    "systemctl restart nodejs-app": "nodejs-app.service restarted successfully.\n[PM2] Restarting app-0, app-1, app-2\n[PM2] All instances restarted.",
+    "tail -20 /var/log/nginx/error.log": "2026/06/02 10:15:01 [error] 1236#1236: *48291 connect() failed (111: Connection refused) while connecting to upstream, client: 10.0.1.50, server: app.example.com, request: \"GET / HTTP/1.1\", upstream: \"http://127.0.0.1:3000:3000/\", host: \"app.example.com\"\n2026/06/02 10:15:01 [error] 1236#1236: *48291 connect() failed (111: Connection refused) while connecting to upstream, client: 10.0.1.50, server: app.example.com, request: \"GET / HTTP/1.1\", upstream: \"http://127.0.0.1:3001:3001/\", host: \"app.example.com\"\n2026/06/02 10:15:02 [error] 1237#1237: *48295 connect() failed (111: Connection refused) while connecting to upstream, client: 10.0.1.55, server: app.example.com, request: \"GET /api/v1/accounts HTTP/1.1\", upstream: \"http://127.0.0.1:3000:3000/api/v1/accounts\", host: \"app.example.com\"\n2026/06/02 10:15:03 [warn] 1236#1236: *48300 upstream server temporarily disabled while connecting to upstream, client: 10.0.1.50, server: app.example.com\n2026/06/02 10:15:05 [error] 1238#1238: *48310 no live upstreams while connecting to upstream, client: 10.0.2.30, server: app.example.com, request: \"GET /healthz HTTP/1.1\", upstream: \"http://nodejs_backend/healthz\", host: \"app.example.com\"",
+    "tail -20 /var/log/nginx/access.log": "10.0.1.50 - - [02/Jun/2026:10:14:55 +0000] \"GET / HTTP/1.1\" 200 4521 \"-\" \"Mozilla/5.0\" rt=0.012 uct=0.001\n10.0.1.55 - - [02/Jun/2026:10:14:56 +0000] \"GET /api/v1/accounts HTTP/1.1\" 200 1238 \"-\" \"curl/8.5.0\" rt=0.045 uct=0.002\n10.0.1.50 - - [02/Jun/2026:10:14:58 +0000] \"POST /api/v1/transactions HTTP/1.1\" 201 89 \"-\" \"curl/8.5.0\" rt=0.078 uct=0.001\n10.0.2.30 - - [02/Jun/2026:10:15:00 +0000] \"GET /healthz HTTP/1.1\" 200 15 \"-\" \"ELB-HealthChecker/2.0\" rt=0.002 uct=0.001\n10.0.1.50 - - [02/Jun/2026:10:15:01 +0000] \"GET / HTTP/1.1\" 502 166 \"-\" \"Mozilla/5.0\" rt=0.001 uct=0.000\n10.0.1.55 - - [02/Jun/2026:10:15:02 +0000] \"GET /api/v1/accounts HTTP/1.1\" 502 166 \"-\" \"curl/8.5.0\" rt=0.001 uct=0.000\n10.0.2.30 - - [02/Jun/2026:10:15:05 +0000] \"GET /healthz HTTP/1.1\" 502 166 \"-\" \"ELB-HealthChecker/2.0\" rt=0.000 uct=0.000\n10.0.1.50 - - [02/Jun/2026:10:15:06 +0000] \"GET / HTTP/1.1\" 502 166 \"-\" \"Mozilla/5.0\" rt=0.000 uct=0.000\n10.0.2.30 - - [02/Jun/2026:10:15:10 +0000] \"GET /healthz HTTP/1.1\" 502 166 \"-\" \"ELB-HealthChecker/2.0\" rt=0.000 uct=0.000",
+    "tail -50 /var/log/nginx/error.log": "2026/06/02 10:14:50 [notice] 1235#1235: signal 1 (SIGHUP) received from 5678, reconfiguring\n2026/06/02 10:14:50 [notice] 1235#1235: reconfiguring\n2026/06/02 10:14:50 [notice] 1235#1235: using the \"epoll\" event method\n2026/06/02 10:14:50 [notice] 1235#1235: start worker processes\n2026/06/02 10:15:01 [error] 1236#1236: *48291 connect() failed (111: Connection refused) while connecting to upstream, client: 10.0.1.50, server: app.example.com, request: \"GET / HTTP/1.1\", upstream: \"http://127.0.0.1:3000:3000/\", host: \"app.example.com\"\n2026/06/02 10:15:01 [error] 1236#1236: *48291 connect() failed (111: Connection refused) while connecting to upstream, client: 10.0.1.50, server: app.example.com, request: \"GET / HTTP/1.1\", upstream: \"http://127.0.0.1:3001:3001/\", host: \"app.example.com\"\n2026/06/02 10:15:02 [error] 1237#1237: *48295 connect() failed (111: Connection refused) while connecting to upstream, client: 10.0.1.55, server: app.example.com, request: \"GET /api/v1/accounts HTTP/1.1\", upstream: \"http://127.0.0.1:3000:3000/api/v1/accounts\", host: \"app.example.com\"\n2026/06/02 10:15:03 [warn] 1236#1236: *48300 upstream server temporarily disabled while connecting to upstream, client: 10.0.1.50, server: app.example.com\n2026/06/02 10:15:05 [error] 1238#1238: *48310 no live upstreams while connecting to upstream, client: 10.0.2.30, server: app.example.com, request: \"GET /healthz HTTP/1.1\", upstream: \"http://nodejs_backend/healthz\", host: \"app.example.com\"",
+    "tail -f /var/log/nginx/access.log": "10.0.2.30 - - [02/Jun/2026:10:15:10 +0000] \"GET /healthz HTTP/1.1\" 502 166 \"-\" \"ELB-HealthChecker/2.0\" rt=0.000 uct=0.000\n10.0.1.50 - - [02/Jun/2026:10:15:12 +0000] \"GET / HTTP/1.1\" 502 166 \"-\" \"Mozilla/5.0\" rt=0.000 uct=0.000\n(streaming... press Ctrl+C to stop)",
+    "tail -f /var/log/nginx/error.log": "2026/06/02 10:15:05 [error] 1238#1238: *48310 no live upstreams while connecting to upstream, client: 10.0.2.30, server: app.example.com\n(streaming... press Ctrl+C to stop)",
+    "cat /var/log/nginx/error.log": "2026/06/02 10:14:50 [notice] 1235#1235: signal 1 (SIGHUP) received from 5678, reconfiguring\n2026/06/02 10:14:50 [notice] 1235#1235: reconfiguring\n2026/06/02 10:14:50 [notice] 1235#1235: using the \"epoll\" event method\n2026/06/02 10:14:50 [notice] 1235#1235: start worker processes\n2026/06/02 10:15:01 [error] 1236#1236: *48291 connect() failed (111: Connection refused) while connecting to upstream, client: 10.0.1.50, server: app.example.com, request: \"GET / HTTP/1.1\", upstream: \"http://127.0.0.1:3000:3000/\", host: \"app.example.com\"\n2026/06/02 10:15:01 [error] 1236#1236: *48291 connect() failed (111: Connection refused) while connecting to upstream, client: 10.0.1.50, server: app.example.com, request: \"GET / HTTP/1.1\", upstream: \"http://127.0.0.1:3001:3001/\", host: \"app.example.com\"\n2026/06/02 10:15:02 [error] 1237#1237: *48295 connect() failed (111: Connection refused) while connecting to upstream, client: 10.0.1.55, server: app.example.com, request: \"GET /api/v1/accounts HTTP/1.1\", upstream: \"http://127.0.0.1:3000:3000/api/v1/accounts\", host: \"app.example.com\"\n2026/06/02 10:15:03 [warn] 1236#1236: *48300 upstream server temporarily disabled while connecting to upstream, client: 10.0.1.50, server: app.example.com\n2026/06/02 10:15:05 [error] 1238#1238: *48310 no live upstreams while connecting to upstream, client: 10.0.2.30, server: app.example.com, request: \"GET /healthz HTTP/1.1\", upstream: \"http://nodejs_backend/healthz\", host: \"app.example.com\"",
+    "curl -s http://localhost/": "<!DOCTYPE html>\n<html>\n<head><title>Banking Portal</title></head>\n<body>\n<h1>Welcome to the Banking Portal</h1>\n<p>Served by: node-app-01 | Upstream response: 12ms</p>\n</body>\n</html>",
+    "curl -s http://localhost/healthz": "{\"status\":\"healthy\",\"uptime\":\"2d4h\",\"version\":\"v3.1.0\",\"backends\":3}",
+    "curl -s https://localhost/healthz -k": "{\"status\":\"healthy\",\"uptime\":\"2d4h\",\"version\":\"v3.1.0\",\"backends\":3}",
+    "curl -s -o /dev/null -w '%{http_code}' http://localhost/": "200",
+    "curl -s -o /dev/null -w '%{http_code}' https://localhost/healthz -k": "200",
+    "curl -s -o /dev/null -w '%{http_code}' http://localhost/healthz": "200",
+    "curl -I http://localhost/": "HTTP/1.1 200 OK\nServer: nginx/1.26.1\nDate: Mon, 02 Jun 2026 10:15:00 GMT\nContent-Type: text/html; charset=utf-8\nConnection: keep-alive\nX-Powered-By: Express\nStrict-Transport-Security: max-age=31536000; includeSubDomains\nX-Content-Type-Options: nosniff\nX-Frame-Options: DENY",
+    "curl -I https://localhost/ -k": "HTTP/2 200\nserver: nginx/1.26.1\ndate: Mon, 02 Jun 2026 10:15:00 GMT\ncontent-type: text/html; charset=utf-8\nstrict-transport-security: max-age=31536000; includeSubDomains\nx-content-type-options: nosniff\nx-frame-options: DENY",
+    "curl -s http://127.0.0.1:3000/healthz": "curl: (7) Failed to connect to 127.0.0.1 port 3000: Connection refused",
+    "curl -s http://127.0.0.1:3001/healthz": "curl: (7) Failed to connect to 127.0.0.1 port 3001: Connection refused",
+    "curl -s http://127.0.0.1:3002/healthz": "curl: (7) Failed to connect to 127.0.0.1 port 3002: Connection refused",
+    "curl -s http://127.0.0.1:8080/nginx_status": "Active connections: 42\nserver accepts handled requests\n 185432 185432 892017\nReading: 0 Writing: 3 Waiting: 39",
+    "curl -s http://localhost:8080/nginx_status": "Active connections: 42\nserver accepts handled requests\n 185432 185432 892017\nReading: 0 Writing: 3 Waiting: 39",
+    "openssl s_client -connect localhost:443 -servername app.example.com </dev/null": "CONNECTED(00000003)\ndepth=1 C = US, O = Let's Encrypt, CN = R3\nverify return:1\ndepth=0 CN = app.example.com\nverify return:1\n---\nCertificate chain\n 0 s:CN = app.example.com\n   i:C = US, O = Let's Encrypt, CN = R3\n 1 s:C = US, O = Let's Encrypt, CN = R3\n   i:C = US, O = Internet Security Research Group, CN = ISRG Root X1\n---\nServer certificate\n-----BEGIN CERTIFICATE-----\nMIIFLTCCBBWgAwIBAgISA1b2...(truncated)\n-----END CERTIFICATE-----\nsubject=CN = app.example.com\nissuer=C = US, O = Let's Encrypt, CN = R3\n---\nSSL handshake has read 3456 bytes and written 392 bytes\nVerification: OK\n---\nNew, TLSv1.3, Cipher is TLS_AES_256_GCM_SHA384\nServer public key is 2048 bit\n    Start Time: 1717315200\n    Timeout   : 7200 (sec)\n    Verify return code: 0 (ok)\n---\nDONE",
+    "openssl s_client -connect localhost:443 </dev/null": "CONNECTED(00000003)\ndepth=0 CN = app.example.com\nverify return:1\n---\nsubject=CN = app.example.com\nissuer=C = US, O = Let's Encrypt, CN = R3\n---\nNew, TLSv1.3, Cipher is TLS_AES_256_GCM_SHA384\nVerify return code: 0 (ok)\n---\nDONE",
+    "openssl x509 -in /etc/nginx/ssl/app.example.com.crt -text -noout": "Certificate:\n    Data:\n        Version: 3 (0x2)\n        Serial Number: 04:1a:2b:3c:4d:5e:6f\n        Signature Algorithm: sha256WithRSAEncryption\n        Issuer: C = US, O = Let's Encrypt, CN = R3\n        Validity\n            Not Before: May  1 00:00:00 2026 GMT\n            Not After : Jul 30 00:00:00 2026 GMT\n        Subject: CN = app.example.com\n        Subject Public Key Info:\n            Public Key Algorithm: rsaEncryption\n                Public-Key: (2048 bit)\n    X509v3 extensions:\n        X509v3 Subject Alternative Name:\n            DNS:app.example.com, DNS:www.app.example.com",
+    "openssl x509 -in /etc/nginx/ssl/app.example.com.crt -noout -dates": "notBefore=May  1 00:00:00 2026 GMT\nnotAfter=Jul 30 00:00:00 2026 GMT",
+    "ps aux | grep nginx": "root      1235  0.0  0.1  65432  2048 ?  Ss   Jun01   0:00 nginx: master process /usr/sbin/nginx\nnginx     1236  0.0  0.3  67890  5120 ?  S    Jun01   0:12 nginx: worker process\nnginx     1237  0.0  0.3  67890  5024 ?  S    Jun01   0:11 nginx: worker process\nnginx     1238  0.0  0.3  67890  4992 ?  S    Jun01   0:10 nginx: worker process\nnginx     1239  0.0  0.3  67890  4896 ?  S    Jun01   0:09 nginx: worker process",
+    "ss -tlnp | grep nginx": "LISTEN  0  511  0.0.0.0:80   0.0.0.0:*  users:((\"nginx\",pid=1236,fd=6))\nLISTEN  0  511  0.0.0.0:443  0.0.0.0:*  users:((\"nginx\",pid=1236,fd=7))\nLISTEN  0  511  127.0.0.1:8080  0.0.0.0:*  users:((\"nginx\",pid=1236,fd=8))",
+    "ss -tlnp": "State   Recv-Q  Send-Q  Local Address:Port  Peer Address:Port  Process\nLISTEN  0       511     0.0.0.0:80         0.0.0.0:*          users:((\"nginx\",pid=1236,fd=6))\nLISTEN  0       511     0.0.0.0:443        0.0.0.0:*          users:((\"nginx\",pid=1236,fd=7))\nLISTEN  0       511     127.0.0.1:8080     0.0.0.0:*          users:((\"nginx\",pid=1236,fd=8))",
+    "cat /etc/nginx/mime.types": "types {\n    text/html                             html htm shtml;\n    text/css                              css;\n    application/javascript                js;\n    application/json                      json;\n    image/png                             png;\n    image/jpeg                            jpeg jpg;\n    image/svg+xml                         svg svgz;\n    application/font-woff2                woff2;\n    ...(truncated for brevity)\n}",
+    "nginx -T 2>&1 | grep -i upstream": "    upstream nodejs_backend {\n        server 127.0.0.1:3000 weight=3;\n        server 127.0.0.1:3001 weight=2;\n        server 127.0.0.1:3002 backup;\n        proxy_pass http://nodejs_backend;",
+    "nginx -T 2>&1 | grep server_name": "    server_name app.example.com;\n    server_name app.example.com;",
+    "nginx -T 2>&1 | grep listen": "    listen 80;\n    listen 443 ssl http2;",
+    "nginx -T 2>&1 | grep ssl": "    listen 443 ssl http2;\n    ssl_certificate     /etc/nginx/ssl/app.example.com.crt;\n    ssl_certificate_key /etc/nginx/ssl/app.example.com.key;\n    ssl_protocols       TLSv1.2 TLSv1.3;\n    ssl_ciphers         HIGH:!aNULL:!MD5;\n    ssl_prefer_server_ciphers on;\n    ssl_session_cache   shared:SSL:10m;\n    ssl_session_timeout 10m;",
+    "cat /etc/nginx/conf.d/gzip.conf": "gzip on;\ngzip_vary on;\ngzip_proxied any;\ngzip_comp_level 6;\ngzip_types text/plain text/css application/json application/javascript text/xml application/xml image/svg+xml;",
+    "cat /etc/nginx/conf.d/security-headers.conf": "add_header Strict-Transport-Security \"max-age=31536000; includeSubDomains\" always;\nadd_header X-Content-Type-Options nosniff;\nadd_header X-Frame-Options DENY;\nadd_header X-XSS-Protection \"1; mode=block\";\nadd_header Referrer-Policy strict-origin-when-cross-origin;",
+    "journalctl -u nginx --no-pager -n 20": "Jun 01 08:00:00 web-01 systemd[1]: Starting A high performance web server...\nJun 01 08:00:00 web-01 nginx[1234]: nginx: the configuration file /etc/nginx/nginx.conf syntax is ok\nJun 01 08:00:00 web-01 nginx[1234]: nginx: configuration file /etc/nginx/nginx.conf test is successful\nJun 01 08:00:00 web-01 systemd[1]: Started A high performance web server.\nJun 02 10:14:50 web-01 systemd[1]: Reloading A high performance web server...\nJun 02 10:14:50 web-01 systemd[1]: Reloaded A high performance web server.",
+    "journalctl -u nginx -n 20": "Jun 01 08:00:00 web-01 systemd[1]: Starting A high performance web server...\nJun 01 08:00:00 web-01 nginx[1234]: nginx: the configuration file /etc/nginx/nginx.conf syntax is ok\nJun 01 08:00:00 web-01 nginx[1234]: nginx: configuration file /etc/nginx/nginx.conf test is successful\nJun 01 08:00:00 web-01 systemd[1]: Started A high performance web server.\nJun 02 10:14:50 web-01 systemd[1]: Reloading A high performance web server...\nJun 02 10:14:50 web-01 systemd[1]: Reloaded A high performance web server."
+  },
+  "reference": [
+    {
+      "group": "Version & Config",
+      "commands": [
+        {
+          "cmd": "nginx -v",
+          "desc": "version only"
+        },
+        {
+          "cmd": "nginx -V",
+          "desc": "version + modules"
+        },
+        {
+          "cmd": "nginx -t",
+          "desc": "test config syntax"
+        },
+        {
+          "cmd": "nginx -T",
+          "desc": "test + dump full config"
+        }
+      ]
+    },
+    {
+      "group": "Signals",
+      "commands": [
+        {
+          "cmd": "nginx -s reload",
+          "desc": "reload config (graceful)"
+        },
+        {
+          "cmd": "nginx -s stop",
+          "desc": "fast shutdown"
+        },
+        {
+          "cmd": "nginx -s quit",
+          "desc": "graceful shutdown"
+        },
+        {
+          "cmd": "nginx -s reopen",
+          "desc": "reopen log files"
+        }
+      ]
+    },
+    {
+      "group": "Config Files",
+      "commands": [
+        {
+          "cmd": "cat /etc/nginx/nginx.conf",
+          "desc": "main config"
+        },
+        {
+          "cmd": "cat /etc/nginx/sites-available/app.example.com",
+          "desc": "site vhost"
+        },
+        {
+          "cmd": "cat /etc/nginx/conf.d/upstream.conf",
+          "desc": "upstream backends"
+        },
+        {
+          "cmd": "ls /etc/nginx/sites-enabled/",
+          "desc": "active sites"
+        },
+        {
+          "cmd": "ls /etc/nginx/conf.d/",
+          "desc": "config includes"
+        }
+      ]
+    },
+    {
+      "group": "Testing & Curl",
+      "commands": [
+        {
+          "cmd": "curl -s http://localhost/",
+          "desc": "test HTTP response"
+        },
+        {
+          "cmd": "curl -I http://localhost/",
+          "desc": "response headers"
+        },
+        {
+          "cmd": "curl -s http://127.0.0.1:8080/nginx_status",
+          "desc": "stub_status metrics"
+        },
+        {
+          "cmd": "curl -s -o /dev/null -w '%{http_code}' http://localhost/",
+          "desc": "status code only"
+        }
+      ]
+    },
+    {
+      "group": "Logs",
+      "commands": [
+        {
+          "cmd": "tail -20 /var/log/nginx/access.log",
+          "desc": "recent access log"
+        },
+        {
+          "cmd": "tail -20 /var/log/nginx/error.log",
+          "desc": "recent error log"
+        },
+        {
+          "cmd": "tail -f /var/log/nginx/access.log",
+          "desc": "follow access log"
+        },
+        {
+          "cmd": "tail -f /var/log/nginx/error.log",
+          "desc": "follow error log"
+        }
+      ]
+    },
+    {
+      "group": "Service Management",
+      "commands": [
+        {
+          "cmd": "systemctl status nginx",
+          "desc": "service status"
+        },
+        {
+          "cmd": "systemctl restart nginx",
+          "desc": "restart service"
+        },
+        {
+          "cmd": "systemctl reload nginx",
+          "desc": "reload via systemd"
+        },
+        {
+          "cmd": "journalctl -u nginx -n 20",
+          "desc": "service journal"
+        }
+      ]
+    },
+    {
+      "group": "TLS & Security",
+      "commands": [
+        {
+          "cmd": "openssl s_client -connect localhost:443 -servername app.example.com </dev/null",
+          "desc": "test TLS handshake"
+        },
+        {
+          "cmd": "openssl x509 -in /etc/nginx/ssl/app.example.com.crt -noout -dates",
+          "desc": "cert expiry dates"
+        },
+        {
+          "cmd": "openssl x509 -in /etc/nginx/ssl/app.example.com.crt -text -noout",
+          "desc": "full cert details"
+        },
+        {
+          "cmd": "ls /etc/nginx/ssl/",
+          "desc": "TLS files"
+        }
+      ]
+    },
+    {
+      "group": "Debug",
+      "commands": [
+        {
+          "cmd": "ps aux | grep nginx",
+          "desc": "nginx processes"
+        },
+        {
+          "cmd": "ss -tlnp | grep nginx",
+          "desc": "listening ports"
+        },
+        {
+          "cmd": "nginx -T 2>&1 | grep -i upstream",
+          "desc": "grep upstream config"
+        },
+        {
+          "cmd": "nginx -T 2>&1 | grep server_name",
+          "desc": "grep server names"
+        },
+        {
+          "cmd": "nginx -T 2>&1 | grep ssl",
+          "desc": "grep SSL directives"
+        }
+      ]
+    },
+    {
+      "group": "Scenarios",
+      "commands": [
+        {
+          "cmd": "scenario configure-reverse-proxy-tls",
+          "desc": "set up reverse proxy + TLS"
+        },
+        {
+          "cmd": "scenario debug-502-bad-gateway",
+          "desc": "troubleshoot 502 errors"
+        }
+      ]
+    }
+  ]
+}

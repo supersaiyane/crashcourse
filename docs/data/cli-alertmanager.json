@@ -1,0 +1,269 @@
+{
+  "id": "alertmanager",
+  "prompt": "amtool@monitoring:~$",
+  "welcome": "Welcome to the Alertmanager CLI Playground.\nType commands to explore a simulated Alertmanager instance.\nType 'help' for available commands, 'scenario' for guided labs.\n",
+  "scenarios": [
+    {
+      "id": "silence-during-maintenance",
+      "title": "Silence an Alert During Maintenance",
+      "steps": [
+        {
+          "instruction": "First, check what alerts are currently firing in the cluster.",
+          "expect": "amtool alert query",
+          "hint": "Try: amtool alert query"
+        },
+        {
+          "instruction": "There's a DiskFull alert on node-3. You have planned maintenance tonight — silence it for 4 hours.",
+          "expect": "amtool silence add alertname=DiskFull instance=node-3:9100 --duration=4h --author=oncall --comment=\"Planned disk maintenance on node-3\"",
+          "hint": "Try: amtool silence add alertname=DiskFull instance=node-3:9100 --duration=4h --author=oncall --comment=\"Planned disk maintenance on node-3\""
+        },
+        {
+          "instruction": "Verify the silence was created by listing active silences.",
+          "expect": "amtool silence query",
+          "hint": "Try: amtool silence query"
+        },
+        {
+          "instruction": "Good — silence c1d2e3f4 is active. Now check the Alertmanager status to confirm the instance is healthy.",
+          "expect": "curl -s http://localhost:9093/api/v2/status | jq '.cluster.status'",
+          "hint": "Try: curl -s http://localhost:9093/api/v2/status | jq '.cluster.status'"
+        },
+        {
+          "instruction": "Maintenance finished early. Expire the silence so alerts flow again.",
+          "expect": "amtool silence expire c1d2e3f4",
+          "hint": "Try: amtool silence expire c1d2e3f4"
+        },
+        {
+          "instruction": "Confirm the silence is gone and alerts are active again.",
+          "expect": "amtool silence query",
+          "hint": "Try: amtool silence query"
+        },
+        {
+          "instruction": "Finally, verify the DiskFull alert is firing again now that the silence is expired.",
+          "expect": "amtool alert query alertname=DiskFull",
+          "hint": "Try: amtool alert query alertname=DiskFull"
+        }
+      ]
+    },
+    {
+      "id": "debug-alert-routing",
+      "title": "Debug Alert Routing",
+      "steps": [
+        {
+          "instruction": "A team reports they are not receiving PodCrashLooping alerts. Start by checking the Alertmanager config is valid.",
+          "expect": "amtool check-config /etc/alertmanager/alertmanager.yml",
+          "hint": "Try: amtool check-config /etc/alertmanager/alertmanager.yml"
+        },
+        {
+          "instruction": "Config is valid. Now display the full routing tree to understand how alerts are routed.",
+          "expect": "amtool config routes show",
+          "hint": "Try: amtool config routes show"
+        },
+        {
+          "instruction": "Test where a PodCrashLooping alert with severity=critical would be routed.",
+          "expect": "amtool config routes test alertname=PodCrashLooping severity=critical namespace=production",
+          "hint": "Try: amtool config routes test alertname=PodCrashLooping severity=critical namespace=production"
+        },
+        {
+          "instruction": "It routes to the 'platform-critical' receiver. Check which receivers are configured.",
+          "expect": "curl -s http://localhost:9093/api/v2/receivers | jq '.[].name'",
+          "hint": "Try: curl -s http://localhost:9093/api/v2/receivers | jq '.[].name'"
+        },
+        {
+          "instruction": "Now query the API for currently active alerts to see if PodCrashLooping is actually firing.",
+          "expect": "curl -s http://localhost:9093/api/v2/alerts?filter=alertname=PodCrashLooping | jq '.[].status.state'",
+          "hint": "Try: curl -s http://localhost:9093/api/v2/alerts?filter=alertname=PodCrashLooping | jq '.[].status.state'"
+        },
+        {
+          "instruction": "The alert is suppressed! Check if there is a silence matching this alert.",
+          "expect": "amtool silence query alertname=PodCrashLooping",
+          "hint": "Try: amtool silence query alertname=PodCrashLooping"
+        },
+        {
+          "instruction": "Found silence a9b8c7d6 matching PodCrashLooping. Expire it so the team gets notified.",
+          "expect": "amtool silence expire a9b8c7d6",
+          "hint": "Try: amtool silence expire a9b8c7d6"
+        },
+        {
+          "instruction": "Verify the cluster is healthy and peers are connected so notifications won't be duplicated.",
+          "expect": "amtool cluster show",
+          "hint": "Try: amtool cluster show"
+        }
+      ]
+    }
+  ],
+  "commands": {
+    "help": "Available commands:\n  amtool alert query              — List firing alerts (with optional label matchers)\n  amtool silence add              — Create a new silence\n  amtool silence query            — List active silences\n  amtool silence expire           — Expire a silence by ID\n  amtool silence update           — Update an existing silence\n  amtool check-config             — Validate Alertmanager configuration\n  amtool config routes show       — Display the routing tree\n  amtool config routes test       — Test which route matches given labels\n  amtool cluster show             — Show cluster/peer status\n  curl .../api/v2/alerts          — Query alerts via HTTP API\n  curl .../api/v2/silences        — Query silences via HTTP API\n  curl .../api/v2/status          — Alertmanager instance status\n  curl .../api/v2/receivers       — List configured receivers\n\n  scenario                        — Start a guided lab\n  clear                           — Clear the terminal\n  help                            — Show this help",
+    "amtool alert query": "Alertname          Instance         Severity   State       Active Since\nHighLatency        api-gateway:443  warning    active      2026-06-02T08:15:00Z\nDiskFull           node-3:9100      critical   active      2026-06-02T06:30:00Z\nPodCrashLooping    web-5f8b9:8080   critical   suppressed  2026-06-02T09:00:00Z\nHighMemoryUsage    node-3:9100      warning    active      2026-06-02T07:45:00Z\nTargetDown         redis:6379       critical   active      2026-06-02T10:12:00Z",
+    "amtool alert query --active": "Alertname          Instance         Severity   State    Active Since\nHighLatency        api-gateway:443  warning    active   2026-06-02T08:15:00Z\nDiskFull           node-3:9100      critical   active   2026-06-02T06:30:00Z\nHighMemoryUsage    node-3:9100      warning    active   2026-06-02T07:45:00Z\nTargetDown         redis:6379       critical   active   2026-06-02T10:12:00Z",
+    "amtool alert query --suppressed": "Alertname          Instance         Severity   State       Active Since\nPodCrashLooping    web-5f8b9:8080   critical   suppressed  2026-06-02T09:00:00Z",
+    "amtool alert query alertname=HighLatency": "Alertname          Instance         Severity   State    Active Since\nHighLatency        api-gateway:443  warning    active   2026-06-02T08:15:00Z",
+    "amtool alert query alertname=DiskFull": "Alertname          Instance         Severity   State    Active Since\nDiskFull           node-3:9100      critical   active   2026-06-02T06:30:00Z",
+    "amtool alert query alertname=PodCrashLooping": "Alertname          Instance         Severity   State       Active Since\nPodCrashLooping    web-5f8b9:8080   critical   suppressed  2026-06-02T09:00:00Z",
+    "amtool alert query alertname=TargetDown": "Alertname          Instance         Severity   State    Active Since\nTargetDown         redis:6379       critical   active   2026-06-02T10:12:00Z",
+    "amtool alert query alertname=HighMemoryUsage": "Alertname          Instance         Severity   State    Active Since\nHighMemoryUsage    node-3:9100      warning    active   2026-06-02T07:45:00Z",
+    "amtool alert query severity=critical": "Alertname          Instance         Severity   State       Active Since\nDiskFull           node-3:9100      critical   active      2026-06-02T06:30:00Z\nPodCrashLooping    web-5f8b9:8080   critical   suppressed  2026-06-02T09:00:00Z\nTargetDown         redis:6379       critical   active      2026-06-02T10:12:00Z",
+    "amtool alert query severity=warning": "Alertname          Instance         Severity   State    Active Since\nHighLatency        api-gateway:443  warning    active   2026-06-02T08:15:00Z\nHighMemoryUsage    node-3:9100      warning    active   2026-06-02T07:45:00Z",
+    "amtool alert query instance=node-3:9100": "Alertname          Instance         Severity   State    Active Since\nDiskFull           node-3:9100      critical   active   2026-06-02T06:30:00Z\nHighMemoryUsage    node-3:9100      warning    active   2026-06-02T07:45:00Z",
+    "amtool silence add alertname=DiskFull instance=node-3:9100 --duration=4h --author=oncall --comment=\"Planned disk maintenance on node-3\"": "Silence created: c1d2e3f4-5a6b-7c8d-9e0f-a1b2c3d4e5f6\nStarts: 2026-06-02T10:30:00Z\nEnds:   2026-06-02T14:30:00Z",
+    "amtool silence add alertname=HighLatency --duration=2h --author=oncall --comment=\"Investigating latency spike\"": "Silence created: f6e5d4c3-b2a1-0f9e-8d7c-6b5a4f3e2d1c\nStarts: 2026-06-02T10:30:00Z\nEnds:   2026-06-02T12:30:00Z",
+    "amtool silence add alertname=TargetDown instance=redis:6379 --duration=1h --author=oncall --comment=\"Redis restart in progress\"": "Silence created: a1b2c3d4-e5f6-7a8b-9c0d-e1f2a3b4c5d6\nStarts: 2026-06-02T10:30:00Z\nEnds:   2026-06-02T11:30:00Z",
+    "amtool silence add severity=warning --duration=30m --author=oncall --comment=\"Suppressing warnings during deploy\"": "Silence created: d4c3b2a1-0f9e-8d7c-6b5a-4f3e2d1c0b9a\nStarts: 2026-06-02T10:30:00Z\nEnds:   2026-06-02T11:00:00Z",
+    "amtool silence query": "ID                                     Matchers                               Ends                  Created By   Comment\nc1d2e3f4-5a6b-7c8d-9e0f-a1b2c3d4e5f6   alertname=DiskFull instance=node-3:9100  2026-06-02T14:30:00Z  oncall       Planned disk maintenance on node-3\na9b8c7d6-e5f4-3a2b-1c0d-9e8f7a6b5c4d   alertname=PodCrashLooping               2026-06-02T18:00:00Z  sre-bot      Auto-silenced pending investigation",
+    "amtool silence query alertname=PodCrashLooping": "ID                                     Matchers                    Ends                  Created By   Comment\na9b8c7d6-e5f4-3a2b-1c0d-9e8f7a6b5c4d   alertname=PodCrashLooping   2026-06-02T18:00:00Z  sre-bot      Auto-silenced pending investigation",
+    "amtool silence query alertname=DiskFull": "ID                                     Matchers                               Ends                  Created By   Comment\nc1d2e3f4-5a6b-7c8d-9e0f-a1b2c3d4e5f6   alertname=DiskFull instance=node-3:9100  2026-06-02T14:30:00Z  oncall       Planned disk maintenance on node-3",
+    "amtool silence expire c1d2e3f4": "Silence c1d2e3f4-5a6b-7c8d-9e0f-a1b2c3d4e5f6 expired",
+    "amtool silence expire c1d2e3f4-5a6b-7c8d-9e0f-a1b2c3d4e5f6": "Silence c1d2e3f4-5a6b-7c8d-9e0f-a1b2c3d4e5f6 expired",
+    "amtool silence expire a9b8c7d6": "Silence a9b8c7d6-e5f4-3a2b-1c0d-9e8f7a6b5c4d expired",
+    "amtool silence expire a9b8c7d6-e5f4-3a2b-1c0d-9e8f7a6b5c4d": "Silence a9b8c7d6-e5f4-3a2b-1c0d-9e8f7a6b5c4d expired",
+    "amtool silence update c1d2e3f4 --duration=6h --comment=\"Extended maintenance window\"": "Silence c1d2e3f4-5a6b-7c8d-9e0f-a1b2c3d4e5f6 updated\nNew end: 2026-06-02T16:30:00Z",
+    "amtool silence update a9b8c7d6 --duration=2h --comment=\"Extending investigation window\"": "Silence a9b8c7d6-e5f4-3a2b-1c0d-9e8f7a6b5c4d updated\nNew end: 2026-06-02T12:30:00Z",
+    "amtool check-config /etc/alertmanager/alertmanager.yml": "Checking '/etc/alertmanager/alertmanager.yml'  SUCCESS\nFound:\n  - global config\n  - route\n  - 1 inhibit rules\n  - 5 receivers",
+    "amtool check-config alertmanager.yml": "Checking 'alertmanager.yml'  SUCCESS\nFound:\n  - global config\n  - route\n  - 1 inhibit rules\n  - 5 receivers",
+    "amtool config routes show": "Routing tree:\n└── default-route  receiver: slack-general\n    ├── {severity=\"critical\"}  receiver: platform-critical  group_by: [alertname, namespace]\n    │   ├── {alertname=\"DiskFull\"}  receiver: infra-pagerduty  group_by: [instance]\n    │   └── {alertname=\"TargetDown\"}  receiver: platform-critical\n    ├── {severity=\"warning\"}  receiver: slack-warnings  group_by: [alertname]\n    └── {namespace=\"kube-system\"}  receiver: kube-admins",
+    "amtool config routes test alertname=DiskFull severity=critical instance=node-3:9100": "Matched route:\n  receiver: infra-pagerduty\n  group_by: [instance]\n  route: default-route → severity=\"critical\" → alertname=\"DiskFull\"",
+    "amtool config routes test alertname=PodCrashLooping severity=critical namespace=production": "Matched route:\n  receiver: platform-critical\n  group_by: [alertname, namespace]\n  route: default-route → severity=\"critical\"",
+    "amtool config routes test alertname=HighLatency severity=warning": "Matched route:\n  receiver: slack-warnings\n  group_by: [alertname]\n  route: default-route → severity=\"warning\"",
+    "amtool config routes test alertname=HighMemoryUsage severity=warning": "Matched route:\n  receiver: slack-warnings\n  group_by: [alertname]\n  route: default-route → severity=\"warning\"",
+    "amtool config routes test alertname=TargetDown severity=critical": "Matched route:\n  receiver: platform-critical\n  group_by: [alertname, namespace]\n  route: default-route → severity=\"critical\" → alertname=\"TargetDown\"",
+    "amtool config routes test alertname=NodeNotReady namespace=kube-system": "Matched route:\n  receiver: kube-admins\n  group_by: [alertname]\n  route: default-route → namespace=\"kube-system\"",
+    "amtool cluster show": "Name                   Address              Status    Peers\nalertmanager-0         10.0.1.50:9094       ready     2\nalertmanager-1         10.0.2.51:9094       ready     2\nalertmanager-2         10.0.3.52:9094       ready     2",
+    "curl -s http://localhost:9093/api/v2/status | jq '.'": "{\n  \"cluster\": {\n    \"name\": \"01HXYZ\",\n    \"status\": \"ready\",\n    \"peers\": [\n      { \"name\": \"alertmanager-0\", \"address\": \"10.0.1.50:9094\" },\n      { \"name\": \"alertmanager-1\", \"address\": \"10.0.2.51:9094\" },\n      { \"name\": \"alertmanager-2\", \"address\": \"10.0.3.52:9094\" }\n    ]\n  },\n  \"versionInfo\": {\n    \"version\": \"0.27.0\",\n    \"branch\": \"HEAD\",\n    \"buildDate\": \"2024-02-28\",\n    \"goVersion\": \"go1.21.7\"\n  },\n  \"config\": {\n    \"original\": \"...\"\n  },\n  \"uptime\": \"2026-05-20T00:00:00.000Z\"\n}",
+    "curl -s http://localhost:9093/api/v2/status | jq '.cluster.status'": "\"ready\"",
+    "curl -s http://localhost:9093/api/v2/status | jq '.versionInfo'": "{\n  \"version\": \"0.27.0\",\n  \"branch\": \"HEAD\",\n  \"buildDate\": \"2024-02-28\",\n  \"goVersion\": \"go1.21.7\"\n}",
+    "curl -s http://localhost:9093/api/v2/alerts | jq '.'": "[\n  {\n    \"labels\": { \"alertname\": \"HighLatency\", \"instance\": \"api-gateway:443\", \"severity\": \"warning\" },\n    \"annotations\": { \"summary\": \"API gateway p99 latency above 500ms for 10 minutes\", \"runbook_url\": \"https://wiki.example.com/runbooks/high-latency\" },\n    \"startsAt\": \"2026-06-02T08:15:00.000Z\",\n    \"status\": { \"state\": \"active\", \"silencedBy\": [], \"inhibitedBy\": [] }\n  },\n  {\n    \"labels\": { \"alertname\": \"DiskFull\", \"instance\": \"node-3:9100\", \"severity\": \"critical\" },\n    \"annotations\": { \"summary\": \"Disk usage on /data above 92%\", \"runbook_url\": \"https://wiki.example.com/runbooks/disk-full\" },\n    \"startsAt\": \"2026-06-02T06:30:00.000Z\",\n    \"status\": { \"state\": \"active\", \"silencedBy\": [], \"inhibitedBy\": [] }\n  },\n  {\n    \"labels\": { \"alertname\": \"PodCrashLooping\", \"instance\": \"web-5f8b9:8080\", \"severity\": \"critical\", \"namespace\": \"production\" },\n    \"annotations\": { \"summary\": \"Pod web-5f8b9c4d7-m3p2q restarting repeatedly\", \"runbook_url\": \"https://wiki.example.com/runbooks/crashloop\" },\n    \"startsAt\": \"2026-06-02T09:00:00.000Z\",\n    \"status\": { \"state\": \"suppressed\", \"silencedBy\": [\"a9b8c7d6-e5f4-3a2b-1c0d-9e8f7a6b5c4d\"], \"inhibitedBy\": [] }\n  },\n  {\n    \"labels\": { \"alertname\": \"HighMemoryUsage\", \"instance\": \"node-3:9100\", \"severity\": \"warning\" },\n    \"annotations\": { \"summary\": \"Memory usage above 90% on node-3\", \"runbook_url\": \"https://wiki.example.com/runbooks/high-memory\" },\n    \"startsAt\": \"2026-06-02T07:45:00.000Z\",\n    \"status\": { \"state\": \"active\", \"silencedBy\": [], \"inhibitedBy\": [] }\n  },\n  {\n    \"labels\": { \"alertname\": \"TargetDown\", \"instance\": \"redis:6379\", \"severity\": \"critical\" },\n    \"annotations\": { \"summary\": \"Redis exporter target is unreachable\", \"runbook_url\": \"https://wiki.example.com/runbooks/target-down\" },\n    \"startsAt\": \"2026-06-02T10:12:00.000Z\",\n    \"status\": { \"state\": \"active\", \"silencedBy\": [], \"inhibitedBy\": [] }\n  }\n]",
+    "curl -s http://localhost:9093/api/v2/alerts | jq '.[].labels.alertname'": "\"HighLatency\"\n\"DiskFull\"\n\"PodCrashLooping\"\n\"HighMemoryUsage\"\n\"TargetDown\"",
+    "curl -s http://localhost:9093/api/v2/alerts | jq '.[] | select(.labels.severity==\"critical\")'": "{\n  \"labels\": { \"alertname\": \"DiskFull\", \"instance\": \"node-3:9100\", \"severity\": \"critical\" },\n  \"annotations\": { \"summary\": \"Disk usage on /data above 92%\" },\n  \"startsAt\": \"2026-06-02T06:30:00.000Z\",\n  \"status\": { \"state\": \"active\", \"silencedBy\": [], \"inhibitedBy\": [] }\n}\n{\n  \"labels\": { \"alertname\": \"PodCrashLooping\", \"instance\": \"web-5f8b9:8080\", \"severity\": \"critical\", \"namespace\": \"production\" },\n  \"annotations\": { \"summary\": \"Pod web-5f8b9c4d7-m3p2q restarting repeatedly\" },\n  \"startsAt\": \"2026-06-02T09:00:00.000Z\",\n  \"status\": { \"state\": \"suppressed\", \"silencedBy\": [\"a9b8c7d6-e5f4-3a2b-1c0d-9e8f7a6b5c4d\"], \"inhibitedBy\": [] }\n}\n{\n  \"labels\": { \"alertname\": \"TargetDown\", \"instance\": \"redis:6379\", \"severity\": \"critical\" },\n  \"annotations\": { \"summary\": \"Redis exporter target is unreachable\" },\n  \"startsAt\": \"2026-06-02T10:12:00.000Z\",\n  \"status\": { \"state\": \"active\", \"silencedBy\": [], \"inhibitedBy\": [] }\n}",
+    "curl -s http://localhost:9093/api/v2/alerts?filter=alertname=PodCrashLooping | jq '.'": "[\n  {\n    \"labels\": { \"alertname\": \"PodCrashLooping\", \"instance\": \"web-5f8b9:8080\", \"severity\": \"critical\", \"namespace\": \"production\" },\n    \"annotations\": { \"summary\": \"Pod web-5f8b9c4d7-m3p2q restarting repeatedly\" },\n    \"startsAt\": \"2026-06-02T09:00:00.000Z\",\n    \"status\": { \"state\": \"suppressed\", \"silencedBy\": [\"a9b8c7d6-e5f4-3a2b-1c0d-9e8f7a6b5c4d\"], \"inhibitedBy\": [] }\n  }\n]",
+    "curl -s http://localhost:9093/api/v2/alerts?filter=alertname=PodCrashLooping | jq '.[].status.state'": "\"suppressed\"",
+    "curl -s http://localhost:9093/api/v2/alerts?filter=alertname=DiskFull | jq '.'": "[\n  {\n    \"labels\": { \"alertname\": \"DiskFull\", \"instance\": \"node-3:9100\", \"severity\": \"critical\" },\n    \"annotations\": { \"summary\": \"Disk usage on /data above 92%\" },\n    \"startsAt\": \"2026-06-02T06:30:00.000Z\",\n    \"status\": { \"state\": \"active\", \"silencedBy\": [], \"inhibitedBy\": [] }\n  }\n]",
+    "curl -s http://localhost:9093/api/v2/alerts?filter=alertname=HighLatency | jq '.'": "[\n  {\n    \"labels\": { \"alertname\": \"HighLatency\", \"instance\": \"api-gateway:443\", \"severity\": \"warning\" },\n    \"annotations\": { \"summary\": \"API gateway p99 latency above 500ms for 10 minutes\" },\n    \"startsAt\": \"2026-06-02T08:15:00.000Z\",\n    \"status\": { \"state\": \"active\", \"silencedBy\": [], \"inhibitedBy\": [] }\n  }\n]",
+    "curl -s http://localhost:9093/api/v2/silences | jq '.'": "[\n  {\n    \"id\": \"c1d2e3f4-5a6b-7c8d-9e0f-a1b2c3d4e5f6\",\n    \"matchers\": [\n      { \"name\": \"alertname\", \"value\": \"DiskFull\", \"isRegex\": false },\n      { \"name\": \"instance\", \"value\": \"node-3:9100\", \"isRegex\": false }\n    ],\n    \"startsAt\": \"2026-06-02T10:30:00.000Z\",\n    \"endsAt\": \"2026-06-02T14:30:00.000Z\",\n    \"createdBy\": \"oncall\",\n    \"comment\": \"Planned disk maintenance on node-3\",\n    \"status\": { \"state\": \"active\" }\n  },\n  {\n    \"id\": \"a9b8c7d6-e5f4-3a2b-1c0d-9e8f7a6b5c4d\",\n    \"matchers\": [\n      { \"name\": \"alertname\", \"value\": \"PodCrashLooping\", \"isRegex\": false }\n    ],\n    \"startsAt\": \"2026-06-02T09:05:00.000Z\",\n    \"endsAt\": \"2026-06-02T18:00:00.000Z\",\n    \"createdBy\": \"sre-bot\",\n    \"comment\": \"Auto-silenced pending investigation\",\n    \"status\": { \"state\": \"active\" }\n  }\n]",
+    "curl -s http://localhost:9093/api/v2/silences | jq '.[].id'": "\"c1d2e3f4-5a6b-7c8d-9e0f-a1b2c3d4e5f6\"\n\"a9b8c7d6-e5f4-3a2b-1c0d-9e8f7a6b5c4d\"",
+    "curl -s http://localhost:9093/api/v2/silences | jq '.[] | {id: .id, matchers: [.matchers[].value], ends: .endsAt}'": "{\n  \"id\": \"c1d2e3f4-5a6b-7c8d-9e0f-a1b2c3d4e5f6\",\n  \"matchers\": [\"DiskFull\", \"node-3:9100\"],\n  \"ends\": \"2026-06-02T14:30:00.000Z\"\n}\n{\n  \"id\": \"a9b8c7d6-e5f4-3a2b-1c0d-9e8f7a6b5c4d\",\n  \"matchers\": [\"PodCrashLooping\"],\n  \"ends\": \"2026-06-02T18:00:00.000Z\"\n}",
+    "curl -s http://localhost:9093/api/v2/receivers | jq '.'": "[\n  { \"name\": \"slack-general\" },\n  { \"name\": \"platform-critical\" },\n  { \"name\": \"infra-pagerduty\" },\n  { \"name\": \"slack-warnings\" },\n  { \"name\": \"kube-admins\" }\n]",
+    "curl -s http://localhost:9093/api/v2/receivers | jq '.[].name'": "\"slack-general\"\n\"platform-critical\"\n\"infra-pagerduty\"\n\"slack-warnings\"\n\"kube-admins\"",
+    "curl -s http://localhost:9093/api/v2/status": "{\n  \"cluster\": {\n    \"name\": \"01HXYZ\",\n    \"status\": \"ready\",\n    \"peers\": [\n      { \"name\": \"alertmanager-0\", \"address\": \"10.0.1.50:9094\" },\n      { \"name\": \"alertmanager-1\", \"address\": \"10.0.2.51:9094\" },\n      { \"name\": \"alertmanager-2\", \"address\": \"10.0.3.52:9094\" }\n    ]\n  },\n  \"versionInfo\": {\n    \"version\": \"0.27.0\",\n    \"branch\": \"HEAD\",\n    \"buildDate\": \"2024-02-28\",\n    \"goVersion\": \"go1.21.7\"\n  },\n  \"uptime\": \"2026-05-20T00:00:00.000Z\"\n}",
+    "curl -s http://localhost:9093/api/v2/alerts/groups | jq '.'": "[\n  {\n    \"labels\": { \"alertname\": \"DiskFull\" },\n    \"receiver\": { \"name\": \"infra-pagerduty\" },\n    \"alerts\": [\n      {\n        \"labels\": { \"alertname\": \"DiskFull\", \"instance\": \"node-3:9100\", \"severity\": \"critical\" },\n        \"status\": { \"state\": \"active\" }\n      }\n    ]\n  },\n  {\n    \"labels\": { \"alertname\": \"HighLatency\" },\n    \"receiver\": { \"name\": \"slack-warnings\" },\n    \"alerts\": [\n      {\n        \"labels\": { \"alertname\": \"HighLatency\", \"instance\": \"api-gateway:443\", \"severity\": \"warning\" },\n        \"status\": { \"state\": \"active\" }\n      }\n    ]\n  },\n  {\n    \"labels\": { \"alertname\": \"PodCrashLooping\" },\n    \"receiver\": { \"name\": \"platform-critical\" },\n    \"alerts\": [\n      {\n        \"labels\": { \"alertname\": \"PodCrashLooping\", \"instance\": \"web-5f8b9:8080\", \"severity\": \"critical\" },\n        \"status\": { \"state\": \"suppressed\", \"silencedBy\": [\"a9b8c7d6-e5f4-3a2b-1c0d-9e8f7a6b5c4d\"] }\n      }\n    ]\n  }\n]",
+    "curl -s http://localhost:9093/api/v2/alerts/groups | jq '.[].labels.alertname'": "\"DiskFull\"\n\"HighLatency\"\n\"PodCrashLooping\""
+  },
+  "reference": [
+    {
+      "group": "Alert Queries",
+      "commands": [
+        {
+          "cmd": "amtool alert query",
+          "desc": "list all firing alerts"
+        },
+        {
+          "cmd": "amtool alert query --active",
+          "desc": "only active (non-silenced)"
+        },
+        {
+          "cmd": "amtool alert query --suppressed",
+          "desc": "only suppressed alerts"
+        },
+        {
+          "cmd": "amtool alert query alertname=DiskFull",
+          "desc": "filter by alert name"
+        },
+        {
+          "cmd": "amtool alert query severity=critical",
+          "desc": "filter by severity"
+        },
+        {
+          "cmd": "amtool alert query instance=node-3:9100",
+          "desc": "filter by instance"
+        }
+      ]
+    },
+    {
+      "group": "Silences",
+      "commands": [
+        {
+          "cmd": "amtool silence add alertname=X --duration=4h --author=oncall --comment=\"...\"",
+          "desc": "create silence"
+        },
+        {
+          "cmd": "amtool silence query",
+          "desc": "list active silences"
+        },
+        {
+          "cmd": "amtool silence query alertname=PodCrashLooping",
+          "desc": "find silence by matcher"
+        },
+        {
+          "cmd": "amtool silence expire <id>",
+          "desc": "expire a silence"
+        },
+        {
+          "cmd": "amtool silence update <id> --duration=6h",
+          "desc": "extend a silence"
+        }
+      ]
+    },
+    {
+      "group": "Configuration & Routing",
+      "commands": [
+        {
+          "cmd": "amtool check-config /etc/alertmanager/alertmanager.yml",
+          "desc": "validate config"
+        },
+        {
+          "cmd": "amtool config routes show",
+          "desc": "display routing tree"
+        },
+        {
+          "cmd": "amtool config routes test alertname=X severity=Y",
+          "desc": "test route matching"
+        }
+      ]
+    },
+    {
+      "group": "Cluster",
+      "commands": [
+        {
+          "cmd": "amtool cluster show",
+          "desc": "peer status"
+        }
+      ]
+    },
+    {
+      "group": "HTTP API — Alerts",
+      "commands": [
+        {
+          "cmd": "curl -s http://localhost:9093/api/v2/alerts | jq '.'",
+          "desc": "all alerts (JSON)"
+        },
+        {
+          "cmd": "curl ... | jq '.[].labels.alertname'",
+          "desc": "alert names only"
+        },
+        {
+          "cmd": "curl ...?filter=alertname=X | jq '.'",
+          "desc": "filter alerts"
+        },
+        {
+          "cmd": "curl .../api/v2/alerts/groups | jq '.'",
+          "desc": "alert groups"
+        }
+      ]
+    },
+    {
+      "group": "HTTP API — Silences & Status",
+      "commands": [
+        {
+          "cmd": "curl -s http://localhost:9093/api/v2/silences | jq '.'",
+          "desc": "all silences (JSON)"
+        },
+        {
+          "cmd": "curl -s http://localhost:9093/api/v2/status | jq '.'",
+          "desc": "instance status"
+        },
+        {
+          "cmd": "curl -s http://localhost:9093/api/v2/receivers | jq '.[].name'",
+          "desc": "list receivers"
+        }
+      ]
+    }
+  ]
+}

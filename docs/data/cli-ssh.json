@@ -1,0 +1,389 @@
+{
+  "id": "ssh",
+  "prompt": "sre@jumpbox:~$",
+  "welcome": "Welcome to the SSH CLI Playground.\nYou are on a jumpbox with access to multiple servers.\nType commands to explore key-based auth, tunnelling, and remote access.\nType 'help' for available commands, 'scenario' for guided labs.\n",
+  "scenarios": [
+    {
+      "id": "key-based-auth",
+      "title": "Set Up Key-Based Auth and Config",
+      "steps": [
+        {
+          "instruction": "First, generate an Ed25519 SSH key pair for secure authentication.",
+          "expect": "ssh-keygen -t ed25519 -C \"sre@company.com\"",
+          "hint": "Try: ssh-keygen -t ed25519 -C \"sre@company.com\""
+        },
+        {
+          "instruction": "Verify the key pair was created. List your .ssh directory.",
+          "expect": "ls -la ~/.ssh/",
+          "hint": "Try: ls -la ~/.ssh/"
+        },
+        {
+          "instruction": "The private key must not be readable by others. Set correct permissions.",
+          "expect": "chmod 600 ~/.ssh/id_ed25519",
+          "hint": "Try: chmod 600 ~/.ssh/id_ed25519"
+        },
+        {
+          "instruction": "Copy your public key to the app server to enable passwordless login.",
+          "expect": "ssh-copy-id sre@app-server-01",
+          "hint": "Try: ssh-copy-id sre@app-server-01"
+        },
+        {
+          "instruction": "Test that key-based login works — connect to the app server.",
+          "expect": "ssh sre@app-server-01",
+          "hint": "Try: ssh sre@app-server-01"
+        },
+        {
+          "instruction": "Now set up an SSH config to create shortcuts. View the current config.",
+          "expect": "cat ~/.ssh/config",
+          "hint": "Try: cat ~/.ssh/config"
+        },
+        {
+          "instruction": "Scan the db server's host key and add it to known_hosts before first connection.",
+          "expect": "ssh-keyscan db-server-01 >> ~/.ssh/known_hosts",
+          "hint": "Try: ssh-keyscan db-server-01 >> ~/.ssh/known_hosts"
+        },
+        {
+          "instruction": "Start the SSH agent and add your key so you don't type the passphrase every time.",
+          "expect": "eval $(ssh-agent) && ssh-add ~/.ssh/id_ed25519",
+          "hint": "Try: eval $(ssh-agent) && ssh-add ~/.ssh/id_ed25519"
+        }
+      ]
+    },
+    {
+      "id": "debug-connection",
+      "title": "Debug SSH Connection Failures",
+      "steps": [
+        {
+          "instruction": "A colleague reports they can't SSH to app-server-02. Start with a verbose connection to see what's failing.",
+          "expect": "ssh -v sre@app-server-02",
+          "hint": "Try: ssh -v sre@app-server-02"
+        },
+        {
+          "instruction": "The verbose output shows a host key mismatch. Check the known_hosts entry for that server.",
+          "expect": "ssh-keygen -F app-server-02",
+          "hint": "Try: ssh-keygen -F app-server-02"
+        },
+        {
+          "instruction": "The server was recently rebuilt — the old host key is stale. Remove it.",
+          "expect": "ssh-keygen -R app-server-02",
+          "hint": "Try: ssh-keygen -R app-server-02"
+        },
+        {
+          "instruction": "Fetch the new host key from the rebuilt server.",
+          "expect": "ssh-keyscan app-server-02 >> ~/.ssh/known_hosts",
+          "hint": "Try: ssh-keyscan app-server-02 >> ~/.ssh/known_hosts"
+        },
+        {
+          "instruction": "Try connecting again. This time it fails with 'Permission denied (publickey)'. Check what keys the agent has loaded.",
+          "expect": "ssh-add -l",
+          "hint": "Try: ssh-add -l"
+        },
+        {
+          "instruction": "No keys loaded. Add the private key to the agent.",
+          "expect": "ssh-add ~/.ssh/id_ed25519",
+          "hint": "Try: ssh-add ~/.ssh/id_ed25519"
+        },
+        {
+          "instruction": "The server is behind a firewall. Use the jumpbox as a proxy jump to reach it.",
+          "expect": "ssh -J jumpbox sre@app-server-02",
+          "hint": "Try: ssh -J jumpbox sre@app-server-02"
+        },
+        {
+          "instruction": "You need to access the app's web UI on port 8080 on app-server-02. Set up a local port forward.",
+          "expect": "ssh -L 8080:localhost:8080 sre@app-server-02",
+          "hint": "Try: ssh -L 8080:localhost:8080 sre@app-server-02"
+        }
+      ]
+    }
+  ],
+  "commands": {
+    "help": "Available commands:\n  ssh [user@host]                — Connect to a remote host\n  ssh -v / -vv / -vvv           — Verbose / debug connection\n  ssh -J [jumphost]             — Proxy jump through a bastion\n  ssh -L / -R / -D              — Port forwarding (local/remote/dynamic)\n  ssh -o [option]               — Pass config options inline\n  ssh-keygen                    — Generate or manage SSH keys\n  ssh-copy-id                   — Copy public key to a server\n  ssh-add / ssh-agent           — Manage keys in the agent\n  ssh-keyscan                   — Fetch host keys from servers\n  scp                           — Secure copy files over SSH\n  sftp                          — Interactive secure file transfer\n  cat ~/.ssh/config             — View SSH client configuration\n  ls -la ~/.ssh/                — List SSH directory contents\n  chmod                         — Set file permissions\n\n  scenario                      — Start a guided lab\n  clear                         — Clear the terminal\n  help                          — Show this help",
+    "ssh -V": "OpenSSH_9.6p1, OpenSSL 3.2.1 30 Jan 2024",
+    "ssh -v sre@app-server-01": "OpenSSH_9.6p1, OpenSSL 3.2.1 30 Jan 2024\ndebug1: Reading configuration data /home/sre/.ssh/config\ndebug1: /home/sre/.ssh/config line 1: Applying options for app-server-01\ndebug1: Connecting to app-server-01 [10.0.2.10] port 22.\ndebug1: Connection established.\ndebug1: identity file /home/sre/.ssh/id_ed25519 type 3\ndebug1: Host 'app-server-01' is known and matches the ED25519 host key.\ndebug1: Found key in /home/sre/.ssh/known_hosts:3\ndebug1: Authentication succeeded (publickey).\ndebug1: channel 0: new session [client-session]\nWelcome to app-server-01 (Ubuntu 22.04.4 LTS)\nLast login: Mon Jun  2 09:14:22 2026 from 10.0.1.5",
+    "ssh -v sre@app-server-02": "OpenSSH_9.6p1, OpenSSL 3.2.1 30 Jan 2024\ndebug1: Reading configuration data /home/sre/.ssh/config\ndebug1: Connecting to app-server-02 [10.0.2.20] port 22.\ndebug1: Connection established.\ndebug1: identity file /home/sre/.ssh/id_ed25519 type 3\n@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n@    WARNING: REMOTE HOST IDENTIFICATION HAS CHANGED!     @\n@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\nIT IS POSSIBLE THAT SOMEONE IS DOING SOMETHING NASTY!\nSomeone could be eavesdropping on you right now (man-in-the-middle attack)!\nThe host key for app-server-02 has changed.\nOffending ED25519 key in /home/sre/.ssh/known_hosts:5\nHost key verification failed.",
+    "ssh -vv sre@app-server-01": "OpenSSH_9.6p1, OpenSSL 3.2.1 30 Jan 2024\ndebug1: Reading configuration data /home/sre/.ssh/config\ndebug2: resolve_canonicalize: hostname app-server-01 is address\ndebug1: Connecting to app-server-01 [10.0.2.10] port 22.\ndebug1: Connection established.\ndebug2: key_load_public: No such file or directory\ndebug1: identity file /home/sre/.ssh/id_ed25519 type 3\ndebug2: service_accept: ssh-userauth\ndebug1: Authentication succeeded (publickey).\nWelcome to app-server-01 (Ubuntu 22.04.4 LTS)",
+    "ssh sre@app-server-01": "Welcome to app-server-01 (Ubuntu 22.04.4 LTS)\nLast login: Mon Jun  2 09:14:22 2026 from 10.0.1.5\nsre@app-server-01:~$",
+    "ssh sre@app-server-02": "Welcome to app-server-02 (Ubuntu 22.04.4 LTS)\nLast login: Mon Jun  2 08:30:15 2026 from 10.0.1.5\nsre@app-server-02:~$",
+    "ssh sre@db-server-01": "Welcome to db-server-01 (Ubuntu 22.04.4 LTS)\nLast login: Sun Jun  1 22:45:10 2026 from 10.0.1.5\nsre@db-server-01:~$",
+    "ssh sre@monitoring-01": "Welcome to monitoring-01 (Ubuntu 22.04.4 LTS)\nLast login: Mon Jun  2 07:00:00 2026 from 10.0.1.5\nsre@monitoring-01:~$",
+    "ssh -J jumpbox sre@app-server-02": "debug1: Setting up proxy jump via jumpbox\ndebug1: Connection to app-server-02 [10.0.2.20] via jumpbox established.\nWelcome to app-server-02 (Ubuntu 22.04.4 LTS)\nLast login: Mon Jun  2 08:30:15 2026 from 10.0.1.5\nsre@app-server-02:~$",
+    "ssh -J jumpbox sre@db-server-01": "debug1: Setting up proxy jump via jumpbox\ndebug1: Connection to db-server-01 [10.0.3.10] via jumpbox established.\nWelcome to db-server-01 (Ubuntu 22.04.4 LTS)\nLast login: Sun Jun  1 22:45:10 2026 from 10.0.1.5\nsre@db-server-01:~$",
+    "ssh -L 8080:localhost:8080 sre@app-server-02": "Forwarding from 127.0.0.1:8080 -> 8080\nForwarding from [::1]:8080 -> 8080\nWelcome to app-server-02 (Ubuntu 22.04.4 LTS)\n(local port 8080 is now forwarded to app-server-02:8080 — open http://localhost:8080 in your browser)",
+    "ssh -L 5432:db-server-01:5432 sre@jumpbox": "Forwarding from 127.0.0.1:5432 -> db-server-01:5432\nForwarding from [::1]:5432 -> db-server-01:5432\n(local port 5432 is now forwarded to db-server-01:5432 via jumpbox — connect your DB client to localhost:5432)",
+    "ssh -L 3000:monitoring-01:3000 sre@jumpbox": "Forwarding from 127.0.0.1:3000 -> monitoring-01:3000\nForwarding from [::1]:3000 -> monitoring-01:3000\n(local port 3000 is now forwarded to monitoring-01:3000 — access Grafana at http://localhost:3000)",
+    "ssh -R 9090:localhost:9090 sre@app-server-01": "Forwarding from app-server-01:9090 -> localhost:9090\n(remote port 9090 on app-server-01 now forwards to your local port 9090)",
+    "ssh -D 1080 sre@jumpbox": "SOCKS proxy listening on 127.0.0.1:1080\n(configure your browser or application to use SOCKS5 proxy at localhost:1080 to route traffic through the jumpbox)",
+    "ssh -N -L 5432:db-server-01:5432 sre@jumpbox": "Forwarding from 127.0.0.1:5432 -> db-server-01:5432\n(tunnel established — no remote shell, forwarding only)",
+    "ssh -o StrictHostKeyChecking=no sre@app-server-02": "Warning: Permanently added 'app-server-02,10.0.2.20' (ED25519) to the list of known hosts.\nWelcome to app-server-02 (Ubuntu 22.04.4 LTS)\nsre@app-server-02:~$",
+    "ssh -o StrictHostKeyChecking=accept-new sre@app-server-02": "Warning: Permanently added 'app-server-02,10.0.2.20' (ED25519) to the list of known hosts.\nWelcome to app-server-02 (Ubuntu 22.04.4 LTS)\nsre@app-server-02:~$",
+    "ssh -o ConnectTimeout=5 sre@app-server-01": "Welcome to app-server-01 (Ubuntu 22.04.4 LTS)\nLast login: Mon Jun  2 09:14:22 2026 from 10.0.1.5\nsre@app-server-01:~$",
+    "ssh -p 2222 sre@app-server-01": "Welcome to app-server-01 (Ubuntu 22.04.4 LTS) [non-standard port 2222]\nLast login: Mon Jun  2 09:14:22 2026 from 10.0.1.5\nsre@app-server-01:~$",
+    "ssh-keygen -t ed25519 -C \"sre@company.com\"": "Generating public/private ed25519 key pair.\nEnter file in which to save the key (/home/sre/.ssh/id_ed25519): \nEnter passphrase (empty for no passphrase): \nEnter same passphrase again: \nYour identification has been saved in /home/sre/.ssh/id_ed25519\nYour public key has been saved in /home/sre/.ssh/id_ed25519.pub\nThe key fingerprint is:\nSHA256:Kx4a7bVz9JrN3Qm8pLwRtY2uHfAe5Gd1Ns0Wc6Xi8k sre@company.com\nThe key's randomart image is:\n+--[ED25519 256]--+\n|     .o=+o..     |\n|     .o+o+.      |\n|      o.B.=      |\n|       E B.+     |\n|      . S.+.o    |\n|       . =.o.o   |\n|        o.+o+.   |\n|         =o=..   |\n|        ..=+o    |\n+----[SHA256]-----+",
+    "ssh-keygen -t rsa -b 4096 -C \"sre@company.com\"": "Generating public/private rsa key pair.\nEnter file in which to save the key (/home/sre/.ssh/id_rsa): \nEnter passphrase (empty for no passphrase): \nEnter same passphrase again: \nYour identification has been saved in /home/sre/.ssh/id_rsa\nYour public key has been saved in /home/sre/.ssh/id_rsa.pub\nThe key fingerprint is:\nSHA256:Tm7x2Qr4Nv8pLsAeYk3Wf6Uj9Hb0Zc1Gd5Xi4Rn7Mw sre@company.com\nThe key's randomart image is:\n+---[RSA 4096]----+\n|      .+oE+.     |\n|     ..+o=o      |\n|      .oB.=.     |\n|       = B.+     |\n|      . S.+.o    |\n|       . =.o.o   |\n|        o.+o+.   |\n|         =o=..   |\n|        ..=+o    |\n+----[SHA256]-----+",
+    "ssh-keygen -F app-server-01": "# Host app-server-01 found: line 3\napp-server-01 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGx7Kq2m8Pv9Rn3TsY1Wf6Xj0Hb4Zc5Ae8Ld2Nk7Mi",
+    "ssh-keygen -F app-server-02": "# Host app-server-02 found: line 5\napp-server-02 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJk9Tm3x2Qr4Nv8pLsAeYk3Wf6Uj9Hb0Zc1Gd5Xi4R",
+    "ssh-keygen -F db-server-01": "# Host db-server-01 found: line 7\ndb-server-01 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPn7Rw5Ks8Lm2Qx4Vb6Uj9Hc0Ae3Gd1Nf5Yi8Tk7Zj",
+    "ssh-keygen -R app-server-02": "# Host app-server-02 found: line 5\n/home/sre/.ssh/known_hosts updated.\nOriginal contents retained as /home/sre/.ssh/known_hosts.old",
+    "ssh-keygen -R db-server-01": "# Host db-server-01 found: line 7\n/home/sre/.ssh/known_hosts updated.\nOriginal contents retained as /home/sre/.ssh/known_hosts.old",
+    "ssh-keygen -l -f ~/.ssh/id_ed25519.pub": "256 SHA256:Kx4a7bVz9JrN3Qm8pLwRtY2uHfAe5Gd1Ns0Wc6Xi8k sre@company.com (ED25519)",
+    "ssh-keygen -l -f ~/.ssh/id_rsa.pub": "4096 SHA256:Tm7x2Qr4Nv8pLsAeYk3Wf6Uj9Hb0Zc1Gd5Xi4Rn7Mw sre@company.com (RSA)",
+    "ssh-copy-id sre@app-server-01": "/usr/bin/ssh-copy-id: INFO: Source of key(s) to be installed: \"/home/sre/.ssh/id_ed25519.pub\"\n/usr/bin/ssh-copy-id: INFO: attempting to log in with the new key(s)\n/usr/bin/ssh-copy-id: INFO: 1 key(s) remain to be installed\nsre@app-server-01's password: \n\nNumber of key(s) added: 1\n\nNow try logging into the machine, with: \"ssh sre@app-server-01\"\nand check to make sure that only the key(s) you wanted were added.",
+    "ssh-copy-id sre@app-server-02": "/usr/bin/ssh-copy-id: INFO: Source of key(s) to be installed: \"/home/sre/.ssh/id_ed25519.pub\"\n/usr/bin/ssh-copy-id: INFO: attempting to log in with the new key(s)\n/usr/bin/ssh-copy-id: INFO: 1 key(s) remain to be installed\nsre@app-server-02's password: \n\nNumber of key(s) added: 1\n\nNow try logging into the machine, with: \"ssh sre@app-server-02\"\nand check to make sure that only the key(s) you wanted were added.",
+    "ssh-copy-id sre@db-server-01": "/usr/bin/ssh-copy-id: INFO: Source of key(s) to be installed: \"/home/sre/.ssh/id_ed25519.pub\"\n/usr/bin/ssh-copy-id: INFO: attempting to log in with the new key(s)\n/usr/bin/ssh-copy-id: INFO: 1 key(s) remain to be installed\nsre@db-server-01's password: \n\nNumber of key(s) added: 1\n\nNow try logging into the machine, with: \"ssh sre@db-server-01\"\nand check to make sure that only the key(s) you wanted were added.",
+    "ssh-add ~/.ssh/id_ed25519": "Identity added: /home/sre/.ssh/id_ed25519 (sre@company.com)",
+    "ssh-add ~/.ssh/id_rsa": "Identity added: /home/sre/.ssh/id_rsa (sre@company.com)",
+    "ssh-add -l": "256 SHA256:Kx4a7bVz9JrN3Qm8pLwRtY2uHfAe5Gd1Ns0Wc6Xi8k sre@company.com (ED25519)\n4096 SHA256:Tm7x2Qr4Nv8pLsAeYk3Wf6Uj9Hb0Zc1Gd5Xi4Rn7Mw sre@company.com (RSA)",
+    "ssh-add -D": "All identities removed.",
+    "eval $(ssh-agent)": "Agent pid 48721",
+    "eval $(ssh-agent) && ssh-add ~/.ssh/id_ed25519": "Agent pid 48721\nIdentity added: /home/sre/.ssh/id_ed25519 (sre@company.com)",
+    "ssh-keyscan app-server-01": "# app-server-01:22 SSH-2.0-OpenSSH_9.6p1\napp-server-01 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGx7Kq2m8Pv9Rn3TsY1Wf6Xj0Hb4Zc5Ae8Ld2Nk7Mi\napp-server-01 ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC7...",
+    "ssh-keyscan app-server-02": "# app-server-02:22 SSH-2.0-OpenSSH_9.6p1\napp-server-02 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINw8Fp3Ks9Lm2Qx4Vb6Uj0Hc1Ae3Gd5Nf7Yi8Tk9Zj\napp-server-02 ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQD2...",
+    "ssh-keyscan db-server-01": "# db-server-01:22 SSH-2.0-OpenSSH_9.6p1\ndb-server-01 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPn7Rw5Ks8Lm2Qx4Vb6Uj9Hc0Ae3Gd1Nf5Yi8Tk7Zj\ndb-server-01 ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDk...",
+    "ssh-keyscan db-server-01 >> ~/.ssh/known_hosts": "# db-server-01:22 SSH-2.0-OpenSSH_9.6p1\n(3 keys appended to /home/sre/.ssh/known_hosts)",
+    "ssh-keyscan app-server-02 >> ~/.ssh/known_hosts": "# app-server-02:22 SSH-2.0-OpenSSH_9.6p1\n(3 keys appended to /home/sre/.ssh/known_hosts)",
+    "scp file.txt sre@app-server-01:/tmp/": "file.txt                                     100%  2.4KB   1.2MB/s   00:00",
+    "scp sre@app-server-01:/var/log/app.log ./": "app.log                                      100%   45KB   8.5MB/s   00:00",
+    "scp -r ./deploy/ sre@app-server-01:/opt/app/": "deploy/config.yaml                           100%  1.2KB   1.1MB/s   00:00\ndeploy/docker-compose.yml                    100%  3.4KB   2.8MB/s   00:00\ndeploy/scripts/start.sh                      100%  0.8KB   0.9MB/s   00:00",
+    "scp -J jumpbox file.txt sre@db-server-01:/tmp/": "file.txt                                     100%  2.4KB   0.8MB/s   00:00",
+    "scp -P 2222 file.txt sre@app-server-01:/tmp/": "file.txt                                     100%  2.4KB   1.0MB/s   00:00",
+    "sftp sre@app-server-01": "Connected to app-server-01.\nsftp> \n(interactive SFTP session — use 'ls', 'get', 'put', 'cd', 'exit')",
+    "cat ~/.ssh/config": "# SSH Client Configuration — jumpbox\n# Managed by SRE team\n\nHost app-server-01\n    HostName 10.0.2.10\n    User sre\n    IdentityFile ~/.ssh/id_ed25519\n    Port 22\n\nHost app-server-02\n    HostName 10.0.2.20\n    User sre\n    IdentityFile ~/.ssh/id_ed25519\n    ProxyJump jumpbox\n\nHost db-server-01\n    HostName 10.0.3.10\n    User sre\n    IdentityFile ~/.ssh/id_ed25519\n    ProxyJump jumpbox\n\nHost monitoring-01\n    HostName 10.0.4.10\n    User sre\n    IdentityFile ~/.ssh/id_ed25519\n\nHost jumpbox\n    HostName 10.0.1.5\n    User sre\n    IdentityFile ~/.ssh/id_ed25519\n    ForwardAgent yes\n\nHost *\n    ServerAliveInterval 60\n    ServerAliveCountMax 3\n    AddKeysToAgent yes\n    IdentitiesOnly yes",
+    "cat ~/.ssh/known_hosts": "10.0.1.5 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIL...\njumpbox ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIL...\napp-server-01 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGx7...\napp-server-02 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJk9...\ndb-server-01 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPn7...\nmonitoring-01 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAA...",
+    "cat ~/.ssh/id_ed25519.pub": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKx4a7bVz9JrN3Qm8pLwRtY2uHfAe5Gd1Ns0Wc6Xi8k sre@company.com",
+    "cat ~/.ssh/authorized_keys": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKx4a7bVz9JrN3Qm8pLwRtY2uHfAe5Gd1Ns0Wc6Xi8k sre@company.com\nssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMn2Pq8Ks7Lw4Rx6Uj0Hb3Ae5Gd9Nf1Yi7Tk2Zj devops@company.com",
+    "ls -la ~/.ssh/": "total 32\ndrwx------  2 sre sre 4096 Jun  2 09:00 .\ndrwxr-x---  8 sre sre 4096 Jun  2 08:45 ..\n-rw-------  1 sre sre  411 Jun  1 14:20 id_ed25519\n-rw-r--r--  1 sre sre   97 Jun  1 14:20 id_ed25519.pub\n-rw-------  1 sre sre 3381 May 28 10:15 id_rsa\n-rw-r--r--  1 sre sre  741 May 28 10:15 id_rsa.pub\n-rw-------  1 sre sre  978 Jun  2 09:00 known_hosts\n-rw-------  1 sre sre  834 Jun  1 09:00 known_hosts.old\n-rw-------  1 sre sre  532 Jun  1 16:30 config\n-rw-------  1 sre sre  197 Jun  1 14:25 authorized_keys",
+    "chmod 600 ~/.ssh/id_ed25519": "(permissions set: -rw------- on /home/sre/.ssh/id_ed25519)",
+    "chmod 600 ~/.ssh/id_rsa": "(permissions set: -rw------- on /home/sre/.ssh/id_rsa)",
+    "chmod 600 ~/.ssh/config": "(permissions set: -rw------- on /home/sre/.ssh/config)",
+    "chmod 600 ~/.ssh/authorized_keys": "(permissions set: -rw------- on /home/sre/.ssh/authorized_keys)",
+    "chmod 700 ~/.ssh": "(permissions set: drwx------ on /home/sre/.ssh/)",
+    "chmod 644 ~/.ssh/id_ed25519.pub": "(permissions set: -rw-r--r-- on /home/sre/.ssh/id_ed25519.pub)",
+    "ssh sre@app-server-01 'uptime'": " 10:32:15 up 45 days,  3:12,  2 users,  load average: 0.42, 0.38, 0.35",
+    "ssh sre@app-server-01 'df -h /'": "Filesystem      Size  Used Avail Use% Mounted on\n/dev/xvda1       50G   32G   18G  64% /",
+    "ssh sre@app-server-01 'free -h'": "               total        used        free      shared  buff/cache   available\nMem:           7.8Gi       4.2Gi       1.1Gi       256Mi       2.5Gi       3.1Gi\nSwap:          2.0Gi          0B       2.0Gi",
+    "ssh sre@db-server-01 'pg_isready'": "/var/run/postgresql:5432 - accepting connections",
+    "ssh -t sre@app-server-01 'sudo systemctl status nginx'": "● nginx.service - A high performance web server and reverse proxy server\n     Loaded: loaded (/lib/systemd/system/nginx.service; enabled)\n     Active: active (running) since Mon 2026-05-18 07:00:00 UTC; 15 days ago\n   Main PID: 1234 (nginx)\n      Tasks: 5 (limit: 9451)\n     Memory: 12.4M\n     CGroup: /system.slice/nginx.service\n             ├─1234 \"nginx: master process /usr/sbin/nginx\"\n             └─1238 \"nginx: worker process\"",
+    "ssh -A sre@jumpbox": "Welcome to jumpbox (Ubuntu 22.04.4 LTS)\nAgent forwarding enabled — your local keys are available for onward connections.\nsre@jumpbox:~$",
+    "ssh -o BatchMode=yes sre@app-server-01 'hostname'": "app-server-01",
+    "ssh -o PasswordAuthentication=no sre@app-server-01": "Welcome to app-server-01 (Ubuntu 22.04.4 LTS)\nsre@app-server-01:~$"
+  },
+  "reference": [
+    {
+      "group": "Connecting",
+      "commands": [
+        {
+          "cmd": "ssh sre@app-server-01",
+          "desc": "connect to host"
+        },
+        {
+          "cmd": "ssh -v sre@app-server-01",
+          "desc": "verbose/debug mode"
+        },
+        {
+          "cmd": "ssh -J jumpbox sre@db-server-01",
+          "desc": "proxy jump via bastion"
+        },
+        {
+          "cmd": "ssh -p 2222 sre@app-server-01",
+          "desc": "non-standard port"
+        },
+        {
+          "cmd": "ssh -A sre@jumpbox",
+          "desc": "agent forwarding"
+        },
+        {
+          "cmd": "ssh sre@app-server-01 'uptime'",
+          "desc": "run remote command"
+        }
+      ]
+    },
+    {
+      "group": "Key Management",
+      "commands": [
+        {
+          "cmd": "ssh-keygen -t ed25519 -C \"sre@company.com\"",
+          "desc": "generate Ed25519 key"
+        },
+        {
+          "cmd": "ssh-keygen -t rsa -b 4096 -C \"sre@company.com\"",
+          "desc": "generate RSA-4096 key"
+        },
+        {
+          "cmd": "ssh-keygen -l -f ~/.ssh/id_ed25519.pub",
+          "desc": "show key fingerprint"
+        },
+        {
+          "cmd": "ssh-copy-id sre@app-server-01",
+          "desc": "install pubkey on server"
+        },
+        {
+          "cmd": "cat ~/.ssh/id_ed25519.pub",
+          "desc": "view public key"
+        }
+      ]
+    },
+    {
+      "group": "SSH Agent",
+      "commands": [
+        {
+          "cmd": "eval $(ssh-agent)",
+          "desc": "start the agent"
+        },
+        {
+          "cmd": "ssh-add ~/.ssh/id_ed25519",
+          "desc": "load key into agent"
+        },
+        {
+          "cmd": "ssh-add -l",
+          "desc": "list loaded keys"
+        },
+        {
+          "cmd": "ssh-add -D",
+          "desc": "remove all keys"
+        }
+      ]
+    },
+    {
+      "group": "Tunnelling",
+      "commands": [
+        {
+          "cmd": "ssh -L 8080:localhost:8080 sre@app-server-02",
+          "desc": "local port forward"
+        },
+        {
+          "cmd": "ssh -L 5432:db-server-01:5432 sre@jumpbox",
+          "desc": "forward to remote DB"
+        },
+        {
+          "cmd": "ssh -R 9090:localhost:9090 sre@app-server-01",
+          "desc": "remote port forward"
+        },
+        {
+          "cmd": "ssh -D 1080 sre@jumpbox",
+          "desc": "SOCKS proxy"
+        },
+        {
+          "cmd": "ssh -N -L 5432:db-server-01:5432 sre@jumpbox",
+          "desc": "tunnel only, no shell"
+        }
+      ]
+    },
+    {
+      "group": "File Transfer",
+      "commands": [
+        {
+          "cmd": "scp file.txt sre@app-server-01:/tmp/",
+          "desc": "copy file to server"
+        },
+        {
+          "cmd": "scp sre@app-server-01:/var/log/app.log ./",
+          "desc": "copy file from server"
+        },
+        {
+          "cmd": "scp -r ./deploy/ sre@app-server-01:/opt/app/",
+          "desc": "copy directory"
+        },
+        {
+          "cmd": "scp -J jumpbox file.txt sre@db-server-01:/tmp/",
+          "desc": "copy via bastion"
+        },
+        {
+          "cmd": "sftp sre@app-server-01",
+          "desc": "interactive SFTP"
+        }
+      ]
+    },
+    {
+      "group": "Host Keys & Known Hosts",
+      "commands": [
+        {
+          "cmd": "ssh-keyscan app-server-01",
+          "desc": "fetch host keys"
+        },
+        {
+          "cmd": "ssh-keyscan db-server-01 >> ~/.ssh/known_hosts",
+          "desc": "add to known_hosts"
+        },
+        {
+          "cmd": "ssh-keygen -F app-server-01",
+          "desc": "find host in known_hosts"
+        },
+        {
+          "cmd": "ssh-keygen -R app-server-02",
+          "desc": "remove stale host key"
+        },
+        {
+          "cmd": "cat ~/.ssh/known_hosts",
+          "desc": "view known hosts"
+        }
+      ]
+    },
+    {
+      "group": "Config & Permissions",
+      "commands": [
+        {
+          "cmd": "cat ~/.ssh/config",
+          "desc": "view SSH config"
+        },
+        {
+          "cmd": "ls -la ~/.ssh/",
+          "desc": "list SSH directory"
+        },
+        {
+          "cmd": "chmod 700 ~/.ssh",
+          "desc": "dir permissions"
+        },
+        {
+          "cmd": "chmod 600 ~/.ssh/id_ed25519",
+          "desc": "private key perms"
+        },
+        {
+          "cmd": "chmod 644 ~/.ssh/id_ed25519.pub",
+          "desc": "public key perms"
+        },
+        {
+          "cmd": "chmod 600 ~/.ssh/config",
+          "desc": "config file perms"
+        }
+      ]
+    },
+    {
+      "group": "Options & Flags",
+      "commands": [
+        {
+          "cmd": "ssh -o StrictHostKeyChecking=no sre@app-server-02",
+          "desc": "skip host key check"
+        },
+        {
+          "cmd": "ssh -o StrictHostKeyChecking=accept-new sre@app-server-02",
+          "desc": "accept new keys only"
+        },
+        {
+          "cmd": "ssh -o BatchMode=yes sre@app-server-01 'hostname'",
+          "desc": "non-interactive mode"
+        },
+        {
+          "cmd": "ssh -o ConnectTimeout=5 sre@app-server-01",
+          "desc": "connection timeout"
+        },
+        {
+          "cmd": "ssh -o PasswordAuthentication=no sre@app-server-01",
+          "desc": "key-only auth"
+        }
+      ]
+    },
+    {
+      "group": "Scenarios",
+      "commands": [
+        {
+          "cmd": "scenario key-based-auth",
+          "desc": "set up keys & config"
+        },
+        {
+          "cmd": "scenario debug-connection",
+          "desc": "debug SSH failures"
+        }
+      ]
+    }
+  ]
+}

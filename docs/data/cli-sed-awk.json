@@ -1,0 +1,512 @@
+{
+  "id": "sed-awk",
+  "prompt": "sre@toolbox:~/logs$",
+  "welcome": "Welcome to the sed & awk CLI Playground.\nType commands to explore text transformation on simulated config files and logs.\nType 'help' for available commands, 'scenario' for guided labs.\n",
+  "scenarios": [
+    {
+      "id": "transform-config",
+      "title": "Transform Config Files with sed",
+      "steps": [
+        {
+          "instruction": "First, view the nginx config file we need to modify.",
+          "expect": "cat /etc/nginx/nginx.conf",
+          "hint": "Try: cat /etc/nginx/nginx.conf"
+        },
+        {
+          "instruction": "The listen port is wrong. Use sed to replace port 80 with 8080 (preview only, no file change).",
+          "expect": "sed 's/listen 80/listen 8080/' /etc/nginx/nginx.conf",
+          "hint": "Try: sed 's/listen 80/listen 8080/' /etc/nginx/nginx.conf"
+        },
+        {
+          "instruction": "Good. Now replace ALL occurrences of the old domain 'staging.example.com' with 'prod.example.com' globally.",
+          "expect": "sed 's/staging.example.com/prod.example.com/g' /etc/nginx/nginx.conf",
+          "hint": "Try: sed 's/staging.example.com/prod.example.com/g' /etc/nginx/nginx.conf"
+        },
+        {
+          "instruction": "We only want to see the server_name lines. Use sed to print only lines matching 'server_name'.",
+          "expect": "sed -n '/server_name/p' /etc/nginx/nginx.conf",
+          "hint": "Try: sed -n '/server_name/p' /etc/nginx/nginx.conf"
+        },
+        {
+          "instruction": "Delete all comment lines (lines starting with #) from the config to see just the directives.",
+          "expect": "sed '/^#/d' /etc/nginx/nginx.conf",
+          "hint": "Try: sed '/^#/d' /etc/nginx/nginx.conf"
+        },
+        {
+          "instruction": "Insert a new header 'X-Frame-Options DENY' after the line containing 'add_header X-Content-Type'.",
+          "expect": "sed '/add_header X-Content-Type/a\\    add_header X-Frame-Options DENY;' /etc/nginx/nginx.conf",
+          "hint": "Try: sed '/add_header X-Content-Type/a\\    add_header X-Frame-Options DENY;' /etc/nginx/nginx.conf"
+        },
+        {
+          "instruction": "Now chain multiple edits: replace the port AND the domain, then write in-place with a backup.",
+          "expect": "sed -i.bak -e 's/listen 80/listen 8080/' -e 's/staging.example.com/prod.example.com/g' /etc/nginx/nginx.conf",
+          "hint": "Try: sed -i.bak -e 's/listen 80/listen 8080/' -e 's/staging.example.com/prod.example.com/g' /etc/nginx/nginx.conf"
+        },
+        {
+          "instruction": "Verify the backup was created and diff the two files to confirm changes.",
+          "expect": "diff /etc/nginx/nginx.conf.bak /etc/nginx/nginx.conf",
+          "hint": "Try: diff /etc/nginx/nginx.conf.bak /etc/nginx/nginx.conf"
+        }
+      ]
+    },
+    {
+      "id": "log-analysis-pipeline",
+      "title": "Build a Log Analysis Pipeline with awk",
+      "steps": [
+        {
+          "instruction": "First, look at the raw access log to understand its format.",
+          "expect": "head -5 /var/log/app/access.log",
+          "hint": "Try: head -5 /var/log/app/access.log"
+        },
+        {
+          "instruction": "Print only the IP address (field 1) and HTTP status code (field 9) from each log line.",
+          "expect": "awk '{print $1, $9}' /var/log/app/access.log",
+          "hint": "Try: awk '{print $1, $9}' /var/log/app/access.log"
+        },
+        {
+          "instruction": "Filter the log to show only lines where the status code (field 9) is 500 or above.",
+          "expect": "awk '$9 >= 500' /var/log/app/access.log",
+          "hint": "Try: awk '$9 >= 500' /var/log/app/access.log"
+        },
+        {
+          "instruction": "Count total requests and errors using BEGIN/END blocks. Print a summary.",
+          "expect": "awk 'BEGIN{total=0; err=0} {total++; if($9>=500) err++} END{print \"Total:\", total, \"Errors:\", err, \"Rate:\", err/total*100 \"%\"}' /var/log/app/access.log",
+          "hint": "Try: awk 'BEGIN{total=0; err=0} {total++; if($9>=500) err++} END{print \"Total:\", total, \"Errors:\", err, \"Rate:\", err/total*100 \"%\"}' /var/log/app/access.log"
+        },
+        {
+          "instruction": "Use an associative array to count requests per HTTP status code and print the breakdown.",
+          "expect": "awk '{status[$9]++} END{for(s in status) print s, status[s]}' /var/log/app/access.log",
+          "hint": "Try: awk '{status[$9]++} END{for(s in status) print s, status[s]}' /var/log/app/access.log"
+        },
+        {
+          "instruction": "Find the top 5 IP addresses by request count. Pipe awk output through sort.",
+          "expect": "awk '{ips[$1]++} END{for(ip in ips) print ips[ip], ip}' /var/log/app/access.log | sort -rn | head -5",
+          "hint": "Try: awk '{ips[$1]++} END{for(ip in ips) print ips[ip], ip}' /var/log/app/access.log | sort -rn | head -5"
+        },
+        {
+          "instruction": "Now parse the CSV metrics file using a custom delimiter. Print service name and p99 latency.",
+          "expect": "awk -F',' '{printf \"%-20s %s ms\\n\", $1, $4}' /var/log/app/metrics.csv",
+          "hint": "Try: awk -F',' '{printf \"%-20s %s ms\\n\", $1, $4}' /var/log/app/metrics.csv"
+        },
+        {
+          "instruction": "Combine sed and awk: strip comment lines with sed, then sum the request_count column (field 3) with awk.",
+          "expect": "sed '/^#/d' /var/log/app/metrics.csv | awk -F',' '{sum+=$3} END{print \"Total requests:\", sum}'",
+          "hint": "Try: sed '/^#/d' /var/log/app/metrics.csv | awk -F',' '{sum+=$3} END{print \"Total requests:\", sum}'"
+        }
+      ]
+    }
+  ],
+  "commands": {
+    "help": "Available commands:\n\n  sed 's/old/new/' file          \u2014 Substitute first match per line\n  sed 's/old/new/g' file         \u2014 Substitute all matches per line\n  sed -n '/pattern/p' file       \u2014 Print only matching lines\n  sed -i[.bak] 'cmd' file       \u2014 Edit file in-place (with optional backup)\n  sed '/pattern/d' file          \u2014 Delete matching lines\n  sed '/pattern/a\\text' file     \u2014 Append text after matching lines\n  sed '/pattern/i\\text' file     \u2014 Insert text before matching lines\n  sed '5,10p' file               \u2014 Print lines 5 through 10\n  sed -e 'cmd1' -e 'cmd2' file   \u2014 Chain multiple commands\n\n  awk '{print}' file             \u2014 Print all lines (like cat)\n  awk '{print $1, $3}' file      \u2014 Print specific fields\n  awk -F',' '{print $1}' file    \u2014 Set field separator\n  awk '/pattern/' file           \u2014 Filter lines by pattern\n  awk 'BEGIN{...} {...} END{...}'\u2014 Init, per-line, summary blocks\n  awk '{arr[$1]++} END{...}'     \u2014 Associative array aggregation\n  awk '{printf fmt, args}' file  \u2014 Formatted output\n\n  cat file                       \u2014 Display file contents\n  head -N file                   \u2014 Show first N lines\n  diff file1 file2               \u2014 Compare two files\n  wc -l file                     \u2014 Count lines\n\n  scenario                       \u2014 Start a guided lab\n  clear                          \u2014 Clear the terminal\n  help                           \u2014 Show this help",
+
+    "cat /etc/nginx/nginx.conf": "# nginx.conf \u2014 production reverse proxy\n# Last updated: 2026-05-15\n\nworker_processes auto;\n\nhttp {\n    include       mime.types;\n    sendfile      on;\n    keepalive_timeout 65;\n\n    # Security headers\n    add_header X-Content-Type-Options nosniff;\n    add_header X-XSS-Protection \"1; mode=block\";\n\n    upstream api_backend {\n        server 10.0.1.10:8080;\n        server 10.0.1.11:8080;\n    }\n\n    server {\n        listen 80;\n        server_name staging.example.com;\n\n        location / {\n            proxy_pass http://api_backend;\n            proxy_set_header Host $host;\n            proxy_set_header X-Real-IP $remote_addr;\n        }\n\n        location /health {\n            return 200 'OK';\n        }\n\n        # Logging\n        access_log /var/log/nginx/access.log;\n        error_log  /var/log/nginx/error.log warn;\n    }\n\n    server {\n        listen 80;\n        server_name staging.example.com;\n        return 301 https://staging.example.com$request_uri;\n    }\n}",
+
+    "sed 's/listen 80/listen 8080/' /etc/nginx/nginx.conf": "# nginx.conf \u2014 production reverse proxy\n# Last updated: 2026-05-15\n\nworker_processes auto;\n\nhttp {\n    include       mime.types;\n    sendfile      on;\n    keepalive_timeout 65;\n\n    # Security headers\n    add_header X-Content-Type-Options nosniff;\n    add_header X-XSS-Protection \"1; mode=block\";\n\n    upstream api_backend {\n        server 10.0.1.10:8080;\n        server 10.0.1.11:8080;\n    }\n\n    server {\n        listen 8080;\n        server_name staging.example.com;\n\n        location / {\n            proxy_pass http://api_backend;\n            proxy_set_header Host $host;\n            proxy_set_header X-Real-IP $remote_addr;\n        }\n\n        location /health {\n            return 200 'OK';\n        }\n\n        # Logging\n        access_log /var/log/nginx/access.log;\n        error_log  /var/log/nginx/error.log warn;\n    }\n\n    server {\n        listen 8080;\n        server_name staging.example.com;\n        return 301 https://staging.example.com$request_uri;\n    }\n}",
+
+    "sed 's/staging.example.com/prod.example.com/g' /etc/nginx/nginx.conf": "# nginx.conf \u2014 production reverse proxy\n# Last updated: 2026-05-15\n\nworker_processes auto;\n\nhttp {\n    include       mime.types;\n    sendfile      on;\n    keepalive_timeout 65;\n\n    # Security headers\n    add_header X-Content-Type-Options nosniff;\n    add_header X-XSS-Protection \"1; mode=block\";\n\n    upstream api_backend {\n        server 10.0.1.10:8080;\n        server 10.0.1.11:8080;\n    }\n\n    server {\n        listen 80;\n        server_name prod.example.com;\n\n        location / {\n            proxy_pass http://api_backend;\n            proxy_set_header Host $host;\n            proxy_set_header X-Real-IP $remote_addr;\n        }\n\n        location /health {\n            return 200 'OK';\n        }\n\n        # Logging\n        access_log /var/log/nginx/access.log;\n        error_log  /var/log/nginx/error.log warn;\n    }\n\n    server {\n        listen 80;\n        server_name prod.example.com;\n        return 301 https://prod.example.com$request_uri;\n    }\n}",
+
+    "sed -n '/server_name/p' /etc/nginx/nginx.conf": "        server_name staging.example.com;\n        server_name staging.example.com;",
+
+    "sed '/^#/d' /etc/nginx/nginx.conf": "\nworker_processes auto;\n\nhttp {\n    include       mime.types;\n    sendfile      on;\n    keepalive_timeout 65;\n\n    add_header X-Content-Type-Options nosniff;\n    add_header X-XSS-Protection \"1; mode=block\";\n\n    upstream api_backend {\n        server 10.0.1.10:8080;\n        server 10.0.1.11:8080;\n    }\n\n    server {\n        listen 80;\n        server_name staging.example.com;\n\n        location / {\n            proxy_pass http://api_backend;\n            proxy_set_header Host $host;\n            proxy_set_header X-Real-IP $remote_addr;\n        }\n\n        location /health {\n            return 200 'OK';\n        }\n\n        access_log /var/log/nginx/access.log;\n        error_log  /var/log/nginx/error.log warn;\n    }\n\n    server {\n        listen 80;\n        server_name staging.example.com;\n        return 301 https://staging.example.com$request_uri;\n    }\n}",
+
+    "sed '/add_header X-Content-Type/a\\    add_header X-Frame-Options DENY;' /etc/nginx/nginx.conf": "# nginx.conf \u2014 production reverse proxy\n# Last updated: 2026-05-15\n\nworker_processes auto;\n\nhttp {\n    include       mime.types;\n    sendfile      on;\n    keepalive_timeout 65;\n\n    # Security headers\n    add_header X-Content-Type-Options nosniff;\n    add_header X-Frame-Options DENY;\n    add_header X-XSS-Protection \"1; mode=block\";\n\n    upstream api_backend {\n        server 10.0.1.10:8080;\n        server 10.0.1.11:8080;\n    }\n\n    server {\n        listen 80;\n        server_name staging.example.com;\n\n        location / {\n            proxy_pass http://api_backend;\n            proxy_set_header Host $host;\n            proxy_set_header X-Real-IP $remote_addr;\n        }\n\n        location /health {\n            return 200 'OK';\n        }\n\n        # Logging\n        access_log /var/log/nginx/access.log;\n        error_log  /var/log/nginx/error.log warn;\n    }\n\n    server {\n        listen 80;\n        server_name staging.example.com;\n        return 301 https://staging.example.com$request_uri;\n    }\n}",
+
+    "sed -i.bak -e 's/listen 80/listen 8080/' -e 's/staging.example.com/prod.example.com/g' /etc/nginx/nginx.conf": "(file edited in-place, backup saved to /etc/nginx/nginx.conf.bak)",
+
+    "diff /etc/nginx/nginx.conf.bak /etc/nginx/nginx.conf": "21c21\n<         listen 80;\n---\n>         listen 8080;\n22c22\n<         server_name staging.example.com;\n---\n>         server_name prod.example.com;\n37c37\n<         listen 80;\n---\n>         listen 8080;\n38,39c38,39\n<         server_name staging.example.com;\n<         return 301 https://staging.example.com$request_uri;\n---\n>         server_name prod.example.com;\n>         return 301 https://prod.example.com$request_uri;",
+
+    "head -5 /var/log/app/access.log": "10.0.2.15 - - [02/Jun/2026:10:12:01 +0000] \"GET /api/v1/accounts HTTP/1.1\" 200 1534 \"-\" \"Mozilla/5.0\" 0.012\n10.0.2.22 - - [02/Jun/2026:10:12:02 +0000] \"POST /api/v1/transfers HTTP/1.1\" 201 892 \"-\" \"curl/7.88\" 0.045\n10.0.3.8 - - [02/Jun/2026:10:12:02 +0000] \"GET /api/v1/accounts/5432 HTTP/1.1\" 500 128 \"-\" \"Python/3.11\" 2.301\n10.0.2.15 - - [02/Jun/2026:10:12:03 +0000] \"GET /health HTTP/1.1\" 200 2 \"-\" \"kube-probe/1.29\" 0.001\n10.0.4.100 - - [02/Jun/2026:10:12:04 +0000] \"GET /api/v1/reports/monthly HTTP/1.1\" 504 0 \"-\" \"Mozilla/5.0\" 30.000",
+
+    "cat /var/log/app/access.log": "10.0.2.15 - - [02/Jun/2026:10:12:01 +0000] \"GET /api/v1/accounts HTTP/1.1\" 200 1534 \"-\" \"Mozilla/5.0\" 0.012\n10.0.2.22 - - [02/Jun/2026:10:12:02 +0000] \"POST /api/v1/transfers HTTP/1.1\" 201 892 \"-\" \"curl/7.88\" 0.045\n10.0.3.8 - - [02/Jun/2026:10:12:02 +0000] \"GET /api/v1/accounts/5432 HTTP/1.1\" 500 128 \"-\" \"Python/3.11\" 2.301\n10.0.2.15 - - [02/Jun/2026:10:12:03 +0000] \"GET /health HTTP/1.1\" 200 2 \"-\" \"kube-probe/1.29\" 0.001\n10.0.4.100 - - [02/Jun/2026:10:12:04 +0000] \"GET /api/v1/reports/monthly HTTP/1.1\" 504 0 \"-\" \"Mozilla/5.0\" 30.000\n10.0.2.15 - - [02/Jun/2026:10:12:05 +0000] \"GET /api/v1/accounts HTTP/1.1\" 200 1534 \"-\" \"Mozilla/5.0\" 0.015\n10.0.5.33 - - [02/Jun/2026:10:12:05 +0000] \"POST /api/v1/auth/login HTTP/1.1\" 401 64 \"-\" \"Mozilla/5.0\" 0.008\n10.0.2.22 - - [02/Jun/2026:10:12:06 +0000] \"POST /api/v1/transfers HTTP/1.1\" 201 892 \"-\" \"curl/7.88\" 0.038\n10.0.3.8 - - [02/Jun/2026:10:12:07 +0000] \"GET /api/v1/accounts/5432 HTTP/1.1\" 500 128 \"-\" \"Python/3.11\" 2.450\n10.0.6.77 - - [02/Jun/2026:10:12:07 +0000] \"GET /api/v1/transactions HTTP/1.1\" 200 4096 \"-\" \"Mozilla/5.0\" 0.089\n10.0.2.15 - - [02/Jun/2026:10:12:08 +0000] \"DELETE /api/v1/sessions/old HTTP/1.1\" 204 0 \"-\" \"cron-job/1.0\" 0.005\n10.0.4.100 - - [02/Jun/2026:10:12:09 +0000] \"GET /api/v1/reports/monthly HTTP/1.1\" 504 0 \"-\" \"Mozilla/5.0\" 30.000\n10.0.7.12 - - [02/Jun/2026:10:12:10 +0000] \"POST /api/v1/payments HTTP/1.1\" 502 256 \"-\" \"PaymentGateway/2.1\" 5.002\n10.0.2.15 - - [02/Jun/2026:10:12:11 +0000] \"GET /api/v1/accounts HTTP/1.1\" 200 1534 \"-\" \"Mozilla/5.0\" 0.011\n10.0.5.33 - - [02/Jun/2026:10:12:12 +0000] \"POST /api/v1/auth/login HTTP/1.1\" 200 512 \"-\" \"Mozilla/5.0\" 0.022\n10.0.3.8 - - [02/Jun/2026:10:12:13 +0000] \"GET /api/v1/accounts/5432 HTTP/1.1\" 500 128 \"-\" \"Python/3.11\" 2.280\n10.0.8.44 - - [02/Jun/2026:10:12:14 +0000] \"GET /api/v1/balance HTTP/1.1\" 200 256 \"-\" \"MobileApp/3.4\" 0.018\n10.0.2.22 - - [02/Jun/2026:10:12:15 +0000] \"POST /api/v1/transfers HTTP/1.1\" 201 892 \"-\" \"curl/7.88\" 0.041\n10.0.4.100 - - [02/Jun/2026:10:12:16 +0000] \"GET /api/v1/reports/daily HTTP/1.1\" 200 8192 \"-\" \"Mozilla/5.0\" 0.340\n10.0.9.5 - - [02/Jun/2026:10:12:17 +0000] \"POST /api/v1/kyc/verify HTTP/1.1\" 503 64 \"-\" \"KYCService/1.2\" 10.001",
+
+    "awk '{print $1, $9}' /var/log/app/access.log": "10.0.2.15 200\n10.0.2.22 201\n10.0.3.8 500\n10.0.2.15 200\n10.0.4.100 504\n10.0.2.15 200\n10.0.5.33 401\n10.0.2.22 201\n10.0.3.8 500\n10.0.6.77 200\n10.0.2.15 204\n10.0.4.100 504\n10.0.7.12 502\n10.0.2.15 200\n10.0.5.33 200\n10.0.3.8 500\n10.0.8.44 200\n10.0.2.22 201\n10.0.4.100 200\n10.0.9.5 503",
+
+    "awk '$9 >= 500' /var/log/app/access.log": "10.0.3.8 - - [02/Jun/2026:10:12:02 +0000] \"GET /api/v1/accounts/5432 HTTP/1.1\" 500 128 \"-\" \"Python/3.11\" 2.301\n10.0.4.100 - - [02/Jun/2026:10:12:04 +0000] \"GET /api/v1/reports/monthly HTTP/1.1\" 504 0 \"-\" \"Mozilla/5.0\" 30.000\n10.0.3.8 - - [02/Jun/2026:10:12:07 +0000] \"GET /api/v1/accounts/5432 HTTP/1.1\" 500 128 \"-\" \"Python/3.11\" 2.450\n10.0.4.100 - - [02/Jun/2026:10:12:09 +0000] \"GET /api/v1/reports/monthly HTTP/1.1\" 504 0 \"-\" \"Mozilla/5.0\" 30.000\n10.0.7.12 - - [02/Jun/2026:10:12:10 +0000] \"POST /api/v1/payments HTTP/1.1\" 502 256 \"-\" \"PaymentGateway/2.1\" 5.002\n10.0.3.8 - - [02/Jun/2026:10:12:13 +0000] \"GET /api/v1/accounts/5432 HTTP/1.1\" 500 128 \"-\" \"Python/3.11\" 2.280\n10.0.9.5 - - [02/Jun/2026:10:12:17 +0000] \"POST /api/v1/kyc/verify HTTP/1.1\" 503 64 \"-\" \"KYCService/1.2\" 10.001",
+
+    "awk 'BEGIN{total=0; err=0} {total++; if($9>=500) err++} END{print \"Total:\", total, \"Errors:\", err, \"Rate:\", err/total*100 \"%\"}' /var/log/app/access.log": "Total: 20 Errors: 7 Rate: 35%",
+
+    "awk '{status[$9]++} END{for(s in status) print s, status[s]}' /var/log/app/access.log": "200 8\n201 3\n204 1\n401 1\n500 3\n502 1\n503 1\n504 2",
+
+    "awk '{ips[$1]++} END{for(ip in ips) print ips[ip], ip}' /var/log/app/access.log | sort -rn | head -5": "5 10.0.2.15\n3 10.0.2.22\n3 10.0.3.8\n3 10.0.4.100\n2 10.0.5.33",
+
+    "cat /var/log/app/metrics.csv": "# service_name,endpoint,request_count,p99_latency_ms,error_rate\napi-gateway,/api/v1/accounts,14523,45,0.02\napi-gateway,/api/v1/transfers,8721,120,0.05\npayment-svc,/payments/process,3200,890,0.12\nauth-svc,/auth/login,22100,35,0.01\nkyc-svc,/kyc/verify,1500,2500,0.08\nreport-svc,/reports/monthly,450,15000,0.15\nnotification-svc,/notify/send,9800,200,0.03\nbalance-svc,/balance/check,18400,28,0.005",
+
+    "awk -F',' '{printf \"%-20s %s ms\\n\", $1, $4}' /var/log/app/metrics.csv": "# service_name       p99_latency_ms ms\napi-gateway          45 ms\napi-gateway          120 ms\npayment-svc          890 ms\nauth-svc             35 ms\nkyc-svc              2500 ms\nreport-svc           15000 ms\nnotification-svc     200 ms\nbalance-svc          28 ms",
+
+    "sed '/^#/d' /var/log/app/metrics.csv | awk -F',' '{sum+=$3} END{print \"Total requests:\", sum}'": "Total requests: 78694",
+
+    "sed 's/listen 80/listen 8080/g' /etc/nginx/nginx.conf": "# nginx.conf \u2014 production reverse proxy\n# Last updated: 2026-05-15\n\nworker_processes auto;\n\nhttp {\n    include       mime.types;\n    sendfile      on;\n    keepalive_timeout 65;\n\n    # Security headers\n    add_header X-Content-Type-Options nosniff;\n    add_header X-XSS-Protection \"1; mode=block\";\n\n    upstream api_backend {\n        server 10.0.1.10:8080;\n        server 10.0.1.11:8080;\n    }\n\n    server {\n        listen 8080;\n        server_name staging.example.com;\n\n        location / {\n            proxy_pass http://api_backend;\n            proxy_set_header Host $host;\n            proxy_set_header X-Real-IP $remote_addr;\n        }\n\n        location /health {\n            return 200 'OK';\n        }\n\n        # Logging\n        access_log /var/log/nginx/access.log;\n        error_log  /var/log/nginx/error.log warn;\n    }\n\n    server {\n        listen 8080;\n        server_name staging.example.com;\n        return 301 https://staging.example.com$request_uri;\n    }\n}",
+
+    "sed -n '5,10p' /etc/nginx/nginx.conf": "http {\n    include       mime.types;\n    sendfile      on;\n    keepalive_timeout 65;\n\n    # Security headers",
+
+    "sed -n '20,25p' /etc/nginx/nginx.conf": "    server {\n        listen 80;\n        server_name staging.example.com;\n\n        location / {\n            proxy_pass http://api_backend;",
+
+    "sed -n '/upstream/,/}/p' /etc/nginx/nginx.conf": "    upstream api_backend {\n        server 10.0.1.10:8080;\n        server 10.0.1.11:8080;\n    }",
+
+    "sed '/^$/d' /etc/nginx/nginx.conf": "# nginx.conf \u2014 production reverse proxy\n# Last updated: 2026-05-15\nworker_processes auto;\nhttp {\n    include       mime.types;\n    sendfile      on;\n    keepalive_timeout 65;\n    # Security headers\n    add_header X-Content-Type-Options nosniff;\n    add_header X-XSS-Protection \"1; mode=block\";\n    upstream api_backend {\n        server 10.0.1.10:8080;\n        server 10.0.1.11:8080;\n    }\n    server {\n        listen 80;\n        server_name staging.example.com;\n        location / {\n            proxy_pass http://api_backend;\n            proxy_set_header Host $host;\n            proxy_set_header X-Real-IP $remote_addr;\n        }\n        location /health {\n            return 200 'OK';\n        }\n        # Logging\n        access_log /var/log/nginx/access.log;\n        error_log  /var/log/nginx/error.log warn;\n    }\n    server {\n        listen 80;\n        server_name staging.example.com;\n        return 301 https://staging.example.com$request_uri;\n    }\n}",
+
+    "sed 's/[[:space:]]*$//' /etc/nginx/nginx.conf": "# nginx.conf \u2014 production reverse proxy\n# Last updated: 2026-05-15\n\nworker_processes auto;\n\nhttp {\n    include       mime.types;\n    sendfile      on;\n    keepalive_timeout 65;\n\n    # Security headers\n    add_header X-Content-Type-Options nosniff;\n    add_header X-XSS-Protection \"1; mode=block\";\n...(trailing whitespace stripped from all lines)",
+
+    "sed -n '/server {/,/}/p' /etc/nginx/nginx.conf": "    server {\n        listen 80;\n        server_name staging.example.com;\n\n        location / {\n            proxy_pass http://api_backend;\n            proxy_set_header Host $host;\n            proxy_set_header X-Real-IP $remote_addr;\n        }\n\n        location /health {\n            return 200 'OK';\n        }\n\n        # Logging\n        access_log /var/log/nginx/access.log;\n        error_log  /var/log/nginx/error.log warn;\n    }",
+
+    "sed '1i\\# MANAGED BY ANSIBLE - DO NOT EDIT MANUALLY' /etc/nginx/nginx.conf": "# MANAGED BY ANSIBLE - DO NOT EDIT MANUALLY\n# nginx.conf \u2014 production reverse proxy\n# Last updated: 2026-05-15\n\nworker_processes auto;\n...(rest of file)",
+
+    "sed 's/server 10.0.1.10:8080/server 10.0.1.10:8080 weight=3/' /etc/nginx/nginx.conf": "...\n    upstream api_backend {\n        server 10.0.1.10:8080 weight=3;\n        server 10.0.1.11:8080;\n    }\n...",
+
+    "sed '/proxy_set_header X-Real-IP/a\\            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;' /etc/nginx/nginx.conf": "...\n        location / {\n            proxy_pass http://api_backend;\n            proxy_set_header Host $host;\n            proxy_set_header X-Real-IP $remote_addr;\n            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\n        }\n...",
+
+    "sed -n '/error/Ip' /etc/nginx/nginx.conf": "        error_log  /var/log/nginx/error.log warn;",
+
+    "sed = /etc/nginx/nginx.conf | sed 'N;s/\\n/\\t/'": "1\t# nginx.conf \u2014 production reverse proxy\n2\t# Last updated: 2026-05-15\n3\t\n4\tworker_processes auto;\n5\t\n6\thttp {\n7\t    include       mime.types;\n...(all lines numbered)",
+
+    "wc -l /etc/nginx/nginx.conf": "      42 /etc/nginx/nginx.conf",
+    "wc -l /var/log/app/access.log": "      20 /var/log/app/access.log",
+    "wc -l /var/log/app/metrics.csv": "       9 /var/log/app/metrics.csv",
+
+    "awk '{print}' /var/log/app/access.log": "10.0.2.15 - - [02/Jun/2026:10:12:01 +0000] \"GET /api/v1/accounts HTTP/1.1\" 200 1534 \"-\" \"Mozilla/5.0\" 0.012\n10.0.2.22 - - [02/Jun/2026:10:12:02 +0000] \"POST /api/v1/transfers HTTP/1.1\" 201 892 \"-\" \"curl/7.88\" 0.045\n10.0.3.8 - - [02/Jun/2026:10:12:02 +0000] \"GET /api/v1/accounts/5432 HTTP/1.1\" 500 128 \"-\" \"Python/3.11\" 2.301\n...(all 20 lines)",
+
+    "awk '{print NR, $0}' /var/log/app/access.log": "1 10.0.2.15 - - [02/Jun/2026:10:12:01 +0000] \"GET /api/v1/accounts HTTP/1.1\" 200 1534 \"-\" \"Mozilla/5.0\" 0.012\n2 10.0.2.22 - - [02/Jun/2026:10:12:02 +0000] \"POST /api/v1/transfers HTTP/1.1\" 201 892 \"-\" \"curl/7.88\" 0.045\n3 10.0.3.8 - - [02/Jun/2026:10:12:02 +0000] \"GET /api/v1/accounts/5432 HTTP/1.1\" 500 128 \"-\" \"Python/3.11\" 2.301\n...(all 20 lines numbered)",
+
+    "awk 'NR==1, NR==5' /var/log/app/access.log": "10.0.2.15 - - [02/Jun/2026:10:12:01 +0000] \"GET /api/v1/accounts HTTP/1.1\" 200 1534 \"-\" \"Mozilla/5.0\" 0.012\n10.0.2.22 - - [02/Jun/2026:10:12:02 +0000] \"POST /api/v1/transfers HTTP/1.1\" 201 892 \"-\" \"curl/7.88\" 0.045\n10.0.3.8 - - [02/Jun/2026:10:12:02 +0000] \"GET /api/v1/accounts/5432 HTTP/1.1\" 500 128 \"-\" \"Python/3.11\" 2.301\n10.0.2.15 - - [02/Jun/2026:10:12:03 +0000] \"GET /health HTTP/1.1\" 200 2 \"-\" \"kube-probe/1.29\" 0.001\n10.0.4.100 - - [02/Jun/2026:10:12:04 +0000] \"GET /api/v1/reports/monthly HTTP/1.1\" 504 0 \"-\" \"Mozilla/5.0\" 30.000",
+
+    "awk '/POST/' /var/log/app/access.log": "10.0.2.22 - - [02/Jun/2026:10:12:02 +0000] \"POST /api/v1/transfers HTTP/1.1\" 201 892 \"-\" \"curl/7.88\" 0.045\n10.0.5.33 - - [02/Jun/2026:10:12:05 +0000] \"POST /api/v1/auth/login HTTP/1.1\" 401 64 \"-\" \"Mozilla/5.0\" 0.008\n10.0.2.22 - - [02/Jun/2026:10:12:06 +0000] \"POST /api/v1/transfers HTTP/1.1\" 201 892 \"-\" \"curl/7.88\" 0.038\n10.0.7.12 - - [02/Jun/2026:10:12:10 +0000] \"POST /api/v1/payments HTTP/1.1\" 502 256 \"-\" \"PaymentGateway/2.1\" 5.002\n10.0.5.33 - - [02/Jun/2026:10:12:12 +0000] \"POST /api/v1/auth/login HTTP/1.1\" 200 512 \"-\" \"Mozilla/5.0\" 0.022\n10.0.2.22 - - [02/Jun/2026:10:12:15 +0000] \"POST /api/v1/transfers HTTP/1.1\" 201 892 \"-\" \"curl/7.88\" 0.041\n10.0.9.5 - - [02/Jun/2026:10:12:17 +0000] \"POST /api/v1/kyc/verify HTTP/1.1\" 503 64 \"-\" \"KYCService/1.2\" 10.001",
+
+    "awk '/500/ {print $1, $7}' /var/log/app/access.log": "10.0.3.8 /api/v1/accounts/5432\n10.0.3.8 /api/v1/accounts/5432\n10.0.3.8 /api/v1/accounts/5432",
+
+    "awk 'NF > 0' /var/log/app/access.log": "10.0.2.15 - - [02/Jun/2026:10:12:01 +0000] \"GET /api/v1/accounts HTTP/1.1\" 200 1534 \"-\" \"Mozilla/5.0\" 0.012\n...(all 20 non-empty lines)",
+
+    "awk '{print NF}' /var/log/app/access.log": "12\n12\n12\n12\n12\n12\n12\n12\n12\n12\n12\n12\n12\n12\n12\n12\n12\n12\n12\n12",
+
+    "awk 'END{print NR, \"lines\"}' /var/log/app/access.log": "20 lines",
+
+    "awk -F',' 'NR>1 {print $1, $5}' /var/log/app/metrics.csv": "api-gateway 0.02\napi-gateway 0.05\npayment-svc 0.12\nauth-svc 0.01\nkyc-svc 0.08\nreport-svc 0.15\nnotification-svc 0.03\nbalance-svc 0.005",
+
+    "awk -F',' 'NR>1 && $5 > 0.05 {print $1, $2, $5*100 \"%\"}' /var/log/app/metrics.csv": "payment-svc /payments/process 12%\nkyc-svc /kyc/verify 8%\nreport-svc /reports/monthly 15%",
+
+    "awk -F',' 'NR>1 {sum+=$3} END{print \"Avg requests per service:\", sum/(NR-1)}' /var/log/app/metrics.csv": "Avg requests per service: 9836.75",
+
+    "awk -F',' 'NR>1 && $4 > 1000 {printf \"ALERT: %s %s p99=%dms\\n\", $1, $2, $4}' /var/log/app/metrics.csv": "ALERT: kyc-svc /kyc/verify p99=2500ms\nALERT: report-svc /reports/monthly p99=15000ms",
+
+    "awk -F',' 'NR>1 {total+=$3; svc[$1]+=$3} END{for(s in svc) printf \"%-20s %6d reqs (%5.1f%%)\\n\", s, svc[s], svc[s]/total*100}' /var/log/app/metrics.csv": "api-gateway           23244 reqs ( 29.5%)\npayment-svc            3200 reqs (  4.1%)\nauth-svc              22100 reqs ( 28.1%)\nkyc-svc                1500 reqs (  1.9%)\nreport-svc              450 reqs (  0.6%)\nnotification-svc       9800 reqs ( 12.4%)\nbalance-svc           18400 reqs ( 23.4%)",
+
+    "awk '{endpoint[$7]++} END{for(e in endpoint) print endpoint[e], e}' /var/log/app/access.log | sort -rn": "5 /api/v1/accounts\n3 /api/v1/transfers\n3 /api/v1/accounts/5432\n2 /api/v1/reports/monthly\n2 /api/v1/auth/login\n1 /api/v1/transactions\n1 /api/v1/balance\n1 /api/v1/reports/daily\n1 /api/v1/payments\n1 /api/v1/kyc/verify\n1 /health\n1 /api/v1/sessions/old",
+
+    "awk '{gsub(/\"/, \"\", $7); print $7}' /var/log/app/access.log": "/api/v1/accounts\n/api/v1/transfers\n/api/v1/accounts/5432\n/health\n/api/v1/reports/monthly\n/api/v1/accounts\n/api/v1/auth/login\n/api/v1/transfers\n/api/v1/accounts/5432\n/api/v1/transactions\n/api/v1/sessions/old\n/api/v1/reports/monthly\n/api/v1/payments\n/api/v1/accounts\n/api/v1/auth/login\n/api/v1/accounts/5432\n/api/v1/balance\n/api/v1/transfers\n/api/v1/reports/daily\n/api/v1/kyc/verify",
+
+    "awk '{split($4, ts, \":\"); hour=ts[2]; hits[hour]++} END{for(h in hits) printf \"%s:00 -> %d requests\\n\", h, hits[h]}' /var/log/app/access.log": "10:00 -> 20 requests",
+
+    "awk '{n=split($7, parts, \"/\"); print parts[3]}' /var/log/app/access.log": "v1\nv1\nv1\n\nv1\nv1\nv1\nv1\nv1\nv1\nv1\nv1\nv1\nv1\nv1\nv1\nv1\nv1\nv1\nv1",
+
+    "awk '{len=length($0); total+=len} END{printf \"Avg line length: %d chars\\n\", total/NR}' /var/log/app/access.log": "Avg line length: 112 chars",
+
+    "awk 'BEGIN{OFS=\",\"} {print $1, $9, $10}' /var/log/app/access.log": "10.0.2.15,200,1534\n10.0.2.22,201,892\n10.0.3.8,500,128\n10.0.2.15,200,2\n10.0.4.100,504,0\n10.0.2.15,200,1534\n10.0.5.33,401,64\n10.0.2.22,201,892\n10.0.3.8,500,128\n10.0.6.77,200,4096\n10.0.2.15,204,0\n10.0.4.100,504,0\n10.0.7.12,502,256\n10.0.2.15,200,1534\n10.0.5.33,200,512\n10.0.3.8,500,128\n10.0.8.44,200,256\n10.0.2.22,201,892\n10.0.4.100,200,8192\n10.0.9.5,503,64",
+
+    "awk '{bytes+=$10} END{printf \"Total bandwidth: %.2f KB\\n\", bytes/1024}' /var/log/app/access.log": "Total bandwidth: 20.31 KB",
+
+    "awk '$9 >= 500 {printf \"%s %-6s %-35s %s\\n\", $1, $6, $7, $9}' /var/log/app/access.log": "10.0.3.8  \"GET  /api/v1/accounts/5432              500\n10.0.4.100 \"GET  /api/v1/reports/monthly             504\n10.0.3.8  \"GET  /api/v1/accounts/5432              500\n10.0.4.100 \"GET  /api/v1/reports/monthly             504\n10.0.7.12 \"POST /api/v1/payments                    502\n10.0.3.8  \"GET  /api/v1/accounts/5432              500\n10.0.9.5  \"POST /api/v1/kyc/verify                  503",
+
+    "awk 'BEGIN{FS=\",\"; OFS=\"\\t\"} NR>1 {print $1, $2, $4\"ms\"}' /var/log/app/metrics.csv": "api-gateway\t/api/v1/accounts\t45ms\napi-gateway\t/api/v1/transfers\t120ms\npayment-svc\t/payments/process\t890ms\nauth-svc\t/auth/login\t35ms\nkyc-svc\t/kyc/verify\t2500ms\nreport-svc\t/reports/monthly\t15000ms\nnotification-svc\t/notify/send\t200ms\nbalance-svc\t/balance/check\t28ms",
+
+    "awk 'BEGIN{max=0} $9>=500 {count++; if($NF>max){max=$NF; worst=$0}} END{print \"Worst request (\", max, \"s):\"; print worst}' /var/log/app/access.log": "Worst request ( 30.000 s):\n10.0.4.100 - - [02/Jun/2026:10:12:04 +0000] \"GET /api/v1/reports/monthly HTTP/1.1\" 504 0 \"-\" \"Mozilla/5.0\" 30.000",
+
+    "awk -F',' 'NR>1 {printf \"%-20s | %-25s | %6d reqs | p99=%5dms | err=%5.1f%%\\n\", $1, $2, $3, $4, $5*100}' /var/log/app/metrics.csv": "api-gateway          | /api/v1/accounts          |  14523 reqs | p99=   45ms | err=  2.0%\napi-gateway          | /api/v1/transfers         |   8721 reqs | p99=  120ms | err=  5.0%\npayment-svc          | /payments/process         |   3200 reqs | p99=  890ms | err= 12.0%\nauth-svc             | /auth/login               |  22100 reqs | p99=   35ms | err=  1.0%\nkyc-svc              | /kyc/verify               |   1500 reqs | p99= 2500ms | err=  8.0%\nreport-svc           | /reports/monthly          |    450 reqs | p99=15000ms | err= 15.0%\nnotification-svc     | /notify/send              |   9800 reqs | p99=  200ms | err=  3.0%\nbalance-svc          | /balance/check            |  18400 reqs | p99=   28ms | err=  0.5%",
+
+    "sed -n '1p' /var/log/app/access.log": "10.0.2.15 - - [02/Jun/2026:10:12:01 +0000] \"GET /api/v1/accounts HTTP/1.1\" 200 1534 \"-\" \"Mozilla/5.0\" 0.012",
+
+    "sed -n '$p' /var/log/app/access.log": "10.0.9.5 - - [02/Jun/2026:10:12:17 +0000] \"POST /api/v1/kyc/verify HTTP/1.1\" 503 64 \"-\" \"KYCService/1.2\" 10.001",
+
+    "sed -n '/500/p' /var/log/app/access.log": "10.0.3.8 - - [02/Jun/2026:10:12:02 +0000] \"GET /api/v1/accounts/5432 HTTP/1.1\" 500 128 \"-\" \"Python/3.11\" 2.301\n10.0.3.8 - - [02/Jun/2026:10:12:07 +0000] \"GET /api/v1/accounts/5432 HTTP/1.1\" 500 128 \"-\" \"Python/3.11\" 2.450\n10.0.3.8 - - [02/Jun/2026:10:12:13 +0000] \"GET /api/v1/accounts/5432 HTTP/1.1\" 500 128 \"-\" \"Python/3.11\" 2.280",
+
+    "sed 's/10\\.0\\.[0-9]*\\.[0-9]*/[REDACTED]/g' /var/log/app/access.log": "[REDACTED] - - [02/Jun/2026:10:12:01 +0000] \"GET /api/v1/accounts HTTP/1.1\" 200 1534 \"-\" \"Mozilla/5.0\" 0.012\n[REDACTED] - - [02/Jun/2026:10:12:02 +0000] \"POST /api/v1/transfers HTTP/1.1\" 201 892 \"-\" \"curl/7.88\" 0.045\n[REDACTED] - - [02/Jun/2026:10:12:02 +0000] \"GET /api/v1/accounts/5432 HTTP/1.1\" 500 128 \"-\" \"Python/3.11\" 2.301\n...(all IPs redacted)",
+
+    "sed '/^$/d; /^#/d' /var/log/app/metrics.csv": "api-gateway,/api/v1/accounts,14523,45,0.02\napi-gateway,/api/v1/transfers,8721,120,0.05\npayment-svc,/payments/process,3200,890,0.12\nauth-svc,/auth/login,22100,35,0.01\nkyc-svc,/kyc/verify,1500,2500,0.08\nreport-svc,/reports/monthly,450,15000,0.15\nnotification-svc,/notify/send,9800,200,0.03\nbalance-svc,/balance/check,18400,28,0.005",
+
+    "sed 's/,/|/g' /var/log/app/metrics.csv": "# service_name|endpoint|request_count|p99_latency_ms|error_rate\napi-gateway|/api/v1/accounts|14523|45|0.02\napi-gateway|/api/v1/transfers|8721|120|0.05\npayment-svc|/payments/process|3200|890|0.12\nauth-svc|/auth/login|22100|35|0.01\nkyc-svc|/kyc/verify|1500|2500|0.08\nreport-svc|/reports/monthly|450|15000|0.15\nnotification-svc|/notify/send|9800|200|0.03\nbalance-svc|/balance/check|18400|28|0.005",
+
+    "awk 'BEGIN{print \"=== SRE Incident Report ===\"; print \"\"} $9>=500 {err[$7]++; ips[$1]++} END{print \"Error endpoints:\"; for(e in err) printf \"  %-35s %dx\\n\", e, err[e]; print \"\"; print \"Source IPs with errors:\"; for(i in ips) printf \"  %-15s %dx\\n\", i, ips[i]}' /var/log/app/access.log": "=== SRE Incident Report ===\n\nError endpoints:\n  /api/v1/accounts/5432              3x\n  /api/v1/reports/monthly            2x\n  /api/v1/payments                   1x\n  /api/v1/kyc/verify                 1x\n\nSource IPs with errors:\n  10.0.3.8        3x\n  10.0.4.100      2x\n  10.0.7.12       1x\n  10.0.9.5        1x",
+
+    "awk '{sub(/.*\\[/, \"\", $4); sub(/\\]/, \"\", $4); print $4}' /var/log/app/access.log": "02/Jun/2026:10:12:01\n02/Jun/2026:10:12:02\n02/Jun/2026:10:12:02\n02/Jun/2026:10:12:03\n02/Jun/2026:10:12:04\n02/Jun/2026:10:12:05\n02/Jun/2026:10:12:05\n02/Jun/2026:10:12:06\n02/Jun/2026:10:12:07\n02/Jun/2026:10:12:07\n02/Jun/2026:10:12:08\n02/Jun/2026:10:12:09\n02/Jun/2026:10:12:10\n02/Jun/2026:10:12:11\n02/Jun/2026:10:12:12\n02/Jun/2026:10:12:13\n02/Jun/2026:10:12:14\n02/Jun/2026:10:12:15\n02/Jun/2026:10:12:16\n02/Jun/2026:10:12:17",
+
+    "awk '$NF > 1.0 {printf \"SLOW: %s %s -> %.3fs\\n\", $6, $7, $NF}' /var/log/app/access.log": "SLOW: \"GET /api/v1/accounts/5432 -> 2.301s\nSLOW: \"GET /api/v1/reports/monthly -> 30.000s\nSLOW: \"GET /api/v1/accounts/5432 -> 2.450s\nSLOW: \"GET /api/v1/reports/monthly -> 30.000s\nSLOW: \"POST /api/v1/payments -> 5.002s\nSLOW: \"GET /api/v1/accounts/5432 -> 2.280s\nSLOW: \"POST /api/v1/kyc/verify -> 10.001s",
+
+    "awk 'BEGIN{FS=\",\"} NR>1 && $4>500 {printf \"SLO BREACH: %s %s (p99=%dms, threshold=500ms)\\n\", $1, $2, $4}' /var/log/app/metrics.csv": "SLO BREACH: payment-svc /payments/process (p99=890ms, threshold=500ms)\nSLO BREACH: kyc-svc /kyc/verify (p99=2500ms, threshold=500ms)\nSLO BREACH: report-svc /reports/monthly (p99=15000ms, threshold=500ms)",
+
+    "sed -e 's/^#.*//' -e '/^$/d' /etc/nginx/nginx.conf": "worker_processes auto;\nhttp {\n    include       mime.types;\n    sendfile      on;\n    keepalive_timeout 65;\n    add_header X-Content-Type-Options nosniff;\n    add_header X-XSS-Protection \"1; mode=block\";\n    upstream api_backend {\n        server 10.0.1.10:8080;\n        server 10.0.1.11:8080;\n    }\n    server {\n        listen 80;\n        server_name staging.example.com;\n        location / {\n            proxy_pass http://api_backend;\n            proxy_set_header Host $host;\n            proxy_set_header X-Real-IP $remote_addr;\n        }\n        location /health {\n            return 200 'OK';\n        }\n        access_log /var/log/nginx/access.log;\n        error_log  /var/log/nginx/error.log warn;\n    }\n    server {\n        listen 80;\n        server_name staging.example.com;\n        return 301 https://staging.example.com$request_uri;\n    }\n}",
+
+    "awk '{method=substr($6,2); methods[method]++} END{for(m in methods) print m, methods[m]}' /var/log/app/access.log": "GET 13\nPOST 6\nDELETE 1",
+
+    "awk -F',' 'NR>1 {weighted_sum += $3 * $4; total_reqs += $3} END{printf \"Weighted avg p99: %.1fms\\n\", weighted_sum/total_reqs}' /var/log/app/metrics.csv": "Weighted avg p99: 156.3ms",
+
+    "sed '/location \\/health/,/}/c\\        location /health {\\n            access_log off;\\n            return 200 '\"'\"'OK'\"'\"';\\n        }' /etc/nginx/nginx.conf": "...\n        location /health {\n            access_log off;\n            return 200 'OK';\n        }\n..."
+  },
+  "reference": [
+    {
+      "group": "sed \u2014 Substitution",
+      "commands": [
+        {
+          "cmd": "sed 's/old/new/' file",
+          "desc": "replace first match per line"
+        },
+        {
+          "cmd": "sed 's/old/new/g' file",
+          "desc": "replace all matches per line"
+        },
+        {
+          "cmd": "sed 's/old/new/gi' file",
+          "desc": "case-insensitive replace"
+        },
+        {
+          "cmd": "sed -i.bak 's/old/new/g' file",
+          "desc": "edit in-place with backup"
+        },
+        {
+          "cmd": "sed -e 's/a/b/' -e 's/c/d/' file",
+          "desc": "chain multiple edits"
+        }
+      ]
+    },
+    {
+      "group": "sed \u2014 Addresses & Ranges",
+      "commands": [
+        {
+          "cmd": "sed -n '5,10p' file",
+          "desc": "print lines 5\u201310"
+        },
+        {
+          "cmd": "sed -n '/pattern/p' file",
+          "desc": "print matching lines"
+        },
+        {
+          "cmd": "sed -n '/start/,/end/p' file",
+          "desc": "print range between patterns"
+        },
+        {
+          "cmd": "sed -n '1p' file",
+          "desc": "print first line"
+        },
+        {
+          "cmd": "sed -n '$p' file",
+          "desc": "print last line"
+        }
+      ]
+    },
+    {
+      "group": "sed \u2014 Delete, Insert, Append",
+      "commands": [
+        {
+          "cmd": "sed '/pattern/d' file",
+          "desc": "delete matching lines"
+        },
+        {
+          "cmd": "sed '/^#/d' file",
+          "desc": "delete comment lines"
+        },
+        {
+          "cmd": "sed '/^$/d' file",
+          "desc": "delete blank lines"
+        },
+        {
+          "cmd": "sed '/pattern/a\\text' file",
+          "desc": "append text after match"
+        },
+        {
+          "cmd": "sed '/pattern/i\\text' file",
+          "desc": "insert text before match"
+        },
+        {
+          "cmd": "sed '1i\\header line' file",
+          "desc": "insert at top of file"
+        }
+      ]
+    },
+    {
+      "group": "sed \u2014 Advanced",
+      "commands": [
+        {
+          "cmd": "sed '/start/,/end/c\\replacement' file",
+          "desc": "replace range with text"
+        },
+        {
+          "cmd": "sed 's/[[:space:]]*$//' file",
+          "desc": "strip trailing whitespace"
+        },
+        {
+          "cmd": "sed 's/pattern/[REDACTED]/g' file",
+          "desc": "redact sensitive data"
+        },
+        {
+          "cmd": "sed = file | sed 'N;s/\\n/\\t/'",
+          "desc": "add line numbers"
+        },
+        {
+          "cmd": "sed 's/,/|/g' file",
+          "desc": "change CSV delimiter"
+        }
+      ]
+    },
+    {
+      "group": "awk \u2014 Print & Fields",
+      "commands": [
+        {
+          "cmd": "awk '{print}' file",
+          "desc": "print all lines (like cat)"
+        },
+        {
+          "cmd": "awk '{print $1, $9}' file",
+          "desc": "print specific fields"
+        },
+        {
+          "cmd": "awk -F',' '{print $1}' file",
+          "desc": "set custom delimiter"
+        },
+        {
+          "cmd": "awk '{print NR, $0}' file",
+          "desc": "print with line numbers"
+        },
+        {
+          "cmd": "awk '{print NF}' file",
+          "desc": "print field count per line"
+        }
+      ]
+    },
+    {
+      "group": "awk \u2014 Patterns & Filters",
+      "commands": [
+        {
+          "cmd": "awk '/pattern/' file",
+          "desc": "filter by regex"
+        },
+        {
+          "cmd": "awk '$9 >= 500' file",
+          "desc": "filter by field comparison"
+        },
+        {
+          "cmd": "awk '/POST/' file",
+          "desc": "filter by string match"
+        },
+        {
+          "cmd": "awk 'NR==1, NR==5' file",
+          "desc": "range by line number"
+        },
+        {
+          "cmd": "awk '$NF > 1.0' file",
+          "desc": "filter by last field"
+        }
+      ]
+    },
+    {
+      "group": "awk \u2014 BEGIN/END & Aggregation",
+      "commands": [
+        {
+          "cmd": "awk 'BEGIN{n=0} {n++} END{print n}'",
+          "desc": "count lines"
+        },
+        {
+          "cmd": "awk '{sum+=$10} END{print sum}'",
+          "desc": "sum a numeric field"
+        },
+        {
+          "cmd": "awk '{status[$9]++} END{for(s in status) print s, status[s]}'",
+          "desc": "count by group"
+        },
+        {
+          "cmd": "awk '{ips[$1]++} END{for(ip in ips) print ips[ip], ip}' | sort -rn",
+          "desc": "top-N with sort"
+        },
+        {
+          "cmd": "awk 'BEGIN{max=0} $NF>max {max=$NF; line=$0} END{print line}'",
+          "desc": "find max value row"
+        }
+      ]
+    },
+    {
+      "group": "awk \u2014 Formatting & Output",
+      "commands": [
+        {
+          "cmd": "awk '{printf \"%-20s %s\\n\", $1, $2}'",
+          "desc": "formatted columns"
+        },
+        {
+          "cmd": "awk 'BEGIN{OFS=\",\"} {print $1, $9, $10}'",
+          "desc": "custom output separator"
+        },
+        {
+          "cmd": "awk 'BEGIN{FS=\",\"; OFS=\"\\t\"} {print}'",
+          "desc": "convert CSV to TSV"
+        }
+      ]
+    },
+    {
+      "group": "awk \u2014 String Functions",
+      "commands": [
+        {
+          "cmd": "awk '{gsub(/old/, \"new\"); print}'",
+          "desc": "global substitution"
+        },
+        {
+          "cmd": "awk '{print length($0)}'",
+          "desc": "line length"
+        },
+        {
+          "cmd": "awk '{n=split($7, a, \"/\"); print a[3]}'",
+          "desc": "split field by delimiter"
+        },
+        {
+          "cmd": "awk '{print substr($6, 2)}'",
+          "desc": "substring extraction"
+        },
+        {
+          "cmd": "awk '{sub(/pattern/, \"repl\", $4); print}'",
+          "desc": "first substitution in field"
+        }
+      ]
+    },
+    {
+      "group": "awk \u2014 SRE Patterns",
+      "commands": [
+        {
+          "cmd": "awk '$9>=500 {err[$7]++} END{for(e in err) print e, err[e]}'",
+          "desc": "error count by endpoint"
+        },
+        {
+          "cmd": "awk '$NF > 1.0 {printf \"SLOW: %s -> %.3fs\\n\", $7, $NF}'",
+          "desc": "find slow requests"
+        },
+        {
+          "cmd": "awk -F',' 'NR>1 && $4>500 {print \"SLO BREACH:\", $1, $2}'",
+          "desc": "detect SLO breaches"
+        },
+        {
+          "cmd": "awk '{bytes+=$10} END{printf \"%.2f KB\\n\", bytes/1024}'",
+          "desc": "total bandwidth"
+        }
+      ]
+    },
+    {
+      "group": "sed + awk Combos",
+      "commands": [
+        {
+          "cmd": "sed '/^#/d' file | awk -F',' '{sum+=$3} END{print sum}'",
+          "desc": "strip comments, then sum"
+        },
+        {
+          "cmd": "sed 's/pattern/[REDACTED]/g' file | awk '{print $1, $9}'",
+          "desc": "redact then extract"
+        }
+      ]
+    },
+    {
+      "group": "Scenarios",
+      "commands": [
+        {
+          "cmd": "scenario transform-config",
+          "desc": "transform nginx config with sed"
+        },
+        {
+          "cmd": "scenario log-analysis-pipeline",
+          "desc": "build log analysis with awk"
+        }
+      ]
+    }
+  ]
+}

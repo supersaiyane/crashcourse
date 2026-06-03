@@ -1,0 +1,330 @@
+{
+  "id": "jenkins",
+  "prompt": "jenkins@ci:~$",
+  "welcome": "Welcome to the Jenkins CLI Playground.\nType commands to explore a simulated Jenkins CI/CD server.\nType 'help' for available commands, 'scenario' for guided labs.\n",
+  "scenarios": [
+    {
+      "id": "debug-failing-build",
+      "title": "Debug a Failing Build",
+      "steps": [
+        {
+          "instruction": "First, check your identity and permissions on the Jenkins server.",
+          "expect": "jenkins-cli who-am-i",
+          "hint": "Try: jenkins-cli who-am-i"
+        },
+        {
+          "instruction": "List all jobs to find the failing pipeline.",
+          "expect": "jenkins-cli list-jobs",
+          "hint": "Try: jenkins-cli list-jobs"
+        },
+        {
+          "instruction": "The payment-service-pipeline looks suspicious. Get its configuration to understand the stages.",
+          "expect": "jenkins-cli get-job payment-service-pipeline",
+          "hint": "Try: jenkins-cli get-job payment-service-pipeline"
+        },
+        {
+          "instruction": "Check the console output of the last build to find the error.",
+          "expect": "jenkins-cli console payment-service-pipeline 47",
+          "hint": "Try: jenkins-cli console payment-service-pipeline 47"
+        },
+        {
+          "instruction": "The SonarQube stage failed. Check the build queue to see if a retry is already pending.",
+          "expect": "curl -s http://localhost:8080/queue/api/json",
+          "hint": "Try: curl -s http://localhost:8080/queue/api/json"
+        },
+        {
+          "instruction": "Nothing queued. Trigger a new build with the SKIP_SONAR parameter to unblock the release.",
+          "expect": "jenkins-cli build payment-service-pipeline -p SKIP_SONAR=true",
+          "hint": "Try: jenkins-cli build payment-service-pipeline -p SKIP_SONAR=true"
+        },
+        {
+          "instruction": "Verify the build was queued and check its console output.",
+          "expect": "jenkins-cli console payment-service-pipeline 48",
+          "hint": "Try: jenkins-cli console payment-service-pipeline 48"
+        },
+        {
+          "instruction": "Build succeeded. Check the overall node health to make sure agents are stable.",
+          "expect": "curl -s http://localhost:8080/computer/api/json",
+          "hint": "Try: curl -s http://localhost:8080/computer/api/json"
+        }
+      ]
+    },
+    {
+      "id": "manage-jobs-credentials",
+      "title": "Manage Jobs and Credentials",
+      "steps": [
+        {
+          "instruction": "List all jobs currently configured on the server.",
+          "expect": "jenkins-cli list-jobs",
+          "hint": "Try: jenkins-cli list-jobs"
+        },
+        {
+          "instruction": "The legacy-batch-job is no longer needed. Disable it first (safe before deleting).",
+          "expect": "jenkins-cli disable-job legacy-batch-job",
+          "hint": "Try: jenkins-cli disable-job legacy-batch-job"
+        },
+        {
+          "instruction": "Now delete the disabled job entirely.",
+          "expect": "jenkins-cli delete-job legacy-batch-job",
+          "hint": "Try: jenkins-cli delete-job legacy-batch-job"
+        },
+        {
+          "instruction": "Create a new pipeline job for the fraud-detection service from an XML config.",
+          "expect": "jenkins-cli create-job fraud-detection-pipeline < fraud-detection-config.xml",
+          "hint": "Try: jenkins-cli create-job fraud-detection-pipeline < fraud-detection-config.xml"
+        },
+        {
+          "instruction": "List credentials to verify the database secret the new job needs.",
+          "expect": "jenkins-cli list-credentials system::system::jenkins",
+          "hint": "Try: jenkins-cli list-credentials system::system::jenkins"
+        },
+        {
+          "instruction": "Check which plugins are installed — the new job needs the Pipeline Utility Steps plugin.",
+          "expect": "jenkins-cli list-plugins",
+          "hint": "Try: jenkins-cli list-plugins"
+        },
+        {
+          "instruction": "Install the missing plugin.",
+          "expect": "jenkins-cli install-plugin pipeline-utility-steps",
+          "hint": "Try: jenkins-cli install-plugin pipeline-utility-steps"
+        },
+        {
+          "instruction": "A plugin install requires a restart. Trigger a safe restart (waits for running builds to finish).",
+          "expect": "jenkins-cli safe-restart",
+          "hint": "Try: jenkins-cli safe-restart"
+        }
+      ]
+    }
+  ],
+  "commands": {
+    "help": "Available commands:\n  jenkins-cli who-am-i                — Show current user and permissions\n  jenkins-cli list-jobs               — List all jobs on the server\n  jenkins-cli get-job <name>          — Get job configuration (XML)\n  jenkins-cli create-job <name>       — Create a job from XML on stdin\n  jenkins-cli delete-job <name>       — Delete a job\n  jenkins-cli disable-job <name>      — Disable a job\n  jenkins-cli enable-job <name>       — Enable a disabled job\n  jenkins-cli build <name>            — Trigger a build (-p KEY=VAL for params)\n  jenkins-cli console <name> <build>  — View console output of a build\n  jenkins-cli list-plugins            — List installed plugins\n  jenkins-cli install-plugin <name>   — Install a plugin\n  jenkins-cli list-credentials <store>— List credentials in a store\n  jenkins-cli safe-restart            — Restart after running builds finish\n  jenkins-cli safe-shutdown           — Shutdown after running builds finish\n  jenkins-cli version                 — Show Jenkins version\n  jenkins-cli groovy <script>         — Execute a Groovy script on the server\n  curl ...api/json                    — Query Jenkins REST API endpoints\n  declarative-linter                  — Validate a Jenkinsfile\n\n  scenario                            — Start a guided lab\n  clear                               — Clear the terminal\n  help                                — Show this help",
+    "jenkins-cli version": "Version: 2.462.3",
+    "jenkins-cli who-am-i": "Authenticated as: sre-admin\nAuthorities:\n  authenticated\n  admin\n  Overall/Administer\n  Overall/Read\n  Job/Build\n  Job/Configure\n  Job/Create\n  Job/Delete\n  Job/Read\n  Credentials/View",
+    "jenkins-cli list-jobs": "payment-service-pipeline\nfraud-detection-pipeline\nkyc-verification-pipeline\nreconciliation-batch\ninfra-terraform-apply\nlegacy-batch-job\nnotification-service-pipeline\nmonth-end-reports",
+    "jenkins-cli get-job payment-service-pipeline": "<?xml version='1.1' encoding='UTF-8'?>\n<flow-definition plugin=\"workflow-job\">\n  <description>BFSI Payment Service — build, test, scan, deploy</description>\n  <keepDependencies>false</keepDependencies>\n  <properties>\n    <org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>\n      <triggers>\n        <com.cloudbees.jenkins.GitHubPushTrigger/>\n      </triggers>\n    </org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>\n    <hudson.model.ParametersDefinitionProperty>\n      <parameterDefinitions>\n        <hudson.model.StringParameterDefinition>\n          <name>BRANCH</name>\n          <defaultValue>main</defaultValue>\n        </hudson.model.StringParameterDefinition>\n        <hudson.model.BooleanParameterDefinition>\n          <name>SKIP_SONAR</name>\n          <defaultValue>false</defaultValue>\n        </hudson.model.BooleanParameterDefinition>\n      </parameterDefinitions>\n    </hudson.model.ParametersDefinitionProperty>\n  </properties>\n  <definition class=\"org.jenkinsci.plugins.workflow.cps.CpsScmFlowDefinition\">\n    <scm class=\"hudson.plugins.git.GitSCM\">\n      <userRemoteConfigs>\n        <hudson.plugins.git.UserRemoteConfig>\n          <url>https://github.com/bfsi-org/payment-service.git</url>\n          <credentialsId>github-pat</credentialsId>\n        </hudson.plugins.git.UserRemoteConfig>\n      </userRemoteConfigs>\n    </scm>\n    <scriptPath>Jenkinsfile</scriptPath>\n  </definition>\n</flow-definition>",
+    "jenkins-cli get-job fraud-detection-pipeline": "<?xml version='1.1' encoding='UTF-8'?>\n<flow-definition plugin=\"workflow-job\">\n  <description>Fraud detection ML model — train, validate, deploy</description>\n  <keepDependencies>false</keepDependencies>\n  <definition class=\"org.jenkinsci.plugins.workflow.cps.CpsScmFlowDefinition\">\n    <scm class=\"hudson.plugins.git.GitSCM\">\n      <userRemoteConfigs>\n        <hudson.plugins.git.UserRemoteConfig>\n          <url>https://github.com/bfsi-org/fraud-detection.git</url>\n          <credentialsId>github-pat</credentialsId>\n        </hudson.plugins.git.UserRemoteConfig>\n      </userRemoteConfigs>\n    </scm>\n    <scriptPath>Jenkinsfile</scriptPath>\n  </definition>\n</flow-definition>",
+    "jenkins-cli get-job reconciliation-batch": "<?xml version='1.1' encoding='UTF-8'?>\n<project>\n  <description>Nightly reconciliation batch — CBS vs payment gateway</description>\n  <keepDependencies>false</keepDependencies>\n  <triggers>\n    <hudson.triggers.TimerTrigger>\n      <spec>H 2 * * *</spec>\n    </hudson.triggers.TimerTrigger>\n  </triggers>\n  <builders>\n    <hudson.tasks.Shell>\n      <command>python3 /opt/scripts/reconcile.py --date=$(date -d yesterday +%Y-%m-%d)</command>\n    </hudson.tasks.Shell>\n  </builders>\n</project>",
+    "jenkins-cli build payment-service-pipeline": "Started payment-service-pipeline #48\nQueued. Estimated wait: 12s",
+    "jenkins-cli build payment-service-pipeline -p SKIP_SONAR=true": "Started payment-service-pipeline #48\nQueued with parameters: SKIP_SONAR=true\nEstimated wait: 12s",
+    "jenkins-cli build payment-service-pipeline -p BRANCH=release/v3.2.0": "Started payment-service-pipeline #49\nQueued with parameters: BRANCH=release/v3.2.0\nEstimated wait: 12s",
+    "jenkins-cli build fraud-detection-pipeline": "Started fraud-detection-pipeline #12\nQueued. Estimated wait: 8s",
+    "jenkins-cli build reconciliation-batch": "Started reconciliation-batch #365\nQueued. Estimated wait: 5s",
+    "jenkins-cli build kyc-verification-pipeline": "Started kyc-verification-pipeline #89\nQueued. Estimated wait: 10s",
+    "jenkins-cli build notification-service-pipeline": "Started notification-service-pipeline #34\nQueued. Estimated wait: 6s",
+    "jenkins-cli build month-end-reports": "Started month-end-reports #31\nQueued. Estimated wait: 15s",
+    "jenkins-cli console payment-service-pipeline 47": "Started by user sre-admin\nRunning on agent-linux-02 in workspace /var/jenkins/workspace/payment-service-pipeline\nChecking out git https://github.com/bfsi-org/payment-service.git into workspace\n > git checkout main\n[Pipeline] stage (Build)\n + ./gradlew clean build -x test\n BUILD SUCCESSFUL in 42s\n[Pipeline] stage (Unit Tests)\n + ./gradlew test\n Tests run: 247, Failures: 0, Errors: 0, Skipped: 3\n BUILD SUCCESSFUL in 28s\n[Pipeline] stage (SonarQube Analysis)\n + sonar-scanner -Dsonar.projectKey=payment-service\n ERROR: SonarQube server [https://sonar.internal.bfsi.com] can not be reached\n ERROR: Failed to execute goal org.sonarsource.scanner:sonar-maven-plugin:3.9.1:sonar\n[Pipeline] stage (SonarQube Analysis) FAILED\nBuild step 'SonarQube Analysis' marked build as FAILURE\nFinished: FAILURE\nDuration: 1 min 38 sec",
+    "jenkins-cli console payment-service-pipeline 48": "Started by user sre-admin\nRunning on agent-linux-02 in workspace /var/jenkins/workspace/payment-service-pipeline\nChecking out git https://github.com/bfsi-org/payment-service.git into workspace\n > git checkout main\n[Pipeline] stage (Build)\n + ./gradlew clean build -x test\n BUILD SUCCESSFUL in 40s\n[Pipeline] stage (Unit Tests)\n + ./gradlew test\n Tests run: 247, Failures: 0, Errors: 0, Skipped: 3\n BUILD SUCCESSFUL in 26s\n[Pipeline] stage (SonarQube Analysis)\n Skipped (SKIP_SONAR=true)\n[Pipeline] stage (Docker Build & Push)\n + docker build -t registry.bfsi.com/payment-service:v3.1.48 .\n + docker push registry.bfsi.com/payment-service:v3.1.48\n[Pipeline] stage (Deploy to Staging)\n + kubectl set image deployment/payment-service payment-service=registry.bfsi.com/payment-service:v3.1.48 -n staging\n deployment.apps/payment-service image updated\n[Pipeline] stage (Integration Tests)\n + ./gradlew integrationTest\n Tests run: 64, Failures: 0, Errors: 0\n BUILD SUCCESSFUL in 1 min 12 sec\nFinished: SUCCESS\nDuration: 3 min 45 sec",
+    "jenkins-cli console payment-service-pipeline 46": "Started by GitHub push by dev-ravi\nRunning on agent-linux-01 in workspace /var/jenkins/workspace/payment-service-pipeline\n[Pipeline] stage (Build)\n + ./gradlew clean build -x test\n BUILD SUCCESSFUL in 38s\n[Pipeline] stage (Unit Tests)\n + ./gradlew test\n Tests run: 247, Failures: 0, Errors: 0, Skipped: 3\n[Pipeline] stage (SonarQube Analysis)\n + sonar-scanner -Dsonar.projectKey=payment-service\n Analysis complete. Quality Gate: PASSED\n[Pipeline] stage (Docker Build & Push)\n + docker build -t registry.bfsi.com/payment-service:v3.1.46 .\n + docker push registry.bfsi.com/payment-service:v3.1.46\n[Pipeline] stage (Deploy to Staging)\n + kubectl set image deployment/payment-service payment-service=registry.bfsi.com/payment-service:v3.1.46 -n staging\n deployment.apps/payment-service image updated\n[Pipeline] stage (Integration Tests)\n + ./gradlew integrationTest\n Tests run: 64, Failures: 0, Errors: 0\nFinished: SUCCESS\nDuration: 3 min 22 sec",
+    "jenkins-cli console reconciliation-batch 365": "Started by timer\nRunning on agent-linux-01 in workspace /var/jenkins/workspace/reconciliation-batch\n + python3 /opt/scripts/reconcile.py --date=2026-06-01\n[INFO] Loading CBS transactions for 2026-06-01... 14,832 records\n[INFO] Loading gateway transactions for 2026-06-01... 14,830 records\n[WARN] 2 unmatched transactions found:\n  TXN-20260601-8842: CBS=SETTLED, Gateway=PENDING (INR 15,000)\n  TXN-20260601-9103: CBS=MISSING, Gateway=SETTLED (INR 8,200)\n[INFO] Reconciliation report written to /reports/recon-2026-06-01.csv\n[INFO] Alert sent to payments-ops@bfsi.com\nFinished: UNSTABLE\nDuration: 2 min 15 sec",
+    "jenkins-cli console fraud-detection-pipeline 12": "Started by user ml-engineer\nRunning on agent-gpu-01 in workspace /var/jenkins/workspace/fraud-detection-pipeline\n[Pipeline] stage (Data Validation)\n + python3 validate_data.py --source s3://bfsi-ml/training/2026-06/\n Validated 1.2M records. Schema: OK. Nulls: 0.02%\n[Pipeline] stage (Model Training)\n + python3 train.py --config configs/prod.yaml\n Epoch 1/10: loss=0.342, auc=0.891\n Epoch 10/10: loss=0.089, auc=0.967\n Model saved to s3://bfsi-ml/models/fraud-v4.2.bin\n[Pipeline] stage (Model Validation)\n + python3 validate_model.py --threshold 0.95\n AUC: 0.967 (threshold: 0.95) PASSED\n False positive rate: 0.8% PASSED\n[Pipeline] stage (Deploy to Shadow)\n + kubectl set image deployment/fraud-scorer fraud-scorer=registry.bfsi.com/fraud-scorer:v4.2 -n shadow\nFinished: SUCCESS\nDuration: 18 min 42 sec",
+    "jenkins-cli console month-end-reports 31": "Started by timer\nRunning on agent-linux-02 in workspace /var/jenkins/workspace/month-end-reports\n[Pipeline] stage (Generate Reports)\n + python3 /opt/reports/monthly.py --month=2026-05\n[INFO] Generating P&L summary... done\n[INFO] Generating transaction volume report... done\n[INFO] Generating regulatory compliance report... done\n[INFO] Generating SLA breach report... done\n[Pipeline] stage (Upload to SharePoint)\n + python3 /opt/reports/upload.py --target sharepoint://finance/monthly/2026-05/\n Uploaded 4 reports\n[Pipeline] stage (Notify Stakeholders)\n + python3 /opt/reports/notify.py --group finance-leadership\n Email sent to 12 recipients\nFinished: SUCCESS\nDuration: 8 min 30 sec",
+    "jenkins-cli disable-job legacy-batch-job": "Job 'legacy-batch-job' disabled.",
+    "jenkins-cli disable-job reconciliation-batch": "Job 'reconciliation-batch' disabled.",
+    "jenkins-cli enable-job legacy-batch-job": "Job 'legacy-batch-job' enabled.",
+    "jenkins-cli enable-job reconciliation-batch": "Job 'reconciliation-batch' enabled.",
+    "jenkins-cli enable-job payment-service-pipeline": "Job 'payment-service-pipeline' is already enabled.",
+    "jenkins-cli delete-job legacy-batch-job": "Job 'legacy-batch-job' deleted.",
+    "jenkins-cli create-job fraud-detection-pipeline < fraud-detection-config.xml": "Job 'fraud-detection-pipeline' created.",
+    "jenkins-cli create-job new-service-pipeline < new-service-config.xml": "Job 'new-service-pipeline' created.",
+    "jenkins-cli list-plugins": "ace-editor                    1.1          HTML editor plugin\nantisamy-markup-formatter     162.v0e11ec4d7839 Markup formatter\nblueocean                     1.27.11      Blue Ocean UI\ncredentials                   1337.v60b_d7b_c7b_c9f Credentials plugin\ncredentials-binding           677.vdc9c38cb_15e0 Credentials Binding\ndocker-workflow               580.vc0c340686b_54 Docker Pipeline\ngit                           5.2.2        Git plugin\ngithub                        1.39.0       GitHub integration\ngithub-branch-source          1787.v8b_8cd49a_f8f1 GitHub Branch Source\njunit                         1265.v65b_14fa_f12f0 JUnit test results\nkubernetes                    4246.v5a_12b_1fe120e Kubernetes plugin\nkubernetes-cli                1.12.1       Kubernetes CLI\nmatrix-auth                   3.2.2        Matrix Authorization\npipeline-build-step           505.v5f0844d8d126 Pipeline: Build Step\npipeline-model-definition     2.2198.v41dd8ef6dd56 Pipeline: Declarative\npipeline-stage-view           2.34         Pipeline: Stage View\nscript-security               1335.vf07d9ce377a_e Script Security\nsonar                         2.17.2       SonarQube Scanner\nstruct                        338.v848422169819 Struct plugin\ntimestamper                   1.27         Timestamper\nworkflow-aggregator           596.v8c21c963d92d Pipeline plugin suite\nworkflow-cps                  3903.v48a_8836749e9 Pipeline: Groovy CPS\nworkflow-job                  1400.v7fd111b_ec82f Pipeline: Job",
+    "jenkins-cli install-plugin pipeline-utility-steps": "Plugin 'pipeline-utility-steps' downloaded.\nPlugin 'pipeline-utility-steps' version 2.16.2 installed.\nRestart required to activate.",
+    "jenkins-cli install-plugin docker-workflow": "Plugin 'docker-workflow' is already installed (version 580.vc0c340686b_54).",
+    "jenkins-cli install-plugin kubernetes-cli": "Plugin 'kubernetes-cli' is already installed (version 1.12.1).",
+    "jenkins-cli list-credentials system::system::jenkins": "Domain         ID                     Type                     Description\n(global)       github-pat             Username/Password        GitHub PAT for bfsi-org repos\n(global)       docker-registry        Username/Password        Docker registry credentials\n(global)       sonar-token            Secret text              SonarQube analysis token\n(global)       db-prod-password       Secret text              Production DB password\n(global)       aws-deploy-role        AWS Credentials          IAM role for EKS deploy\n(global)       slack-webhook          Secret text              Slack webhook for #ci-alerts\n(global)       k8s-staging-kubeconfig Secret file              Kubeconfig for staging cluster\n(global)       k8s-prod-kubeconfig    Secret file              Kubeconfig for prod cluster",
+    "jenkins-cli list-credentials": "Domain         ID                     Type                     Description\n(global)       github-pat             Username/Password        GitHub PAT for bfsi-org repos\n(global)       docker-registry        Username/Password        Docker registry credentials\n(global)       sonar-token            Secret text              SonarQube analysis token\n(global)       db-prod-password       Secret text              Production DB password\n(global)       aws-deploy-role        AWS Credentials          IAM role for EKS deploy\n(global)       slack-webhook          Secret text              Slack webhook for #ci-alerts\n(global)       k8s-staging-kubeconfig Secret file              Kubeconfig for staging cluster\n(global)       k8s-prod-kubeconfig    Secret file              Kubeconfig for prod cluster",
+    "jenkins-cli safe-restart": "Jenkins is restarting after all running builds complete.\nWaiting for 1 running build(s)...\nAll builds complete. Restarting now.\nJenkins is restarting...\nJenkins is back online. Version: 2.462.3",
+    "jenkins-cli safe-shutdown": "Jenkins is shutting down after all running builds complete.\nWaiting for 0 running build(s)...\nJenkins is shutting down now.",
+    "jenkins-cli groovy \"println Jenkins.instance.numExecutors\"": "4",
+    "jenkins-cli groovy \"Jenkins.instance.pluginManager.plugins.each { println \\\"${it.shortName}: ${it.version}\\\" }\"": "ace-editor: 1.1\nantisamy-markup-formatter: 162.v0e11ec4d7839\nblueocean: 1.27.11\ncredentials: 1337.v60b_d7b_c7b_c9f\ncredentials-binding: 677.vdc9c38cb_15e0\n...(23 plugins listed)",
+    "jenkins-cli groovy \"println Jenkins.instance.queue.items.length\"": "0",
+    "declarative-linter": "Jenkinsfile successfully validated.\nNo errors found.",
+    "declarative-linter < Jenkinsfile": "Jenkinsfile successfully validated.\nNo errors found.",
+    "declarative-linter < Jenkinsfile.invalid": "Errors encountered validating Jenkinsfile:\n  WorkflowScript: 12: Expected a stage @ line 12, column 5.\n  WorkflowScript: 18: Missing required section 'steps' @ line 18, column 9.\n2 error(s) found.",
+    "curl -s http://localhost:8080/api/json": "{\n  \"mode\": \"NORMAL\",\n  \"nodeDescription\": \"Jenkins CI/CD Server\",\n  \"numExecutors\": 4,\n  \"description\": \"BFSI Platform CI/CD\",\n  \"jobs\": [\n    { \"name\": \"payment-service-pipeline\", \"url\": \"http://localhost:8080/job/payment-service-pipeline/\", \"color\": \"red\" },\n    { \"name\": \"fraud-detection-pipeline\", \"url\": \"http://localhost:8080/job/fraud-detection-pipeline/\", \"color\": \"blue\" },\n    { \"name\": \"kyc-verification-pipeline\", \"url\": \"http://localhost:8080/job/kyc-verification-pipeline/\", \"color\": \"blue\" },\n    { \"name\": \"reconciliation-batch\", \"url\": \"http://localhost:8080/job/reconciliation-batch/\", \"color\": \"yellow\" },\n    { \"name\": \"infra-terraform-apply\", \"url\": \"http://localhost:8080/job/infra-terraform-apply/\", \"color\": \"blue\" },\n    { \"name\": \"legacy-batch-job\", \"url\": \"http://localhost:8080/job/legacy-batch-job/\", \"color\": \"disabled\" },\n    { \"name\": \"notification-service-pipeline\", \"url\": \"http://localhost:8080/job/notification-service-pipeline/\", \"color\": \"blue\" },\n    { \"name\": \"month-end-reports\", \"url\": \"http://localhost:8080/job/month-end-reports/\", \"color\": \"blue\" }\n  ],\n  \"useSecurity\": true,\n  \"quietingDown\": false\n}",
+    "curl -s http://localhost:8080/queue/api/json": "{\n  \"items\": [],\n  \"discoverableItems\": []\n}",
+    "curl -s http://localhost:8080/computer/api/json": "{\n  \"busyExecutors\": 1,\n  \"totalExecutors\": 10,\n  \"computer\": [\n    {\n      \"displayName\": \"Built-In Node\",\n      \"executors\": 4,\n      \"idle\": true,\n      \"offline\": false,\n      \"temporarilyOffline\": false\n    },\n    {\n      \"displayName\": \"agent-linux-01\",\n      \"executors\": 2,\n      \"idle\": true,\n      \"offline\": false,\n      \"temporarilyOffline\": false\n    },\n    {\n      \"displayName\": \"agent-linux-02\",\n      \"executors\": 2,\n      \"idle\": false,\n      \"offline\": false,\n      \"temporarilyOffline\": false\n    },\n    {\n      \"displayName\": \"agent-gpu-01\",\n      \"executors\": 2,\n      \"idle\": true,\n      \"offline\": false,\n      \"temporarilyOffline\": false\n    }\n  ]\n}",
+    "curl -s http://localhost:8080/job/payment-service-pipeline/api/json": "{\n  \"name\": \"payment-service-pipeline\",\n  \"fullName\": \"payment-service-pipeline\",\n  \"url\": \"http://localhost:8080/job/payment-service-pipeline/\",\n  \"buildable\": true,\n  \"color\": \"red\",\n  \"lastBuild\": { \"number\": 47, \"result\": \"FAILURE\", \"url\": \"http://localhost:8080/job/payment-service-pipeline/47/\" },\n  \"lastSuccessfulBuild\": { \"number\": 46, \"result\": \"SUCCESS\" },\n  \"lastFailedBuild\": { \"number\": 47, \"result\": \"FAILURE\" },\n  \"nextBuildNumber\": 48,\n  \"healthReport\": [\n    { \"description\": \"Build stability: 1 out of the last 5 builds failed.\", \"score\": 80 }\n  ],\n  \"property\": [\n    {\n      \"parameterDefinitions\": [\n        { \"name\": \"BRANCH\", \"type\": \"StringParameterDefinition\", \"defaultValue\": \"main\" },\n        { \"name\": \"SKIP_SONAR\", \"type\": \"BooleanParameterDefinition\", \"defaultValue\": false }\n      ]\n    }\n  ]\n}",
+    "curl -s http://localhost:8080/job/payment-service-pipeline/47/api/json": "{\n  \"id\": \"47\",\n  \"result\": \"FAILURE\",\n  \"timestamp\": 1748793600000,\n  \"duration\": 98000,\n  \"estimatedDuration\": 225000,\n  \"building\": false,\n  \"builtOn\": \"agent-linux-02\",\n  \"changeSets\": [\n    {\n      \"items\": [\n        { \"commitId\": \"a3f8c2d\", \"msg\": \"fix: handle null UPI reference in settlement\", \"author\": \"dev-ravi\" },\n        { \"commitId\": \"b7e1d4a\", \"msg\": \"test: add edge cases for partial refund flow\", \"author\": \"dev-priya\" }\n      ]\n    }\n  ]\n}",
+    "curl -s http://localhost:8080/job/payment-service-pipeline/48/api/json": "{\n  \"id\": \"48\",\n  \"result\": \"SUCCESS\",\n  \"timestamp\": 1748797200000,\n  \"duration\": 225000,\n  \"estimatedDuration\": 225000,\n  \"building\": false,\n  \"builtOn\": \"agent-linux-02\",\n  \"changeSets\": []\n}",
+    "curl -s http://localhost:8080/job/reconciliation-batch/api/json": "{\n  \"name\": \"reconciliation-batch\",\n  \"fullName\": \"reconciliation-batch\",\n  \"buildable\": true,\n  \"color\": \"yellow\",\n  \"lastBuild\": { \"number\": 365, \"result\": \"UNSTABLE\" },\n  \"lastSuccessfulBuild\": { \"number\": 364, \"result\": \"SUCCESS\" },\n  \"nextBuildNumber\": 366,\n  \"healthReport\": [\n    { \"description\": \"Build stability: All recent builds stable.\", \"score\": 100 },\n    { \"description\": \"Test Result: 2 tests failing out of 14832.\", \"score\": 99 }\n  ]\n}",
+    "curl -s http://localhost:8080/job/payment-service-pipeline/lastBuild/api/json": "{\n  \"id\": \"47\",\n  \"result\": \"FAILURE\",\n  \"timestamp\": 1748793600000,\n  \"duration\": 98000,\n  \"building\": false,\n  \"builtOn\": \"agent-linux-02\"\n}",
+    "curl -s http://localhost:8080/job/payment-service-pipeline/lastSuccessfulBuild/api/json": "{\n  \"id\": \"46\",\n  \"result\": \"SUCCESS\",\n  \"timestamp\": 1748707200000,\n  \"duration\": 202000,\n  \"building\": false,\n  \"builtOn\": \"agent-linux-01\"\n}",
+    "curl -s http://localhost:8080/overallLoad/api/json": "{\n  \"availableExecutors\": { \"hour\": { \"latest\": 9 } },\n  \"busyExecutors\": { \"hour\": { \"latest\": 1 } },\n  \"connectingExecutors\": { \"hour\": { \"latest\": 0 } },\n  \"idleExecutors\": { \"hour\": { \"latest\": 9 } },\n  \"onlineExecutors\": { \"hour\": { \"latest\": 10 } },\n  \"queueLength\": { \"hour\": { \"latest\": 0 } },\n  \"totalExecutors\": { \"hour\": { \"latest\": 10 } },\n  \"totalQueueLength\": { \"hour\": { \"latest\": 0 } }\n}",
+    "curl -s http://localhost:8080/crumbIssuer/api/json": "{\n  \"crumb\": \"a1b2c3d4e5f6a7b8c9d0\",\n  \"crumbRequestField\": \"Jenkins-Crumb\"\n}",
+    "curl -s -X POST http://localhost:8080/job/payment-service-pipeline/build --data-urlencode json='{\"parameter\":[{\"name\":\"BRANCH\",\"value\":\"main\"}]}'": "Build triggered. Redirect to queue item: http://localhost:8080/queue/item/142/",
+    "curl -s http://localhost:8080/pluginManager/api/json?depth=1": "{\n  \"plugins\": [\n    { \"shortName\": \"credentials\", \"version\": \"1337.v60b_d7b_c7b_c9f\", \"active\": true, \"enabled\": true },\n    { \"shortName\": \"git\", \"version\": \"5.2.2\", \"active\": true, \"enabled\": true },\n    { \"shortName\": \"pipeline-model-definition\", \"version\": \"2.2198.v41dd8ef6dd56\", \"active\": true, \"enabled\": true },\n    { \"shortName\": \"kubernetes\", \"version\": \"4246.v5a_12b_1fe120e\", \"active\": true, \"enabled\": true },\n    { \"shortName\": \"sonar\", \"version\": \"2.17.2\", \"active\": true, \"enabled\": true },\n    { \"shortName\": \"blueocean\", \"version\": \"1.27.11\", \"active\": true, \"enabled\": true }\n  ]\n}",
+    "curl -s http://localhost:8080/credentials/store/system/domain/_/api/json": "{\n  \"credentials\": [\n    { \"id\": \"github-pat\", \"typeName\": \"Username with password\", \"description\": \"GitHub PAT for bfsi-org repos\", \"domain\": { \"name\": \"_\" } },\n    { \"id\": \"docker-registry\", \"typeName\": \"Username with password\", \"description\": \"Docker registry credentials\" },\n    { \"id\": \"sonar-token\", \"typeName\": \"Secret text\", \"description\": \"SonarQube analysis token\" },\n    { \"id\": \"db-prod-password\", \"typeName\": \"Secret text\", \"description\": \"Production DB password\" },\n    { \"id\": \"aws-deploy-role\", \"typeName\": \"AWS Credentials\", \"description\": \"IAM role for EKS deploy\" },\n    { \"id\": \"slack-webhook\", \"typeName\": \"Secret text\", \"description\": \"Slack webhook for #ci-alerts\" },\n    { \"id\": \"k8s-staging-kubeconfig\", \"typeName\": \"Secret file\", \"description\": \"Kubeconfig for staging cluster\" },\n    { \"id\": \"k8s-prod-kubeconfig\", \"typeName\": \"Secret file\", \"description\": \"Kubeconfig for prod cluster\" }\n  ]\n}",
+    "curl -s http://localhost:8080/systemInfo": "Jenkins Version: 2.462.3\nJava Version: 17.0.11 (Eclipse Adoptium)\nOS: Linux 5.15.0 (amd64)\nTimezone: Asia/Kolkata\nJVM Memory: 2048M max / 1024M allocated / 612M used\nUptime: 14 days, 6 hours\nPlugins: 23 installed\nJobs: 8 configured\nExecutors: 10 (4 built-in + 6 agent)",
+    "curl -s http://localhost:8080/systemInfo/api/json": "{\n  \"jenkinsVersion\": \"2.462.3\",\n  \"javaVersion\": \"17.0.11\",\n  \"os\": \"Linux 5.15.0 (amd64)\",\n  \"timezone\": \"Asia/Kolkata\",\n  \"uptime\": \"14 days, 6 hours\"\n}"
+  },
+  "reference": [
+    {
+      "group": "Identity & System",
+      "commands": [
+        {
+          "cmd": "jenkins-cli who-am-i",
+          "desc": "current user and permissions"
+        },
+        {
+          "cmd": "jenkins-cli version",
+          "desc": "Jenkins server version"
+        },
+        {
+          "cmd": "curl -s http://localhost:8080/api/json",
+          "desc": "server overview (REST API)"
+        },
+        {
+          "cmd": "curl -s http://localhost:8080/systemInfo",
+          "desc": "system info (JVM, OS, uptime)"
+        },
+        {
+          "cmd": "curl -s http://localhost:8080/crumbIssuer/api/json",
+          "desc": "get CSRF crumb for POST calls"
+        }
+      ]
+    },
+    {
+      "group": "Jobs",
+      "commands": [
+        {
+          "cmd": "jenkins-cli list-jobs",
+          "desc": "list all jobs"
+        },
+        {
+          "cmd": "jenkins-cli get-job payment-service-pipeline",
+          "desc": "job config XML"
+        },
+        {
+          "cmd": "jenkins-cli create-job <name> < config.xml",
+          "desc": "create job from XML"
+        },
+        {
+          "cmd": "jenkins-cli delete-job <name>",
+          "desc": "delete a job"
+        },
+        {
+          "cmd": "jenkins-cli disable-job <name>",
+          "desc": "disable a job"
+        },
+        {
+          "cmd": "jenkins-cli enable-job <name>",
+          "desc": "enable a disabled job"
+        },
+        {
+          "cmd": "curl -s http://localhost:8080/job/<name>/api/json",
+          "desc": "job details via REST"
+        }
+      ]
+    },
+    {
+      "group": "Builds",
+      "commands": [
+        {
+          "cmd": "jenkins-cli build <name>",
+          "desc": "trigger a build"
+        },
+        {
+          "cmd": "jenkins-cli build <name> -p KEY=VAL",
+          "desc": "build with parameters"
+        },
+        {
+          "cmd": "jenkins-cli console <name> <number>",
+          "desc": "console output of a build"
+        },
+        {
+          "cmd": "curl -s .../lastBuild/api/json",
+          "desc": "last build info (REST)"
+        },
+        {
+          "cmd": "curl -s .../lastSuccessfulBuild/api/json",
+          "desc": "last green build (REST)"
+        },
+        {
+          "cmd": "curl -X POST .../build",
+          "desc": "trigger build via REST"
+        }
+      ]
+    },
+    {
+      "group": "Queue & Agents",
+      "commands": [
+        {
+          "cmd": "curl -s http://localhost:8080/queue/api/json",
+          "desc": "build queue"
+        },
+        {
+          "cmd": "curl -s http://localhost:8080/computer/api/json",
+          "desc": "agents and executors"
+        },
+        {
+          "cmd": "curl -s http://localhost:8080/overallLoad/api/json",
+          "desc": "executor load stats"
+        }
+      ]
+    },
+    {
+      "group": "Plugins",
+      "commands": [
+        {
+          "cmd": "jenkins-cli list-plugins",
+          "desc": "installed plugins"
+        },
+        {
+          "cmd": "jenkins-cli install-plugin <name>",
+          "desc": "install a plugin"
+        },
+        {
+          "cmd": "curl -s .../pluginManager/api/json?depth=1",
+          "desc": "plugin details (REST)"
+        }
+      ]
+    },
+    {
+      "group": "Credentials",
+      "commands": [
+        {
+          "cmd": "jenkins-cli list-credentials system::system::jenkins",
+          "desc": "list credentials in store"
+        },
+        {
+          "cmd": "curl -s .../credentials/store/system/domain/_/api/json",
+          "desc": "credentials via REST"
+        }
+      ]
+    },
+    {
+      "group": "Maintenance",
+      "commands": [
+        {
+          "cmd": "jenkins-cli safe-restart",
+          "desc": "restart after builds finish"
+        },
+        {
+          "cmd": "jenkins-cli safe-shutdown",
+          "desc": "shutdown after builds finish"
+        },
+        {
+          "cmd": "jenkins-cli groovy <script>",
+          "desc": "run Groovy on server"
+        },
+        {
+          "cmd": "declarative-linter < Jenkinsfile",
+          "desc": "validate a Jenkinsfile"
+        }
+      ]
+    },
+    {
+      "group": "Scenarios",
+      "commands": [
+        {
+          "cmd": "scenario debug-failing-build",
+          "desc": "debug a failing pipeline"
+        },
+        {
+          "cmd": "scenario manage-jobs-credentials",
+          "desc": "manage jobs and credentials"
+        }
+      ]
+    }
+  ]
+}

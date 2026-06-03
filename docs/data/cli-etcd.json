@@ -1,0 +1,371 @@
+{
+  "id": "etcd",
+  "prompt": "etcd@cluster:~$",
+  "welcome": "Welcome to the etcd CLI Playground.\nType commands to explore a simulated 3-node etcd cluster.\nType 'help' for available commands, 'scenario' for guided labs.\n",
+  "scenarios": [
+    {
+      "id": "backup-and-restore",
+      "title": "Backup and Restore etcd",
+      "steps": [
+        {
+          "instruction": "First, check the health of all cluster endpoints before taking a backup.",
+          "expect": "etcdctl endpoint health --cluster",
+          "hint": "Try: etcdctl endpoint health --cluster"
+        },
+        {
+          "instruction": "Good, all nodes are healthy. Check the current endpoint status to see who is the leader.",
+          "expect": "etcdctl endpoint status --cluster -w table",
+          "hint": "Try: etcdctl endpoint status --cluster -w table"
+        },
+        {
+          "instruction": "Node etcd-1 is the leader. Now take a snapshot backup of the cluster.",
+          "expect": "etcdctl snapshot save /backup/etcd-snapshot-2026-06-02.db",
+          "hint": "Try: etcdctl snapshot save /backup/etcd-snapshot-2026-06-02.db"
+        },
+        {
+          "instruction": "Verify the snapshot is valid by checking its status.",
+          "expect": "etcdctl snapshot status /backup/etcd-snapshot-2026-06-02.db -w table",
+          "hint": "Try: etcdctl snapshot status /backup/etcd-snapshot-2026-06-02.db -w table"
+        },
+        {
+          "instruction": "The snapshot has 847 keys and looks good. Now simulate a disaster — someone deleted critical keys. List keys under /config/ to see the damage.",
+          "expect": "etcdctl get /config/ --prefix",
+          "hint": "Try: etcdctl get /config/ --prefix"
+        },
+        {
+          "instruction": "The /config/ prefix is empty — data is lost. Restore from the snapshot to a new data directory.",
+          "expect": "etcdctl snapshot restore /backup/etcd-snapshot-2026-06-02.db --data-dir /var/lib/etcd-restored",
+          "hint": "Try: etcdctl snapshot restore /backup/etcd-snapshot-2026-06-02.db --data-dir /var/lib/etcd-restored"
+        },
+        {
+          "instruction": "Restore complete. Verify the cluster is healthy again after pointing etcd to the restored data directory.",
+          "expect": "etcdctl endpoint health --cluster",
+          "hint": "Try: etcdctl endpoint health --cluster"
+        },
+        {
+          "instruction": "All healthy. Confirm the /config/ keys are back by reading one.",
+          "expect": "etcdctl get /config/database/host",
+          "hint": "Try: etcdctl get /config/database/host"
+        }
+      ]
+    },
+    {
+      "id": "debug-cluster-health",
+      "title": "Debug Cluster Health Issues",
+      "steps": [
+        {
+          "instruction": "Users report slow API responses. Start by checking the health of all etcd endpoints.",
+          "expect": "etcdctl endpoint health --cluster",
+          "hint": "Try: etcdctl endpoint health --cluster"
+        },
+        {
+          "instruction": "Node etcd-3 is unhealthy. Check the detailed status of all endpoints to see resource usage.",
+          "expect": "etcdctl endpoint status --cluster -w table",
+          "hint": "Try: etcdctl endpoint status --cluster -w table"
+        },
+        {
+          "instruction": "etcd-3 has a very large DB size (6.2 GB) compared to the others. Check if there are any active alarms.",
+          "expect": "etcdctl alarm list",
+          "hint": "Try: etcdctl alarm list"
+        },
+        {
+          "instruction": "There is a NOSPACE alarm on etcd-3. The DB has grown too large. First, compact the revision history to free up space.",
+          "expect": "etcdctl compact 1250000",
+          "hint": "Try: etcdctl compact 1250000"
+        },
+        {
+          "instruction": "History compacted. Now defragment each member to reclaim disk space.",
+          "expect": "etcdctl defrag --cluster",
+          "hint": "Try: etcdctl defrag --cluster"
+        },
+        {
+          "instruction": "Defragmentation complete. Disarm the NOSPACE alarm so the cluster accepts writes again.",
+          "expect": "etcdctl alarm disarm",
+          "hint": "Try: etcdctl alarm disarm"
+        },
+        {
+          "instruction": "Good, alarm cleared. Verify the cluster is healthy again and all members are in sync.",
+          "expect": "etcdctl endpoint status --cluster -w table",
+          "hint": "Try: etcdctl endpoint status --cluster -w table"
+        },
+        {
+          "instruction": "DB sizes are back to normal. Confirm writes are working by putting a test key.",
+          "expect": "etcdctl put /health-check/test ok",
+          "hint": "Try: etcdctl put /health-check/test ok"
+        }
+      ]
+    }
+  ],
+  "commands": {
+    "help": "Available commands:\n  etcdctl put <key> <value>      — Write a key-value pair\n  etcdctl get <key>              — Read a key (--prefix for range, --keys-only, -w table)\n  etcdctl del <key>              — Delete a key (--prefix for range)\n  etcdctl watch <key>            — Watch for changes (--prefix for range)\n  etcdctl txn                    — Execute a transaction\n  etcdctl member list            — List cluster members\n  etcdctl member add             — Add a new member\n  etcdctl member remove          — Remove a member\n  etcdctl endpoint status        — Show endpoint status (--cluster, -w table)\n  etcdctl endpoint health        — Check endpoint health (--cluster)\n  etcdctl snapshot save          — Save a snapshot backup\n  etcdctl snapshot restore       — Restore from snapshot\n  etcdctl snapshot status        — Show snapshot details\n  etcdctl alarm list             — List active alarms\n  etcdctl alarm disarm           — Clear all alarms\n  etcdctl compact <rev>          — Compact revision history\n  etcdctl defrag                 — Defragment storage (--cluster)\n  etcdctl lease grant <ttl>      — Create a lease with TTL\n  etcdctl lease revoke <id>      — Revoke a lease\n  etcdctl lease list             — List active leases\n  etcdctl lease timetolive <id>  — Check remaining TTL\n  etcdctl auth enable            — Enable authentication\n  etcdctl user add               — Add a user\n  etcdctl user list              — List users\n  etcdctl user get               — Get user details\n  etcdctl user delete            — Delete a user\n  etcdctl role add               — Add a role\n  etcdctl role list              — List roles\n  etcdctl role get               — Get role details\n  etcdctl role grant-permission  — Grant key permission to role\n  etcdctl user grant-role        — Assign role to user\n  etcdctl version                — Show etcdctl version\n\n  scenario                       — Start a guided lab\n  clear                          — Clear the terminal\n  help                           — Show this help",
+    "etcdctl version": "etcdctl version: 3.5.12\nAPI version: 3.5",
+    "etcdctl endpoint health": "https://10.0.1.10:2379 is healthy: successfully committed proposal: took = 2.34ms\nhttps://10.0.2.10:2379 is healthy: successfully committed proposal: took = 2.67ms\nhttps://10.0.3.10:2379 is healthy: successfully committed proposal: took = 3.12ms",
+    "etcdctl endpoint health --cluster": "https://10.0.1.10:2379 is healthy: successfully committed proposal: took = 2.34ms\nhttps://10.0.2.10:2379 is healthy: successfully committed proposal: took = 2.67ms\nhttps://10.0.3.10:2379 is healthy: successfully committed proposal: took = 3.12ms",
+    "etcdctl endpoint status --cluster -w table": "+---------------------------+------------------+---------+---------+-----------+------------+-----------+------------+--------------------+--------+\n|         ENDPOINT          |        ID        | VERSION | DB SIZE | IS LEADER | IS LEARNER | RAFT TERM | RAFT INDEX | RAFT APPLIED INDEX | ERRORS |\n+---------------------------+------------------+---------+---------+-----------+------------+-----------+------------+--------------------+--------+\n| https://10.0.1.10:2379    | 8e9e05c52164694d |  3.5.12 |  2.1 GB |      true |      false |        14 |    1250042 |            1250042 |        |\n| https://10.0.2.10:2379    | 91bc3c398eb3c146 |  3.5.12 |  2.1 GB |     false |      false |        14 |    1250042 |            1250042 |        |\n| https://10.0.3.10:2379    | a8dc1a7b2f5e039  |  3.5.12 |  2.0 GB |     false |      false |        14 |    1250042 |            1250042 |        |\n+---------------------------+------------------+---------+---------+-----------+------------+-----------+------------+--------------------+--------+",
+    "etcdctl endpoint status -w table": "+---------------------------+------------------+---------+---------+-----------+------------+-----------+------------+--------------------+--------+\n|         ENDPOINT          |        ID        | VERSION | DB SIZE | IS LEADER | IS LEARNER | RAFT TERM | RAFT INDEX | RAFT APPLIED INDEX | ERRORS |\n+---------------------------+------------------+---------+---------+-----------+------------+-----------+------------+--------------------+--------+\n| https://10.0.1.10:2379    | 8e9e05c52164694d |  3.5.12 |  2.1 GB |      true |      false |        14 |    1250042 |            1250042 |        |\n+---------------------------+------------------+---------+---------+-----------+------------+-----------+------------+--------------------+--------+",
+    "etcdctl member list -w table": "+------------------+---------+--------+---------------------------+---------------------------+------------+\n|        ID        | STATUS  |  NAME  |        PEER ADDRS         |       CLIENT ADDRS        | IS LEARNER |\n+------------------+---------+--------+---------------------------+---------------------------+------------+\n| 8e9e05c52164694d | started | etcd-1 | https://10.0.1.10:2380    | https://10.0.1.10:2379    |      false |\n| 91bc3c398eb3c146 | started | etcd-2 | https://10.0.2.10:2380    | https://10.0.2.10:2379    |      false |\n| a8dc1a7b2f5e039  | started | etcd-3 | https://10.0.3.10:2380    | https://10.0.3.10:2379    |      false |\n+------------------+---------+--------+---------------------------+---------------------------+------------+",
+    "etcdctl member list": "8e9e05c52164694d, started, etcd-1, https://10.0.1.10:2380, https://10.0.1.10:2379, false\n91bc3c398eb3c146, started, etcd-2, https://10.0.2.10:2380, https://10.0.2.10:2379, false\na8dc1a7b2f5e039, started, etcd-3, https://10.0.3.10:2380, https://10.0.3.10:2379, false",
+    "etcdctl member add etcd-4 --peer-urls=https://10.0.4.10:2380": "Member 3a57933972cb5131 added to cluster 9deaf36783f4e0a2\n\nETCD_NAME=\"etcd-4\"\nETCD_INITIAL_CLUSTER=\"etcd-1=https://10.0.1.10:2380,etcd-2=https://10.0.2.10:2380,etcd-3=https://10.0.3.10:2380,etcd-4=https://10.0.4.10:2380\"\nETCD_INITIAL_ADVERTISE_PEER_URLS=\"https://10.0.4.10:2380\"\nETCD_INITIAL_CLUSTER_STATE=\"existing\"",
+    "etcdctl member remove a8dc1a7b2f5e039": "Member a8dc1a7b2f5e039 removed from cluster 9deaf36783f4e0a2",
+    "etcdctl put /app/name payments-service": "OK",
+    "etcdctl put /app/version v2.4.1": "OK",
+    "etcdctl put /config/database/host db.prod.internal": "OK",
+    "etcdctl put /config/database/port 5432": "OK",
+    "etcdctl put /config/database/name prod_payments": "OK",
+    "etcdctl put /config/cache/host redis.prod.internal": "OK",
+    "etcdctl put /config/cache/ttl 300": "OK",
+    "etcdctl put /services/api/leader node-2": "OK",
+    "etcdctl put /health-check/test ok": "OK",
+    "etcdctl get /app/name": "/app/name\npayments-service",
+    "etcdctl get /app/version": "/app/version\nv2.4.1",
+    "etcdctl get /config/database/host": "/config/database/host\ndb.prod.internal",
+    "etcdctl get /config/database/port": "/config/database/port\n5432",
+    "etcdctl get /config/database/name": "/config/database/name\nprod_payments",
+    "etcdctl get /config/cache/host": "/config/cache/host\nredis.prod.internal",
+    "etcdctl get /config/cache/ttl": "/config/cache/ttl\n300",
+    "etcdctl get /config/ --prefix": "/config/cache/host\nredis.prod.internal\n/config/cache/ttl\n300\n/config/database/host\ndb.prod.internal\n/config/database/name\nprod_payments\n/config/database/port\n5432",
+    "etcdctl get /config/ --prefix --keys-only": "/config/cache/host\n/config/cache/ttl\n/config/database/host\n/config/database/name\n/config/database/port",
+    "etcdctl get /config/ --prefix --count-only": "5",
+    "etcdctl get /app/ --prefix": "/app/name\npayments-service\n/app/version\nv2.4.1",
+    "etcdctl get /app/ --prefix --keys-only": "/app/name\n/app/version",
+    "etcdctl get /services/ --prefix": "/services/api/leader\nnode-2",
+    "etcdctl get / --prefix --keys-only": "/app/name\n/app/version\n/config/cache/host\n/config/cache/ttl\n/config/database/host\n/config/database/name\n/config/database/port\n/health-check/test\n/services/api/leader",
+    "etcdctl get / --prefix --keys-only --limit=5": "/app/name\n/app/version\n/config/cache/host\n/config/cache/ttl\n/config/database/host",
+    "etcdctl get /config/database/host -w json": "{\"header\":{\"cluster_id\":11248840305487498690,\"member_id\":10276657743932975437,\"revision\":1250042,\"raft_term\":14},\"kvs\":[{\"key\":\"L2NvbmZpZy9kYXRhYmFzZS9ob3N0\",\"create_revision\":45,\"mod_revision\":1248901,\"version\":12,\"value\":\"ZGIucHJvZC5pbnRlcm5hbA==\"}],\"count\":1}",
+    "etcdctl del /health-check/test": "1",
+    "etcdctl del /config/cache/ --prefix": "2",
+    "etcdctl watch /config/database/host": "PUT\n/config/database/host\ndb-failover.prod.internal\n(watching for changes... press Ctrl+C to stop)",
+    "etcdctl watch /config/ --prefix": "PUT\n/config/database/host\ndb-failover.prod.internal\nDELETE\n/config/cache/ttl\n\n(watching for changes... press Ctrl+C to stop)",
+    "etcdctl txn --interactive": "compares:\nvalue(\"/services/api/leader\") = \"node-2\"\n\nsuccess requests:\nput /services/api/leader node-3\n\nfailure requests:\nget /services/api/leader\n\nSUCCESS\n\nOK",
+    "etcdctl snapshot save /backup/etcd-snapshot-2026-06-02.db": "Snapshot saved at /backup/etcd-snapshot-2026-06-02.db\n{\"hash\":3472819525,\"revision\":1250042,\"totalKey\":847,\"totalSize\":2147483648}",
+    "etcdctl snapshot status /backup/etcd-snapshot-2026-06-02.db -w table": "+----------+----------+------------+------------+\n|   HASH   | REVISION | TOTAL KEYS | TOTAL SIZE |\n+----------+----------+------------+------------+\n| cf1cd575 |  1250042 |        847 |     2.1 GB |\n+----------+----------+------------+------------+",
+    "etcdctl snapshot status /backup/etcd-snapshot-2026-06-02.db": "cf1cd575, 1250042, 847, 2.1 GB",
+    "etcdctl snapshot restore /backup/etcd-snapshot-2026-06-02.db --data-dir /var/lib/etcd-restored": "2026-06-02T15:30:45Z\tinfo\tsnapshot/v3_snapshot.go:296\trestoring snapshot\t{\"path\": \"/backup/etcd-snapshot-2026-06-02.db\", \"wal-dir\": \"/var/lib/etcd-restored/member/wal\", \"data-dir\": \"/var/lib/etcd-restored\", \"snap-dir\": \"/var/lib/etcd-restored/member/snap\"}\n2026-06-02T15:30:46Z\tinfo\tsnapshot/v3_snapshot.go:309\trenamed db to /var/lib/etcd-restored/member/snap/db",
+    "etcdctl alarm list": "memberID:10276657743932975437 alarm:NOSPACE",
+    "etcdctl alarm disarm": "memberID:10276657743932975437 alarm:NOSPACE",
+    "etcdctl compact 1250000": "compacted revision 1250000",
+    "etcdctl defrag --cluster": "Finished defragmenting etcd member[https://10.0.1.10:2379]\nFinished defragmenting etcd member[https://10.0.2.10:2379]\nFinished defragmenting etcd member[https://10.0.3.10:2379]",
+    "etcdctl defrag": "Finished defragmenting etcd member[https://10.0.1.10:2379]",
+    "etcdctl lease grant 60": "lease 694d81758a3e3e0a granted with TTL(60s)",
+    "etcdctl lease grant 300": "lease 694d81758a3e4b1c granted with TTL(300s)",
+    "etcdctl lease grant 3600": "lease 694d81758a3e5d2e granted with TTL(3600s)",
+    "etcdctl lease list": "found 3 leases\n694d81758a3e3e0a\n694d81758a3e4b1c\n694d81758a3e5d2e",
+    "etcdctl lease timetolive 694d81758a3e3e0a": "lease 694d81758a3e3e0a granted with TTL(60s), remaining(42s)",
+    "etcdctl lease timetolive 694d81758a3e4b1c": "lease 694d81758a3e4b1c granted with TTL(300s), remaining(287s)",
+    "etcdctl lease timetolive 694d81758a3e5d2e": "lease 694d81758a3e5d2e granted with TTL(3600s), remaining(3541s)",
+    "etcdctl lease timetolive 694d81758a3e3e0a --keys": "lease 694d81758a3e3e0a granted with TTL(60s), remaining(42s), attached keys([/services/api/leader])",
+    "etcdctl lease revoke 694d81758a3e3e0a": "lease 694d81758a3e3e0a revoked",
+    "etcdctl put /services/api/leader node-2 --lease=694d81758a3e3e0a": "OK",
+    "etcdctl auth enable": "Authentication Enabled",
+    "etcdctl user add root": "Password of root:\nType password of root again for confirmation:\nUser root created",
+    "etcdctl user add sre-admin --new-user-password=changeme": "User sre-admin created",
+    "etcdctl user add app-reader --new-user-password=readonly": "User app-reader created",
+    "etcdctl user list": "app-reader\nroot\nsre-admin",
+    "etcdctl user get root": "User: root\nRoles: root",
+    "etcdctl user get sre-admin": "User: sre-admin\nRoles: admin",
+    "etcdctl user get app-reader": "User: app-reader\nRoles: reader",
+    "etcdctl user delete app-reader": "User app-reader deleted",
+    "etcdctl user passwd sre-admin": "Password of sre-admin:\nType password of sre-admin again for confirmation:\nPassword updated",
+    "etcdctl role add admin": "Role admin created",
+    "etcdctl role add reader": "Role reader created",
+    "etcdctl role list": "admin\nreader\nroot",
+    "etcdctl role get admin": "Role admin\nKV Read:\n\t[/, /\\x00) (prefix /)\nKV Write:\n\t[/, /\\x00) (prefix /)",
+    "etcdctl role get reader": "Role reader\nKV Read:\n\t[/config/, /config0) (prefix /config/)\nKV Write:\n\tnone",
+    "etcdctl role grant-permission admin readwrite / --prefix": "Role admin updated",
+    "etcdctl role grant-permission reader read /config/ --prefix": "Role reader updated",
+    "etcdctl role revoke-permission reader /config/ --prefix": "Permission of range [/config/, /config0) is revoked from role reader",
+    "etcdctl user grant-role sre-admin admin": "Role admin is granted to user sre-admin",
+    "etcdctl user grant-role app-reader reader": "Role reader is granted to user app-reader",
+    "etcdctl user revoke-role app-reader reader": "Role reader is revoked from user app-reader",
+    "etcdctl role delete reader": "Role reader deleted"
+  },
+  "reference": [
+    {
+      "group": "Key-Value Operations",
+      "commands": [
+        {
+          "cmd": "etcdctl put /app/name payments-service",
+          "desc": "write a key"
+        },
+        {
+          "cmd": "etcdctl get /app/name",
+          "desc": "read a key"
+        },
+        {
+          "cmd": "etcdctl get /config/ --prefix",
+          "desc": "read by prefix"
+        },
+        {
+          "cmd": "etcdctl get / --prefix --keys-only",
+          "desc": "list all keys"
+        },
+        {
+          "cmd": "etcdctl get /config/database/host -w json",
+          "desc": "JSON output"
+        },
+        {
+          "cmd": "etcdctl del /health-check/test",
+          "desc": "delete a key"
+        },
+        {
+          "cmd": "etcdctl del /config/cache/ --prefix",
+          "desc": "delete by prefix"
+        },
+        {
+          "cmd": "etcdctl watch /config/ --prefix",
+          "desc": "watch for changes"
+        },
+        {
+          "cmd": "etcdctl txn --interactive",
+          "desc": "compare-and-swap transaction"
+        }
+      ]
+    },
+    {
+      "group": "Cluster Membership",
+      "commands": [
+        {
+          "cmd": "etcdctl member list -w table",
+          "desc": "list members"
+        },
+        {
+          "cmd": "etcdctl member add etcd-4 --peer-urls=https://10.0.4.10:2380",
+          "desc": "add member"
+        },
+        {
+          "cmd": "etcdctl member remove a8dc1a7b2f5e039",
+          "desc": "remove member"
+        }
+      ]
+    },
+    {
+      "group": "Health & Status",
+      "commands": [
+        {
+          "cmd": "etcdctl endpoint health --cluster",
+          "desc": "cluster health"
+        },
+        {
+          "cmd": "etcdctl endpoint status --cluster -w table",
+          "desc": "cluster status"
+        },
+        {
+          "cmd": "etcdctl alarm list",
+          "desc": "active alarms"
+        },
+        {
+          "cmd": "etcdctl alarm disarm",
+          "desc": "clear alarms"
+        },
+        {
+          "cmd": "etcdctl version",
+          "desc": "etcdctl version"
+        }
+      ]
+    },
+    {
+      "group": "Backup & Maintenance",
+      "commands": [
+        {
+          "cmd": "etcdctl snapshot save /backup/etcd-snapshot-2026-06-02.db",
+          "desc": "save snapshot"
+        },
+        {
+          "cmd": "etcdctl snapshot status /backup/etcd-snapshot-2026-06-02.db -w table",
+          "desc": "verify snapshot"
+        },
+        {
+          "cmd": "etcdctl snapshot restore /backup/etcd-snapshot-2026-06-02.db --data-dir /var/lib/etcd-restored",
+          "desc": "restore snapshot"
+        },
+        {
+          "cmd": "etcdctl compact 1250000",
+          "desc": "compact revisions"
+        },
+        {
+          "cmd": "etcdctl defrag --cluster",
+          "desc": "defragment storage"
+        }
+      ]
+    },
+    {
+      "group": "Leases",
+      "commands": [
+        {
+          "cmd": "etcdctl lease grant 60",
+          "desc": "create 60s lease"
+        },
+        {
+          "cmd": "etcdctl lease list",
+          "desc": "list leases"
+        },
+        {
+          "cmd": "etcdctl lease timetolive 694d81758a3e3e0a --keys",
+          "desc": "check TTL + keys"
+        },
+        {
+          "cmd": "etcdctl put /services/api/leader node-2 --lease=694d81758a3e3e0a",
+          "desc": "attach key to lease"
+        },
+        {
+          "cmd": "etcdctl lease revoke 694d81758a3e3e0a",
+          "desc": "revoke lease"
+        }
+      ]
+    },
+    {
+      "group": "Authentication & RBAC",
+      "commands": [
+        {
+          "cmd": "etcdctl auth enable",
+          "desc": "enable auth"
+        },
+        {
+          "cmd": "etcdctl user add sre-admin --new-user-password=changeme",
+          "desc": "add user"
+        },
+        {
+          "cmd": "etcdctl user list",
+          "desc": "list users"
+        },
+        {
+          "cmd": "etcdctl user get sre-admin",
+          "desc": "user details"
+        },
+        {
+          "cmd": "etcdctl user delete app-reader",
+          "desc": "delete user"
+        },
+        {
+          "cmd": "etcdctl role add admin",
+          "desc": "create role"
+        },
+        {
+          "cmd": "etcdctl role list",
+          "desc": "list roles"
+        },
+        {
+          "cmd": "etcdctl role grant-permission admin readwrite / --prefix",
+          "desc": "grant permissions"
+        },
+        {
+          "cmd": "etcdctl user grant-role sre-admin admin",
+          "desc": "assign role"
+        }
+      ]
+    },
+    {
+      "group": "Scenarios",
+      "commands": [
+        {
+          "cmd": "scenario backup-and-restore",
+          "desc": "backup + restore etcd"
+        },
+        {
+          "cmd": "scenario debug-cluster-health",
+          "desc": "fix NOSPACE alarm"
+        }
+      ]
+    }
+  ]
+}

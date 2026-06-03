@@ -862,7 +862,15 @@ function loadCLIPlayground(catId, filename) {
     'Tekton.md': 'tekton', 'GitLab-CI.md': 'gitlab-ci',
     'Podman.md': 'podman', 'containerd-nerdctl.md': 'containerd-nerdctl',
     'Pulumi.md': 'pulumi', 'Flux.md': 'flux',
-    'OPA.md': 'opa', 'k6.md': 'k6'
+    'OPA.md': 'opa', 'k6.md': 'k6',
+    'jq.md': 'jq-yq', 'yq.md': 'jq-yq',
+    'sed.md': 'sed-awk', 'awk.md': 'sed-awk',
+    'Grafana.md': 'grafana', 'Loki.md': 'loki',
+    'etcd.md': 'etcd', 'cert-manager.md': 'cert-manager',
+    'SSH.md': 'ssh', 'GitHub-Actions.md': 'github-actions',
+    'Jenkins.md': 'jenkins', 'Alertmanager.md': 'alertmanager',
+    'Nginx.md': 'nginx', 'Makefile.md': 'makefile',
+    'GCP.md': 'gcp', 'Azure.md': 'azure'
   };
   const cliId = cliMap[filename] || catId;
   const cliFile = `./data/cli-${cliId}.json`;

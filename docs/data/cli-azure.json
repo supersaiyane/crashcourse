@@ -1,0 +1,343 @@
+{
+  "id": "azure",
+  "prompt": "az@infra:~$",
+  "welcome": "Welcome to the Azure CLI Playground.\nType commands to explore a simulated BFSI production environment in Central India.\nType 'help' for available commands, 'scenario' for guided labs.\n",
+  "scenarios": [
+    {
+      "id": "investigate-aks-cluster",
+      "title": "Investigate an AKS Cluster Issue",
+      "steps": [
+        {
+          "instruction": "First, confirm which Azure subscription you are working in.",
+          "expect": "az account show",
+          "hint": "Try: az account show"
+        },
+        {
+          "instruction": "Good. Now list the AKS clusters in the payments resource group to find the affected cluster.",
+          "expect": "az aks list --resource-group rg-payments-prod-centralindia -o table",
+          "hint": "Try: az aks list --resource-group rg-payments-prod-centralindia -o table"
+        },
+        {
+          "instruction": "The cluster 'aks-payments-prod' looks unhealthy. Get its detailed status.",
+          "expect": "az aks show --name aks-payments-prod --resource-group rg-payments-prod-centralindia -o table",
+          "hint": "Try: az aks show --name aks-payments-prod --resource-group rg-payments-prod-centralindia -o table"
+        },
+        {
+          "instruction": "Check the node pools to see if any nodes are in a bad state.",
+          "expect": "az aks nodepool list --cluster-name aks-payments-prod --resource-group rg-payments-prod-centralindia -o table",
+          "hint": "Try: az aks nodepool list --cluster-name aks-payments-prod --resource-group rg-payments-prod-centralindia -o table"
+        },
+        {
+          "instruction": "The 'txnpool' node pool shows 1/3 nodes ready. Pull the cluster credentials so we can investigate with kubectl.",
+          "expect": "az aks get-credentials --name aks-payments-prod --resource-group rg-payments-prod-centralindia",
+          "hint": "Try: az aks get-credentials --name aks-payments-prod --resource-group rg-payments-prod-centralindia"
+        },
+        {
+          "instruction": "Check Azure Monitor metrics for the cluster's CPU usage over the last hour.",
+          "expect": "az monitor metrics list --resource /subscriptions/a1b2c3d4/resourceGroups/rg-payments-prod-centralindia/providers/Microsoft.ContainerService/managedClusters/aks-payments-prod --metric node_cpu_usage_percentage --interval PT1H -o table",
+          "hint": "Try: az monitor metrics list --resource /subscriptions/a1b2c3d4/resourceGroups/rg-payments-prod-centralindia/providers/Microsoft.ContainerService/managedClusters/aks-payments-prod --metric node_cpu_usage_percentage --interval PT1H -o table"
+        },
+        {
+          "instruction": "CPU is spiking at 94%. Check the NSG rules on the cluster subnet to ensure traffic is not being blocked.",
+          "expect": "az network nsg rule list --nsg-name nsg-aks-payments-prod --resource-group rg-payments-prod-centralindia -o table",
+          "hint": "Try: az network nsg rule list --nsg-name nsg-aks-payments-prod --resource-group rg-payments-prod-centralindia -o table"
+        },
+        {
+          "instruction": "NSG rules look fine. The issue is resource exhaustion. Query Log Analytics for OOMKilled events in the last hour.",
+          "expect": "az monitor log-analytics query --workspace aks-la-workspace-prod --analytics-query \"KubePodInventory | where ClusterName == 'aks-payments-prod' | where PodStatus == 'Failed' | where TimeGenerated > ago(1h) | project TimeGenerated, Name, PodStatus, ContainerStatusReason\" -o table",
+          "hint": "Try: az monitor log-analytics query --workspace aks-la-workspace-prod --analytics-query \"KubePodInventory | where ClusterName == 'aks-payments-prod' | where PodStatus == 'Failed' | where TimeGenerated > ago(1h) | project TimeGenerated, Name, PodStatus, ContainerStatusReason\" -o table"
+        }
+      ]
+    },
+    {
+      "id": "deploy-secure-storage",
+      "title": "Deploy and Secure a Storage Account",
+      "steps": [
+        {
+          "instruction": "List existing resource groups to find where the audit data team keeps their resources.",
+          "expect": "az group list -o table",
+          "hint": "Try: az group list -o table"
+        },
+        {
+          "instruction": "Create a new storage account for regulatory audit logs in the compliance resource group.",
+          "expect": "az storage account create --name stauditlogsprod2026 --resource-group rg-compliance-prod-centralindia --location centralindia --sku Standard_ZRS --kind StorageV2 --min-tls-version TLS1_2",
+          "hint": "Try: az storage account create --name stauditlogsprod2026 --resource-group rg-compliance-prod-centralindia --location centralindia --sku Standard_ZRS --kind StorageV2 --min-tls-version TLS1_2"
+        },
+        {
+          "instruction": "Verify the storage account was created and check its properties.",
+          "expect": "az storage account show --name stauditlogsprod2026 --resource-group rg-compliance-prod-centralindia -o table",
+          "hint": "Try: az storage account show --name stauditlogsprod2026 --resource-group rg-compliance-prod-centralindia -o table"
+        },
+        {
+          "instruction": "Upload a sample audit report blob to a container called 'rbi-reports'.",
+          "expect": "az storage blob upload --account-name stauditlogsprod2026 --container-name rbi-reports --name 2026/Q2/audit-report.csv --file ./audit-report.csv --auth-mode login",
+          "hint": "Try: az storage blob upload --account-name stauditlogsprod2026 --container-name rbi-reports --name 2026/Q2/audit-report.csv --file ./audit-report.csv --auth-mode login"
+        },
+        {
+          "instruction": "List the blobs in the rbi-reports container to confirm the upload.",
+          "expect": "az storage blob list --account-name stauditlogsprod2026 --container-name rbi-reports -o table --auth-mode login",
+          "hint": "Try: az storage blob list --account-name stauditlogsprod2026 --container-name rbi-reports -o table --auth-mode login"
+        },
+        {
+          "instruction": "Store the storage account access key in Key Vault for safe rotation.",
+          "expect": "az keyvault secret set --vault-name kv-compliance-prod --name stauditlogs-key1 --value \"REDACTED-use-az-storage-account-keys-list\"",
+          "hint": "Try: az keyvault secret set --vault-name kv-compliance-prod --name stauditlogs-key1 --value \"REDACTED-use-az-storage-account-keys-list\""
+        },
+        {
+          "instruction": "Verify who has access to this storage account by listing role assignments.",
+          "expect": "az role assignment list --scope /subscriptions/a1b2c3d4/resourceGroups/rg-compliance-prod-centralindia/providers/Microsoft.Storage/storageAccounts/stauditlogsprod2026 -o table",
+          "hint": "Try: az role assignment list --scope /subscriptions/a1b2c3d4/resourceGroups/rg-compliance-prod-centralindia/providers/Microsoft.Storage/storageAccounts/stauditlogsprod2026 -o table"
+        },
+        {
+          "instruction": "Good — only the compliance team has access. Finally, list all Key Vault secrets to confirm the key was stored.",
+          "expect": "az keyvault secret list --vault-name kv-compliance-prod -o table",
+          "hint": "Try: az keyvault secret list --vault-name kv-compliance-prod -o table"
+        }
+      ]
+    }
+  ],
+  "commands": {
+    "help": "Available commands:\n  az account show/list/set       \u2014 Manage subscriptions\n  az group list/create           \u2014 Manage resource groups\n  az vm list/show/start/stop     \u2014 Manage virtual machines\n  az vm create                   \u2014 Create a virtual machine\n  az aks list/show               \u2014 Manage AKS clusters\n  az aks get-credentials         \u2014 Get cluster kubeconfig\n  az aks nodepool list           \u2014 List node pools\n  az storage account list/create \u2014 Manage storage accounts\n  az storage blob list/upload    \u2014 Manage blobs\n  az keyvault list/secret list   \u2014 Manage Key Vault & secrets\n  az monitor metrics list        \u2014 Query Azure Monitor metrics\n  az monitor log-analytics query \u2014 Query Log Analytics workspace\n  az network nsg list/rule list  \u2014 Manage network security groups\n  az ad user list                \u2014 List Azure AD users\n  az role assignment list        \u2014 List RBAC role assignments\n\n  scenario                       \u2014 Start a guided lab\n  clear                          \u2014 Clear the terminal\n  help                           \u2014 Show this help",
+    "az version": "{\n  \"azure-cli\": \"2.67.0\",\n  \"azure-cli-core\": \"2.67.0\",\n  \"azure-cli-telemetry\": \"1.1.0\",\n  \"extensions\": {\n    \"aks-preview\": \"9.0.0b4\"\n  }\n}",
+    "az account show": "{\n  \"id\": \"a1b2c3d4-e5f6-7890-abcd-ef1234567890\",\n  \"name\": \"BFSI-Production\",\n  \"state\": \"Enabled\",\n  \"isDefault\": true,\n  \"tenantId\": \"t1e2n3a4-n5t6-7890-abcd-tenant1234567\",\n  \"user\": {\n    \"name\": \"sre-admin@bfsibank.onmicrosoft.com\",\n    \"type\": \"user\"\n  },\n  \"environmentName\": \"AzureCloud\"\n}",
+    "az account list -o table": "Name               CloudName    SubscriptionId                        TenantId                              State    IsDefault\n-----------------  -----------  ------------------------------------  ------------------------------------  -------  ---------\nBFSI-Production    AzureCloud   a1b2c3d4-e5f6-7890-abcd-ef1234567890  t1e2n3a4-n5t6-7890-abcd-tenant1234567  Enabled  True\nBFSI-Staging       AzureCloud   b2c3d4e5-f6a7-8901-bcde-f12345678901  t1e2n3a4-n5t6-7890-abcd-tenant1234567  Enabled  False\nBFSI-Dev           AzureCloud   c3d4e5f6-a7b8-9012-cdef-123456789012  t1e2n3a4-n5t6-7890-abcd-tenant1234567  Enabled  False",
+    "az account set --subscription BFSI-Production": "Subscription 'BFSI-Production' set as active.",
+    "az account set --subscription BFSI-Staging": "Subscription 'BFSI-Staging' set as active.",
+    "az account set --subscription a1b2c3d4-e5f6-7890-abcd-ef1234567890": "Subscription 'BFSI-Production' set as active.",
+    "az group list -o table": "Name                                    Location      Status\n--------------------------------------  ------------  ---------\nrg-payments-prod-centralindia           centralindia  Succeeded\nrg-core-banking-prod-centralindia       centralindia  Succeeded\nrg-compliance-prod-centralindia         centralindia  Succeeded\nrg-observability-prod-centralindia      centralindia  Succeeded\nrg-networking-prod-centralindia         centralindia  Succeeded\nrg-shared-services-prod-centralindia    centralindia  Succeeded",
+    "az group create --name rg-test-centralindia --location centralindia": "{\n  \"id\": \"/subscriptions/a1b2c3d4/resourceGroups/rg-test-centralindia\",\n  \"location\": \"centralindia\",\n  \"name\": \"rg-test-centralindia\",\n  \"properties\": {\n    \"provisioningState\": \"Succeeded\"\n  }\n}",
+    "az vm list -o table": "Name                    ResourceGroup                          Location      ProvisioningState    PowerState\n----------------------  -------------------------------------  ------------  -------------------  ------------\nvm-jumpbox-prod-01      rg-shared-services-prod-centralindia   centralindia  Succeeded            VM running\nvm-batch-settlement-01  rg-payments-prod-centralindia          centralindia  Succeeded            VM running\nvm-batch-settlement-02  rg-payments-prod-centralindia          centralindia  Succeeded            VM deallocated\nvm-hsm-proxy-01         rg-compliance-prod-centralindia        centralindia  Succeeded            VM running\nvm-monitoring-01        rg-observability-prod-centralindia     centralindia  Succeeded            VM running",
+    "az vm list --resource-group rg-payments-prod-centralindia -o table": "Name                    ResourceGroup                          Location      ProvisioningState    PowerState\n----------------------  -------------------------------------  ------------  -------------------  ------------\nvm-batch-settlement-01  rg-payments-prod-centralindia          centralindia  Succeeded            VM running\nvm-batch-settlement-02  rg-payments-prod-centralindia          centralindia  Succeeded            VM deallocated",
+    "az vm show --name vm-jumpbox-prod-01 --resource-group rg-shared-services-prod-centralindia -o table": "Name                  ResourceGroup                          Location      VmSize           ProvisioningState    PowerState\n--------------------  -------------------------------------  ------------  ---------------  -------------------  ----------\nvm-jumpbox-prod-01    rg-shared-services-prod-centralindia   centralindia  Standard_B2ms    Succeeded            VM running",
+    "az vm show --name vm-batch-settlement-01 --resource-group rg-payments-prod-centralindia -o table": "Name                    ResourceGroup                          Location      VmSize             ProvisioningState    PowerState\n----------------------  -------------------------------------  ------------  -----------------  -------------------  ----------\nvm-batch-settlement-01  rg-payments-prod-centralindia          centralindia  Standard_D4s_v5    Succeeded            VM running",
+    "az vm show --name vm-batch-settlement-02 --resource-group rg-payments-prod-centralindia -o table": "Name                    ResourceGroup                          Location      VmSize             ProvisioningState    PowerState\n----------------------  -------------------------------------  ------------  -----------------  -------------------  -------------\nvm-batch-settlement-02  rg-payments-prod-centralindia          centralindia  Standard_D4s_v5    Succeeded            VM deallocated",
+    "az vm start --name vm-batch-settlement-02 --resource-group rg-payments-prod-centralindia": "VM 'vm-batch-settlement-02' starting...\nVM 'vm-batch-settlement-02' started successfully.",
+    "az vm stop --name vm-batch-settlement-02 --resource-group rg-payments-prod-centralindia": "VM 'vm-batch-settlement-02' stopping...\nVM 'vm-batch-settlement-02' stopped successfully.",
+    "az vm create --name vm-test-01 --resource-group rg-test-centralindia --image Ubuntu2204 --size Standard_B2ms --admin-username azureadmin --generate-ssh-keys --location centralindia": "{\n  \"id\": \"/subscriptions/a1b2c3d4/resourceGroups/rg-test-centralindia/providers/Microsoft.Compute/virtualMachines/vm-test-01\",\n  \"location\": \"centralindia\",\n  \"powerState\": \"VM running\",\n  \"privateIpAddress\": \"10.4.0.12\",\n  \"publicIpAddress\": \"20.219.45.67\",\n  \"resourceGroup\": \"rg-test-centralindia\",\n  \"zones\": \"\"\n}",
+    "az aks list -o table": "Name                  ResourceGroup                          Location      KubernetesVersion    ProvisioningState    NodeCount\n--------------------  -------------------------------------  ------------  -------------------  -------------------  ---------\naks-payments-prod     rg-payments-prod-centralindia          centralindia  1.29.4               Succeeded            6\naks-core-banking      rg-core-banking-prod-centralindia      centralindia  1.29.4               Succeeded            9",
+    "az aks list --resource-group rg-payments-prod-centralindia -o table": "Name                  ResourceGroup                          Location      KubernetesVersion    ProvisioningState    NodeCount\n--------------------  -------------------------------------  ------------  -------------------  -------------------  ---------\naks-payments-prod     rg-payments-prod-centralindia          centralindia  1.29.4               Succeeded            6",
+    "az aks show --name aks-payments-prod --resource-group rg-payments-prod-centralindia -o table": "Name                  ResourceGroup                          Location      KubernetesVersion    ProvisioningState    PowerState    Fqdn\n--------------------  -------------------------------------  ------------  -------------------  -------------------  ------------  --------------------------------------------------\naks-payments-prod     rg-payments-prod-centralindia          centralindia  1.29.4               Succeeded            Running       aks-payments-prod-dns-abc123.hcp.centralindia.azmk8s.io",
+    "az aks show --name aks-core-banking --resource-group rg-core-banking-prod-centralindia -o table": "Name                  ResourceGroup                          Location      KubernetesVersion    ProvisioningState    PowerState    Fqdn\n--------------------  -------------------------------------  ------------  -------------------  -------------------  ------------  --------------------------------------------------\naks-core-banking      rg-core-banking-prod-centralindia      centralindia  1.29.4               Succeeded            Running       aks-core-banking-dns-def456.hcp.centralindia.azmk8s.io",
+    "az aks get-credentials --name aks-payments-prod --resource-group rg-payments-prod-centralindia": "Merged \"aks-payments-prod\" as current context in /home/sre-admin/.kube/config",
+    "az aks get-credentials --name aks-core-banking --resource-group rg-core-banking-prod-centralindia": "Merged \"aks-core-banking\" as current context in /home/sre-admin/.kube/config",
+    "az aks nodepool list --cluster-name aks-payments-prod --resource-group rg-payments-prod-centralindia -o table": "Name        OsType    VmSize            Count    MaxPods    ProvisioningState    Mode\n----------  --------  ----------------  -------  ---------  -------------------  ------\nsystempool  Linux     Standard_D4s_v5   3        110        Succeeded            System\ntxnpool     Linux     Standard_D8s_v5   3        110        Succeeded            User\n\nNote: txnpool shows 1/3 nodes in Ready state. 2 nodes are in NotReady status.",
+    "az aks nodepool list --cluster-name aks-core-banking --resource-group rg-core-banking-prod-centralindia -o table": "Name        OsType    VmSize            Count    MaxPods    ProvisioningState    Mode\n----------  --------  ----------------  -------  ---------  -------------------  ------\nsystempool  Linux     Standard_D4s_v5   3        110        Succeeded            System\ncorepool    Linux     Standard_D8s_v5   4        110        Succeeded            User\nbatchpool   Linux     Standard_D16s_v5  2        110        Succeeded            User",
+    "az storage account list -o table": "Name                    ResourceGroup                          Location      Kind       SkuName        StatusOfPrimary    CreationTime\n----------------------  -------------------------------------  ------------  ---------  -------------  -----------------  -------------------------\nstpaymentsprod2025      rg-payments-prod-centralindia          centralindia  StorageV2  Standard_ZRS   available          2025-03-15T08:30:00Z\nstcorebankprod2025      rg-core-banking-prod-centralindia      centralindia  StorageV2  Standard_GRS   available          2025-01-20T10:00:00Z\nstcompliancelogs2025    rg-compliance-prod-centralindia        centralindia  StorageV2  Standard_ZRS   available          2025-02-10T12:00:00Z\nstobservabilityprod     rg-observability-prod-centralindia     centralindia  StorageV2  Standard_LRS   available          2025-04-01T09:00:00Z",
+    "az storage account list --resource-group rg-compliance-prod-centralindia -o table": "Name                    ResourceGroup                          Location      Kind       SkuName        StatusOfPrimary    CreationTime\n----------------------  -------------------------------------  ------------  ---------  -------------  -----------------  -------------------------\nstcompliancelogs2025    rg-compliance-prod-centralindia        centralindia  StorageV2  Standard_ZRS   available          2025-02-10T12:00:00Z",
+    "az storage account create --name stauditlogsprod2026 --resource-group rg-compliance-prod-centralindia --location centralindia --sku Standard_ZRS --kind StorageV2 --min-tls-version TLS1_2": "{\n  \"id\": \"/subscriptions/a1b2c3d4/resourceGroups/rg-compliance-prod-centralindia/providers/Microsoft.Storage/storageAccounts/stauditlogsprod2026\",\n  \"location\": \"centralindia\",\n  \"name\": \"stauditlogsprod2026\",\n  \"provisioningState\": \"Succeeded\",\n  \"sku\": {\n    \"name\": \"Standard_ZRS\",\n    \"tier\": \"Standard\"\n  },\n  \"kind\": \"StorageV2\",\n  \"properties\": {\n    \"minimumTlsVersion\": \"TLS1_2\",\n    \"allowBlobPublicAccess\": false\n  }\n}",
+    "az storage account show --name stauditlogsprod2026 --resource-group rg-compliance-prod-centralindia -o table": "Name                  ResourceGroup                          Location      Kind       SkuName        StatusOfPrimary    MinimumTlsVersion\n--------------------  -------------------------------------  ------------  ---------  -------------  -----------------  -----------------\nstauditlogsprod2026   rg-compliance-prod-centralindia        centralindia  StorageV2  Standard_ZRS   available          TLS1_2",
+    "az storage account show --name stpaymentsprod2025 --resource-group rg-payments-prod-centralindia -o table": "Name                  ResourceGroup                          Location      Kind       SkuName        StatusOfPrimary    MinimumTlsVersion\n--------------------  -------------------------------------  ------------  ---------  -------------  -----------------  -----------------\nstpaymentsprod2025    rg-payments-prod-centralindia          centralindia  StorageV2  Standard_ZRS   available          TLS1_2",
+    "az storage blob list --account-name stauditlogsprod2026 --container-name rbi-reports -o table --auth-mode login": "Name                            Blob Type    Blob Tier    Length     Last Modified\n------------------------------  -----------  -----------  ---------  -------------------------\n2026/Q2/audit-report.csv        BlockBlob    Hot          1048576    2026-06-02T09:15:00Z\n2026/Q1/audit-report.csv        BlockBlob    Hot          2097152    2026-04-01T10:30:00Z\n2025/Q4/audit-report.csv        BlockBlob    Cool         1572864    2026-01-15T08:00:00Z",
+    "az storage blob list --account-name stcompliancelogs2025 --container-name audit-trails -o table --auth-mode login": "Name                              Blob Type    Blob Tier    Length     Last Modified\n--------------------------------  -----------  -----------  ---------  -------------------------\n2026/06/02/login-events.jsonl     BlockBlob    Hot          524288     2026-06-02T08:00:00Z\n2026/06/01/login-events.jsonl     BlockBlob    Hot          786432     2026-06-01T23:59:00Z\n2026/06/01/txn-events.jsonl       BlockBlob    Hot          1048576    2026-06-01T23:59:00Z",
+    "az storage blob upload --account-name stauditlogsprod2026 --container-name rbi-reports --name 2026/Q2/audit-report.csv --file ./audit-report.csv --auth-mode login": "Finished[#############################################################]  100.0000%\n{\n  \"etag\": \"\\\"0x8DC84A2B3C4D5E6\\\"\",\n  \"lastModified\": \"2026-06-02T09:15:00Z\",\n  \"content_md5\": \"a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6\"\n}",
+    "az keyvault list -o table": "Name                    ResourceGroup                          Location      Sku\n----------------------  -------------------------------------  ------------  --------\nkv-payments-prod        rg-payments-prod-centralindia          centralindia  standard\nkv-compliance-prod      rg-compliance-prod-centralindia        centralindia  premium\nkv-core-banking-prod    rg-core-banking-prod-centralindia      centralindia  premium\nkv-shared-services      rg-shared-services-prod-centralindia   centralindia  standard",
+    "az keyvault secret list --vault-name kv-compliance-prod -o table": "Name                    ContentType    Enabled    Expires\n----------------------  -------------  ---------  -------------------------\ndb-connection-string    text/plain     True       2026-12-31T23:59:59Z\nstauditlogs-key1        text/plain     True       2027-06-02T09:20:00Z\nrbi-api-token           text/plain     True       2026-09-30T23:59:59Z\nsmtp-password           text/plain     True       2026-08-15T00:00:00Z",
+    "az keyvault secret list --vault-name kv-payments-prod -o table": "Name                    ContentType    Enabled    Expires\n----------------------  -------------  ---------  -------------------------\npg-admin-password       text/plain     True       2026-09-30T23:59:59Z\nredis-auth-token        text/plain     True       2026-12-31T23:59:59Z\nrazorpay-api-key        text/plain     True       2026-06-30T23:59:59Z\noidc-client-secret      text/plain     True       2026-11-15T00:00:00Z",
+    "az keyvault secret set --vault-name kv-compliance-prod --name stauditlogs-key1 --value \"REDACTED-use-az-storage-account-keys-list\"": "{\n  \"id\": \"https://kv-compliance-prod.vault.azure.net/secrets/stauditlogs-key1/v1\",\n  \"attributes\": {\n    \"enabled\": true,\n    \"created\": \"2026-06-02T09:20:00Z\",\n    \"updated\": \"2026-06-02T09:20:00Z\"\n  }\n}",
+    "az monitor metrics list --resource /subscriptions/a1b2c3d4/resourceGroups/rg-payments-prod-centralindia/providers/Microsoft.ContainerService/managedClusters/aks-payments-prod --metric node_cpu_usage_percentage --interval PT1H -o table": "Timestamp                  Name                       Average    Maximum    Minimum\n-------------------------  -------------------------  ---------  ---------  ---------\n2026-06-02T08:00:00Z       node_cpu_usage_percentage  72.3       94.1       48.5\n2026-06-02T09:00:00Z       node_cpu_usage_percentage  85.7       97.2       61.3\n2026-06-02T10:00:00Z       node_cpu_usage_percentage  91.4       99.1       78.9",
+    "az monitor metrics list --resource /subscriptions/a1b2c3d4/resourceGroups/rg-payments-prod-centralindia/providers/Microsoft.ContainerService/managedClusters/aks-payments-prod --metric node_memory_rss_percentage --interval PT1H -o table": "Timestamp                  Name                         Average    Maximum    Minimum\n-------------------------  ---------------------------  ---------  ---------  ---------\n2026-06-02T08:00:00Z       node_memory_rss_percentage   68.1       82.4       55.2\n2026-06-02T09:00:00Z       node_memory_rss_percentage   79.5       91.8       67.3\n2026-06-02T10:00:00Z       node_memory_rss_percentage   88.3       96.7       74.1",
+    "az monitor log-analytics query --workspace aks-la-workspace-prod --analytics-query \"KubePodInventory | where ClusterName == 'aks-payments-prod' | where PodStatus == 'Failed' | where TimeGenerated > ago(1h) | project TimeGenerated, Name, PodStatus, ContainerStatusReason\" -o table": "TimeGenerated              Name                                  PodStatus    ContainerStatusReason\n-------------------------  ------------------------------------  -----------  ----------------------\n2026-06-02T10:05:12Z       payment-gateway-7d4b8c-x2k9n          Failed       OOMKilled\n2026-06-02T10:12:45Z       payment-gateway-7d4b8c-p8m3w          Failed       OOMKilled\n2026-06-02T10:18:33Z       txn-processor-6c9a8b-n5v1x            Failed       OOMKilled\n2026-06-02T10:25:01Z       settlement-batch-5f8b9c-m3p2q         Failed       CrashLoopBackOff",
+    "az monitor log-analytics query --workspace aks-la-workspace-prod --analytics-query \"ContainerLog | where ClusterName == 'aks-payments-prod' | where LogEntry contains 'error' | top 10 by TimeGenerated\" -o table": "TimeGenerated              ContainerName               LogEntry\n-------------------------  --------------------------  -----------------------------------------------\n2026-06-02T10:25:00Z       settlement-batch            ERROR: Failed to connect to PostgreSQL on port 5432\n2026-06-02T10:24:55Z       payment-gateway             ERROR: OutOfMemory - heap limit reached\n2026-06-02T10:24:30Z       txn-processor               ERROR: Circuit breaker open for downstream svc\n2026-06-02T10:23:15Z       payment-gateway             ERROR: Request timeout after 30s to /api/settle",
+    "az network nsg list -o table": "Name                        ResourceGroup                          Location\n--------------------------  -------------------------------------  ------------\nnsg-aks-payments-prod       rg-payments-prod-centralindia          centralindia\nnsg-core-banking-prod       rg-core-banking-prod-centralindia      centralindia\nnsg-jumpbox-prod            rg-shared-services-prod-centralindia   centralindia\nnsg-compliance-prod         rg-compliance-prod-centralindia        centralindia",
+    "az network nsg list --resource-group rg-payments-prod-centralindia -o table": "Name                        ResourceGroup                          Location\n--------------------------  -------------------------------------  ------------\nnsg-aks-payments-prod       rg-payments-prod-centralindia          centralindia",
+    "az network nsg rule list --nsg-name nsg-aks-payments-prod --resource-group rg-payments-prod-centralindia -o table": "Name                    Priority    Direction    Access    Protocol    SourceAddressPrefix    DestinationPortRange\n----------------------  ----------  -----------  --------  ----------  ---------------------  --------------------\nAllow-HTTPS-Inbound     100         Inbound      Allow     Tcp         10.0.0.0/8             443\nAllow-API-Inbound       110         Inbound      Allow     Tcp         10.0.0.0/8             8080\nAllow-Postgres           120         Inbound      Allow     Tcp         10.4.0.0/16            5432\nDeny-All-Inbound        4096        Inbound      Deny      *           *                      *\nAllow-Internet-Out      100         Outbound     Allow     *           *                      *",
+    "az network nsg rule list --nsg-name nsg-compliance-prod --resource-group rg-compliance-prod-centralindia -o table": "Name                    Priority    Direction    Access    Protocol    SourceAddressPrefix    DestinationPortRange\n----------------------  ----------  -----------  --------  ----------  ---------------------  --------------------\nAllow-HTTPS-Inbound     100         Inbound      Allow     Tcp         10.0.0.0/8             443\nDeny-All-Inbound        4096        Inbound      Deny      *           *                      *\nAllow-Internet-Out      100         Outbound     Allow     *           *                      *",
+    "az ad user list -o table": "DisplayName              UserPrincipalName                         Mail                                    UserType\n-----------------------  ----------------------------------------  --------------------------------------  --------\nSRE Admin                sre-admin@bfsibank.onmicrosoft.com        sre-admin@bfsibank.com                  Member\nPayments Lead            payments-lead@bfsibank.onmicrosoft.com    payments-lead@bfsibank.com              Member\nCompliance Officer       compliance@bfsibank.onmicrosoft.com       compliance@bfsibank.com                 Member\nPlatform Engineer        platform-eng@bfsibank.onmicrosoft.com     platform-eng@bfsibank.com               Member\nDBA Lead                 dba-lead@bfsibank.onmicrosoft.com         dba-lead@bfsibank.com                   Member\nSecurity Analyst         security@bfsibank.onmicrosoft.com         security@bfsibank.com                   Member\nCI/CD Service Account    cicd-svc@bfsibank.onmicrosoft.com         cicd-svc@bfsibank.com                   Member",
+    "az ad user list --filter \"department eq 'SRE'\" -o table": "DisplayName              UserPrincipalName                         Mail                                    UserType\n-----------------------  ----------------------------------------  --------------------------------------  --------\nSRE Admin                sre-admin@bfsibank.onmicrosoft.com        sre-admin@bfsibank.com                  Member\nPlatform Engineer        platform-eng@bfsibank.onmicrosoft.com     platform-eng@bfsibank.com               Member",
+    "az role assignment list -o table": "Principal                                  Role                          Scope\n-----------------------------------------  ----------------------------  --------------------------------------------------\nsre-admin@bfsibank.onmicrosoft.com         Contributor                   /subscriptions/a1b2c3d4\npayments-lead@bfsibank.onmicrosoft.com     Contributor                   /subscriptions/a1b2c3d4/resourceGroups/rg-payments-prod-centralindia\ncompliance@bfsibank.onmicrosoft.com        Reader                        /subscriptions/a1b2c3d4\nplatform-eng@bfsibank.onmicrosoft.com      Azure Kubernetes Service RBAC Admin  /subscriptions/a1b2c3d4/resourceGroups/rg-payments-prod-centralindia\ndba-lead@bfsibank.onmicrosoft.com          Contributor                   /subscriptions/a1b2c3d4/resourceGroups/rg-core-banking-prod-centralindia\nsecurity@bfsibank.onmicrosoft.com          Security Reader               /subscriptions/a1b2c3d4\ncicd-svc@bfsibank.onmicrosoft.com          Contributor                   /subscriptions/a1b2c3d4",
+    "az role assignment list --scope /subscriptions/a1b2c3d4/resourceGroups/rg-compliance-prod-centralindia/providers/Microsoft.Storage/storageAccounts/stauditlogsprod2026 -o table": "Principal                                  Role                              Scope\n-----------------------------------------  --------------------------------  --------------------------------------------------\ncompliance@bfsibank.onmicrosoft.com        Storage Blob Data Contributor      /subscriptions/a1b2c3d4/.../stauditlogsprod2026\nsre-admin@bfsibank.onmicrosoft.com         Storage Blob Data Reader           /subscriptions/a1b2c3d4/.../stauditlogsprod2026",
+    "az role assignment list --resource-group rg-payments-prod-centralindia -o table": "Principal                                  Role                                    Scope\n-----------------------------------------  --------------------------------------  --------------------------------------------------\npayments-lead@bfsibank.onmicrosoft.com     Contributor                             /subscriptions/a1b2c3d4/resourceGroups/rg-payments-prod-centralindia\nplatform-eng@bfsibank.onmicrosoft.com      Azure Kubernetes Service RBAC Admin      /subscriptions/a1b2c3d4/resourceGroups/rg-payments-prod-centralindia\ncicd-svc@bfsibank.onmicrosoft.com          Contributor                             /subscriptions/a1b2c3d4/resourceGroups/rg-payments-prod-centralindia"
+  },
+  "reference": [
+    {
+      "group": "Account & Subscription",
+      "commands": [
+        {
+          "cmd": "az account show",
+          "desc": "active subscription"
+        },
+        {
+          "cmd": "az account list -o table",
+          "desc": "all subscriptions"
+        },
+        {
+          "cmd": "az account set --subscription BFSI-Production",
+          "desc": "switch subscription"
+        }
+      ]
+    },
+    {
+      "group": "Resource Groups",
+      "commands": [
+        {
+          "cmd": "az group list -o table",
+          "desc": "list groups"
+        },
+        {
+          "cmd": "az group create --name rg-test-centralindia --location centralindia",
+          "desc": "create group"
+        }
+      ]
+    },
+    {
+      "group": "Virtual Machines",
+      "commands": [
+        {
+          "cmd": "az vm list -o table",
+          "desc": "list all VMs"
+        },
+        {
+          "cmd": "az vm list --resource-group rg-payments-prod-centralindia -o table",
+          "desc": "VMs in group"
+        },
+        {
+          "cmd": "az vm show --name vm-jumpbox-prod-01 --resource-group rg-shared-services-prod-centralindia -o table",
+          "desc": "VM details"
+        },
+        {
+          "cmd": "az vm start --name vm-batch-settlement-02 --resource-group rg-payments-prod-centralindia",
+          "desc": "start VM"
+        },
+        {
+          "cmd": "az vm stop --name vm-batch-settlement-02 --resource-group rg-payments-prod-centralindia",
+          "desc": "stop VM"
+        },
+        {
+          "cmd": "az vm create --name vm-test-01 --resource-group rg-test-centralindia --image Ubuntu2204 --size Standard_B2ms --admin-username azureadmin --generate-ssh-keys --location centralindia",
+          "desc": "create VM"
+        }
+      ]
+    },
+    {
+      "group": "AKS Clusters",
+      "commands": [
+        {
+          "cmd": "az aks list -o table",
+          "desc": "list clusters"
+        },
+        {
+          "cmd": "az aks show --name aks-payments-prod --resource-group rg-payments-prod-centralindia -o table",
+          "desc": "cluster details"
+        },
+        {
+          "cmd": "az aks get-credentials --name aks-payments-prod --resource-group rg-payments-prod-centralindia",
+          "desc": "get kubeconfig"
+        },
+        {
+          "cmd": "az aks nodepool list --cluster-name aks-payments-prod --resource-group rg-payments-prod-centralindia -o table",
+          "desc": "list node pools"
+        }
+      ]
+    },
+    {
+      "group": "Storage",
+      "commands": [
+        {
+          "cmd": "az storage account list -o table",
+          "desc": "list accounts"
+        },
+        {
+          "cmd": "az storage account show --name stauditlogsprod2026 --resource-group rg-compliance-prod-centralindia -o table",
+          "desc": "account details"
+        },
+        {
+          "cmd": "az storage account create --name stauditlogsprod2026 --resource-group rg-compliance-prod-centralindia --location centralindia --sku Standard_ZRS --kind StorageV2 --min-tls-version TLS1_2",
+          "desc": "create account"
+        },
+        {
+          "cmd": "az storage blob list --account-name stauditlogsprod2026 --container-name rbi-reports -o table --auth-mode login",
+          "desc": "list blobs"
+        },
+        {
+          "cmd": "az storage blob upload --account-name stauditlogsprod2026 --container-name rbi-reports --name 2026/Q2/audit-report.csv --file ./audit-report.csv --auth-mode login",
+          "desc": "upload blob"
+        }
+      ]
+    },
+    {
+      "group": "Key Vault",
+      "commands": [
+        {
+          "cmd": "az keyvault list -o table",
+          "desc": "list vaults"
+        },
+        {
+          "cmd": "az keyvault secret list --vault-name kv-compliance-prod -o table",
+          "desc": "list secrets"
+        },
+        {
+          "cmd": "az keyvault secret set --vault-name kv-compliance-prod --name stauditlogs-key1 --value \"REDACTED-use-az-storage-account-keys-list\"",
+          "desc": "set secret"
+        }
+      ]
+    },
+    {
+      "group": "Monitoring",
+      "commands": [
+        {
+          "cmd": "az monitor metrics list --resource ... --metric node_cpu_usage_percentage --interval PT1H -o table",
+          "desc": "CPU metrics"
+        },
+        {
+          "cmd": "az monitor metrics list --resource ... --metric node_memory_rss_percentage --interval PT1H -o table",
+          "desc": "memory metrics"
+        },
+        {
+          "cmd": "az monitor log-analytics query --workspace aks-la-workspace-prod --analytics-query \"...\" -o table",
+          "desc": "query logs"
+        }
+      ]
+    },
+    {
+      "group": "Networking",
+      "commands": [
+        {
+          "cmd": "az network nsg list -o table",
+          "desc": "list NSGs"
+        },
+        {
+          "cmd": "az network nsg list --resource-group rg-payments-prod-centralindia -o table",
+          "desc": "NSGs in group"
+        },
+        {
+          "cmd": "az network nsg rule list --nsg-name nsg-aks-payments-prod --resource-group rg-payments-prod-centralindia -o table",
+          "desc": "NSG rules"
+        }
+      ]
+    },
+    {
+      "group": "Identity & Access",
+      "commands": [
+        {
+          "cmd": "az ad user list -o table",
+          "desc": "list AD users"
+        },
+        {
+          "cmd": "az ad user list --filter \"department eq 'SRE'\" -o table",
+          "desc": "filter users"
+        },
+        {
+          "cmd": "az role assignment list -o table",
+          "desc": "all role assignments"
+        },
+        {
+          "cmd": "az role assignment list --resource-group rg-payments-prod-centralindia -o table",
+          "desc": "group assignments"
+        }
+      ]
+    },
+    {
+      "group": "Scenarios",
+      "commands": [
+        {
+          "cmd": "scenario investigate-aks-cluster",
+          "desc": "debug AKS issue"
+        },
+        {
+          "cmd": "scenario deploy-secure-storage",
+          "desc": "deploy + secure storage"
+        }
+      ]
+    }
+  ]
+}

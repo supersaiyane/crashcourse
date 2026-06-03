@@ -1,0 +1,398 @@
+{
+  "id": "grafana",
+  "prompt": "grafana@monitoring:~$",
+  "welcome": "Welcome to the Grafana CLI Playground.\nType commands to explore a simulated Grafana instance with Prometheus and Loki data sources.\nType 'help' for available commands, 'scenario' for guided labs.\n",
+  "scenarios": [
+    {
+      "id": "import-configure-dashboard",
+      "title": "Import and Configure a Dashboard",
+      "steps": [
+        {
+          "instruction": "First, check which plugins are currently installed on this Grafana instance.",
+          "expect": "grafana-cli plugins ls",
+          "hint": "Try: grafana-cli plugins ls"
+        },
+        {
+          "instruction": "Install the pie chart panel plugin to use in our dashboard.",
+          "expect": "grafana-cli plugins install grafana-piechart-panel",
+          "hint": "Try: grafana-cli plugins install grafana-piechart-panel"
+        },
+        {
+          "instruction": "Good. Now search for available dashboards related to Node Exporter via the API.",
+          "expect": "curl -s http://localhost:3000/api/search?query=node%20exporter -H 'Authorization: Bearer eyJrIjoiT0...'",
+          "hint": "Try: curl -s http://localhost:3000/api/search?query=node%20exporter -H 'Authorization: Bearer eyJrIjoiT0...'"
+        },
+        {
+          "instruction": "No results yet. Import the popular Node Exporter Full dashboard (ID 1860) from grafana.com.",
+          "expect": "curl -s -X POST http://localhost:3000/api/dashboards/import -H 'Content-Type: application/json' -H 'Authorization: Bearer eyJrIjoiT0...' -d '{\"dashboard\":{\"id\":null},\"folderId\":0,\"overwrite\":true,\"inputs\":[{\"name\":\"DS_PROMETHEUS\",\"type\":\"datasource\",\"pluginId\":\"prometheus\",\"value\":\"Prometheus\"}],\"pluginId\":\"grafana-clock-panel\",\"path\":\"1860\"}'",
+          "hint": "Try: curl -s -X POST http://localhost:3000/api/dashboards/import -H 'Content-Type: application/json' -H 'Authorization: Bearer eyJrIjoiT0...' -d '{...}'"
+        },
+        {
+          "instruction": "Now create a folder called 'SRE Dashboards' to organise our dashboards.",
+          "expect": "curl -s -X POST http://localhost:3000/api/folders -H 'Content-Type: application/json' -H 'Authorization: Bearer eyJrIjoiT0...' -d '{\"title\":\"SRE Dashboards\"}'",
+          "hint": "Try: curl -s -X POST http://localhost:3000/api/folders -H 'Content-Type: application/json' -H 'Authorization: Bearer eyJrIjoiT0...' -d '{\"title\":\"SRE Dashboards\"}'"
+        },
+        {
+          "instruction": "List all folders to confirm our new folder was created.",
+          "expect": "curl -s http://localhost:3000/api/folders -H 'Authorization: Bearer eyJrIjoiT0...'",
+          "hint": "Try: curl -s http://localhost:3000/api/folders -H 'Authorization: Bearer eyJrIjoiT0...'"
+        },
+        {
+          "instruction": "Move our imported dashboard into the SRE Dashboards folder (folder ID: 5).",
+          "expect": "curl -s -X POST http://localhost:3000/api/dashboards/db -H 'Content-Type: application/json' -H 'Authorization: Bearer eyJrIjoiT0...' -d '{\"dashboard\":{\"uid\":\"node-exporter-full\",\"title\":\"Node Exporter Full\"},\"folderId\":5,\"overwrite\":true}'",
+          "hint": "Try: curl -s -X POST http://localhost:3000/api/dashboards/db -H 'Content-Type: application/json' -H 'Authorization: Bearer eyJrIjoiT0...' -d '{...}'"
+        },
+        {
+          "instruction": "Finally, verify the dashboard is in the correct folder by searching within SRE Dashboards.",
+          "expect": "curl -s 'http://localhost:3000/api/search?folderIds=5' -H 'Authorization: Bearer eyJrIjoiT0...'",
+          "hint": "Try: curl -s 'http://localhost:3000/api/search?folderIds=5' -H 'Authorization: Bearer eyJrIjoiT0...'"
+        }
+      ]
+    },
+    {
+      "id": "manage-datasources-api",
+      "title": "Manage Data Sources via API",
+      "steps": [
+        {
+          "instruction": "List all currently configured data sources.",
+          "expect": "curl -s http://localhost:3000/api/datasources -H 'Authorization: Bearer eyJrIjoiT0...'",
+          "hint": "Try: curl -s http://localhost:3000/api/datasources -H 'Authorization: Bearer eyJrIjoiT0...'"
+        },
+        {
+          "instruction": "Add a Prometheus data source pointing to your monitoring stack.",
+          "expect": "curl -s -X POST http://localhost:3000/api/datasources -H 'Content-Type: application/json' -H 'Authorization: Bearer eyJrIjoiT0...' -d '{\"name\":\"Prometheus\",\"type\":\"prometheus\",\"url\":\"http://prometheus:9090\",\"access\":\"proxy\",\"isDefault\":true}'",
+          "hint": "Try: curl -s -X POST http://localhost:3000/api/datasources -H 'Content-Type: application/json' -H 'Authorization: Bearer eyJrIjoiT0...' -d '{\"name\":\"Prometheus\",...}'"
+        },
+        {
+          "instruction": "Add a Loki data source for log aggregation alongside Prometheus.",
+          "expect": "curl -s -X POST http://localhost:3000/api/datasources -H 'Content-Type: application/json' -H 'Authorization: Bearer eyJrIjoiT0...' -d '{\"name\":\"Loki\",\"type\":\"loki\",\"url\":\"http://loki:3100\",\"access\":\"proxy\"}'",
+          "hint": "Try: curl -s -X POST http://localhost:3000/api/datasources -H 'Content-Type: application/json' -H 'Authorization: Bearer eyJrIjoiT0...' -d '{\"name\":\"Loki\",...}'"
+        },
+        {
+          "instruction": "Test the Prometheus data source to verify connectivity.",
+          "expect": "curl -s http://localhost:3000/api/datasources/proxy/1/api/v1/query?query=up -H 'Authorization: Bearer eyJrIjoiT0...'",
+          "hint": "Try: curl -s http://localhost:3000/api/datasources/proxy/1/api/v1/query?query=up -H 'Authorization: Bearer eyJrIjoiT0...'"
+        },
+        {
+          "instruction": "Check the health of the Loki data source.",
+          "expect": "curl -s http://localhost:3000/api/datasources/uid/loki-prod/health -H 'Authorization: Bearer eyJrIjoiT0...'",
+          "hint": "Try: curl -s http://localhost:3000/api/datasources/uid/loki-prod/health -H 'Authorization: Bearer eyJrIjoiT0...'"
+        },
+        {
+          "instruction": "Update the Prometheus data source to add a 15s scrape interval.",
+          "expect": "curl -s -X PUT http://localhost:3000/api/datasources/1 -H 'Content-Type: application/json' -H 'Authorization: Bearer eyJrIjoiT0...' -d '{\"name\":\"Prometheus\",\"type\":\"prometheus\",\"url\":\"http://prometheus:9090\",\"access\":\"proxy\",\"isDefault\":true,\"jsonData\":{\"timeInterval\":\"15s\"}}'",
+          "hint": "Try: curl -s -X PUT http://localhost:3000/api/datasources/1 -H 'Content-Type: application/json' -H 'Authorization: Bearer eyJrIjoiT0...' -d '{...}'"
+        },
+        {
+          "instruction": "List data sources again to confirm both are configured correctly.",
+          "expect": "curl -s http://localhost:3000/api/datasources -H 'Authorization: Bearer eyJrIjoiT0...'",
+          "hint": "Try: curl -s http://localhost:3000/api/datasources -H 'Authorization: Bearer eyJrIjoiT0...'"
+        },
+        {
+          "instruction": "Delete a legacy InfluxDB data source that is no longer needed (ID: 3).",
+          "expect": "curl -s -X DELETE http://localhost:3000/api/datasources/3 -H 'Authorization: Bearer eyJrIjoiT0...'",
+          "hint": "Try: curl -s -X DELETE http://localhost:3000/api/datasources/3 -H 'Authorization: Bearer eyJrIjoiT0...'"
+        }
+      ]
+    }
+  ],
+  "commands": {
+    "help": "Available commands:\n  grafana-cli plugins ls              \u2014 List installed plugins\n  grafana-cli plugins install [name]  \u2014 Install a plugin\n  grafana-cli plugins update [name]   \u2014 Update a plugin\n  grafana-cli plugins remove [name]   \u2014 Remove a plugin\n  grafana-cli plugins list-remote     \u2014 List available remote plugins\n  grafana-cli admin reset-admin-password \u2014 Reset admin password\n  grafana server status               \u2014 Check Grafana server status\n  curl ... /api/datasources           \u2014 Manage data sources\n  curl ... /api/dashboards            \u2014 Manage dashboards\n  curl ... /api/alerts                \u2014 Manage alerts\n  curl ... /api/users                 \u2014 Manage users\n  curl ... /api/orgs                  \u2014 Manage organisations\n  curl ... /api/folders               \u2014 Manage folders\n\n  scenario                            \u2014 Start a guided lab\n  clear                               \u2014 Clear the terminal\n  help                                \u2014 Show this help",
+    "grafana-cli --version": "Grafana CLI version 11.2.0",
+    "grafana server status": "Grafana server is running\n  Version:    11.2.0\n  Commit:     a1b2c3d4e5\n  Branch:     main\n  Build date: 2026-05-15\n  PID:        1842\n  Uptime:     14d 6h 32m\n  HTTP:       http://0.0.0.0:3000\n  Protocol:   http\n  Database:   postgres (monitoring-db.internal:5432/grafana)\n  Config:     /etc/grafana/grafana.ini",
+    "grafana-cli plugins ls": "installed plugins:\n  grafana-clock-panel @ 2.1.5\n  grafana-polystat-panel @ 2.1.4\n  grafana-worldmap-panel @ 1.0.6\n  redis-datasource @ 2.2.1\n\n4 plugin(s) installed",
+    "grafana-cli plugins list-remote": "id: alexanderzobnin-zabbix-app version: 4.4.5\nid: grafana-clock-panel version: 2.1.5\nid: grafana-piechart-panel version: 1.6.4\nid: grafana-polystat-panel version: 2.1.4\nid: grafana-worldmap-panel version: 1.0.6\nid: redis-datasource version: 2.2.1\nid: vonage-status-panel version: 1.0.11\nid: grafana-oncall-app version: 1.9.14\n... (showing 8 of 342 plugins)",
+    "grafana-cli plugins install grafana-piechart-panel": "installing grafana-piechart-panel @ 1.6.4\nfrom: https://grafana.com/api/plugins/grafana-piechart-panel/versions/1.6.4/download\ninto: /var/lib/grafana/plugins\n\n\u2714 Installed grafana-piechart-panel successfully\n\nRestart Grafana after installing or removing plugins:\n  sudo systemctl restart grafana-server",
+    "grafana-cli plugins install grafana-oncall-app": "installing grafana-oncall-app @ 1.9.14\nfrom: https://grafana.com/api/plugins/grafana-oncall-app/versions/1.9.14/download\ninto: /var/lib/grafana/plugins\n\n\u2714 Installed grafana-oncall-app successfully\n\nRestart Grafana after installing or removing plugins:\n  sudo systemctl restart grafana-server",
+    "grafana-cli plugins install alexanderzobnin-zabbix-app": "installing alexanderzobnin-zabbix-app @ 4.4.5\nfrom: https://grafana.com/api/plugins/alexanderzobnin-zabbix-app/versions/4.4.5/download\ninto: /var/lib/grafana/plugins\n\n\u2714 Installed alexanderzobnin-zabbix-app successfully\n\nRestart Grafana after installing or removing plugins:\n  sudo systemctl restart grafana-server",
+    "grafana-cli plugins update grafana-clock-panel": "updating grafana-clock-panel @ 2.1.5\nchecking for updates...\ngrafana-clock-panel is already at the latest version (2.1.5)",
+    "grafana-cli plugins update grafana-polystat-panel": "updating grafana-polystat-panel @ 2.1.4\ndownloading grafana-polystat-panel @ 2.1.5\nfrom: https://grafana.com/api/plugins/grafana-polystat-panel/versions/2.1.5/download\n\n\u2714 Updated grafana-polystat-panel from 2.1.4 to 2.1.5\n\nRestart Grafana after installing or removing plugins:\n  sudo systemctl restart grafana-server",
+    "grafana-cli plugins update-all": "checking for updates...\ngrafana-clock-panel: up to date (2.1.5)\ngrafana-polystat-panel: 2.1.4 \u2192 2.1.5 (updated)\ngrafana-worldmap-panel: up to date (1.0.6)\nredis-datasource: up to date (2.2.1)\n\n\u2714 1 plugin(s) updated. Restart Grafana to apply changes.",
+    "grafana-cli plugins remove grafana-worldmap-panel": "removing plugin: grafana-worldmap-panel\n\n\u2714 Removed grafana-worldmap-panel successfully\n\nRestart Grafana after installing or removing plugins:\n  sudo systemctl restart grafana-server",
+    "grafana-cli admin reset-admin-password newSecurePass123": "Admin password changed successfully \u2714\n\nNote: If the admin user has been deleted, it will be recreated with the new password.",
+    "grafana-cli admin reset-admin-password": "Error: missing required argument: <new password>\nUsage: grafana-cli admin reset-admin-password <new password>",
+    "curl -s http://localhost:3000/api/health": "{\n  \"commit\": \"a1b2c3d4e5\",\n  \"database\": \"ok\",\n  \"version\": \"11.2.0\"\n}",
+    "curl -s http://localhost:3000/api/datasources -H 'Authorization: Bearer eyJrIjoiT0...'": "[\n  {\n    \"id\": 1,\n    \"uid\": \"prom-prod\",\n    \"orgId\": 1,\n    \"name\": \"Prometheus\",\n    \"type\": \"prometheus\",\n    \"access\": \"proxy\",\n    \"url\": \"http://prometheus:9090\",\n    \"isDefault\": true,\n    \"jsonData\": { \"timeInterval\": \"15s\" }\n  },\n  {\n    \"id\": 2,\n    \"uid\": \"loki-prod\",\n    \"orgId\": 1,\n    \"name\": \"Loki\",\n    \"type\": \"loki\",\n    \"access\": \"proxy\",\n    \"url\": \"http://loki:3100\",\n    \"isDefault\": false,\n    \"jsonData\": { \"maxLines\": 1000 }\n  },\n  {\n    \"id\": 3,\n    \"uid\": \"influx-legacy\",\n    \"orgId\": 1,\n    \"name\": \"InfluxDB-legacy\",\n    \"type\": \"influxdb\",\n    \"access\": \"proxy\",\n    \"url\": \"http://influxdb:8086\",\n    \"isDefault\": false\n  }\n]",
+    "curl -s http://localhost:3000/api/datasources/1 -H 'Authorization: Bearer eyJrIjoiT0...'": "{\n  \"id\": 1,\n  \"uid\": \"prom-prod\",\n  \"orgId\": 1,\n  \"name\": \"Prometheus\",\n  \"type\": \"prometheus\",\n  \"access\": \"proxy\",\n  \"url\": \"http://prometheus:9090\",\n  \"isDefault\": true,\n  \"jsonData\": { \"timeInterval\": \"15s\", \"httpMethod\": \"POST\" },\n  \"readOnly\": false\n}",
+    "curl -s http://localhost:3000/api/datasources/uid/prom-prod -H 'Authorization: Bearer eyJrIjoiT0...'": "{\n  \"id\": 1,\n  \"uid\": \"prom-prod\",\n  \"orgId\": 1,\n  \"name\": \"Prometheus\",\n  \"type\": \"prometheus\",\n  \"access\": \"proxy\",\n  \"url\": \"http://prometheus:9090\",\n  \"isDefault\": true,\n  \"jsonData\": { \"timeInterval\": \"15s\", \"httpMethod\": \"POST\" },\n  \"readOnly\": false\n}",
+    "curl -s -X POST http://localhost:3000/api/datasources -H 'Content-Type: application/json' -H 'Authorization: Bearer eyJrIjoiT0...' -d '{\"name\":\"Prometheus\",\"type\":\"prometheus\",\"url\":\"http://prometheus:9090\",\"access\":\"proxy\",\"isDefault\":true}'": "{\n  \"datasource\": {\n    \"id\": 1,\n    \"uid\": \"prom-prod\",\n    \"orgId\": 1,\n    \"name\": \"Prometheus\",\n    \"type\": \"prometheus\",\n    \"access\": \"proxy\",\n    \"url\": \"http://prometheus:9090\",\n    \"isDefault\": true\n  },\n  \"id\": 1,\n  \"message\": \"Datasource added\",\n  \"name\": \"Prometheus\"\n}",
+    "curl -s -X POST http://localhost:3000/api/datasources -H 'Content-Type: application/json' -H 'Authorization: Bearer eyJrIjoiT0...' -d '{\"name\":\"Loki\",\"type\":\"loki\",\"url\":\"http://loki:3100\",\"access\":\"proxy\"}'": "{\n  \"datasource\": {\n    \"id\": 2,\n    \"uid\": \"loki-prod\",\n    \"orgId\": 1,\n    \"name\": \"Loki\",\n    \"type\": \"loki\",\n    \"access\": \"proxy\",\n    \"url\": \"http://loki:3100\",\n    \"isDefault\": false\n  },\n  \"id\": 2,\n  \"message\": \"Datasource added\",\n  \"name\": \"Loki\"\n}",
+    "curl -s -X PUT http://localhost:3000/api/datasources/1 -H 'Content-Type: application/json' -H 'Authorization: Bearer eyJrIjoiT0...' -d '{\"name\":\"Prometheus\",\"type\":\"prometheus\",\"url\":\"http://prometheus:9090\",\"access\":\"proxy\",\"isDefault\":true,\"jsonData\":{\"timeInterval\":\"15s\"}}'": "{\n  \"datasource\": {\n    \"id\": 1,\n    \"uid\": \"prom-prod\",\n    \"orgId\": 1,\n    \"name\": \"Prometheus\",\n    \"type\": \"prometheus\",\n    \"access\": \"proxy\",\n    \"url\": \"http://prometheus:9090\",\n    \"isDefault\": true,\n    \"jsonData\": { \"timeInterval\": \"15s\" }\n  },\n  \"id\": 1,\n  \"message\": \"Datasource updated\",\n  \"name\": \"Prometheus\"\n}",
+    "curl -s -X DELETE http://localhost:3000/api/datasources/3 -H 'Authorization: Bearer eyJrIjoiT0...'": "{\n  \"message\": \"Data source deleted\",\n  \"id\": 3\n}",
+    "curl -s http://localhost:3000/api/datasources/proxy/1/api/v1/query?query=up -H 'Authorization: Bearer eyJrIjoiT0...'": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"vector\",\n    \"result\": [\n      { \"metric\": { \"__name__\": \"up\", \"instance\": \"api:8080\", \"job\": \"api-server\" }, \"value\": [1717300000, \"1\"] },\n      { \"metric\": { \"__name__\": \"up\", \"instance\": \"web:80\", \"job\": \"web-frontend\" }, \"value\": [1717300000, \"1\"] },\n      { \"metric\": { \"__name__\": \"up\", \"instance\": \"prometheus:9090\", \"job\": \"prometheus\" }, \"value\": [1717300000, \"1\"] },\n      { \"metric\": { \"__name__\": \"up\", \"instance\": \"node-exporter:9100\", \"job\": \"node\" }, \"value\": [1717300000, \"1\"] }\n    ]\n  }\n}",
+    "curl -s http://localhost:3000/api/datasources/uid/loki-prod/health -H 'Authorization: Bearer eyJrIjoiT0...'": "{\n  \"status\": \"OK\",\n  \"message\": \"Data source is working\",\n  \"details\": {\n    \"version\": \"2.9.6\",\n    \"storage\": \"boltdb-shipper\",\n    \"ingester\": { \"state\": \"ACTIVE\", \"ringTokens\": 512 }\n  }\n}",
+    "curl -s http://localhost:3000/api/search -H 'Authorization: Bearer eyJrIjoiT0...'": "[\n  {\n    \"id\": 1,\n    \"uid\": \"node-exporter-full\",\n    \"title\": \"Node Exporter Full\",\n    \"uri\": \"db/node-exporter-full\",\n    \"type\": \"dash-db\",\n    \"folderId\": 5,\n    \"folderUid\": \"sre-dash-001\",\n    \"folderTitle\": \"SRE Dashboards\"\n  },\n  {\n    \"id\": 2,\n    \"uid\": \"k8s-cluster\",\n    \"title\": \"Kubernetes Cluster Overview\",\n    \"uri\": \"db/kubernetes-cluster-overview\",\n    \"type\": \"dash-db\",\n    \"folderId\": 5,\n    \"folderUid\": \"sre-dash-001\",\n    \"folderTitle\": \"SRE Dashboards\"\n  },\n  {\n    \"id\": 3,\n    \"uid\": \"loki-logs\",\n    \"title\": \"Application Logs (Loki)\",\n    \"uri\": \"db/application-logs-loki\",\n    \"type\": \"dash-db\",\n    \"folderId\": 0,\n    \"folderTitle\": \"General\"\n  }\n]",
+    "curl -s http://localhost:3000/api/search?query=node%20exporter -H 'Authorization: Bearer eyJrIjoiT0...'": "[\n  {\n    \"id\": 1,\n    \"uid\": \"node-exporter-full\",\n    \"title\": \"Node Exporter Full\",\n    \"uri\": \"db/node-exporter-full\",\n    \"type\": \"dash-db\",\n    \"folderId\": 5,\n    \"folderUid\": \"sre-dash-001\",\n    \"folderTitle\": \"SRE Dashboards\"\n  }\n]",
+    "curl -s 'http://localhost:3000/api/search?folderIds=5' -H 'Authorization: Bearer eyJrIjoiT0...'": "[\n  {\n    \"id\": 1,\n    \"uid\": \"node-exporter-full\",\n    \"title\": \"Node Exporter Full\",\n    \"uri\": \"db/node-exporter-full\",\n    \"type\": \"dash-db\",\n    \"folderId\": 5,\n    \"folderUid\": \"sre-dash-001\",\n    \"folderTitle\": \"SRE Dashboards\"\n  },\n  {\n    \"id\": 2,\n    \"uid\": \"k8s-cluster\",\n    \"title\": \"Kubernetes Cluster Overview\",\n    \"uri\": \"db/kubernetes-cluster-overview\",\n    \"type\": \"dash-db\",\n    \"folderId\": 5,\n    \"folderUid\": \"sre-dash-001\",\n    \"folderTitle\": \"SRE Dashboards\"\n  }\n]",
+    "curl -s -X POST http://localhost:3000/api/dashboards/import -H 'Content-Type: application/json' -H 'Authorization: Bearer eyJrIjoiT0...' -d '{\"dashboard\":{\"id\":null},\"folderId\":0,\"overwrite\":true,\"inputs\":[{\"name\":\"DS_PROMETHEUS\",\"type\":\"datasource\",\"pluginId\":\"prometheus\",\"value\":\"Prometheus\"}],\"pluginId\":\"grafana-clock-panel\",\"path\":\"1860\"}'": "{\n  \"pluginId\": \"\",\n  \"title\": \"Node Exporter Full\",\n  \"imported\": true,\n  \"importedUri\": \"db/node-exporter-full\",\n  \"importedUrl\": \"/d/node-exporter-full/node-exporter-full\",\n  \"slug\": \"\",\n  \"dashboardId\": 1,\n  \"folderId\": 0,\n  \"importedRevision\": 37,\n  \"revision\": 37,\n  \"description\": \"Node Exporter Full dashboard with all metrics\",\n  \"path\": \"\",\n  \"removed\": false\n}",
+    "curl -s -X POST http://localhost:3000/api/dashboards/db -H 'Content-Type: application/json' -H 'Authorization: Bearer eyJrIjoiT0...' -d '{\"dashboard\":{\"uid\":\"node-exporter-full\",\"title\":\"Node Exporter Full\"},\"folderId\":5,\"overwrite\":true}'": "{\n  \"id\": 1,\n  \"slug\": \"node-exporter-full\",\n  \"status\": \"success\",\n  \"uid\": \"node-exporter-full\",\n  \"url\": \"/d/node-exporter-full/node-exporter-full\",\n  \"version\": 2,\n  \"folderId\": 5\n}",
+    "curl -s http://localhost:3000/api/dashboards/uid/node-exporter-full -H 'Authorization: Bearer eyJrIjoiT0...'": "{\n  \"meta\": {\n    \"type\": \"db\",\n    \"canSave\": true,\n    \"canEdit\": true,\n    \"canAdmin\": true,\n    \"canStar\": true,\n    \"slug\": \"node-exporter-full\",\n    \"url\": \"/d/node-exporter-full/node-exporter-full\",\n    \"folderId\": 5,\n    \"folderUid\": \"sre-dash-001\",\n    \"folderTitle\": \"SRE Dashboards\",\n    \"created\": \"2026-05-20T10:00:00Z\",\n    \"updated\": \"2026-06-01T14:30:00Z\",\n    \"createdBy\": \"admin\",\n    \"updatedBy\": \"admin\",\n    \"version\": 2\n  },\n  \"dashboard\": {\n    \"uid\": \"node-exporter-full\",\n    \"title\": \"Node Exporter Full\",\n    \"tags\": [\"node-exporter\", \"prometheus\", \"linux\"],\n    \"timezone\": \"browser\",\n    \"panels\": \"... (37 panels)\",\n    \"templating\": { \"list\": [\"job\", \"node\", \"diskdevices\"] },\n    \"time\": { \"from\": \"now-1h\", \"to\": \"now\" },\n    \"refresh\": \"30s\"\n  }\n}",
+    "curl -s http://localhost:3000/api/dashboards/uid/k8s-cluster -H 'Authorization: Bearer eyJrIjoiT0...'": "{\n  \"meta\": {\n    \"slug\": \"kubernetes-cluster-overview\",\n    \"url\": \"/d/k8s-cluster/kubernetes-cluster-overview\",\n    \"folderId\": 5,\n    \"folderUid\": \"sre-dash-001\",\n    \"folderTitle\": \"SRE Dashboards\",\n    \"version\": 4\n  },\n  \"dashboard\": {\n    \"uid\": \"k8s-cluster\",\n    \"title\": \"Kubernetes Cluster Overview\",\n    \"tags\": [\"kubernetes\", \"prometheus\"],\n    \"panels\": \"... (24 panels)\",\n    \"time\": { \"from\": \"now-6h\", \"to\": \"now\" },\n    \"refresh\": \"1m\"\n  }\n}",
+    "curl -s -X DELETE http://localhost:3000/api/dashboards/uid/loki-logs -H 'Authorization: Bearer eyJrIjoiT0...'": "{\n  \"title\": \"Application Logs (Loki)\",\n  \"message\": \"Dashboard Application Logs (Loki) deleted\",\n  \"id\": 3\n}",
+    "curl -s http://localhost:3000/api/folders -H 'Authorization: Bearer eyJrIjoiT0...'": "[\n  {\n    \"id\": 5,\n    \"uid\": \"sre-dash-001\",\n    \"title\": \"SRE Dashboards\",\n    \"url\": \"/dashboards/f/sre-dash-001/sre-dashboards\",\n    \"hasAcl\": false,\n    \"canSave\": true,\n    \"canEdit\": true,\n    \"canAdmin\": true,\n    \"version\": 1\n  },\n  {\n    \"id\": 6,\n    \"uid\": \"bfsi-001\",\n    \"title\": \"BFSI Compliance\",\n    \"url\": \"/dashboards/f/bfsi-001/bfsi-compliance\",\n    \"hasAcl\": true,\n    \"canSave\": true,\n    \"canEdit\": true,\n    \"canAdmin\": true,\n    \"version\": 1\n  }\n]",
+    "curl -s -X POST http://localhost:3000/api/folders -H 'Content-Type: application/json' -H 'Authorization: Bearer eyJrIjoiT0...' -d '{\"title\":\"SRE Dashboards\"}'": "{\n  \"id\": 5,\n  \"uid\": \"sre-dash-001\",\n  \"title\": \"SRE Dashboards\",\n  \"url\": \"/dashboards/f/sre-dash-001/sre-dashboards\",\n  \"hasAcl\": false,\n  \"canSave\": true,\n  \"canEdit\": true,\n  \"canAdmin\": true,\n  \"createdBy\": \"admin\",\n  \"created\": \"2026-06-02T10:00:00Z\",\n  \"updatedBy\": \"admin\",\n  \"updated\": \"2026-06-02T10:00:00Z\",\n  \"version\": 1\n}",
+    "curl -s -X DELETE http://localhost:3000/api/folders/sre-dash-001 -H 'Authorization: Bearer eyJrIjoiT0...'": "{\n  \"title\": \"SRE Dashboards\",\n  \"message\": \"Folder deleted\",\n  \"id\": 5\n}",
+    "curl -s http://localhost:3000/api/alerts -H 'Authorization: Bearer eyJrIjoiT0...'": "[\n  {\n    \"id\": 1,\n    \"dashboardId\": 1,\n    \"panelId\": 12,\n    \"name\": \"High CPU Usage\",\n    \"state\": \"ok\",\n    \"evalData\": { \"noData\": false },\n    \"newStateDate\": \"2026-06-02T08:00:00Z\",\n    \"executionError\": \"\"\n  },\n  {\n    \"id\": 2,\n    \"dashboardId\": 1,\n    \"panelId\": 15,\n    \"name\": \"Memory Usage Critical\",\n    \"state\": \"alerting\",\n    \"evalData\": { \"noData\": false },\n    \"newStateDate\": \"2026-06-02T09:45:00Z\",\n    \"executionError\": \"\"\n  },\n  {\n    \"id\": 3,\n    \"dashboardId\": 2,\n    \"panelId\": 8,\n    \"name\": \"Pod Restart Rate High\",\n    \"state\": \"ok\",\n    \"evalData\": { \"noData\": false },\n    \"newStateDate\": \"2026-06-01T22:00:00Z\",\n    \"executionError\": \"\"\n  }\n]",
+    "curl -s http://localhost:3000/api/alerts?state=alerting -H 'Authorization: Bearer eyJrIjoiT0...'": "[\n  {\n    \"id\": 2,\n    \"dashboardId\": 1,\n    \"panelId\": 15,\n    \"name\": \"Memory Usage Critical\",\n    \"state\": \"alerting\",\n    \"newStateDate\": \"2026-06-02T09:45:00Z\"\n  }\n]",
+    "curl -s -X POST http://localhost:3000/api/alerts/2/pause -H 'Content-Type: application/json' -H 'Authorization: Bearer eyJrIjoiT0...' -d '{\"paused\":true}'": "{\n  \"alertId\": 2,\n  \"state\": \"paused\",\n  \"message\": \"alert paused\"\n}",
+    "curl -s http://localhost:3000/api/alert-notifications -H 'Authorization: Bearer eyJrIjoiT0...'": "[\n  {\n    \"id\": 1,\n    \"uid\": \"slack-sre\",\n    \"name\": \"SRE Slack Channel\",\n    \"type\": \"slack\",\n    \"isDefault\": true,\n    \"sendReminder\": true,\n    \"frequency\": \"15m\"\n  },\n  {\n    \"id\": 2,\n    \"uid\": \"pagerduty-prod\",\n    \"name\": \"PagerDuty Production\",\n    \"type\": \"pagerduty\",\n    \"isDefault\": false,\n    \"sendReminder\": false\n  }\n]",
+    "curl -s http://localhost:3000/api/org -H 'Authorization: Bearer eyJrIjoiT0...'": "{\n  \"id\": 1,\n  \"name\": \"BFSI Production\",\n  \"address\": {\n    \"address1\": \"\",\n    \"address2\": \"\",\n    \"city\": \"\",\n    \"zipCode\": \"\",\n    \"state\": \"\",\n    \"country\": \"\"\n  }\n}",
+    "curl -s http://localhost:3000/api/orgs -H 'Authorization: Bearer eyJrIjoiT0...'": "[\n  {\n    \"id\": 1,\n    \"name\": \"BFSI Production\"\n  },\n  {\n    \"id\": 2,\n    \"name\": \"BFSI Staging\"\n  }\n]",
+    "curl -s http://localhost:3000/api/org/users -H 'Authorization: Bearer eyJrIjoiT0...'": "[\n  {\n    \"orgId\": 1,\n    \"userId\": 1,\n    \"login\": \"admin\",\n    \"role\": \"Admin\",\n    \"email\": \"admin@bfsi-bank.internal\"\n  },\n  {\n    \"orgId\": 1,\n    \"userId\": 2,\n    \"login\": \"sre-lead\",\n    \"role\": \"Editor\",\n    \"email\": \"sre-lead@bfsi-bank.internal\"\n  },\n  {\n    \"orgId\": 1,\n    \"userId\": 3,\n    \"login\": \"dev-readonly\",\n    \"role\": \"Viewer\",\n    \"email\": \"dev-team@bfsi-bank.internal\"\n  }\n]",
+    "curl -s http://localhost:3000/api/users -H 'Authorization: Bearer eyJrIjoiT0...'": "[\n  {\n    \"id\": 1,\n    \"login\": \"admin\",\n    \"email\": \"admin@bfsi-bank.internal\",\n    \"isAdmin\": true,\n    \"isDisabled\": false,\n    \"lastSeenAt\": \"2026-06-02T10:00:00Z\"\n  },\n  {\n    \"id\": 2,\n    \"login\": \"sre-lead\",\n    \"email\": \"sre-lead@bfsi-bank.internal\",\n    \"isAdmin\": false,\n    \"isDisabled\": false,\n    \"lastSeenAt\": \"2026-06-02T09:30:00Z\"\n  },\n  {\n    \"id\": 3,\n    \"login\": \"dev-readonly\",\n    \"email\": \"dev-team@bfsi-bank.internal\",\n    \"isAdmin\": false,\n    \"isDisabled\": false,\n    \"lastSeenAt\": \"2026-06-01T16:00:00Z\"\n  }\n]",
+    "curl -s -X POST http://localhost:3000/api/admin/users -H 'Content-Type: application/json' -H 'Authorization: Bearer eyJrIjoiT0...' -d '{\"name\":\"SRE On-Call\",\"login\":\"sre-oncall\",\"email\":\"oncall@bfsi-bank.internal\",\"password\":\"changeme\"}'": "{\n  \"id\": 4,\n  \"message\": \"User created\"\n}",
+    "curl -s -X PATCH http://localhost:3000/api/org/users/3 -H 'Content-Type: application/json' -H 'Authorization: Bearer eyJrIjoiT0...' -d '{\"role\":\"Editor\"}'": "{\n  \"message\": \"Organization user updated\"\n}",
+    "curl -s http://localhost:3000/api/annotations?from=1717286400000&to=1717372800000 -H 'Authorization: Bearer eyJrIjoiT0...'": "[\n  {\n    \"id\": 1,\n    \"alertId\": 0,\n    \"dashboardId\": 1,\n    \"time\": 1717300000000,\n    \"text\": \"Deployment: api v2.1.0 rolled out\",\n    \"tags\": [\"deployment\", \"api\"]\n  },\n  {\n    \"id\": 2,\n    \"alertId\": 2,\n    \"dashboardId\": 1,\n    \"time\": 1717308300000,\n    \"text\": \"Memory Usage Critical triggered\",\n    \"tags\": [\"alert\", \"memory\"]\n  }\n]",
+    "curl -s -X POST http://localhost:3000/api/annotations -H 'Content-Type: application/json' -H 'Authorization: Bearer eyJrIjoiT0...' -d '{\"dashboardId\":1,\"text\":\"Monthly salary-day batch started\",\"tags\":[\"batch\",\"salary-day\",\"bfsi\"]}'": "{\n  \"message\": \"Annotation added\",\n  \"id\": 3\n}",
+    "curl -s http://localhost:3000/api/org/preferences -H 'Authorization: Bearer eyJrIjoiT0...'": "{\n  \"theme\": \"dark\",\n  \"homeDashboardId\": 1,\n  \"timezone\": \"Asia/Kolkata\"\n}",
+    "curl -s -X PUT http://localhost:3000/api/org/preferences -H 'Content-Type: application/json' -H 'Authorization: Bearer eyJrIjoiT0...' -d '{\"theme\":\"dark\",\"homeDashboardId\":2,\"timezone\":\"Asia/Kolkata\"}'": "{\n  \"message\": \"Preferences updated\"\n}",
+    "curl -s http://localhost:3000/api/auth/keys -H 'Authorization: Bearer eyJrIjoiT0...'": "[\n  {\n    \"id\": 1,\n    \"name\": \"ci-pipeline\",\n    \"role\": \"Editor\",\n    \"expiration\": \"2026-12-31T00:00:00Z\"\n  },\n  {\n    \"id\": 2,\n    \"name\": \"monitoring-bot\",\n    \"role\": \"Viewer\",\n    \"expiration\": \"2027-01-15T00:00:00Z\"\n  }\n]",
+    "curl -s -X POST http://localhost:3000/api/auth/keys -H 'Content-Type: application/json' -H 'Authorization: Bearer eyJrIjoiT0...' -d '{\"name\":\"terraform-provisioner\",\"role\":\"Admin\",\"secondsToLive\":7776000}'": "{\n  \"id\": 3,\n  \"name\": \"terraform-provisioner\",\n  \"key\": \"eyJrIjoiTm...<redacted>\"\n}",
+    "curl -s -X DELETE http://localhost:3000/api/auth/keys/2 -H 'Authorization: Bearer eyJrIjoiT0...'": "{\n  \"message\": \"API key deleted\"\n}",
+    "curl -s http://localhost:3000/api/admin/stats -H 'Authorization: Bearer eyJrIjoiT0...'": "{\n  \"users\": 3,\n  \"orgs\": 2,\n  \"dashboards\": 3,\n  \"snapshots\": 0,\n  \"tags\": 5,\n  \"datasources\": 3,\n  \"playlists\": 0,\n  \"stars\": 2,\n  \"alerts\": 3,\n  \"activeUsers\": 2,\n  \"activeSessions\": 4\n}",
+    "curl -s -X POST http://localhost:3000/api/snapshots -H 'Content-Type: application/json' -H 'Authorization: Bearer eyJrIjoiT0...' -d '{\"dashboard\":{\"uid\":\"node-exporter-full\"},\"expires\":3600}'": "{\n  \"deleteKey\": \"abc123def456\",\n  \"deleteUrl\": \"http://localhost:3000/api/snapshots-delete/abc123def456\",\n  \"key\": \"snap-node-exp-20260602\",\n  \"url\": \"http://localhost:3000/dashboard/snapshot/snap-node-exp-20260602\"\n}"
+  },
+  "reference": [
+    {
+      "group": "Server & CLI",
+      "commands": [
+        {
+          "cmd": "grafana-cli --version",
+          "desc": "CLI version"
+        },
+        {
+          "cmd": "grafana server status",
+          "desc": "server health and config"
+        },
+        {
+          "cmd": "curl -s http://localhost:3000/api/health",
+          "desc": "API health check"
+        },
+        {
+          "cmd": "curl -s http://localhost:3000/api/admin/stats -H 'Authorization: Bearer ...'",
+          "desc": "instance statistics"
+        }
+      ]
+    },
+    {
+      "group": "Plugins",
+      "commands": [
+        {
+          "cmd": "grafana-cli plugins ls",
+          "desc": "list installed"
+        },
+        {
+          "cmd": "grafana-cli plugins list-remote",
+          "desc": "browse available"
+        },
+        {
+          "cmd": "grafana-cli plugins install <name>",
+          "desc": "install plugin"
+        },
+        {
+          "cmd": "grafana-cli plugins update <name>",
+          "desc": "update plugin"
+        },
+        {
+          "cmd": "grafana-cli plugins update-all",
+          "desc": "update all plugins"
+        },
+        {
+          "cmd": "grafana-cli plugins remove <name>",
+          "desc": "uninstall plugin"
+        }
+      ]
+    },
+    {
+      "group": "Admin",
+      "commands": [
+        {
+          "cmd": "grafana-cli admin reset-admin-password <pass>",
+          "desc": "reset admin password"
+        },
+        {
+          "cmd": "curl ... POST /api/admin/users",
+          "desc": "create user"
+        },
+        {
+          "cmd": "curl ... PATCH /api/org/users/<id>",
+          "desc": "update user role"
+        },
+        {
+          "cmd": "curl ... /api/auth/keys",
+          "desc": "list API keys"
+        },
+        {
+          "cmd": "curl ... POST /api/auth/keys",
+          "desc": "create API key"
+        },
+        {
+          "cmd": "curl ... DELETE /api/auth/keys/<id>",
+          "desc": "revoke API key"
+        }
+      ]
+    },
+    {
+      "group": "Data Sources",
+      "commands": [
+        {
+          "cmd": "curl ... /api/datasources",
+          "desc": "list all"
+        },
+        {
+          "cmd": "curl ... /api/datasources/<id>",
+          "desc": "get by ID"
+        },
+        {
+          "cmd": "curl ... /api/datasources/uid/<uid>",
+          "desc": "get by UID"
+        },
+        {
+          "cmd": "curl ... POST /api/datasources",
+          "desc": "add data source"
+        },
+        {
+          "cmd": "curl ... PUT /api/datasources/<id>",
+          "desc": "update data source"
+        },
+        {
+          "cmd": "curl ... DELETE /api/datasources/<id>",
+          "desc": "remove data source"
+        },
+        {
+          "cmd": "curl ... /api/datasources/uid/<uid>/health",
+          "desc": "health check"
+        },
+        {
+          "cmd": "curl ... /api/datasources/proxy/<id>/api/v1/query?query=up",
+          "desc": "proxy query"
+        }
+      ]
+    },
+    {
+      "group": "Dashboards",
+      "commands": [
+        {
+          "cmd": "curl ... /api/search",
+          "desc": "search dashboards"
+        },
+        {
+          "cmd": "curl ... /api/search?query=<term>",
+          "desc": "search by name"
+        },
+        {
+          "cmd": "curl ... /api/search?folderIds=<id>",
+          "desc": "search in folder"
+        },
+        {
+          "cmd": "curl ... /api/dashboards/uid/<uid>",
+          "desc": "get dashboard"
+        },
+        {
+          "cmd": "curl ... POST /api/dashboards/import",
+          "desc": "import from grafana.com"
+        },
+        {
+          "cmd": "curl ... POST /api/dashboards/db",
+          "desc": "create or update"
+        },
+        {
+          "cmd": "curl ... DELETE /api/dashboards/uid/<uid>",
+          "desc": "delete dashboard"
+        },
+        {
+          "cmd": "curl ... POST /api/snapshots",
+          "desc": "create snapshot"
+        }
+      ]
+    },
+    {
+      "group": "Folders",
+      "commands": [
+        {
+          "cmd": "curl ... /api/folders",
+          "desc": "list folders"
+        },
+        {
+          "cmd": "curl ... POST /api/folders",
+          "desc": "create folder"
+        },
+        {
+          "cmd": "curl ... DELETE /api/folders/<uid>",
+          "desc": "delete folder"
+        }
+      ]
+    },
+    {
+      "group": "Alerts & Annotations",
+      "commands": [
+        {
+          "cmd": "curl ... /api/alerts",
+          "desc": "list alerts"
+        },
+        {
+          "cmd": "curl ... /api/alerts?state=alerting",
+          "desc": "firing alerts only"
+        },
+        {
+          "cmd": "curl ... POST /api/alerts/<id>/pause",
+          "desc": "pause/unpause alert"
+        },
+        {
+          "cmd": "curl ... /api/alert-notifications",
+          "desc": "notification channels"
+        },
+        {
+          "cmd": "curl ... /api/annotations?from=...&to=...",
+          "desc": "list annotations"
+        },
+        {
+          "cmd": "curl ... POST /api/annotations",
+          "desc": "create annotation"
+        }
+      ]
+    },
+    {
+      "group": "Users & Orgs",
+      "commands": [
+        {
+          "cmd": "curl ... /api/users",
+          "desc": "list all users"
+        },
+        {
+          "cmd": "curl ... /api/org",
+          "desc": "current org"
+        },
+        {
+          "cmd": "curl ... /api/orgs",
+          "desc": "list organisations"
+        },
+        {
+          "cmd": "curl ... /api/org/users",
+          "desc": "org members"
+        },
+        {
+          "cmd": "curl ... /api/org/preferences",
+          "desc": "org preferences"
+        },
+        {
+          "cmd": "curl ... PUT /api/org/preferences",
+          "desc": "update preferences"
+        }
+      ]
+    },
+    {
+      "group": "Scenarios",
+      "commands": [
+        {
+          "cmd": "scenario import-configure-dashboard",
+          "desc": "import + organise dashboards"
+        },
+        {
+          "cmd": "scenario manage-datasources-api",
+          "desc": "Prometheus + Loki setup"
+        }
+      ]
+    }
+  ]
+}

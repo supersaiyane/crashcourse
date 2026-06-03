@@ -1,0 +1,298 @@
+{
+  "id": "loki",
+  "prompt": "logcli@monitoring:~$",
+  "welcome": "Welcome to the Loki CLI Playground.\nQuery logs from a simulated production Loki instance.\nType 'help' for available commands, 'scenario' for guided labs.\n",
+  "scenarios": [
+    {
+      "id": "query-filter-logs",
+      "title": "Query and Filter Application Logs",
+      "steps": [
+        {
+          "instruction": "Start by discovering what log streams exist. List all available labels.",
+          "expect": "logcli labels",
+          "hint": "Try: logcli labels"
+        },
+        {
+          "instruction": "Good. Now see what values exist for the 'app' label.",
+          "expect": "logcli labels app",
+          "hint": "Try: logcli labels app"
+        },
+        {
+          "instruction": "Query the last hour of logs from the nginx reverse proxy.",
+          "expect": "logcli query '{app=\"nginx\"}' --since=1h",
+          "hint": "Try: logcli query '{app=\"nginx\"}' --since=1h"
+        },
+        {
+          "instruction": "Too many results. Filter for only HTTP 5xx errors in the nginx logs.",
+          "expect": "logcli query '{app=\"nginx\"} |= \"HTTP/1.1\\\" 5\"' --since=1h",
+          "hint": "Try: logcli query '{app=\"nginx\"} |= \"HTTP/1.1\\\" 5\"' --since=1h"
+        },
+        {
+          "instruction": "Now query the api service logs and filter for lines containing 'error' (case-insensitive).",
+          "expect": "logcli query '{app=\"api\"} |~ \"(?i)error\"' --since=1h",
+          "hint": "Try: logcli query '{app=\"api\"} |~ \"(?i)error\"' --since=1h"
+        },
+        {
+          "instruction": "Limit the output to the 5 most recent matching lines for a quick glance.",
+          "expect": "logcli query '{app=\"api\"} |~ \"(?i)error\"' --since=1h --limit=5",
+          "hint": "Try: logcli query '{app=\"api\"} |~ \"(?i)error\"' --since=1h --limit=5"
+        },
+        {
+          "instruction": "Check which label combinations (series) exist for app=api to understand its dimensions.",
+          "expect": "logcli series '{app=\"api\"}'",
+          "hint": "Try: logcli series '{app=\"api\"}'"
+        },
+        {
+          "instruction": "Finally, output the api error logs in JSON format for machine processing.",
+          "expect": "logcli query '{app=\"api\"} |~ \"(?i)error\"' --since=1h --limit=10 --output=jsonl",
+          "hint": "Try: logcli query '{app=\"api\"} |~ \"(?i)error\"' --since=1h --limit=10 --output=jsonl"
+        }
+      ]
+    },
+    {
+      "id": "investigate-incident",
+      "title": "Investigate an Incident with LogQL",
+      "steps": [
+        {
+          "instruction": "An alert fired: high error rate on the payments service. Start by checking the error rate over the last 5 minutes.",
+          "expect": "logcli instant-query 'rate({app=\"payments\"} |= \"error\" [5m])'",
+          "hint": "Try: logcli instant-query 'rate({app=\"payments\"} |= \"error\" [5m])'"
+        },
+        {
+          "instruction": "Count the total errors in the last 15 minutes to gauge severity.",
+          "expect": "logcli instant-query 'count_over_time({app=\"payments\"} |= \"error\" [15m])'",
+          "hint": "Try: logcli instant-query 'count_over_time({app=\"payments\"} |= \"error\" [15m])'"
+        },
+        {
+          "instruction": "Find the top 3 error sources to identify which pod is worst affected.",
+          "expect": "logcli instant-query 'topk(3, count_over_time({app=\"payments\"} |= \"error\" [15m]))'",
+          "hint": "Try: logcli instant-query 'topk(3, count_over_time({app=\"payments\"} |= \"error\" [15m]))'"
+        },
+        {
+          "instruction": "Read the actual error log lines from the payments service to understand the root cause.",
+          "expect": "logcli query '{app=\"payments\"} |= \"error\"' --since=15m --limit=20",
+          "hint": "Try: logcli query '{app=\"payments\"} |= \"error\"' --since=15m --limit=20"
+        },
+        {
+          "instruction": "The errors mention 'connection refused' to the database. Check the database logs for clues.",
+          "expect": "logcli query '{app=\"postgres\"} |~ \"fatal|error|shutdown\"' --since=30m",
+          "hint": "Try: logcli query '{app=\"postgres\"} |~ \"fatal|error|shutdown\"' --since=30m"
+        },
+        {
+          "instruction": "Correlate: check the nginx upstream errors to see if users were affected.",
+          "expect": "logcli query '{app=\"nginx\"} |= \"502\"' --since=30m --limit=10",
+          "hint": "Try: logcli query '{app=\"nginx\"} |= \"502\"' --since=30m --limit=10"
+        },
+        {
+          "instruction": "Use the Loki API directly to query the error rate over a time range for a dashboard check.",
+          "expect": "curl -s 'http://localhost:3100/loki/api/v1/query_range' --data-urlencode 'query=rate({app=\"payments\"} |= \"error\" [1m])' --data-urlencode 'start=1717300800' --data-urlencode 'end=1717304400' --data-urlencode 'step=60'",
+          "hint": "Try: curl -s 'http://localhost:3100/loki/api/v1/query_range' --data-urlencode 'query=rate({app=\"payments\"} |= \"error\" [1m])' --data-urlencode 'start=1717300800' --data-urlencode 'end=1717304400' --data-urlencode 'step=60'"
+        },
+        {
+          "instruction": "Confirm the database recovered by checking for recent 'ready to accept connections' messages.",
+          "expect": "logcli query '{app=\"postgres\"} |= \"ready to accept connections\"' --since=10m",
+          "hint": "Try: logcli query '{app=\"postgres\"} |= \"ready to accept connections\"' --since=10m"
+        }
+      ]
+    }
+  ],
+  "commands": {
+    "help": "Available commands:\n  logcli query '<LogQL>'          \u2014 Run a log query and stream results\n  logcli instant-query '<LogQL>'  \u2014 Run a metric query at a single point in time\n  logcli labels [name]            \u2014 List labels or label values\n  logcli series '<selector>'      \u2014 List series matching a selector\n  curl <Loki API>                 \u2014 Query the Loki HTTP API directly\n\n  Flags:\n    --since=<duration>            \u2014 Lookback window (e.g. 1h, 30m, 7d)\n    --limit=<N>                   \u2014 Max number of log lines to return\n    --output=default|jsonl|raw    \u2014 Output format\n    --forward                     \u2014 Show oldest entries first\n    --no-labels                   \u2014 Suppress label output\n\n  scenario                        \u2014 Start a guided lab\n  clear                           \u2014 Clear the terminal\n  help                            \u2014 Show this help",
+    "logcli labels": "app\ncluster\ncontainer\nenvironment\nhost\njob\nlevel\nnamespace\nregion\nservice_name",
+    "logcli labels app": "api\nnginx\npayments\npostgres\nredis\nworker",
+    "logcli labels environment": "production\nstaging",
+    "logcli labels level": "critical\ndebug\nerror\ninfo\nwarn",
+    "logcli labels namespace": "default\nmonitoring\nproduction",
+    "logcli labels job": "nginx\napi-server\npayments-svc\npostgres-primary\nredis-cluster\nworker-jobs",
+    "logcli series '{app=\"api\"}'": "{app=\"api\", environment=\"production\", level=\"info\", namespace=\"production\", host=\"api-7d4b8c6f5-x2k9n\"}\n{app=\"api\", environment=\"production\", level=\"error\", namespace=\"production\", host=\"api-7d4b8c6f5-x2k9n\"}\n{app=\"api\", environment=\"production\", level=\"warn\", namespace=\"production\", host=\"api-7d4b8c6f5-p8m3w\"}",
+    "logcli series '{app=\"nginx\"}'": "{app=\"nginx\", environment=\"production\", namespace=\"production\", host=\"nginx-ingress-6b7f8d9-abc12\"}\n{app=\"nginx\", environment=\"production\", namespace=\"production\", host=\"nginx-ingress-6b7f8d9-def34\"}",
+    "logcli series '{app=\"payments\"}'": "{app=\"payments\", environment=\"production\", level=\"info\", namespace=\"production\", host=\"payments-5c8a3b2d1-k7m9n\"}\n{app=\"payments\", environment=\"production\", level=\"error\", namespace=\"production\", host=\"payments-5c8a3b2d1-k7m9n\"}",
+    "logcli query '{app=\"nginx\"}' --since=1h": "2026-06-02T10:15:42Z {app=\"nginx\"} 10.0.2.18 - - [02/Jun/2026:10:15:42 +0000] \"GET /api/v1/users HTTP/1.1\" 200 1245 \"-\" \"Mozilla/5.0\" 0.012\n2026-06-02T10:15:43Z {app=\"nginx\"} 10.0.1.55 - - [02/Jun/2026:10:15:43 +0000] \"POST /api/v1/payments HTTP/1.1\" 201 542 \"-\" \"PaymentSDK/2.1\" 0.087\n2026-06-02T10:15:44Z {app=\"nginx\"} 10.0.3.12 - - [02/Jun/2026:10:15:44 +0000] \"GET /healthz HTTP/1.1\" 200 15 \"-\" \"kube-probe/1.29\" 0.001\n2026-06-02T10:15:45Z {app=\"nginx\"} 10.0.2.18 - - [02/Jun/2026:10:15:45 +0000] \"GET /api/v1/accounts/12345 HTTP/1.1\" 200 892 \"-\" \"Mozilla/5.0\" 0.023\n2026-06-02T10:15:46Z {app=\"nginx\"} 10.0.1.55 - - [02/Jun/2026:10:15:46 +0000] \"POST /api/v1/payments HTTP/1.1\" 502 124 \"-\" \"PaymentSDK/2.1\" 30.001\n2026-06-02T10:15:47Z {app=\"nginx\"} 10.0.3.12 - - [02/Jun/2026:10:15:47 +0000] \"GET /api/v1/reports/monthly HTTP/1.1\" 200 45210 \"-\" \"ReportBot/1.0\" 1.245\n2026-06-02T10:15:48Z {app=\"nginx\"} 10.0.2.18 - - [02/Jun/2026:10:15:48 +0000] \"POST /api/v1/transfers HTTP/1.1\" 500 89 \"-\" \"Mozilla/5.0\" 0.345\n2026-06-02T10:15:49Z {app=\"nginx\"} 10.0.1.55 - - [02/Jun/2026:10:15:49 +0000] \"GET /api/v1/users HTTP/1.1\" 200 1245 \"-\" \"Mozilla/5.0\" 0.015\n... (showing 8 of 1842 lines, use --limit to control)",
+    "logcli query '{app=\"nginx\"} |= \"HTTP/1.1\\\" 5\"' --since=1h": "2026-06-02T10:15:46Z {app=\"nginx\"} 10.0.1.55 - - [02/Jun/2026:10:15:46 +0000] \"POST /api/v1/payments HTTP/1.1\" 502 124 \"-\" \"PaymentSDK/2.1\" 30.001\n2026-06-02T10:15:48Z {app=\"nginx\"} 10.0.2.18 - - [02/Jun/2026:10:15:48 +0000] \"POST /api/v1/transfers HTTP/1.1\" 500 89 \"-\" \"Mozilla/5.0\" 0.345\n2026-06-02T10:16:12Z {app=\"nginx\"} 10.0.1.55 - - [02/Jun/2026:10:16:12 +0000] \"POST /api/v1/payments HTTP/1.1\" 502 124 \"-\" \"PaymentSDK/2.1\" 30.002\n2026-06-02T10:16:45Z {app=\"nginx\"} 10.0.3.12 - - [02/Jun/2026:10:16:45 +0000] \"POST /api/v1/payments HTTP/1.1\" 502 124 \"-\" \"PaymentSDK/2.1\" 30.001\n2026-06-02T10:17:03Z {app=\"nginx\"} 10.0.2.18 - - [02/Jun/2026:10:17:03 +0000] \"POST /api/v1/transfers HTTP/1.1\" 500 89 \"-\" \"Mozilla/5.0\" 0.290",
+    "logcli query '{app=\"api\"} |~ \"(?i)error\"' --since=1h": "2026-06-02T10:15:46Z {app=\"api\", level=\"error\"} level=error msg=\"payment processing failed\" error=\"connection refused to payments-db:5432\" trace_id=abc123def456 user_id=78901\n2026-06-02T10:15:48Z {app=\"api\", level=\"error\"} level=error msg=\"transfer failed\" error=\"upstream timeout after 30s\" trace_id=def456ghi789 account_id=12345\n2026-06-02T10:16:12Z {app=\"api\", level=\"error\"} level=error msg=\"payment processing failed\" error=\"connection refused to payments-db:5432\" trace_id=ghi789jkl012 user_id=34567\n2026-06-02T10:16:45Z {app=\"api\", level=\"error\"} level=error msg=\"payment processing failed\" error=\"connection refused to payments-db:5432\" trace_id=jkl012mno345 user_id=89012\n2026-06-02T10:17:03Z {app=\"api\", level=\"error\"} level=error msg=\"transfer failed\" error=\"upstream timeout after 30s\" trace_id=mno345pqr678 account_id=67890\n2026-06-02T10:17:15Z {app=\"api\", level=\"error\"} level=error msg=\"health check failed\" error=\"database ping timeout\" component=readiness\n2026-06-02T10:17:30Z {app=\"api\", level=\"error\"} level=error msg=\"payment processing failed\" error=\"connection refused to payments-db:5432\" trace_id=pqr678stu901 user_id=45678",
+    "logcli query '{app=\"api\"} |~ \"(?i)error\"' --since=1h --limit=5": "2026-06-02T10:17:30Z {app=\"api\", level=\"error\"} level=error msg=\"payment processing failed\" error=\"connection refused to payments-db:5432\" trace_id=pqr678stu901 user_id=45678\n2026-06-02T10:17:15Z {app=\"api\", level=\"error\"} level=error msg=\"health check failed\" error=\"database ping timeout\" component=readiness\n2026-06-02T10:17:03Z {app=\"api\", level=\"error\"} level=error msg=\"transfer failed\" error=\"upstream timeout after 30s\" trace_id=mno345pqr678 account_id=67890\n2026-06-02T10:16:45Z {app=\"api\", level=\"error\"} level=error msg=\"payment processing failed\" error=\"connection refused to payments-db:5432\" trace_id=jkl012mno345 user_id=89012\n2026-06-02T10:16:12Z {app=\"api\", level=\"error\"} level=error msg=\"payment processing failed\" error=\"connection refused to payments-db:5432\" trace_id=ghi789jkl012 user_id=34567",
+    "logcli query '{app=\"api\"} |~ \"(?i)error\"' --since=1h --limit=10 --output=jsonl": "{\"timestamp\":\"2026-06-02T10:17:30Z\",\"labels\":{\"app\":\"api\",\"level\":\"error\"},\"line\":\"level=error msg=\\\"payment processing failed\\\" error=\\\"connection refused to payments-db:5432\\\" trace_id=pqr678stu901 user_id=45678\"}\n{\"timestamp\":\"2026-06-02T10:17:15Z\",\"labels\":{\"app\":\"api\",\"level\":\"error\"},\"line\":\"level=error msg=\\\"health check failed\\\" error=\\\"database ping timeout\\\" component=readiness\"}\n{\"timestamp\":\"2026-06-02T10:17:03Z\",\"labels\":{\"app\":\"api\",\"level\":\"error\"},\"line\":\"level=error msg=\\\"transfer failed\\\" error=\\\"upstream timeout after 30s\\\" trace_id=mno345pqr678 account_id=67890\"}\n{\"timestamp\":\"2026-06-02T10:16:45Z\",\"labels\":{\"app\":\"api\",\"level\":\"error\"},\"line\":\"level=error msg=\\\"payment processing failed\\\" error=\\\"connection refused to payments-db:5432\\\" trace_id=jkl012mno345 user_id=89012\"}\n{\"timestamp\":\"2026-06-02T10:16:12Z\",\"labels\":{\"app\":\"api\",\"level\":\"error\"},\"line\":\"level=error msg=\\\"payment processing failed\\\" error=\\\"connection refused to payments-db:5432\\\" trace_id=ghi789jkl012 user_id=34567\"}",
+    "logcli instant-query 'rate({app=\"payments\"} |= \"error\" [5m])'": "2026-06-02T10:18:00Z {} 0.2333333333333333\n\n(0.23 errors/sec \u2014 approximately 14 errors in the last 5 minutes)",
+    "logcli instant-query 'count_over_time({app=\"payments\"} |= \"error\" [15m])'": "2026-06-02T10:18:00Z {} 47\n\n(47 error log lines in the last 15 minutes)",
+    "logcli instant-query 'topk(3, count_over_time({app=\"payments\"} |= \"error\" [15m]))'": "2026-06-02T10:18:00Z {app=\"payments\", level=\"error\", host=\"payments-5c8a3b2d1-k7m9n\"} 32\n2026-06-02T10:18:00Z {app=\"payments\", level=\"error\", host=\"payments-5c8a3b2d1-j4h6p\"} 11\n2026-06-02T10:18:00Z {app=\"payments\", level=\"error\", host=\"payments-5c8a3b2d1-r2t8w\"} 4",
+    "logcli query '{app=\"payments\"} |= \"error\"' --since=15m --limit=20": "2026-06-02T10:17:58Z {app=\"payments\", level=\"error\"} time=2026-06-02T10:17:58Z level=error caller=db.go:142 msg=\"failed to execute query\" error=\"dial tcp 172.20.12.34:5432: connect: connection refused\" query=\"INSERT INTO transactions\" tx_id=txn-88901\n2026-06-02T10:17:45Z {app=\"payments\", level=\"error\"} time=2026-06-02T10:17:45Z level=error caller=db.go:142 msg=\"failed to execute query\" error=\"dial tcp 172.20.12.34:5432: connect: connection refused\" query=\"INSERT INTO transactions\" tx_id=txn-88900\n2026-06-02T10:17:30Z {app=\"payments\", level=\"error\"} time=2026-06-02T10:17:30Z level=error caller=handler.go:89 msg=\"payment processing failed\" error=\"database connection pool exhausted\" user_id=78901 amount=2500.00 currency=INR\n2026-06-02T10:17:15Z {app=\"payments\", level=\"error\"} time=2026-06-02T10:17:15Z level=error caller=db.go:142 msg=\"failed to execute query\" error=\"dial tcp 172.20.12.34:5432: connect: connection refused\" query=\"SELECT balance\" account_id=12345\n2026-06-02T10:17:02Z {app=\"payments\", level=\"error\"} time=2026-06-02T10:17:02Z level=error caller=health.go:34 msg=\"readiness check failed\" error=\"database ping: connection refused\" consecutive_failures=12\n2026-06-02T10:16:48Z {app=\"payments\", level=\"error\"} time=2026-06-02T10:16:48Z level=error caller=db.go:142 msg=\"failed to execute query\" error=\"dial tcp 172.20.12.34:5432: connect: connection refused\" query=\"INSERT INTO transactions\" tx_id=txn-88899\n2026-06-02T10:16:35Z {app=\"payments\", level=\"error\"} time=2026-06-02T10:16:35Z level=error caller=handler.go:89 msg=\"payment processing failed\" error=\"database connection pool exhausted\" user_id=34567 amount=15000.00 currency=INR\n2026-06-02T10:16:20Z {app=\"payments\", level=\"error\"} time=2026-06-02T10:16:20Z level=error caller=db.go:142 msg=\"failed to execute query\" error=\"dial tcp 172.20.12.34:5432: connect: connection refused\" query=\"INSERT INTO transactions\" tx_id=txn-88898",
+    "logcli query '{app=\"postgres\"} |~ \"fatal|error|shutdown\"' --since=30m": "2026-06-02T10:05:12Z {app=\"postgres\"} 2026-06-02 10:05:12.345 UTC [1] LOG:  received smart shutdown request\n2026-06-02T10:05:12Z {app=\"postgres\"} 2026-06-02 10:05:12.456 UTC [1] LOG:  aborting any active transactions\n2026-06-02T10:05:13Z {app=\"postgres\"} 2026-06-02 10:05:13.012 UTC [1] LOG:  background worker \"logical replication launcher\" (PID 42) exited with exit code 1\n2026-06-02T10:05:13Z {app=\"postgres\"} 2026-06-02 10:05:13.234 UTC [1] LOG:  shutting down\n2026-06-02T10:05:14Z {app=\"postgres\"} 2026-06-02 10:05:14.567 UTC [1] LOG:  database system is shut down\n2026-06-02T10:05:30Z {app=\"postgres\"} 2026-06-02 10:05:30.123 UTC [1] FATAL:  the database system is not yet accepting connections\n2026-06-02T10:05:30Z {app=\"postgres\"} 2026-06-02 10:05:30.456 UTC [1] FATAL:  the database system is starting up\n2026-06-02T10:06:01Z {app=\"postgres\"} 2026-06-02 10:06:01.789 UTC [1] LOG:  database system was interrupted; last known up at 2026-06-02 09:30:00 UTC\n2026-06-02T10:06:15Z {app=\"postgres\"} 2026-06-02 10:06:15.012 UTC [1] LOG:  database system was not properly shut down; automatic recovery in progress\n2026-06-02T10:06:45Z {app=\"postgres\"} 2026-06-02 10:06:45.345 UTC [1] LOG:  redo is not required",
+    "logcli query '{app=\"nginx\"} |= \"502\"' --since=30m --limit=10": "2026-06-02T10:15:46Z {app=\"nginx\"} 10.0.1.55 - - [02/Jun/2026:10:15:46 +0000] \"POST /api/v1/payments HTTP/1.1\" 502 124 \"-\" \"PaymentSDK/2.1\" 30.001\n2026-06-02T10:16:12Z {app=\"nginx\"} 10.0.1.55 - - [02/Jun/2026:10:16:12 +0000] \"POST /api/v1/payments HTTP/1.1\" 502 124 \"-\" \"PaymentSDK/2.1\" 30.002\n2026-06-02T10:16:45Z {app=\"nginx\"} 10.0.3.12 - - [02/Jun/2026:10:16:45 +0000] \"POST /api/v1/payments HTTP/1.1\" 502 124 \"-\" \"PaymentSDK/2.1\" 30.001\n2026-06-02T10:17:20Z {app=\"nginx\"} 10.0.2.18 - - [02/Jun/2026:10:17:20 +0000] \"POST /api/v1/payments HTTP/1.1\" 502 124 \"-\" \"PaymentSDK/2.1\" 30.003\n2026-06-02T10:17:55Z {app=\"nginx\"} 10.0.1.55 - - [02/Jun/2026:10:17:55 +0000] \"GET /api/v1/accounts/56789 HTTP/1.1\" 502 124 \"-\" \"Mozilla/5.0\" 30.001",
+    "logcli query '{app=\"nginx\"} |= \"502\"' --since=30m": "2026-06-02T10:15:46Z {app=\"nginx\"} 10.0.1.55 - - [02/Jun/2026:10:15:46 +0000] \"POST /api/v1/payments HTTP/1.1\" 502 124 \"-\" \"PaymentSDK/2.1\" 30.001\n2026-06-02T10:16:12Z {app=\"nginx\"} 10.0.1.55 - - [02/Jun/2026:10:16:12 +0000] \"POST /api/v1/payments HTTP/1.1\" 502 124 \"-\" \"PaymentSDK/2.1\" 30.002\n2026-06-02T10:16:45Z {app=\"nginx\"} 10.0.3.12 - - [02/Jun/2026:10:16:45 +0000] \"POST /api/v1/payments HTTP/1.1\" 502 124 \"-\" \"PaymentSDK/2.1\" 30.001\n2026-06-02T10:17:20Z {app=\"nginx\"} 10.0.2.18 - - [02/Jun/2026:10:17:20 +0000] \"POST /api/v1/payments HTTP/1.1\" 502 124 \"-\" \"PaymentSDK/2.1\" 30.003\n2026-06-02T10:17:55Z {app=\"nginx\"} 10.0.1.55 - - [02/Jun/2026:10:17:55 +0000] \"GET /api/v1/accounts/56789 HTTP/1.1\" 502 124 \"-\" \"Mozilla/5.0\" 30.001\n2026-06-02T10:18:10Z {app=\"nginx\"} 10.0.3.12 - - [02/Jun/2026:10:18:10 +0000] \"POST /api/v1/transfers HTTP/1.1\" 502 124 \"-\" \"Mozilla/5.0\" 30.002",
+    "curl -s 'http://localhost:3100/loki/api/v1/query_range' --data-urlencode 'query=rate({app=\"payments\"} |= \"error\" [1m])' --data-urlencode 'start=1717300800' --data-urlencode 'end=1717304400' --data-urlencode 'step=60'": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"matrix\",\n    \"result\": [\n      {\n        \"metric\": {\"app\": \"payments\", \"level\": \"error\"},\n        \"values\": [\n          [1717300800, \"0\"],\n          [1717300860, \"0\"],\n          [1717301100, \"0.033\"],\n          [1717301160, \"0.10\"],\n          [1717301220, \"0.23\"],\n          [1717301280, \"0.23\"],\n          [1717301340, \"0.20\"],\n          [1717301400, \"0.066\"]\n        ]\n      }\n    ]\n  }\n}",
+    "logcli query '{app=\"postgres\"} |= \"ready to accept connections\"' --since=10m": "2026-06-02T10:07:02Z {app=\"postgres\"} 2026-06-02 10:07:02.123 UTC [1] LOG:  database system is ready to accept connections",
+    "logcli query '{app=\"api\"}' --since=1h --limit=10": "2026-06-02T10:17:30Z {app=\"api\", level=\"error\"} level=error msg=\"payment processing failed\" error=\"connection refused to payments-db:5432\" trace_id=pqr678stu901 user_id=45678\n2026-06-02T10:17:15Z {app=\"api\", level=\"error\"} level=error msg=\"health check failed\" error=\"database ping timeout\" component=readiness\n2026-06-02T10:17:03Z {app=\"api\", level=\"error\"} level=error msg=\"transfer failed\" error=\"upstream timeout after 30s\" trace_id=mno345pqr678 account_id=67890\n2026-06-02T10:16:58Z {app=\"api\", level=\"info\"} level=info msg=\"request completed\" method=GET path=/api/v1/users status=200 latency=12ms\n2026-06-02T10:16:55Z {app=\"api\", level=\"info\"} level=info msg=\"request completed\" method=GET path=/healthz status=200 latency=1ms\n2026-06-02T10:16:50Z {app=\"api\", level=\"warn\"} level=warn msg=\"slow query detected\" path=/api/v1/reports duration=2.3s threshold=1s\n2026-06-02T10:16:45Z {app=\"api\", level=\"error\"} level=error msg=\"payment processing failed\" error=\"connection refused to payments-db:5432\" trace_id=jkl012mno345 user_id=89012\n2026-06-02T10:16:40Z {app=\"api\", level=\"info\"} level=info msg=\"request completed\" method=POST path=/api/v1/orders status=201 latency=45ms\n2026-06-02T10:16:35Z {app=\"api\", level=\"info\"} level=info msg=\"request completed\" method=GET path=/api/v1/accounts/12345 status=200 latency=23ms\n2026-06-02T10:16:30Z {app=\"api\", level=\"info\"} level=info msg=\"request completed\" method=GET path=/api/v1/users status=200 latency=15ms",
+    "logcli query '{app=\"api\"}' --since=30m": "2026-06-02T10:17:30Z {app=\"api\", level=\"error\"} level=error msg=\"payment processing failed\" error=\"connection refused to payments-db:5432\" trace_id=pqr678stu901 user_id=45678\n2026-06-02T10:17:15Z {app=\"api\", level=\"error\"} level=error msg=\"health check failed\" error=\"database ping timeout\" component=readiness\n2026-06-02T10:17:03Z {app=\"api\", level=\"error\"} level=error msg=\"transfer failed\" error=\"upstream timeout after 30s\" trace_id=mno345pqr678 account_id=67890\n2026-06-02T10:16:58Z {app=\"api\", level=\"info\"} level=info msg=\"request completed\" method=GET path=/api/v1/users status=200 latency=12ms\n2026-06-02T10:16:55Z {app=\"api\", level=\"info\"} level=info msg=\"request completed\" method=GET path=/healthz status=200 latency=1ms\n... (showing 5 of 342 lines, use --limit to control)",
+    "logcli query '{app=\"payments\"}' --since=1h --limit=10": "2026-06-02T10:17:58Z {app=\"payments\", level=\"error\"} time=2026-06-02T10:17:58Z level=error caller=db.go:142 msg=\"failed to execute query\" error=\"dial tcp 172.20.12.34:5432: connect: connection refused\" tx_id=txn-88901\n2026-06-02T10:17:45Z {app=\"payments\", level=\"error\"} time=2026-06-02T10:17:45Z level=error caller=db.go:142 msg=\"failed to execute query\" error=\"dial tcp 172.20.12.34:5432: connect: connection refused\" tx_id=txn-88900\n2026-06-02T10:17:30Z {app=\"payments\", level=\"error\"} time=2026-06-02T10:17:30Z level=error caller=handler.go:89 msg=\"payment processing failed\" error=\"database connection pool exhausted\" user_id=78901 amount=2500.00 currency=INR\n2026-06-02T10:17:15Z {app=\"payments\", level=\"info\"} time=2026-06-02T10:17:15Z level=info caller=handler.go:45 msg=\"payment initiated\" user_id=23456 amount=5000.00 currency=INR tx_id=txn-88897\n2026-06-02T10:17:02Z {app=\"payments\", level=\"error\"} time=2026-06-02T10:17:02Z level=error caller=health.go:34 msg=\"readiness check failed\" error=\"database ping: connection refused\" consecutive_failures=12\n2026-06-02T10:16:48Z {app=\"payments\", level=\"info\"} time=2026-06-02T10:16:48Z level=info caller=handler.go:45 msg=\"payment initiated\" user_id=89012 amount=1200.00 currency=INR tx_id=txn-88896\n2026-06-02T10:16:35Z {app=\"payments\", level=\"error\"} time=2026-06-02T10:16:35Z level=error caller=handler.go:89 msg=\"payment processing failed\" error=\"database connection pool exhausted\" user_id=34567 amount=15000.00 currency=INR\n2026-06-02T10:16:20Z {app=\"payments\", level=\"info\"} time=2026-06-02T10:16:20Z level=info caller=handler.go:45 msg=\"payment initiated\" user_id=56789 amount=750.00 currency=INR tx_id=txn-88895\n2026-06-02T10:16:05Z {app=\"payments\", level=\"info\"} time=2026-06-02T10:16:05Z level=info caller=handler.go:120 msg=\"payment completed\" user_id=67890 amount=3200.00 currency=INR tx_id=txn-88894 duration=0.245s\n2026-06-02T10:15:50Z {app=\"payments\", level=\"info\"} time=2026-06-02T10:15:50Z level=info caller=handler.go:45 msg=\"payment initiated\" user_id=12345 amount=8500.00 currency=INR tx_id=txn-88893",
+    "logcli query '{app=\"payments\"} |= \"error\"' --since=15m": "2026-06-02T10:17:58Z {app=\"payments\", level=\"error\"} time=2026-06-02T10:17:58Z level=error caller=db.go:142 msg=\"failed to execute query\" error=\"dial tcp 172.20.12.34:5432: connect: connection refused\" tx_id=txn-88901\n2026-06-02T10:17:45Z {app=\"payments\", level=\"error\"} time=2026-06-02T10:17:45Z level=error caller=db.go:142 msg=\"failed to execute query\" error=\"dial tcp 172.20.12.34:5432: connect: connection refused\" tx_id=txn-88900\n2026-06-02T10:17:30Z {app=\"payments\", level=\"error\"} time=2026-06-02T10:17:30Z level=error caller=handler.go:89 msg=\"payment processing failed\" error=\"database connection pool exhausted\" user_id=78901 amount=2500.00 currency=INR\n2026-06-02T10:17:15Z {app=\"payments\", level=\"error\"} time=2026-06-02T10:17:15Z level=error caller=db.go:142 msg=\"failed to execute query\" error=\"dial tcp 172.20.12.34:5432: connect: connection refused\" account_id=12345\n2026-06-02T10:17:02Z {app=\"payments\", level=\"error\"} time=2026-06-02T10:17:02Z level=error caller=health.go:34 msg=\"readiness check failed\" error=\"database ping: connection refused\" consecutive_failures=12\n2026-06-02T10:16:48Z {app=\"payments\", level=\"error\"} time=2026-06-02T10:16:48Z level=error caller=db.go:142 msg=\"failed to execute query\" error=\"dial tcp 172.20.12.34:5432: connect: connection refused\" tx_id=txn-88899\n2026-06-02T10:16:35Z {app=\"payments\", level=\"error\"} time=2026-06-02T10:16:35Z level=error caller=handler.go:89 msg=\"payment processing failed\" error=\"database connection pool exhausted\" user_id=34567 amount=15000.00 currency=INR\n... (showing 7 of 47 lines, use --limit to control)",
+    "logcli query '{app=\"worker\"}' --since=1h --limit=10": "2026-06-02T10:17:55Z {app=\"worker\", level=\"info\"} time=2026-06-02T10:17:55Z level=info caller=processor.go:78 msg=\"job completed\" job_id=job-44521 type=report_generation duration=12.5s\n2026-06-02T10:17:40Z {app=\"worker\", level=\"info\"} time=2026-06-02T10:17:40Z level=info caller=processor.go:45 msg=\"job started\" job_id=job-44521 type=report_generation queue=default\n2026-06-02T10:17:20Z {app=\"worker\", level=\"warn\"} time=2026-06-02T10:17:20Z level=warn caller=processor.go:92 msg=\"job retrying\" job_id=job-44520 type=email_notification attempt=2 error=\"SMTP timeout\"\n2026-06-02T10:17:05Z {app=\"worker\", level=\"info\"} time=2026-06-02T10:17:05Z level=info caller=processor.go:78 msg=\"job completed\" job_id=job-44519 type=balance_sync duration=0.8s\n2026-06-02T10:16:50Z {app=\"worker\", level=\"info\"} time=2026-06-02T10:16:50Z level=info caller=processor.go:45 msg=\"job started\" job_id=job-44519 type=balance_sync queue=priority",
+    "logcli query '{app=\"redis\"}' --since=1h --limit=5": "2026-06-02T10:17:50Z {app=\"redis\"} 1:M 02 Jun 2026 10:17:50.123 * 10 changes in 300 seconds. Saving...\n2026-06-02T10:17:50Z {app=\"redis\"} 1:M 02 Jun 2026 10:17:50.234 * Background saving started by pid 42\n2026-06-02T10:17:51Z {app=\"redis\"} 1:M 02 Jun 2026 10:17:51.456 * DB saved on disk\n2026-06-02T10:15:00Z {app=\"redis\"} 1:M 02 Jun 2026 10:15:00.789 # Client id=1234 addr=10.0.2.145:43210 disconnected (connection reset by peer)\n2026-06-02T10:12:50Z {app=\"redis\"} 1:M 02 Jun 2026 10:12:50.012 * 10 changes in 300 seconds. Saving...",
+    "logcli query '{app=\"postgres\"}' --since=1h --limit=10": "2026-06-02T10:07:02Z {app=\"postgres\"} 2026-06-02 10:07:02.123 UTC [1] LOG:  database system is ready to accept connections\n2026-06-02T10:06:45Z {app=\"postgres\"} 2026-06-02 10:06:45.345 UTC [1] LOG:  redo is not required\n2026-06-02T10:06:15Z {app=\"postgres\"} 2026-06-02 10:06:15.012 UTC [1] LOG:  database system was not properly shut down; automatic recovery in progress\n2026-06-02T10:06:01Z {app=\"postgres\"} 2026-06-02 10:06:01.789 UTC [1] LOG:  database system was interrupted; last known up at 2026-06-02 09:30:00 UTC\n2026-06-02T10:05:30Z {app=\"postgres\"} 2026-06-02 10:05:30.456 UTC [1] FATAL:  the database system is starting up\n2026-06-02T10:05:30Z {app=\"postgres\"} 2026-06-02 10:05:30.123 UTC [1] FATAL:  the database system is not yet accepting connections\n2026-06-02T10:05:14Z {app=\"postgres\"} 2026-06-02 10:05:14.567 UTC [1] LOG:  database system is shut down\n2026-06-02T10:05:13Z {app=\"postgres\"} 2026-06-02 10:05:13.234 UTC [1] LOG:  shutting down\n2026-06-02T10:05:13Z {app=\"postgres\"} 2026-06-02 10:05:13.012 UTC [1] LOG:  background worker \"logical replication launcher\" (PID 42) exited with exit code 1\n2026-06-02T10:05:12Z {app=\"postgres\"} 2026-06-02 10:05:12.345 UTC [1] LOG:  received smart shutdown request",
+    "logcli query '{app=\"nginx\"}' --since=1h --limit=5": "2026-06-02T10:17:55Z {app=\"nginx\"} 10.0.1.55 - - [02/Jun/2026:10:17:55 +0000] \"GET /api/v1/accounts/56789 HTTP/1.1\" 502 124 \"-\" \"Mozilla/5.0\" 30.001\n2026-06-02T10:17:20Z {app=\"nginx\"} 10.0.2.18 - - [02/Jun/2026:10:17:20 +0000] \"POST /api/v1/payments HTTP/1.1\" 502 124 \"-\" \"PaymentSDK/2.1\" 30.003\n2026-06-02T10:17:03Z {app=\"nginx\"} 10.0.2.18 - - [02/Jun/2026:10:17:03 +0000] \"POST /api/v1/transfers HTTP/1.1\" 500 89 \"-\" \"Mozilla/5.0\" 0.290\n2026-06-02T10:16:58Z {app=\"nginx\"} 10.0.2.18 - - [02/Jun/2026:10:16:58 +0000] \"GET /api/v1/users HTTP/1.1\" 200 1245 \"-\" \"Mozilla/5.0\" 0.012\n2026-06-02T10:16:45Z {app=\"nginx\"} 10.0.3.12 - - [02/Jun/2026:10:16:45 +0000] \"POST /api/v1/payments HTTP/1.1\" 502 124 \"-\" \"PaymentSDK/2.1\" 30.001",
+    "logcli query '{level=\"error\"}' --since=1h --limit=10": "2026-06-02T10:17:58Z {app=\"payments\", level=\"error\"} time=2026-06-02T10:17:58Z level=error caller=db.go:142 msg=\"failed to execute query\" error=\"dial tcp 172.20.12.34:5432: connect: connection refused\" tx_id=txn-88901\n2026-06-02T10:17:30Z {app=\"api\", level=\"error\"} level=error msg=\"payment processing failed\" error=\"connection refused to payments-db:5432\" trace_id=pqr678stu901 user_id=45678\n2026-06-02T10:17:15Z {app=\"api\", level=\"error\"} level=error msg=\"health check failed\" error=\"database ping timeout\" component=readiness\n2026-06-02T10:17:03Z {app=\"api\", level=\"error\"} level=error msg=\"transfer failed\" error=\"upstream timeout after 30s\" trace_id=mno345pqr678 account_id=67890\n2026-06-02T10:17:02Z {app=\"payments\", level=\"error\"} time=2026-06-02T10:17:02Z level=error caller=health.go:34 msg=\"readiness check failed\" error=\"database ping: connection refused\" consecutive_failures=12",
+    "logcli query '{app=\"api\"} | json | level=\"error\"' --since=1h --limit=5": "2026-06-02T10:17:30Z {app=\"api\", level=\"error\"} level=error msg=\"payment processing failed\" error=\"connection refused to payments-db:5432\" trace_id=pqr678stu901 user_id=45678\n2026-06-02T10:17:15Z {app=\"api\", level=\"error\"} level=error msg=\"health check failed\" error=\"database ping timeout\" component=readiness\n2026-06-02T10:17:03Z {app=\"api\", level=\"error\"} level=error msg=\"transfer failed\" error=\"upstream timeout after 30s\" trace_id=mno345pqr678 account_id=67890\n2026-06-02T10:16:45Z {app=\"api\", level=\"error\"} level=error msg=\"payment processing failed\" error=\"connection refused to payments-db:5432\" trace_id=jkl012mno345 user_id=89012\n2026-06-02T10:16:12Z {app=\"api\", level=\"error\"} level=error msg=\"payment processing failed\" error=\"connection refused to payments-db:5432\" trace_id=ghi789jkl012 user_id=34567",
+    "logcli query '{app=\"api\"} | logfmt | latency > 500ms' --since=1h --limit=5": "2026-06-02T10:16:50Z {app=\"api\", level=\"warn\"} level=warn msg=\"slow query detected\" path=/api/v1/reports duration=2.3s threshold=1s\n2026-06-02T10:15:35Z {app=\"api\", level=\"warn\"} level=warn msg=\"high latency detected\" path=/api/v1/reports latency=890ms",
+    "logcli query '{app=\"nginx\"} | pattern \"<ip> - - [<timestamp>] \\\"<method> <path> <_>\\\" <status> <size> \\\"<_>\\\" \\\"<agent>\\\" <duration>\" | status >= 500' --since=1h": "2026-06-02T10:15:46Z {app=\"nginx\"} 10.0.1.55 - - [02/Jun/2026:10:15:46 +0000] \"POST /api/v1/payments HTTP/1.1\" 502 124 \"-\" \"PaymentSDK/2.1\" 30.001\n2026-06-02T10:15:48Z {app=\"nginx\"} 10.0.2.18 - - [02/Jun/2026:10:15:48 +0000] \"POST /api/v1/transfers HTTP/1.1\" 500 89 \"-\" \"Mozilla/5.0\" 0.345\n2026-06-02T10:16:12Z {app=\"nginx\"} 10.0.1.55 - - [02/Jun/2026:10:16:12 +0000] \"POST /api/v1/payments HTTP/1.1\" 502 124 \"-\" \"PaymentSDK/2.1\" 30.002\n2026-06-02T10:16:45Z {app=\"nginx\"} 10.0.3.12 - - [02/Jun/2026:10:16:45 +0000] \"POST /api/v1/payments HTTP/1.1\" 502 124 \"-\" \"PaymentSDK/2.1\" 30.001\n2026-06-02T10:17:03Z {app=\"nginx\"} 10.0.2.18 - - [02/Jun/2026:10:17:03 +0000] \"POST /api/v1/transfers HTTP/1.1\" 500 89 \"-\" \"Mozilla/5.0\" 0.290",
+    "logcli query '{app=\"api\"} | line_format \"{{.level}} | {{.msg}}\"' --since=1h --limit=5": "2026-06-02T10:17:30Z {app=\"api\", level=\"error\"} error | payment processing failed\n2026-06-02T10:17:15Z {app=\"api\", level=\"error\"} error | health check failed\n2026-06-02T10:17:03Z {app=\"api\", level=\"error\"} error | transfer failed\n2026-06-02T10:16:58Z {app=\"api\", level=\"info\"} info | request completed\n2026-06-02T10:16:55Z {app=\"api\", level=\"info\"} info | request completed",
+    "logcli instant-query 'rate({app=\"api\"} [5m])'": "2026-06-02T10:18:00Z {app=\"api\", level=\"error\"} 0.1333333333\n2026-06-02T10:18:00Z {app=\"api\", level=\"info\"} 1.8666666667\n2026-06-02T10:18:00Z {app=\"api\", level=\"warn\"} 0.0333333333",
+    "logcli instant-query 'rate({app=\"nginx\"} |= \"502\" [5m])'": "2026-06-02T10:18:00Z {} 0.0666666667\n\n(~4 requests returning 502 per minute)",
+    "logcli instant-query 'sum(rate({app=~\".+\"} [5m])) by (app)'": "2026-06-02T10:18:00Z {app=\"nginx\"} 6.1333333333\n2026-06-02T10:18:00Z {app=\"api\"} 2.0333333333\n2026-06-02T10:18:00Z {app=\"payments\"} 0.8333333333\n2026-06-02T10:18:00Z {app=\"worker\"} 0.2666666667\n2026-06-02T10:18:00Z {app=\"postgres\"} 0.1000000000\n2026-06-02T10:18:00Z {app=\"redis\"} 0.0666666667",
+    "logcli instant-query 'sum(count_over_time({level=\"error\"} [1h])) by (app)'": "2026-06-02T10:18:00Z {app=\"payments\"} 47\n2026-06-02T10:18:00Z {app=\"api\"} 23\n2026-06-02T10:18:00Z {app=\"worker\"} 3",
+    "logcli instant-query 'bytes_over_time({app=\"nginx\"} [1h])'": "2026-06-02T10:18:00Z {app=\"nginx\", host=\"nginx-ingress-6b7f8d9-abc12\"} 2457600\n2026-06-02T10:18:00Z {app=\"nginx\", host=\"nginx-ingress-6b7f8d9-def34\"} 1843200",
+    "logcli query '{app=\"api\"} |= \"error\" | line_format \"{{.trace_id}}\"' --since=1h --limit=5": "2026-06-02T10:17:30Z {app=\"api\", level=\"error\"} pqr678stu901\n2026-06-02T10:17:03Z {app=\"api\", level=\"error\"} mno345pqr678\n2026-06-02T10:16:45Z {app=\"api\", level=\"error\"} jkl012mno345\n2026-06-02T10:16:12Z {app=\"api\", level=\"error\"} ghi789jkl012\n2026-06-02T10:15:46Z {app=\"api\", level=\"error\"} abc123def456",
+    "logcli query '{app=\"api\"}' --since=1h --limit=5 --forward": "2026-06-02T09:18:02Z {app=\"api\", level=\"info\"} level=info msg=\"request completed\" method=GET path=/healthz status=200 latency=1ms\n2026-06-02T09:18:15Z {app=\"api\", level=\"info\"} level=info msg=\"request completed\" method=GET path=/api/v1/users status=200 latency=14ms\n2026-06-02T09:18:30Z {app=\"api\", level=\"info\"} level=info msg=\"request completed\" method=POST path=/api/v1/orders status=201 latency=42ms\n2026-06-02T09:18:45Z {app=\"api\", level=\"info\"} level=info msg=\"request completed\" method=GET path=/api/v1/accounts/11111 status=200 latency=18ms\n2026-06-02T09:19:00Z {app=\"api\", level=\"info\"} level=info msg=\"request completed\" method=GET path=/healthz status=200 latency=1ms",
+    "logcli query '{app=\"api\"}' --since=1h --limit=5 --no-labels": "level=error msg=\"payment processing failed\" error=\"connection refused to payments-db:5432\" trace_id=pqr678stu901 user_id=45678\nlevel=error msg=\"health check failed\" error=\"database ping timeout\" component=readiness\nlevel=error msg=\"transfer failed\" error=\"upstream timeout after 30s\" trace_id=mno345pqr678 account_id=67890\nlevel=info msg=\"request completed\" method=GET path=/api/v1/users status=200 latency=12ms\nlevel=info msg=\"request completed\" method=GET path=/healthz status=200 latency=1ms",
+    "curl -s 'http://localhost:3100/loki/api/v1/labels'": "{\n  \"status\": \"success\",\n  \"data\": [\"app\", \"cluster\", \"container\", \"environment\", \"host\", \"job\", \"level\", \"namespace\", \"region\", \"service_name\"]\n}",
+    "curl -s 'http://localhost:3100/loki/api/v1/label/app/values'": "{\n  \"status\": \"success\",\n  \"data\": [\"api\", \"nginx\", \"payments\", \"postgres\", \"redis\", \"worker\"]\n}",
+    "curl -s 'http://localhost:3100/loki/api/v1/query' --data-urlencode 'query={app=\"api\"} |= \"error\"' --data-urlencode 'limit=3'": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"streams\",\n    \"result\": [\n      {\n        \"stream\": {\"app\": \"api\", \"level\": \"error\"},\n        \"values\": [\n          [\"1717319850000000000\", \"level=error msg=\\\"payment processing failed\\\" error=\\\"connection refused to payments-db:5432\\\" trace_id=pqr678stu901 user_id=45678\"],\n          [\"1717319835000000000\", \"level=error msg=\\\"health check failed\\\" error=\\\"database ping timeout\\\" component=readiness\"],\n          [\"1717319823000000000\", \"level=error msg=\\\"transfer failed\\\" error=\\\"upstream timeout after 30s\\\" trace_id=mno345pqr678 account_id=67890\"]\n        ]\n      }\n    ]\n  }\n}",
+    "curl -s 'http://localhost:3100/loki/api/v1/series' --data-urlencode 'match={app=\"payments\"}'": "{\n  \"status\": \"success\",\n  \"data\": [\n    {\"app\": \"payments\", \"environment\": \"production\", \"level\": \"info\", \"namespace\": \"production\", \"host\": \"payments-5c8a3b2d1-k7m9n\"},\n    {\"app\": \"payments\", \"environment\": \"production\", \"level\": \"error\", \"namespace\": \"production\", \"host\": \"payments-5c8a3b2d1-k7m9n\"},\n    {\"app\": \"payments\", \"environment\": \"production\", \"level\": \"info\", \"namespace\": \"production\", \"host\": \"payments-5c8a3b2d1-j4h6p\"},\n    {\"app\": \"payments\", \"environment\": \"production\", \"level\": \"error\", \"namespace\": \"production\", \"host\": \"payments-5c8a3b2d1-j4h6p\"}\n  ]\n}",
+    "curl -s 'http://localhost:3100/loki/api/v1/query' --data-urlencode 'query=count_over_time({app=\"payments\"} |= \"error\" [1h])'": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"vector\",\n    \"result\": [\n      {\n        \"metric\": {\"app\": \"payments\", \"level\": \"error\"},\n        \"value\": [1717319880, \"47\"]\n      }\n    ]\n  }\n}",
+    "logcli query '{app=\"nginx\"} |= \"POST\" |= \"payments\"' --since=1h --limit=10": "2026-06-02T10:17:20Z {app=\"nginx\"} 10.0.2.18 - - [02/Jun/2026:10:17:20 +0000] \"POST /api/v1/payments HTTP/1.1\" 502 124 \"-\" \"PaymentSDK/2.1\" 30.003\n2026-06-02T10:16:45Z {app=\"nginx\"} 10.0.3.12 - - [02/Jun/2026:10:16:45 +0000] \"POST /api/v1/payments HTTP/1.1\" 502 124 \"-\" \"PaymentSDK/2.1\" 30.001\n2026-06-02T10:16:12Z {app=\"nginx\"} 10.0.1.55 - - [02/Jun/2026:10:16:12 +0000] \"POST /api/v1/payments HTTP/1.1\" 502 124 \"-\" \"PaymentSDK/2.1\" 30.002\n2026-06-02T10:15:43Z {app=\"nginx\"} 10.0.1.55 - - [02/Jun/2026:10:15:43 +0000] \"POST /api/v1/payments HTTP/1.1\" 201 542 \"-\" \"PaymentSDK/2.1\" 0.087\n2026-06-02T10:15:20Z {app=\"nginx\"} 10.0.2.18 - - [02/Jun/2026:10:15:20 +0000] \"POST /api/v1/payments HTTP/1.1\" 201 542 \"-\" \"PaymentSDK/2.1\" 0.092",
+    "logcli query '{app=\"nginx\"} != \"healthz\" != \"kube-probe\"' --since=1h --limit=5": "2026-06-02T10:17:55Z {app=\"nginx\"} 10.0.1.55 - - [02/Jun/2026:10:17:55 +0000] \"GET /api/v1/accounts/56789 HTTP/1.1\" 502 124 \"-\" \"Mozilla/5.0\" 30.001\n2026-06-02T10:17:20Z {app=\"nginx\"} 10.0.2.18 - - [02/Jun/2026:10:17:20 +0000] \"POST /api/v1/payments HTTP/1.1\" 502 124 \"-\" \"PaymentSDK/2.1\" 30.003\n2026-06-02T10:17:03Z {app=\"nginx\"} 10.0.2.18 - - [02/Jun/2026:10:17:03 +0000] \"POST /api/v1/transfers HTTP/1.1\" 500 89 \"-\" \"Mozilla/5.0\" 0.290\n2026-06-02T10:16:58Z {app=\"nginx\"} 10.0.2.18 - - [02/Jun/2026:10:16:58 +0000] \"GET /api/v1/users HTTP/1.1\" 200 1245 \"-\" \"Mozilla/5.0\" 0.012\n2026-06-02T10:16:45Z {app=\"nginx\"} 10.0.3.12 - - [02/Jun/2026:10:16:45 +0000] \"POST /api/v1/payments HTTP/1.1\" 502 124 \"-\" \"PaymentSDK/2.1\" 30.001",
+    "logcli instant-query 'topk(5, sum(rate({app=~\".+\"} |= \"error\" [5m])) by (app))'": "2026-06-02T10:18:00Z {app=\"payments\"} 0.2333333333\n2026-06-02T10:18:00Z {app=\"api\"} 0.1333333333\n2026-06-02T10:18:00Z {app=\"worker\"} 0.0166666667"
+  },
+  "reference": [
+    {
+      "group": "Discovery",
+      "commands": [
+        {
+          "cmd": "logcli labels",
+          "desc": "list all label names"
+        },
+        {
+          "cmd": "logcli labels app",
+          "desc": "list values for a label"
+        },
+        {
+          "cmd": "logcli series '{app=\"api\"}'",
+          "desc": "list series for a selector"
+        }
+      ]
+    },
+    {
+      "group": "Log Queries",
+      "commands": [
+        {
+          "cmd": "logcli query '{app=\"nginx\"}'",
+          "desc": "query a log stream"
+        },
+        {
+          "cmd": "logcli query '{app=\"api\"} |= \"error\"'",
+          "desc": "filter: contains string"
+        },
+        {
+          "cmd": "logcli query '{app=\"api\"} |~ \"(?i)error\"'",
+          "desc": "filter: regex match"
+        },
+        {
+          "cmd": "logcli query '{app=\"nginx\"} != \"healthz\"'",
+          "desc": "filter: exclude string"
+        },
+        {
+          "cmd": "logcli query '{app=\"api\"} | json | level=\"error\"'",
+          "desc": "parse JSON then filter"
+        },
+        {
+          "cmd": "logcli query '{app=\"api\"} | logfmt | latency > 500ms'",
+          "desc": "parse logfmt then filter"
+        },
+        {
+          "cmd": "logcli query '{app=\"nginx\"} | pattern \"<ip> - -...\"'",
+          "desc": "parse with pattern"
+        },
+        {
+          "cmd": "logcli query '{app=\"api\"} | line_format \"{{.level}} | {{.msg}}\"'",
+          "desc": "reformat output lines"
+        }
+      ]
+    },
+    {
+      "group": "Metric Queries",
+      "commands": [
+        {
+          "cmd": "logcli instant-query 'rate({app=\"api\"} [5m])'",
+          "desc": "log lines per second"
+        },
+        {
+          "cmd": "logcli instant-query 'count_over_time({app=\"api\"} |= \"error\" [15m])'",
+          "desc": "count matching lines"
+        },
+        {
+          "cmd": "logcli instant-query 'bytes_over_time({app=\"nginx\"} [1h])'",
+          "desc": "bytes ingested"
+        },
+        {
+          "cmd": "logcli instant-query 'topk(3, count_over_time(...))'",
+          "desc": "top N series by count"
+        },
+        {
+          "cmd": "logcli instant-query 'sum(rate(...)) by (app)'",
+          "desc": "aggregate rate by label"
+        }
+      ]
+    },
+    {
+      "group": "Output Control",
+      "commands": [
+        {
+          "cmd": "--since=1h",
+          "desc": "lookback window"
+        },
+        {
+          "cmd": "--limit=10",
+          "desc": "max lines returned"
+        },
+        {
+          "cmd": "--output=jsonl",
+          "desc": "JSON lines output"
+        },
+        {
+          "cmd": "--forward",
+          "desc": "oldest first"
+        },
+        {
+          "cmd": "--no-labels",
+          "desc": "hide labels in output"
+        }
+      ]
+    },
+    {
+      "group": "Loki HTTP API",
+      "commands": [
+        {
+          "cmd": "curl localhost:3100/loki/api/v1/labels",
+          "desc": "list labels via API"
+        },
+        {
+          "cmd": "curl localhost:3100/loki/api/v1/label/app/values",
+          "desc": "label values via API"
+        },
+        {
+          "cmd": "curl localhost:3100/loki/api/v1/query",
+          "desc": "instant query via API"
+        },
+        {
+          "cmd": "curl localhost:3100/loki/api/v1/query_range",
+          "desc": "range query via API"
+        },
+        {
+          "cmd": "curl localhost:3100/loki/api/v1/series",
+          "desc": "series via API"
+        }
+      ]
+    },
+    {
+      "group": "Scenarios",
+      "commands": [
+        {
+          "cmd": "scenario query-filter-logs",
+          "desc": "query and filter app logs"
+        },
+        {
+          "cmd": "scenario investigate-incident",
+          "desc": "investigate with LogQL"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,379 @@
+{
+  "id": "gcp",
+  "prompt": "gcloud@infra:~$",
+  "welcome": "Welcome to the GCP CLI Playground.\nType commands to explore a simulated Google Cloud environment.\nType 'help' for available commands, 'scenario' for guided labs.\n",
+  "scenarios": [
+    {
+      "id": "gke-production-issue",
+      "title": "Investigate a GKE Production Issue",
+      "steps": [
+        {
+          "instruction": "First, check which GCP project and account you are working with.",
+          "expect": "gcloud config list",
+          "hint": "Try: gcloud config list"
+        },
+        {
+          "instruction": "List GKE clusters to find the production cluster in asia-south1.",
+          "expect": "gcloud container clusters list",
+          "hint": "Try: gcloud container clusters list"
+        },
+        {
+          "instruction": "Get credentials for the prod-payments-cluster so kubectl can connect.",
+          "expect": "gcloud container clusters get-credentials prod-payments-cluster --region asia-south1 --project bfsi-prod-384209",
+          "hint": "Try: gcloud container clusters get-credentials prod-payments-cluster --region asia-south1 --project bfsi-prod-384209"
+        },
+        {
+          "instruction": "The SRE on-call reported high error rates. Check Cloud Logging for recent errors in the payments service.",
+          "expect": "gcloud logging read 'resource.type=\"k8s_container\" AND resource.labels.cluster_name=\"prod-payments-cluster\" AND severity>=ERROR' --limit=10 --format=json",
+          "hint": "Try: gcloud logging read 'resource.type=\"k8s_container\" AND resource.labels.cluster_name=\"prod-payments-cluster\" AND severity>=ERROR' --limit=10 --format=json"
+        },
+        {
+          "instruction": "Logs point to a Cloud SQL connection timeout. Check the Cloud SQL instance status.",
+          "expect": "gcloud sql instances list",
+          "hint": "Try: gcloud sql instances list"
+        },
+        {
+          "instruction": "The txn-ledger-db instance looks degraded. Describe it for more detail.",
+          "expect": "gcloud sql instances describe txn-ledger-db --format=yaml",
+          "hint": "Try: gcloud sql instances describe txn-ledger-db --format=yaml"
+        },
+        {
+          "instruction": "Check the Compute Engine instances backing additional services to see if anything else is affected.",
+          "expect": "gcloud compute instances list --filter=\"zone:asia-south1-a\" --format=table(name,status,machineType,networkInterfaces[0].networkIP)",
+          "hint": "Try: gcloud compute instances list --filter=\"zone:asia-south1-a\" --format=table(name,status,machineType,networkInterfaces[0].networkIP)"
+        },
+        {
+          "instruction": "The reconciliation-worker VM is stopped. Restart it to restore the batch pipeline.",
+          "expect": "gcloud compute instances start reconciliation-worker --zone=asia-south1-a",
+          "hint": "Try: gcloud compute instances start reconciliation-worker --zone=asia-south1-a"
+        }
+      ]
+    },
+    {
+      "id": "deploy-cloud-run",
+      "title": "Deploy a Cloud Run Service",
+      "steps": [
+        {
+          "instruction": "Verify your authenticated identity and the active project before deploying.",
+          "expect": "gcloud auth list",
+          "hint": "Try: gcloud auth list"
+        },
+        {
+          "instruction": "Set the project to the staging environment for the deployment.",
+          "expect": "gcloud config set project bfsi-staging-384210",
+          "hint": "Try: gcloud config set project bfsi-staging-384210"
+        },
+        {
+          "instruction": "List existing Cloud Run services to see what is already deployed.",
+          "expect": "gcloud run services list --region=asia-south1",
+          "hint": "Try: gcloud run services list --region=asia-south1"
+        },
+        {
+          "instruction": "Create a service account for the new kyc-verification service.",
+          "expect": "gcloud iam service-accounts create kyc-verification-sa --display-name=\"KYC Verification Service Account\"",
+          "hint": "Try: gcloud iam service-accounts create kyc-verification-sa --display-name=\"KYC Verification Service Account\""
+        },
+        {
+          "instruction": "Deploy the KYC verification service to Cloud Run.",
+          "expect": "gcloud run deploy kyc-verification --image=asia-south1-docker.pkg.dev/bfsi-staging-384210/services/kyc-verification:v1.2.0 --region=asia-south1 --service-account=kyc-verification-sa@bfsi-staging-384210.iam.gserviceaccount.com --port=8080 --memory=512Mi --cpu=1 --min-instances=1 --max-instances=10",
+          "hint": "Try: gcloud run deploy kyc-verification --image=asia-south1-docker.pkg.dev/bfsi-staging-384210/services/kyc-verification:v1.2.0 --region=asia-south1 --service-account=kyc-verification-sa@bfsi-staging-384210.iam.gserviceaccount.com --port=8080 --memory=512Mi --cpu=1 --min-instances=1 --max-instances=10"
+        },
+        {
+          "instruction": "Verify the deployment by listing revisions of the new service.",
+          "expect": "gcloud run revisions list --service=kyc-verification --region=asia-south1",
+          "hint": "Try: gcloud run revisions list --service=kyc-verification --region=asia-south1"
+        },
+        {
+          "instruction": "Upload the API spec to Cloud Storage for documentation.",
+          "expect": "gcloud storage cp ./openapi-spec.yaml gs://bfsi-staging-docs/kyc-verification/openapi-spec.yaml",
+          "hint": "Try: gcloud storage cp ./openapi-spec.yaml gs://bfsi-staging-docs/kyc-verification/openapi-spec.yaml"
+        },
+        {
+          "instruction": "Check monitoring dashboards to confirm the service is healthy.",
+          "expect": "gcloud monitoring dashboards list --format=table(name,displayName)",
+          "hint": "Try: gcloud monitoring dashboards list --format=table(name,displayName)"
+        }
+      ]
+    }
+  ],
+  "commands": {
+    "help": "Available commands:\n  gcloud config list/set           \u2014 View or set CLI configuration properties\n  gcloud auth list/login           \u2014 Manage authentication\n  gcloud projects list             \u2014 List accessible projects\n  gcloud compute instances         \u2014 Manage Compute Engine VMs (list, describe, ssh, start, stop)\n  gcloud container clusters        \u2014 Manage GKE clusters (list, get-credentials)\n  gcloud run                       \u2014 Manage Cloud Run services (deploy, services list, revisions list)\n  gcloud iam service-accounts      \u2014 Manage service accounts (list, create)\n  gcloud logging read              \u2014 Read Cloud Logging entries\n  gcloud monitoring dashboards     \u2014 List monitoring dashboards\n  gcloud storage ls/cp             \u2014 Manage Cloud Storage objects\n  gcloud sql instances             \u2014 Manage Cloud SQL instances (list, describe)\n  gcloud functions                 \u2014 Manage Cloud Functions (deploy, list)\n\n  scenario                         \u2014 Start a guided lab\n  clear                            \u2014 Clear the terminal\n  help                             \u2014 Show this help",
+    "gcloud version": "Google Cloud SDK 482.0.0\nalpha 2024.06.01\nbeta 2024.06.01\nbq 2.1.6\ncore 2024.06.01\ngcloud-crc32c 1.0.0\ngsutil 5.29\nkubectl 1.29.3",
+    "gcloud config list": "[core]\naccount = sre-lead@bfsi-prod-384209.iam.gserviceaccount.com\nproject = bfsi-prod-384209\n\n[compute]\nregion = asia-south1\nzone = asia-south1-a\n\n[container]\ncluster = prod-payments-cluster",
+    "gcloud config set project bfsi-staging-384210": "Updated property [core/project].",
+    "gcloud config set project bfsi-prod-384209": "Updated property [core/project].",
+    "gcloud config set compute/region asia-south1": "Updated property [compute/region].",
+    "gcloud config set compute/zone asia-south1-a": "Updated property [compute/zone].",
+    "gcloud auth list": "         ACCOUNT                                              STATUS\n*        sre-lead@bfsi-prod-384209.iam.gserviceaccount.com      ACTIVE\n         dev-deployer@bfsi-staging-384210.iam.gserviceaccount.com  ACTIVE\n         audit-reader@bfsi-compliance-384211.iam.gserviceaccount.com  ACTIVE",
+    "gcloud auth login": "Your browser has been opened to visit:\n    https://accounts.google.com/o/oauth2/auth?...\n\nYou are now logged in as [sre-lead@bfsi-prod-384209.iam.gserviceaccount.com].\nYour current project is [bfsi-prod-384209].",
+    "gcloud projects list": "PROJECT_ID              NAME                    PROJECT_NUMBER\nbfsi-prod-384209        BFSI Production         384209001234\nbfsi-staging-384210     BFSI Staging            384210005678\nbfsi-compliance-384211  BFSI Compliance/Audit   384211009012\nbfsi-dr-384212          BFSI Disaster Recovery  384212003456",
+    "gcloud compute instances list": "NAME                       ZONE            MACHINE_TYPE    INTERNAL_IP   EXTERNAL_IP     STATUS\npayments-gateway-01        asia-south1-a   e2-standard-4   10.160.0.10   34.93.120.45    RUNNING\npayments-gateway-02        asia-south1-b   e2-standard-4   10.160.1.11   34.93.120.46    RUNNING\nreconciliation-worker      asia-south1-a   e2-standard-8   10.160.0.20   34.93.121.10    TERMINATED\naudit-log-processor        asia-south1-c   e2-standard-2   10.160.2.30   --              RUNNING\nbastion-host               asia-south1-a   e2-micro        10.160.0.5    35.200.180.22   RUNNING\nmlops-training-gpu         asia-south1-a   n1-standard-8   10.160.0.40   --              RUNNING",
+    "gcloud compute instances list --filter=\"zone:asia-south1-a\" --format=table(name,status,machineType,networkInterfaces[0].networkIP)": "NAME                    STATUS      MACHINE_TYPE     NETWORK_IP\npayments-gateway-01     RUNNING     e2-standard-4    10.160.0.10\nreconciliation-worker   TERMINATED  e2-standard-8    10.160.0.20\nbastion-host            RUNNING     e2-micro         10.160.0.5\nmlops-training-gpu      RUNNING     n1-standard-8    10.160.0.40",
+    "gcloud compute instances list --filter=\"status=RUNNING\"": "NAME                    ZONE            MACHINE_TYPE    INTERNAL_IP   EXTERNAL_IP     STATUS\npayments-gateway-01     asia-south1-a   e2-standard-4   10.160.0.10   34.93.120.45    RUNNING\npayments-gateway-02     asia-south1-b   e2-standard-4   10.160.1.11   34.93.120.46    RUNNING\naudit-log-processor     asia-south1-c   e2-standard-2   10.160.2.30   --              RUNNING\nbastion-host            asia-south1-a   e2-micro        10.160.0.5    35.200.180.22   RUNNING\nmlops-training-gpu      asia-south1-a   n1-standard-8   10.160.0.40   --              RUNNING",
+    "gcloud compute instances describe payments-gateway-01 --zone=asia-south1-a": "name: payments-gateway-01\nzone: asia-south1-a\nmachineType: e2-standard-4\nstatus: RUNNING\ncpuPlatform: Intel Broadwell\ncreationTimestamp: '2025-11-15T08:30:00.000-07:00'\nnetworkInterfaces:\n  - networkIP: 10.160.0.10\n    accessConfigs:\n      - natIP: 34.93.120.45\n        type: ONE_TO_ONE_NAT\ndisks:\n  - boot: true\n    autoDelete: true\n    deviceName: payments-gateway-01\n    diskSizeGb: '100'\n    type: PERSISTENT\nmetadata:\n  items:\n    - key: environment\n      value: production\n    - key: team\n      value: payments-sre\nserviceAccounts:\n  - email: payments-sa@bfsi-prod-384209.iam.gserviceaccount.com\n    scopes:\n      - https://www.googleapis.com/auth/cloud-platform\ntags:\n  items:\n    - allow-health-check\n    - allow-lb",
+    "gcloud compute instances describe reconciliation-worker --zone=asia-south1-a": "name: reconciliation-worker\nzone: asia-south1-a\nmachineType: e2-standard-8\nstatus: TERMINATED\nlastStopTimestamp: '2026-06-02T03:15:00.000-07:00'\nstatusMessage: 'VM stopped by automated budget policy'\ncpuPlatform: Intel Cascade Lake\ncreationTimestamp: '2025-12-01T10:00:00.000-07:00'\nnetworkInterfaces:\n  - networkIP: 10.160.0.20\n    accessConfigs:\n      - natIP: 34.93.121.10\n        type: ONE_TO_ONE_NAT\ndisks:\n  - boot: true\n    autoDelete: false\n    deviceName: reconciliation-worker\n    diskSizeGb: '500'\n    type: PERSISTENT\nmetadata:\n  items:\n    - key: environment\n      value: production\n    - key: team\n      value: core-banking\nserviceAccounts:\n  - email: recon-sa@bfsi-prod-384209.iam.gserviceaccount.com\n    scopes:\n      - https://www.googleapis.com/auth/cloud-platform",
+    "gcloud compute instances ssh bastion-host --zone=asia-south1-a": "Updating project ssh metadata...\nWaiting for SSH key to propagate.\nLinux bastion-host 5.10.0-28-cloud-amd64 #1 SMP Debian 5.10.209-2 x86_64\n\nWelcome to bastion-host.asia-south1-a.bfsi-prod-384209\nLast login: Mon Jun  2 09:15:22 2026 from 203.0.113.50\nsre-lead@bastion-host:~$",
+    "gcloud compute instances ssh payments-gateway-01 --zone=asia-south1-a": "Updating project ssh metadata...\nWaiting for SSH key to propagate.\nLinux payments-gateway-01 5.10.0-28-cloud-amd64 #1 SMP Debian 5.10.209-2 x86_64\n\nWelcome to payments-gateway-01.asia-south1-a.bfsi-prod-384209\nLast login: Mon Jun  2 10:05:11 2026 from 10.160.0.5\nsre-lead@payments-gateway-01:~$",
+    "gcloud compute instances start reconciliation-worker --zone=asia-south1-a": "Starting instance(s) reconciliation-worker...\n..done.\nUpdated [https://compute.googleapis.com/compute/v1/projects/bfsi-prod-384209/zones/asia-south1-a/instances/reconciliation-worker].\nInstance internal IP is 10.160.0.20.\nInstance external IP is 34.93.121.10.",
+    "gcloud compute instances stop reconciliation-worker --zone=asia-south1-a": "Stopping instance(s) reconciliation-worker...\n..done.\nUpdated [https://compute.googleapis.com/compute/v1/projects/bfsi-prod-384209/zones/asia-south1-a/instances/reconciliation-worker].",
+    "gcloud container clusters list": "NAME                      LOCATION       MASTER_VERSION   NUM_NODES  STATUS\nprod-payments-cluster      asia-south1    1.29.4-gke.1200  6          RUNNING\nstaging-services-cluster   asia-south1    1.29.4-gke.1200  3          RUNNING\ndr-failover-cluster        asia-south2    1.29.4-gke.1200  3          RUNNING",
+    "gcloud container clusters get-credentials prod-payments-cluster --region asia-south1 --project bfsi-prod-384209": "Fetching cluster endpoint and auth data.\nkubeconfig entry generated for prod-payments-cluster.\nContext \"gke_bfsi-prod-384209_asia-south1_prod-payments-cluster\" set as current context.",
+    "gcloud container clusters get-credentials staging-services-cluster --region asia-south1 --project bfsi-staging-384210": "Fetching cluster endpoint and auth data.\nkubeconfig entry generated for staging-services-cluster.\nContext \"gke_bfsi-staging-384210_asia-south1_staging-services-cluster\" set as current context.",
+    "gcloud container clusters describe prod-payments-cluster --region asia-south1": "name: prod-payments-cluster\nlocation: asia-south1\ncurrentMasterVersion: 1.29.4-gke.1200\ncurrentNodeVersion: 1.29.4-gke.1200\nstatus: RUNNING\nendpoint: 34.93.200.100\nnodePools:\n  - name: default-pool\n    config:\n      machineType: e2-standard-4\n      diskSizeGb: 100\n    initialNodeCount: 2\n    autoscaling:\n      enabled: true\n      minNodeCount: 2\n      maxNodeCount: 10\n    management:\n      autoUpgrade: true\n      autoRepair: true\n  - name: high-memory-pool\n    config:\n      machineType: e2-highmem-8\n      diskSizeGb: 200\n    initialNodeCount: 1\n    autoscaling:\n      enabled: true\n      minNodeCount: 1\n      maxNodeCount: 5\nnetworkConfig:\n  network: projects/bfsi-prod-384209/global/networks/prod-vpc\n  subnetwork: projects/bfsi-prod-384209/regions/asia-south1/subnetworks/gke-subnet\naddonsConfig:\n  httpLoadBalancing:\n    disabled: false\n  horizontalPodAutoscaling:\n    disabled: false\n  networkPolicyConfig:\n    disabled: false\nmasterAuthorizedNetworksConfig:\n  enabled: true\n  cidrBlocks:\n    - cidrBlock: 10.0.0.0/8\n      displayName: internal-only",
+    "gcloud run deploy kyc-verification --image=asia-south1-docker.pkg.dev/bfsi-staging-384210/services/kyc-verification:v1.2.0 --region=asia-south1 --service-account=kyc-verification-sa@bfsi-staging-384210.iam.gserviceaccount.com --port=8080 --memory=512Mi --cpu=1 --min-instances=1 --max-instances=10": "Deploying container to Cloud Run service [kyc-verification] in project [bfsi-staging-384210] region [asia-south1]\nSetting IAM policy for [kyc-verification]...\n..done.\nDeploying...\nCreating Revision... done\nRouting traffic... done\nService [kyc-verification] revision [kyc-verification-00003-xnz] has been deployed and is serving 100 percent of traffic.\nService URL: https://kyc-verification-abc123-el.a.run.app",
+    "gcloud run services list --region=asia-south1": "SERVICE                REGION       URL                                              LAST DEPLOYED             CONNECTIVITY\nkyc-verification       asia-south1  https://kyc-verification-abc123-el.a.run.app      2026-06-02T10:30:00Z      external\npayment-webhook        asia-south1  https://payment-webhook-def456-el.a.run.app       2026-05-28T14:15:00Z      internal\nnotification-sender    asia-south1  https://notification-sender-ghi789-el.a.run.app   2026-05-25T09:00:00Z      external\naudit-event-logger     asia-south1  https://audit-event-logger-jkl012-el.a.run.app    2026-05-20T16:45:00Z      internal",
+    "gcloud run services list": "SERVICE                REGION       URL                                              LAST DEPLOYED             CONNECTIVITY\nkyc-verification       asia-south1  https://kyc-verification-abc123-el.a.run.app      2026-06-02T10:30:00Z      external\npayment-webhook        asia-south1  https://payment-webhook-def456-el.a.run.app       2026-05-28T14:15:00Z      internal\nnotification-sender    asia-south1  https://notification-sender-ghi789-el.a.run.app   2026-05-25T09:00:00Z      external\naudit-event-logger     asia-south1  https://audit-event-logger-jkl012-el.a.run.app    2026-05-20T16:45:00Z      internal",
+    "gcloud run services describe kyc-verification --region=asia-south1": "Service: kyc-verification\nRegion: asia-south1\nURL: https://kyc-verification-abc123-el.a.run.app\nIngress: all\nAuthentication: required\nLatest Revision: kyc-verification-00003-xnz\nServing: 100%\nContainers:\n  Image: asia-south1-docker.pkg.dev/bfsi-staging-384210/services/kyc-verification:v1.2.0\n  Port: 8080\n  Memory: 512Mi\n  CPU: 1\n  Min Instances: 1\n  Max Instances: 10\n  Service Account: kyc-verification-sa@bfsi-staging-384210.iam.gserviceaccount.com\nConditions:\n  Ready: True\n  RoutesReady: True",
+    "gcloud run revisions list --service=kyc-verification --region=asia-south1": "REVISION                       ACTIVE  SERVICE             DEPLOYED                 TRAFFIC\nkyc-verification-00003-xnz     yes     kyc-verification    2026-06-02T10:30:00Z     100%\nkyc-verification-00002-bcd     no      kyc-verification    2026-05-25T08:00:00Z     0%\nkyc-verification-00001-abc     no      kyc-verification    2026-05-15T12:00:00Z     0%",
+    "gcloud iam service-accounts list": "DISPLAY NAME                        EMAIL                                                            DISABLED\nPayments Service Account            payments-sa@bfsi-prod-384209.iam.gserviceaccount.com             False\nReconciliation Service Account      recon-sa@bfsi-prod-384209.iam.gserviceaccount.com                False\nAudit Log Reader                    audit-reader@bfsi-prod-384209.iam.gserviceaccount.com            False\nSRE Lead                            sre-lead@bfsi-prod-384209.iam.gserviceaccount.com                False\nCI/CD Pipeline                      cicd-pipeline@bfsi-prod-384209.iam.gserviceaccount.com           False\nMonitoring Agent                    monitoring-agent@bfsi-prod-384209.iam.gserviceaccount.com        False",
+    "gcloud iam service-accounts create kyc-verification-sa --display-name=\"KYC Verification Service Account\"": "Created service account [kyc-verification-sa].\nFull name: projects/bfsi-staging-384210/serviceAccounts/kyc-verification-sa@bfsi-staging-384210.iam.gserviceaccount.com",
+    "gcloud iam service-accounts describe payments-sa@bfsi-prod-384209.iam.gserviceaccount.com": "displayName: Payments Service Account\nemail: payments-sa@bfsi-prod-384209.iam.gserviceaccount.com\nname: projects/bfsi-prod-384209/serviceAccounts/payments-sa@bfsi-prod-384209.iam.gserviceaccount.com\nprojectId: bfsi-prod-384209\noauth2ClientId: '112233445566778899'\nuniqueId: '112233445566778899'\ndisabled: false",
+    "gcloud logging read 'resource.type=\"k8s_container\" AND resource.labels.cluster_name=\"prod-payments-cluster\" AND severity>=ERROR' --limit=10 --format=json": "[\n  {\n    \"insertId\": \"abc123def456\",\n    \"logName\": \"projects/bfsi-prod-384209/logs/stderr\",\n    \"resource\": {\n      \"type\": \"k8s_container\",\n      \"labels\": {\n        \"cluster_name\": \"prod-payments-cluster\",\n        \"container_name\": \"payment-processor\",\n        \"namespace_name\": \"production\",\n        \"pod_name\": \"payment-processor-7d4b8c-x2k9n\"\n      }\n    },\n    \"severity\": \"ERROR\",\n    \"textPayload\": \"Failed to connect to Cloud SQL instance txn-ledger-db: connection timeout after 30s\",\n    \"timestamp\": \"2026-06-02T10:12:00Z\"\n  },\n  {\n    \"insertId\": \"ghi789jkl012\",\n    \"logName\": \"projects/bfsi-prod-384209/logs/stderr\",\n    \"resource\": {\n      \"type\": \"k8s_container\",\n      \"labels\": {\n        \"cluster_name\": \"prod-payments-cluster\",\n        \"container_name\": \"payment-processor\",\n        \"namespace_name\": \"production\",\n        \"pod_name\": \"payment-processor-7d4b8c-p8m3w\"\n      }\n    },\n    \"severity\": \"ERROR\",\n    \"textPayload\": \"Transaction commit failed: upstream database unreachable\",\n    \"timestamp\": \"2026-06-02T10:11:45Z\"\n  },\n  {\n    \"insertId\": \"mno345pqr678\",\n    \"logName\": \"projects/bfsi-prod-384209/logs/stderr\",\n    \"resource\": {\n      \"type\": \"k8s_container\",\n      \"labels\": {\n        \"cluster_name\": \"prod-payments-cluster\",\n        \"container_name\": \"reconciliation-svc\",\n        \"namespace_name\": \"production\",\n        \"pod_name\": \"recon-svc-6a3b2c-n5v1x\"\n      }\n    },\n    \"severity\": \"ERROR\",\n    \"textPayload\": \"Batch reconciliation aborted: unable to reach reconciliation-worker VM\",\n    \"timestamp\": \"2026-06-02T10:10:30Z\"\n  }\n]",
+    "gcloud logging read 'severity>=ERROR' --limit=5": "---\ninsertId: abc123def456\nlogName: projects/bfsi-prod-384209/logs/stderr\nseverity: ERROR\ntextPayload: 'Failed to connect to Cloud SQL instance txn-ledger-db: connection timeout after 30s'\ntimestamp: '2026-06-02T10:12:00Z'\n---\ninsertId: ghi789jkl012\nlogName: projects/bfsi-prod-384209/logs/stderr\nseverity: ERROR\ntextPayload: 'Transaction commit failed: upstream database unreachable'\ntimestamp: '2026-06-02T10:11:45Z'\n---\ninsertId: mno345pqr678\nlogName: projects/bfsi-prod-384209/logs/stderr\nseverity: ERROR\ntextPayload: 'Batch reconciliation aborted: unable to reach reconciliation-worker VM'\ntimestamp: '2026-06-02T10:10:30Z'",
+    "gcloud monitoring dashboards list": "NAME                                                              DISPLAY_NAME\nprojects/384209001234/dashboards/payments-overview                 Payments - Golden Signals\nprojects/384209001234/dashboards/gke-cluster-health               GKE Cluster Health\nprojects/384209001234/dashboards/cloud-sql-performance            Cloud SQL Performance\nprojects/384209001234/dashboards/cloud-run-services               Cloud Run Services\nprojects/384209001234/dashboards/reconciliation-pipeline          Reconciliation Pipeline\nprojects/384209001234/dashboards/sre-error-budget                 SRE Error Budget Tracker",
+    "gcloud monitoring dashboards list --format=table(name,displayName)": "NAME                                                              DISPLAY_NAME\nprojects/384209001234/dashboards/payments-overview                 Payments - Golden Signals\nprojects/384209001234/dashboards/gke-cluster-health               GKE Cluster Health\nprojects/384209001234/dashboards/cloud-sql-performance            Cloud SQL Performance\nprojects/384209001234/dashboards/cloud-run-services               Cloud Run Services\nprojects/384209001234/dashboards/reconciliation-pipeline          Reconciliation Pipeline\nprojects/384209001234/dashboards/sre-error-budget                 SRE Error Budget Tracker",
+    "gcloud storage ls": "gs://bfsi-prod-data-lake/\ngs://bfsi-prod-backups/\ngs://bfsi-prod-audit-logs/\ngs://bfsi-staging-docs/\ngs://bfsi-terraform-state/\ngs://bfsi-ml-models/",
+    "gcloud storage ls gs://bfsi-prod-data-lake/": "gs://bfsi-prod-data-lake/transactions/\ngs://bfsi-prod-data-lake/reconciliation/\ngs://bfsi-prod-data-lake/kyc-documents/\ngs://bfsi-prod-data-lake/audit-trail/",
+    "gcloud storage ls gs://bfsi-prod-backups/": "gs://bfsi-prod-backups/cloudsql/\ngs://bfsi-prod-backups/gke-etcd/\ngs://bfsi-prod-backups/config-snapshots/",
+    "gcloud storage cp ./openapi-spec.yaml gs://bfsi-staging-docs/kyc-verification/openapi-spec.yaml": "Copying file://./openapi-spec.yaml to gs://bfsi-staging-docs/kyc-verification/openapi-spec.yaml\n  Completed files 1/1 | 12.4kiB/12.4kiB",
+    "gcloud storage cp gs://bfsi-prod-backups/cloudsql/latest.sql.gz ./latest-backup.sql.gz": "Copying gs://bfsi-prod-backups/cloudsql/latest.sql.gz to file://./latest-backup.sql.gz\n  Completed files 1/1 | 2.3GiB/2.3GiB",
+    "gcloud sql instances list": "NAME              DATABASE_VERSION   LOCATION       TIER              STATUS\ntxn-ledger-db     POSTGRES_15        asia-south1-a  db-custom-4-16384  RUNNABLE\nkyc-store-db      POSTGRES_15        asia-south1-b  db-custom-2-8192   RUNNABLE\naudit-archive-db  POSTGRES_14        asia-south1-c  db-custom-2-8192   RUNNABLE\nanalytics-db      POSTGRES_15        asia-south1-a  db-custom-8-32768  MAINTENANCE",
+    "gcloud sql instances describe txn-ledger-db --format=yaml": "name: txn-ledger-db\ndatabaseVersion: POSTGRES_15\nstate: RUNNABLE\nregion: asia-south1\ngceZone: asia-south1-a\ntier: db-custom-4-16384\ndataDiskSizeGb: '500'\ndataDiskType: PD_SSD\nipAddresses:\n  - ipAddress: 10.80.0.5\n    type: PRIVATE\nsettings:\n  availabilityType: REGIONAL\n  backupConfiguration:\n    enabled: true\n    startTime: '02:00'\n    transactionLogRetentionDays: 7\n  maintenanceWindow:\n    day: 7\n    hour: 3\n  databaseFlags:\n    - name: max_connections\n      value: '200'\n    - name: log_min_duration_statement\n      value: '1000'\n  ipConfiguration:\n    privateNetwork: projects/bfsi-prod-384209/global/networks/prod-vpc\n    ipv4Enabled: false\nfailoverReplica:\n  name: txn-ledger-db-failover\n  available: true\nserverCaCert:\n  certSerialNumber: '0'\n  commonName: C=US,O=Google\\,Inc,CN=Google Cloud SQL Server CA\n  expirationTime: '2027-06-01T00:00:00Z'",
+    "gcloud sql instances describe txn-ledger-db": "name: txn-ledger-db\ndatabaseVersion: POSTGRES_15\nstate: RUNNABLE\nregion: asia-south1\ngceZone: asia-south1-a\ntier: db-custom-4-16384\ndataDiskSizeGb: '500'\ndataDiskType: PD_SSD\nipAddresses:\n  - ipAddress: 10.80.0.5\n    type: PRIVATE\nsettings:\n  availabilityType: REGIONAL\n  backupConfiguration:\n    enabled: true\n    startTime: '02:00'\n  ipConfiguration:\n    privateNetwork: projects/bfsi-prod-384209/global/networks/prod-vpc\n    ipv4Enabled: false",
+    "gcloud functions list": "NAME                    STATUS  TRIGGER                        REGION       RUNTIME\nkyc-doc-validator       ACTIVE  HTTP Trigger                   asia-south1  python311\ntxn-fraud-scorer        ACTIVE  Pub/Sub: txn-events            asia-south1  python311\naudit-log-archiver      ACTIVE  Cloud Storage: bfsi-prod-audit asia-south1  nodejs20\nmonthend-report-gen     ACTIVE  Cloud Scheduler: 0 2 1 * *     asia-south1  python311\nalert-escalator         ACTIVE  Pub/Sub: alert-channel         asia-south1  python311",
+    "gcloud functions describe kyc-doc-validator --region=asia-south1": "name: projects/bfsi-prod-384209/locations/asia-south1/functions/kyc-doc-validator\nstate: ACTIVE\nhttpsTrigger:\n  url: https://asia-south1-bfsi-prod-384209.cloudfunctions.net/kyc-doc-validator\n  securityLevel: SECURE_ALWAYS\nruntime: python311\nentryPoint: validate_document\navailableMemoryMb: 512\ntimeout: 120s\nserviceAccountEmail: kyc-sa@bfsi-prod-384209.iam.gserviceaccount.com\nenvironmentVariables:\n  KYC_API_ENDPOINT: https://kyc-verification-abc123-el.a.run.app\n  STORAGE_BUCKET: bfsi-prod-data-lake",
+    "gcloud functions deploy kyc-doc-validator --runtime=python311 --trigger-http --region=asia-south1 --entry-point=validate_document --memory=512MB --timeout=120s": "Deploying function (may take a while - up to 2 minutes)...\n..done.\nDeploying function...\navailableMemoryMb: 512\nentryPoint: validate_document\nhttpsTrigger:\n  securityLevel: SECURE_ALWAYS\n  url: https://asia-south1-bfsi-prod-384209.cloudfunctions.net/kyc-doc-validator\nname: projects/bfsi-prod-384209/locations/asia-south1/functions/kyc-doc-validator\nruntime: python311\nstatus: ACTIVE\ntimeout: 120s\nupdateTime: '2026-06-02T10:45:00Z'\nversionId: '5'",
+    "gcloud functions deploy txn-fraud-scorer --runtime=python311 --trigger-topic=txn-events --region=asia-south1 --entry-point=score_transaction --memory=1024MB": "Deploying function (may take a while - up to 2 minutes)...\n..done.\nDeploying function...\navailableMemoryMb: 1024\nentryPoint: score_transaction\neventTrigger:\n  eventType: google.pubsub.topic.publish\n  resource: projects/bfsi-prod-384209/topics/txn-events\nname: projects/bfsi-prod-384209/locations/asia-south1/functions/txn-fraud-scorer\nruntime: python311\nstatus: ACTIVE\ntimeout: 60s\nversionId: '8'",
+    "gcloud compute instances list --format=json": "[\n  {\n    \"name\": \"payments-gateway-01\",\n    \"zone\": \"asia-south1-a\",\n    \"machineType\": \"e2-standard-4\",\n    \"status\": \"RUNNING\"\n  },\n  {\n    \"name\": \"payments-gateway-02\",\n    \"zone\": \"asia-south1-b\",\n    \"machineType\": \"e2-standard-4\",\n    \"status\": \"RUNNING\"\n  },\n  {\n    \"name\": \"reconciliation-worker\",\n    \"zone\": \"asia-south1-a\",\n    \"machineType\": \"e2-standard-8\",\n    \"status\": \"TERMINATED\"\n  }\n]",
+    "gcloud compute zones list --filter=\"region:asia-south1\"": "NAME            REGION        STATUS\nasia-south1-a   asia-south1   UP\nasia-south1-b   asia-south1   UP\nasia-south1-c   asia-south1   UP",
+    "gcloud compute regions describe asia-south1": "name: asia-south1\ndescription: Mumbai\nstatus: UP\nzones:\n  - asia-south1-a\n  - asia-south1-b\n  - asia-south1-c\nquotas:\n  - metric: CPUS\n    limit: 48.0\n    usage: 22.0\n  - metric: IN_USE_ADDRESSES\n    limit: 23.0\n    usage: 5.0\n  - metric: SSD_TOTAL_GB\n    limit: 2048.0\n    usage: 800.0",
+    "gcloud compute firewall-rules list": "NAME                     NETWORK   DIRECTION  PRIORITY  ALLOW                  DENY\nallow-health-check       prod-vpc  INGRESS    1000      tcp:80,tcp:443         \nallow-internal           prod-vpc  INGRESS    1000      tcp,udp,icmp           \nallow-ssh-bastion        prod-vpc  INGRESS    1000      tcp:22                 \ndeny-all-egress-default  prod-vpc  EGRESS     65535                             all",
+    "gcloud compute networks list": "NAME      SUBNET_MODE  BGP_ROUTING_MODE  IPV4_RANGE  GATEWAY_IPV4\nprod-vpc  CUSTOM       REGIONAL",
+    "gcloud compute networks subnets list --filter=\"region:asia-south1\"": "NAME            REGION        NETWORK   RANGE          SECONDARY_RANGES\ngke-subnet      asia-south1   prod-vpc  10.160.0.0/20  pods=10.48.0.0/14, services=10.52.0.0/20\ndb-subnet       asia-south1   prod-vpc  10.80.0.0/24\nbastion-subnet  asia-south1   prod-vpc  10.90.0.0/28",
+    "gcloud iam roles list --project=bfsi-prod-384209 --filter=\"stage:GA\" --limit=5": "NAME                                          TITLE\nroles/payments.transactionViewer               Transaction Viewer\nroles/payments.transactionAdmin                Transaction Admin\nroles/reconciliation.batchRunner               Batch Reconciliation Runner\nroles/audit.logReader                          Audit Log Reader\nroles/sre.incidentResponder                    SRE Incident Responder",
+    "gcloud services list --enabled --filter=\"name:container OR name:run OR name:sql OR name:compute\" --format=table(name,title)": "NAME                                 TITLE\ncompute.googleapis.com               Compute Engine API\ncontainer.googleapis.com             Kubernetes Engine API\nrun.googleapis.com                   Cloud Run Admin API\nsqladmin.googleapis.com              Cloud SQL Admin API",
+    "gcloud services list --enabled": "NAME                                 TITLE\ncompute.googleapis.com               Compute Engine API\ncontainer.googleapis.com             Kubernetes Engine API\nrun.googleapis.com                   Cloud Run Admin API\nsqladmin.googleapis.com              Cloud SQL Admin API\ncloudfunctions.googleapis.com        Cloud Functions API\nlogging.googleapis.com               Cloud Logging API\nmonitoring.googleapis.com            Cloud Monitoring API\niam.googleapis.com                   Identity and Access Management API\nstorage.googleapis.com               Cloud Storage API\ncloudresourcemanager.googleapis.com  Cloud Resource Manager API\nsecretmanager.googleapis.com         Secret Manager API\nartifactregistry.googleapis.com      Artifact Registry API"
+  },
+  "reference": [
+    {
+      "group": "Configuration & Auth",
+      "commands": [
+        {
+          "cmd": "gcloud config list",
+          "desc": "show active config"
+        },
+        {
+          "cmd": "gcloud config set project <id>",
+          "desc": "switch project"
+        },
+        {
+          "cmd": "gcloud config set compute/region asia-south1",
+          "desc": "set default region"
+        },
+        {
+          "cmd": "gcloud auth list",
+          "desc": "authenticated accounts"
+        },
+        {
+          "cmd": "gcloud auth login",
+          "desc": "interactive login"
+        },
+        {
+          "cmd": "gcloud projects list",
+          "desc": "list projects"
+        }
+      ]
+    },
+    {
+      "group": "Compute Engine",
+      "commands": [
+        {
+          "cmd": "gcloud compute instances list",
+          "desc": "list VMs"
+        },
+        {
+          "cmd": "gcloud compute instances describe <name> --zone=<z>",
+          "desc": "VM details"
+        },
+        {
+          "cmd": "gcloud compute instances ssh <name> --zone=<z>",
+          "desc": "SSH to VM"
+        },
+        {
+          "cmd": "gcloud compute instances start <name> --zone=<z>",
+          "desc": "start VM"
+        },
+        {
+          "cmd": "gcloud compute instances stop <name> --zone=<z>",
+          "desc": "stop VM"
+        },
+        {
+          "cmd": "gcloud compute firewall-rules list",
+          "desc": "list firewalls"
+        },
+        {
+          "cmd": "gcloud compute zones list --filter=\"region:asia-south1\"",
+          "desc": "zones in region"
+        },
+        {
+          "cmd": "gcloud compute regions describe asia-south1",
+          "desc": "region quotas"
+        }
+      ]
+    },
+    {
+      "group": "GKE (Kubernetes Engine)",
+      "commands": [
+        {
+          "cmd": "gcloud container clusters list",
+          "desc": "list GKE clusters"
+        },
+        {
+          "cmd": "gcloud container clusters get-credentials <name> --region <r>",
+          "desc": "set kubeconfig"
+        },
+        {
+          "cmd": "gcloud container clusters describe <name> --region <r>",
+          "desc": "cluster details"
+        }
+      ]
+    },
+    {
+      "group": "Cloud Run",
+      "commands": [
+        {
+          "cmd": "gcloud run deploy <svc> --image=<img> --region=<r>",
+          "desc": "deploy service"
+        },
+        {
+          "cmd": "gcloud run services list --region=<r>",
+          "desc": "list services"
+        },
+        {
+          "cmd": "gcloud run services describe <svc> --region=<r>",
+          "desc": "service details"
+        },
+        {
+          "cmd": "gcloud run revisions list --service=<svc> --region=<r>",
+          "desc": "list revisions"
+        }
+      ]
+    },
+    {
+      "group": "IAM & Service Accounts",
+      "commands": [
+        {
+          "cmd": "gcloud iam service-accounts list",
+          "desc": "list SAs"
+        },
+        {
+          "cmd": "gcloud iam service-accounts create <name>",
+          "desc": "create SA"
+        },
+        {
+          "cmd": "gcloud iam roles list --project=<id>",
+          "desc": "custom roles"
+        }
+      ]
+    },
+    {
+      "group": "Logging & Monitoring",
+      "commands": [
+        {
+          "cmd": "gcloud logging read '<filter>' --limit=<n>",
+          "desc": "read logs"
+        },
+        {
+          "cmd": "gcloud monitoring dashboards list",
+          "desc": "list dashboards"
+        }
+      ]
+    },
+    {
+      "group": "Cloud Storage",
+      "commands": [
+        {
+          "cmd": "gcloud storage ls",
+          "desc": "list buckets"
+        },
+        {
+          "cmd": "gcloud storage ls gs://<bucket>/",
+          "desc": "list objects"
+        },
+        {
+          "cmd": "gcloud storage cp <src> <dst>",
+          "desc": "copy objects"
+        }
+      ]
+    },
+    {
+      "group": "Cloud SQL",
+      "commands": [
+        {
+          "cmd": "gcloud sql instances list",
+          "desc": "list SQL instances"
+        },
+        {
+          "cmd": "gcloud sql instances describe <name>",
+          "desc": "instance details"
+        }
+      ]
+    },
+    {
+      "group": "Cloud Functions",
+      "commands": [
+        {
+          "cmd": "gcloud functions list",
+          "desc": "list functions"
+        },
+        {
+          "cmd": "gcloud functions deploy <name> --runtime=<rt> --trigger-http",
+          "desc": "deploy function"
+        },
+        {
+          "cmd": "gcloud functions describe <name> --region=<r>",
+          "desc": "function details"
+        }
+      ]
+    },
+    {
+      "group": "Networking",
+      "commands": [
+        {
+          "cmd": "gcloud compute networks list",
+          "desc": "list VPCs"
+        },
+        {
+          "cmd": "gcloud compute networks subnets list --filter=\"region:asia-south1\"",
+          "desc": "list subnets"
+        }
+      ]
+    },
+    {
+      "group": "General",
+      "commands": [
+        {
+          "cmd": "gcloud version",
+          "desc": "SDK version"
+        },
+        {
+          "cmd": "gcloud services list --enabled",
+          "desc": "enabled APIs"
+        }
+      ]
+    },
+    {
+      "group": "Scenarios",
+      "commands": [
+        {
+          "cmd": "scenario gke-production-issue",
+          "desc": "debug GKE + Cloud SQL"
+        },
+        {
+          "cmd": "scenario deploy-cloud-run",
+          "desc": "deploy Cloud Run service"
+        }
+      ]
+    }
+  ]
+}

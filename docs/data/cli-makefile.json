@@ -1,0 +1,277 @@
+{
+  "id": "makefile",
+  "prompt": "dev@project:~$",
+  "welcome": "Welcome to the Makefile CLI Playground.\nType commands to explore a simulated project with a DevOps Makefile.\nType 'help' for available commands, 'scenario' for guided labs.\n",
+  "scenarios": [
+    {
+      "id": "build-and-test",
+      "title": "Build and Test a Project",
+      "steps": [
+        {
+          "instruction": "First, look at the project Makefile to understand available targets.",
+          "expect": "cat Makefile",
+          "hint": "Try: cat Makefile"
+        },
+        {
+          "instruction": "Good. Now run a dry-run of the build to see what commands would execute without actually running them.",
+          "expect": "make -n build",
+          "hint": "Try: make -n build"
+        },
+        {
+          "instruction": "Looks right. Now actually build the project.",
+          "expect": "make build",
+          "hint": "Try: make build"
+        },
+        {
+          "instruction": "Build succeeded. Run the linter to check code quality before testing.",
+          "expect": "make lint",
+          "hint": "Try: make lint"
+        },
+        {
+          "instruction": "Code is clean. Now run the test suite.",
+          "expect": "make test",
+          "hint": "Try: make test"
+        },
+        {
+          "instruction": "All tests pass. Let's see all targets available using the help target.",
+          "expect": "make help",
+          "hint": "Try: make help"
+        },
+        {
+          "instruction": "Now clean up build artefacts to start fresh.",
+          "expect": "make clean",
+          "hint": "Try: make clean"
+        },
+        {
+          "instruction": "Finally, run the full CI pipeline in one shot — build, lint, and test together using parallel jobs.",
+          "expect": "make -j4 build lint test",
+          "hint": "Try: make -j4 build lint test"
+        }
+      ]
+    },
+    {
+      "id": "devops-automation",
+      "title": "Create a DevOps Automation Makefile",
+      "steps": [
+        {
+          "instruction": "Start by viewing the Makefile to see what DevOps targets are available.",
+          "expect": "cat Makefile",
+          "hint": "Try: cat Makefile"
+        },
+        {
+          "instruction": "Build the Docker image for the application.",
+          "expect": "make docker-build",
+          "hint": "Try: make docker-build"
+        },
+        {
+          "instruction": "Good. Let's do a dry-run of the deploy target to see what it would do before actually deploying.",
+          "expect": "make -n deploy",
+          "hint": "Try: make -n deploy"
+        },
+        {
+          "instruction": "The deploy uses kubectl. Let's override the environment variable to deploy to staging instead.",
+          "expect": "make deploy ENV=staging",
+          "hint": "Try: make deploy ENV=staging"
+        },
+        {
+          "instruction": "Now run the deploy with verbose output to see every shell command as it executes.",
+          "expect": "make VERBOSE=1 deploy",
+          "hint": "Try: make VERBOSE=1 deploy"
+        },
+        {
+          "instruction": "Let's use a different Makefile specifically for production workflows.",
+          "expect": "make -f Makefile.prod deploy",
+          "hint": "Try: make -f Makefile.prod deploy"
+        },
+        {
+          "instruction": "Now build a sub-project in the services/ directory without changing directories.",
+          "expect": "make -C services build",
+          "hint": "Try: make -C services build"
+        },
+        {
+          "instruction": "Finally, force a full rebuild even though nothing has changed, to verify the pipeline end-to-end.",
+          "expect": "make -B build",
+          "hint": "Try: make -B build"
+        }
+      ]
+    }
+  ],
+  "commands": {
+    "help": "Available commands:\n  make                           \u2014 Run the default target\n  make <target>                  \u2014 Run a specific target\n  make -n <target>               \u2014 Dry-run (print commands, don't execute)\n  make -B <target>               \u2014 Force rebuild (ignore timestamps)\n  make -j4 <targets>             \u2014 Run up to 4 jobs in parallel\n  make -f <file> <target>        \u2014 Use a different Makefile\n  make -C <dir> <target>         \u2014 Change to directory, then run\n  make VAR=value <target>        \u2014 Override a variable\n  make --print-data-base         \u2014 Show all rules and variables\n  cat Makefile                   \u2014 View the project Makefile\n\n  scenario                       \u2014 Start a guided lab\n  clear                          \u2014 Clear the terminal\n  help                           \u2014 Show this help",
+    "cat Makefile": "# ============================================================\n# DevOps Automation Makefile\n# ============================================================\n\nAPP_NAME    := payment-service\nVERSION     := $(shell git describe --tags --always 2>/dev/null || echo \"dev\")\nREGISTRY    := registry.example.com/fintech\nENV         ?= production\nVERBOSE     ?= 0\n\nifeq ($(VERBOSE),1)\n  Q :=\nelse\n  Q := @\nendif\n\n.PHONY: help build test lint clean docker-build docker-push deploy install\n\n## help:          Show this help message\nhelp:\n\t@grep -E '^## ' Makefile | sed 's/^## //' | column -t -s ':'\n\n## build:         Compile the application\nbuild:\n\t$(Q)echo \"Building $(APP_NAME) $(VERSION)...\"\n\t$(Q)go build -ldflags \"-X main.version=$(VERSION)\" -o bin/$(APP_NAME) ./cmd/server\n\n## test:          Run unit and integration tests\ntest:\n\t$(Q)echo \"Running tests...\"\n\t$(Q)go test -race -cover ./...\n\n## lint:          Run linter checks\nlint:\n\t$(Q)echo \"Linting...\"\n\t$(Q)golangci-lint run ./...\n\n## clean:         Remove build artefacts\nclean:\n\t$(Q)echo \"Cleaning...\"\n\t$(Q)rm -rf bin/ dist/ coverage.out\n\n## install:       Install dependencies\ninstall:\n\t$(Q)echo \"Installing dependencies...\"\n\t$(Q)go mod download\n\t$(Q)go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest\n\n## docker-build:  Build Docker image\ndocker-build:\n\t$(Q)echo \"Building Docker image...\"\n\t$(Q)docker build -t $(REGISTRY)/$(APP_NAME):$(VERSION) .\n\n## docker-push:   Push Docker image to registry\ndocker-push: docker-build\n\t$(Q)echo \"Pushing image to $(REGISTRY)...\"\n\t$(Q)docker push $(REGISTRY)/$(APP_NAME):$(VERSION)\n\n## deploy:        Deploy to Kubernetes (ENV=production|staging)\ndeploy: docker-push\n\t$(Q)echo \"Deploying $(APP_NAME):$(VERSION) to $(ENV)...\"\n\t$(Q)kubectl set image deployment/$(APP_NAME) app=$(REGISTRY)/$(APP_NAME):$(VERSION) -n $(ENV)\n\n## ci:            Run full CI pipeline (build + lint + test)\nci: build lint test\n\t$(Q)echo \"CI pipeline passed.\"",
+    "make": "Building payment-service v1.4.2...\ngo build -ldflags \"-X main.version=v1.4.2\" -o bin/payment-service ./cmd/server\nBuild complete: bin/payment-service (12.4 MB)",
+    "make build": "Building payment-service v1.4.2...\ngo build -ldflags \"-X main.version=v1.4.2\" -o bin/payment-service ./cmd/server\nBuild complete: bin/payment-service (12.4 MB)",
+    "make -n build": "echo \"Building payment-service v1.4.2...\"\ngo build -ldflags \"-X main.version=v1.4.2\" -o bin/payment-service ./cmd/server",
+    "make -B build": "Building payment-service v1.4.2...\ngo build -ldflags \"-X main.version=v1.4.2\" -o bin/payment-service ./cmd/server\nBuild complete: bin/payment-service (12.4 MB)\n(forced rebuild \u2014 all targets treated as out-of-date)",
+    "make test": "Running tests...\ngo test -race -cover ./...\nok   payment-service/internal/handler    0.032s  coverage: 87.3%\nok   payment-service/internal/service     0.018s  coverage: 91.2%\nok   payment-service/internal/repository  0.045s  coverage: 84.6%\nok   payment-service/pkg/validator        0.008s  coverage: 96.1%\nPASS\nAll tests passed. Coverage: 89.8%",
+    "make lint": "Linting...\ngolangci-lint run ./...\nNo issues found. Code is clean.",
+    "make clean": "Cleaning...\nrm -rf bin/ dist/ coverage.out\nBuild artefacts removed.",
+    "make install": "Installing dependencies...\ngo mod download\ngo: downloading github.com/gin-gonic/gin v1.9.1\ngo: downloading github.com/lib/pq v1.10.9\ngo: downloading github.com/prometheus/client_golang v1.18.0\ngo install github.com/golangci/golangci-lint/cmd/golangci-lint@latest\nDependencies installed.",
+    "make help": "help          Show this help message\nbuild         Compile the application\ntest          Run unit and integration tests\nlint          Run linter checks\nclean         Remove build artefacts\ninstall       Install dependencies\ndocker-build  Build Docker image\ndocker-push   Push Docker image to registry\ndeploy        Deploy to Kubernetes (ENV=production|staging)\nci            Run full CI pipeline (build + lint + test)",
+    "make docker-build": "Building Docker image...\ndocker build -t registry.example.com/fintech/payment-service:v1.4.2 .\nStep 1/8 : FROM golang:1.22-alpine AS builder\nStep 2/8 : WORKDIR /app\nStep 3/8 : COPY go.mod go.sum ./\nStep 4/8 : RUN go mod download\nStep 5/8 : COPY . .\nStep 6/8 : RUN go build -o /payment-service ./cmd/server\nStep 7/8 : FROM alpine:3.19\nStep 8/8 : COPY --from=builder /payment-service /usr/local/bin/\nSuccessfully built a3b4c5d6e7f8\nSuccessfully tagged registry.example.com/fintech/payment-service:v1.4.2",
+    "make docker-push": "Building Docker image...\ndocker build -t registry.example.com/fintech/payment-service:v1.4.2 .\nSuccessfully tagged registry.example.com/fintech/payment-service:v1.4.2\nPushing image to registry.example.com/fintech...\ndocker push registry.example.com/fintech/payment-service:v1.4.2\nv1.4.2: digest: sha256:9a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d size: 3241\nImage pushed successfully.",
+    "make deploy": "Building Docker image...\nSuccessfully tagged registry.example.com/fintech/payment-service:v1.4.2\nPushing image to registry.example.com/fintech...\nImage pushed successfully.\nDeploying payment-service:v1.4.2 to production...\nkubectl set image deployment/payment-service app=registry.example.com/fintech/payment-service:v1.4.2 -n production\ndeployment.apps/payment-service image updated\nDeploy to production complete.",
+    "make deploy ENV=staging": "Building Docker image...\nSuccessfully tagged registry.example.com/fintech/payment-service:v1.4.2\nPushing image to registry.example.com/fintech...\nImage pushed successfully.\nDeploying payment-service:v1.4.2 to staging...\nkubectl set image deployment/payment-service app=registry.example.com/fintech/payment-service:v1.4.2 -n staging\ndeployment.apps/payment-service image updated\nDeploy to staging complete.",
+    "make -n deploy": "echo \"Building Docker image...\"\ndocker build -t registry.example.com/fintech/payment-service:v1.4.2 .\necho \"Pushing image to registry.example.com/fintech...\"\ndocker push registry.example.com/fintech/payment-service:v1.4.2\necho \"Deploying payment-service:v1.4.2 to production...\"\nkubectl set image deployment/payment-service app=registry.example.com/fintech/payment-service:v1.4.2 -n production",
+    "make VERBOSE=1 deploy": "echo \"Building Docker image...\"\nBuilding Docker image...\ndocker build -t registry.example.com/fintech/payment-service:v1.4.2 .\nSuccessfully tagged registry.example.com/fintech/payment-service:v1.4.2\necho \"Pushing image to registry.example.com/fintech...\"\nPushing image to registry.example.com/fintech...\ndocker push registry.example.com/fintech/payment-service:v1.4.2\nImage pushed successfully.\necho \"Deploying payment-service:v1.4.2 to production...\"\nDeploying payment-service:v1.4.2 to production...\nkubectl set image deployment/payment-service app=registry.example.com/fintech/payment-service:v1.4.2 -n production\ndeployment.apps/payment-service image updated\nDeploy to production complete.",
+    "make -f Makefile.prod deploy": "Loading Makefile.prod (production overrides)...\nREGISTRY=prod-registry.example.com/fintech\nBuilding Docker image...\nSuccessfully tagged prod-registry.example.com/fintech/payment-service:v1.4.2\nPushing image to prod-registry.example.com/fintech...\nImage pushed successfully.\nDeploying payment-service:v1.4.2 to production...\nkubectl set image deployment/payment-service app=prod-registry.example.com/fintech/payment-service:v1.4.2 -n production\ndeployment.apps/payment-service image updated\nProduction deploy complete.",
+    "make -C services build": "make: Entering directory '/home/dev/project/services'\nBuilding services...\ngo build -o bin/auth-svc ./auth\ngo build -o bin/notification-svc ./notification\nAll services built.\nmake: Leaving directory '/home/dev/project/services'",
+    "make -j4 build lint test": "Building payment-service v1.4.2...\nLinting...\nRunning tests...\ngolangci-lint run ./...\ngo build -ldflags \"-X main.version=v1.4.2\" -o bin/payment-service ./cmd/server\ngo test -race -cover ./...\nNo issues found. Code is clean.\nBuild complete: bin/payment-service (12.4 MB)\nok   payment-service/internal/handler    0.032s  coverage: 87.3%\nok   payment-service/internal/service     0.018s  coverage: 91.2%\nok   payment-service/internal/repository  0.045s  coverage: 84.6%\nok   payment-service/pkg/validator        0.008s  coverage: 96.1%\nAll tests passed. Coverage: 89.8%\nParallel build/lint/test completed successfully.",
+    "make -j4": "Building payment-service v1.4.2...\nBuild complete: bin/payment-service (12.4 MB)",
+    "make ci": "Building payment-service v1.4.2...\nBuild complete: bin/payment-service (12.4 MB)\nLinting...\nNo issues found. Code is clean.\nRunning tests...\nAll tests passed. Coverage: 89.8%\nCI pipeline passed.",
+    "make --print-data-base": "# GNU Make 4.4.1\n# Built for x86_64-linux-gnu\n\n# Variables\nAPP_NAME = payment-service\nVERSION = v1.4.2\nREGISTRY = registry.example.com/fintech\nENV = production\nVERBOSE = 0\nSHELL = /bin/sh\nMAKEFLAGS =\nCURLDIR = /usr/bin\nCC = cc\nCXX = g++\n\n# Implicit Rules\n%.o: %.c\n\t$(CC) $(CFLAGS) -c $< -o $@\n\n# Files\n# Finished Make data base on Mon Jun  2 14:30:00 2026",
+    "make target": "make: *** No rule to make target 'target'. Stop.\nHint: Run 'make help' to see available targets.",
+    "make -n": "echo \"Building payment-service v1.4.2...\"\ngo build -ldflags \"-X main.version=v1.4.2\" -o bin/payment-service ./cmd/server",
+    "make -n test": "echo \"Running tests...\"\ngo test -race -cover ./...",
+    "make -n lint": "echo \"Linting...\"\ngolangci-lint run ./...",
+    "make -n docker-build": "echo \"Building Docker image...\"\ndocker build -t registry.example.com/fintech/payment-service:v1.4.2 .",
+    "make -n clean": "echo \"Cleaning...\"\nrm -rf bin/ dist/ coverage.out",
+    "make -B test": "Running tests...\ngo test -race -cover ./...\nok   payment-service/internal/handler    0.032s  coverage: 87.3%\nok   payment-service/internal/service     0.018s  coverage: 91.2%\nok   payment-service/internal/repository  0.045s  coverage: 84.6%\nok   payment-service/pkg/validator        0.008s  coverage: 96.1%\nPASS\nAll tests passed. Coverage: 89.8%\n(forced rebuild \u2014 all targets treated as out-of-date)",
+    "make -B lint": "Linting...\ngolangci-lint run ./...\nNo issues found. Code is clean.\n(forced rebuild \u2014 all targets treated as out-of-date)",
+    "make -B docker-build": "Building Docker image...\ndocker build -t registry.example.com/fintech/payment-service:v1.4.2 .\nSuccessfully built a3b4c5d6e7f8\nSuccessfully tagged registry.example.com/fintech/payment-service:v1.4.2\n(forced rebuild \u2014 all targets treated as out-of-date)",
+    "make -f Makefile.prod build": "Loading Makefile.prod (production overrides)...\nBuilding payment-service v1.4.2 (production optimised)...\ngo build -ldflags \"-X main.version=v1.4.2 -s -w\" -o bin/payment-service ./cmd/server\nBuild complete: bin/payment-service (9.1 MB, stripped)",
+    "make -C services": "make: Entering directory '/home/dev/project/services'\nBuilding services...\nAll services built.\nmake: Leaving directory '/home/dev/project/services'",
+    "make -C services test": "make: Entering directory '/home/dev/project/services'\nRunning service tests...\nok   services/auth       0.021s  coverage: 82.4%\nok   services/notification 0.014s  coverage: 78.9%\nAll service tests passed.\nmake: Leaving directory '/home/dev/project/services'",
+    "make VERBOSE=1 build": "echo \"Building payment-service v1.4.2...\"\nBuilding payment-service v1.4.2...\ngo build -ldflags \"-X main.version=v1.4.2\" -o bin/payment-service ./cmd/server\nBuild complete: bin/payment-service (12.4 MB)",
+    "make VERBOSE=1 test": "echo \"Running tests...\"\nRunning tests...\ngo test -race -cover ./...\nok   payment-service/internal/handler    0.032s  coverage: 87.3%\nok   payment-service/internal/service     0.018s  coverage: 91.2%\nok   payment-service/internal/repository  0.045s  coverage: 84.6%\nok   payment-service/pkg/validator        0.008s  coverage: 96.1%\nPASS\nAll tests passed. Coverage: 89.8%",
+    "make ENV=staging deploy": "Building Docker image...\nSuccessfully tagged registry.example.com/fintech/payment-service:v1.4.2\nPushing image to registry.example.com/fintech...\nImage pushed successfully.\nDeploying payment-service:v1.4.2 to staging...\nkubectl set image deployment/payment-service app=registry.example.com/fintech/payment-service:v1.4.2 -n staging\ndeployment.apps/payment-service image updated\nDeploy to staging complete.",
+    "make VERSION=v2.0.0 build": "Building payment-service v2.0.0...\ngo build -ldflags \"-X main.version=v2.0.0\" -o bin/payment-service ./cmd/server\nBuild complete: bin/payment-service (12.4 MB)",
+    "make VERSION=v2.0.0 docker-build": "Building Docker image...\ndocker build -t registry.example.com/fintech/payment-service:v2.0.0 .\nSuccessfully built b4c5d6e7f8a9\nSuccessfully tagged registry.example.com/fintech/payment-service:v2.0.0"
+  },
+  "reference": [
+    {
+      "group": "Core",
+      "commands": [
+        {
+          "cmd": "make",
+          "desc": "run default target"
+        },
+        {
+          "cmd": "make build",
+          "desc": "compile application"
+        },
+        {
+          "cmd": "make test",
+          "desc": "run test suite"
+        },
+        {
+          "cmd": "make lint",
+          "desc": "check code quality"
+        },
+        {
+          "cmd": "make clean",
+          "desc": "remove artefacts"
+        },
+        {
+          "cmd": "make install",
+          "desc": "install dependencies"
+        },
+        {
+          "cmd": "make help",
+          "desc": "list all targets"
+        }
+      ]
+    },
+    {
+      "group": "Docker & Deploy",
+      "commands": [
+        {
+          "cmd": "make docker-build",
+          "desc": "build Docker image"
+        },
+        {
+          "cmd": "make docker-push",
+          "desc": "push to registry"
+        },
+        {
+          "cmd": "make deploy",
+          "desc": "deploy to production"
+        },
+        {
+          "cmd": "make deploy ENV=staging",
+          "desc": "deploy to staging"
+        },
+        {
+          "cmd": "make ci",
+          "desc": "full CI pipeline"
+        }
+      ]
+    },
+    {
+      "group": "Flags & Options",
+      "commands": [
+        {
+          "cmd": "make -n build",
+          "desc": "dry-run (show commands)"
+        },
+        {
+          "cmd": "make -B build",
+          "desc": "force rebuild"
+        },
+        {
+          "cmd": "make -j4 build lint test",
+          "desc": "parallel jobs"
+        },
+        {
+          "cmd": "make -f Makefile.prod deploy",
+          "desc": "alternate Makefile"
+        },
+        {
+          "cmd": "make -C services build",
+          "desc": "run in subdirectory"
+        },
+        {
+          "cmd": "make VERBOSE=1 deploy",
+          "desc": "verbose output"
+        }
+      ]
+    },
+    {
+      "group": "Variables",
+      "commands": [
+        {
+          "cmd": "make VERSION=v2.0.0 build",
+          "desc": "override version"
+        },
+        {
+          "cmd": "make ENV=staging deploy",
+          "desc": "override environment"
+        },
+        {
+          "cmd": "make --print-data-base",
+          "desc": "show all rules/vars"
+        }
+      ]
+    },
+    {
+      "group": "Inspect",
+      "commands": [
+        {
+          "cmd": "cat Makefile",
+          "desc": "view Makefile source"
+        },
+        {
+          "cmd": "make -n deploy",
+          "desc": "preview deploy steps"
+        },
+        {
+          "cmd": "make -n docker-build",
+          "desc": "preview docker steps"
+        }
+      ]
+    },
+    {
+      "group": "Scenarios",
+      "commands": [
+        {
+          "cmd": "scenario build-and-test",
+          "desc": "build + test workflow"
+        },
+        {
+          "cmd": "scenario devops-automation",
+          "desc": "Docker + deploy workflow"
+        }
+      ]
+    }
+  ]
+}

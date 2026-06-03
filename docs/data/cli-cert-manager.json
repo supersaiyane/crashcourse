@@ -1,0 +1,323 @@
+{
+  "id": "cert-manager",
+  "prompt": "cmctl@k8s:~$",
+  "welcome": "Welcome to the cert-manager CLI Playground.\nType commands to explore a simulated cluster with cert-manager v1.14.\nType 'help' for available commands, 'scenario' for guided labs.\n",
+  "scenarios": [
+    {
+      "id": "issue-and-renew",
+      "title": "Issue and Renew TLS Certificates",
+      "steps": [
+        {
+          "instruction": "First, verify that the cert-manager API is ready and healthy.",
+          "expect": "cmctl check api",
+          "hint": "Try: cmctl check api"
+        },
+        {
+          "instruction": "List all ClusterIssuers to see what issuers are available cluster-wide.",
+          "expect": "kubectl get clusterissuers",
+          "hint": "Try: kubectl get clusterissuers"
+        },
+        {
+          "instruction": "Good — you have staging and production Let's Encrypt issuers. Now list existing certificates in the production namespace.",
+          "expect": "kubectl get certificates -n production",
+          "hint": "Try: kubectl get certificates -n production"
+        },
+        {
+          "instruction": "The 'api-tls' certificate is Ready. Check its full status with cmctl.",
+          "expect": "cmctl status certificate api-tls -n production",
+          "hint": "Try: cmctl status certificate api-tls -n production"
+        },
+        {
+          "instruction": "Now create a new certificate request for the payments service using the staging issuer first.",
+          "expect": "cmctl create certificaterequest payments-tls --from-certificate-file payments-cert.yaml -n production",
+          "hint": "Try: cmctl create certificaterequest payments-tls --from-certificate-file payments-cert.yaml -n production"
+        },
+        {
+          "instruction": "Check the certificate requests to see if the new one was picked up.",
+          "expect": "kubectl get certificaterequests -n production",
+          "hint": "Try: kubectl get certificaterequests -n production"
+        },
+        {
+          "instruction": "The payments-tls request is approved and ready. Now force-renew the api-tls certificate before it expires.",
+          "expect": "cmctl renew api-tls -n production",
+          "hint": "Try: cmctl renew api-tls -n production"
+        },
+        {
+          "instruction": "Verify the renewal triggered a new certificate request by checking events.",
+          "expect": "kubectl get events -n production --field-selector reason=Issuing",
+          "hint": "Try: kubectl get events -n production --field-selector reason=Issuing"
+        }
+      ]
+    },
+    {
+      "id": "troubleshoot-failures",
+      "title": "Troubleshoot Certificate Failures",
+      "steps": [
+        {
+          "instruction": "A developer reports that the web-tls certificate is not working. List all certificates in production to find its status.",
+          "expect": "kubectl get certificates -n production",
+          "hint": "Try: kubectl get certificates -n production"
+        },
+        {
+          "instruction": "web-tls shows Ready=False. Get a detailed status breakdown with cmctl.",
+          "expect": "cmctl status certificate web-tls -n production",
+          "hint": "Try: cmctl status certificate web-tls -n production"
+        },
+        {
+          "instruction": "The status mentions a pending Order. Check the orders to see what's happening with the ACME flow.",
+          "expect": "kubectl get orders -n production",
+          "hint": "Try: kubectl get orders -n production"
+        },
+        {
+          "instruction": "There's a pending order for web-tls. Check the challenges to see if the ACME challenge is stuck.",
+          "expect": "kubectl get challenges -n production",
+          "hint": "Try: kubectl get challenges -n production"
+        },
+        {
+          "instruction": "The HTTP-01 challenge for web.example.com is in a 'pending' state. Describe the certificate for more detail on the failure.",
+          "expect": "kubectl describe certificate web-tls -n production",
+          "hint": "Try: kubectl describe certificate web-tls -n production"
+        },
+        {
+          "instruction": "Events show the challenge solver pod cannot reach the ACME server. Check the Issuer that web-tls references.",
+          "expect": "kubectl get issuers -n production",
+          "hint": "Try: kubectl get issuers -n production"
+        },
+        {
+          "instruction": "Inspect the TLS secret to see if a partial or expired certificate was stored.",
+          "expect": "cmctl inspect secret web-tls -n production",
+          "hint": "Try: cmctl inspect secret web-tls -n production"
+        },
+        {
+          "instruction": "The secret contains an expired certificate. Force a renewal to retry the entire issuance flow.",
+          "expect": "cmctl renew web-tls -n production",
+          "hint": "Try: cmctl renew web-tls -n production"
+        }
+      ]
+    }
+  ],
+  "commands": {
+    "help": "Available commands:\n  cmctl check api                      \u2014 verify cert-manager API readiness\n  cmctl status certificate [name]      \u2014 detailed certificate status\n  cmctl renew [name]                   \u2014 trigger certificate renewal\n  cmctl approve [name]                 \u2014 approve a CertificateRequest\n  cmctl deny [name]                    \u2014 deny a CertificateRequest\n  cmctl inspect secret [name]          \u2014 inspect TLS secret contents\n  cmctl create certificaterequest      \u2014 create a new CertificateRequest\n  cmctl version                        \u2014 show cert-manager version\n  kubectl get certificates             \u2014 list Certificate resources\n  kubectl get issuers                  \u2014 list namespace-scoped Issuers\n  kubectl get clusterissuers           \u2014 list cluster-wide Issuers\n  kubectl get certificaterequests      \u2014 list CertificateRequests\n  kubectl get orders                   \u2014 list ACME Orders\n  kubectl get challenges               \u2014 list ACME Challenges\n  kubectl describe certificate [name]  \u2014 show certificate details + events\n  kubectl get events                   \u2014 show namespace events\n\n  scenario                             \u2014 start a guided lab\n  clear                                \u2014 clear the terminal\n  help                                 \u2014 show this help",
+    "kubectl version": "Client Version: v1.29.3\nServer Version: v1.29.3",
+    "cmctl version": "Client Version: v1.14.5\nServer Version: v1.14.5",
+    "cmctl check api": "The cert-manager API is ready",
+    "cmctl check api --wait=2m": "The cert-manager API is ready",
+    "cmctl status certificate api-tls -n production": "Name: api-tls\nNamespace: production\nCreated at: 2026-04-15T08:30:00Z\nConditions:\n  Ready: True, Reason: Ready, Message: Certificate is up to date and has not expired\nDNS Names:\n- api.example.com\n- api-internal.example.com\nEvents:\n  Type    Reason   Age   Message\n  Normal  Issuing  25d   Issuing certificate as Secret does not exist\n  Normal  Ready    25d   Certificate is up to date and has not expired\nIssuer:\n  Name: letsencrypt-production\n  Kind: ClusterIssuer\n  Group: cert-manager.io\nSecret:\n  Name: api-tls\n  Created: 2026-04-15T08:31:12Z\nNot Before: 2026-04-15T08:31:10Z\nNot After: 2026-07-14T08:31:10Z\nRenewal Time: 2026-06-14T08:31:10Z",
+    "cmctl status certificate web-tls -n production": "Name: web-tls\nNamespace: production\nCreated at: 2026-05-01T10:00:00Z\nConditions:\n  Ready: False, Reason: MissingData, Message: Issuing certificate as Secret does not contain valid certificate data\nDNS Names:\n- web.example.com\n- www.example.com\nEvents:\n  Type     Reason        Age   Message\n  Normal   Issuing       32d   Issuing certificate as Secret does not exist\n  Normal   Generated     32d   Stored new private key in temporary Secret\n  Normal   Requested     32d   Created new CertificateRequest resource \"web-tls-r7k2x\"\n  Warning  OrderPending  2d    Order web-tls-r7k2x-1234567890 is still pending\nIssuer:\n  Name: letsencrypt-web\n  Kind: Issuer\n  Group: cert-manager.io\nSecret:\n  Name: web-tls\n  Created: 2026-03-01T10:01:00Z\nNot Before: 2026-03-01T10:01:00Z\nNot After: 2026-05-30T10:01:00Z   \u2190 EXPIRED\nRenewal Time: 2026-04-30T10:01:00Z",
+    "cmctl status certificate payments-tls -n production": "Name: payments-tls\nNamespace: production\nCreated at: 2026-06-02T12:00:00Z\nConditions:\n  Ready: True, Reason: Ready, Message: Certificate is up to date and has not expired\nDNS Names:\n- payments.example.com\nIssuer:\n  Name: letsencrypt-production\n  Kind: ClusterIssuer\n  Group: cert-manager.io\nSecret:\n  Name: payments-tls\n  Created: 2026-06-02T12:01:15Z\nNot Before: 2026-06-02T12:01:12Z\nNot After: 2026-08-31T12:01:12Z\nRenewal Time: 2026-08-01T12:01:12Z",
+    "cmctl renew api-tls -n production": "Manually triggered issuance of Certificate production/api-tls",
+    "cmctl renew web-tls -n production": "Manually triggered issuance of Certificate production/web-tls",
+    "cmctl renew payments-tls -n production": "Manually triggered issuance of Certificate production/payments-tls",
+    "cmctl approve web-tls-r7k2x -n production": "Approved CertificateRequest 'production/web-tls-r7k2x'",
+    "cmctl deny web-tls-r7k2x -n production": "Denied CertificateRequest 'production/web-tls-r7k2x'",
+    "cmctl approve payments-tls-abc12 -n production": "Approved CertificateRequest 'production/payments-tls-abc12'",
+    "cmctl deny payments-tls-abc12 -n production": "Denied CertificateRequest 'production/payments-tls-abc12'",
+    "cmctl inspect secret api-tls -n production": "Secret: production/api-tls\nType: kubernetes.io/tls\nIssuer: CN=R3,O=Let's Encrypt,C=US\nSubject: CN=api.example.com\nDNS Names:\n- api.example.com\n- api-internal.example.com\nNot Before: 2026-04-15T08:31:10Z\nNot After: 2026-07-14T08:31:10Z\nRenewal Time: 2026-06-14T08:31:10Z\nCertificate is valid and not expired",
+    "cmctl inspect secret web-tls -n production": "Secret: production/web-tls\nType: kubernetes.io/tls\nIssuer: CN=R3,O=Let's Encrypt,C=US\nSubject: CN=web.example.com\nDNS Names:\n- web.example.com\n- www.example.com\nNot Before: 2026-03-01T10:01:00Z\nNot After: 2026-05-30T10:01:00Z\n\u26a0\ufe0f  Certificate has EXPIRED (expired 3 days ago)\nRenewal should have occurred at: 2026-04-30T10:01:00Z",
+    "cmctl inspect secret payments-tls -n production": "Secret: production/payments-tls\nType: kubernetes.io/tls\nIssuer: CN=R3,O=Let's Encrypt,C=US\nSubject: CN=payments.example.com\nDNS Names:\n- payments.example.com\nNot Before: 2026-06-02T12:01:12Z\nNot After: 2026-08-31T12:01:12Z\nCertificate is valid and not expired",
+    "cmctl create certificaterequest payments-tls --from-certificate-file payments-cert.yaml -n production": "CertificateRequest 'production/payments-tls-abc12' created",
+    "kubectl get certificates -n production": "NAME           READY   SECRET         AGE\napi-tls        True    api-tls        48d\nweb-tls        False   web-tls        32d\npayments-tls   True    payments-tls   1h",
+    "kubectl get certificates -n production -o wide": "NAME           READY   SECRET         ISSUER                    STATUS                                          AGE\napi-tls        True    api-tls        letsencrypt-production    Certificate is up to date and has not expired    48d\nweb-tls        False   web-tls        letsencrypt-web           Issuing certificate as Secret does not contain   32d\npayments-tls   True    payments-tls   letsencrypt-production    Certificate is up to date and has not expired    1h",
+    "kubectl get cert -n production": "NAME           READY   SECRET         AGE\napi-tls        True    api-tls        48d\nweb-tls        False   web-tls        32d\npayments-tls   True    payments-tls   1h",
+    "kubectl get certificates --all-namespaces": "NAMESPACE      NAME           READY   SECRET         AGE\nproduction     api-tls        True    api-tls        48d\nproduction     web-tls        False   web-tls        32d\nproduction     payments-tls   True    payments-tls   1h\nistio-system   istio-ca       True    istio-ca       90d\nmonitoring     grafana-tls    True    grafana-tls    60d",
+    "kubectl get certificates -A": "NAMESPACE      NAME           READY   SECRET         AGE\nproduction     api-tls        True    api-tls        48d\nproduction     web-tls        False   web-tls        32d\nproduction     payments-tls   True    payments-tls   1h\nistio-system   istio-ca       True    istio-ca       90d\nmonitoring     grafana-tls    True    grafana-tls    60d",
+    "kubectl get issuers -n production": "NAME              READY   AGE\nletsencrypt-web   True    32d",
+    "kubectl get issuer -n production": "NAME              READY   AGE\nletsencrypt-web   True    32d",
+    "kubectl get clusterissuers": "NAME                       READY   AGE\nletsencrypt-staging        True    90d\nletsencrypt-production     True    90d",
+    "kubectl get clusterissuer": "NAME                       READY   AGE\nletsencrypt-staging        True    90d\nletsencrypt-production     True    90d",
+    "kubectl get certificaterequests -n production": "NAME                  APPROVED   DENIED   READY   ISSUER                   REQUESTER                                         AGE\napi-tls-v2m8k         True                True    letsencrypt-production   system:serviceaccount:cert-manager:cert-manager    25d\nweb-tls-r7k2x         True                False   letsencrypt-web          system:serviceaccount:cert-manager:cert-manager    2d\npayments-tls-abc12    True                True    letsencrypt-production   system:serviceaccount:cert-manager:cert-manager    1h",
+    "kubectl get cr -n production": "NAME                  APPROVED   DENIED   READY   ISSUER                   REQUESTER                                         AGE\napi-tls-v2m8k         True                True    letsencrypt-production   system:serviceaccount:cert-manager:cert-manager    25d\nweb-tls-r7k2x         True                False   letsencrypt-web          system:serviceaccount:cert-manager:cert-manager    2d\npayments-tls-abc12    True                True    letsencrypt-production   system:serviceaccount:cert-manager:cert-manager    1h",
+    "kubectl get orders -n production": "NAME                         STATE     ISSUER                   REASON   AGE\napi-tls-v2m8k-1234567890     valid     letsencrypt-production            25d\nweb-tls-r7k2x-1234567890     pending   letsencrypt-web                   2d\npayments-tls-abc12-9876543   valid     letsencrypt-production            1h",
+    "kubectl get order -n production": "NAME                         STATE     ISSUER                   REASON   AGE\napi-tls-v2m8k-1234567890     valid     letsencrypt-production            25d\nweb-tls-r7k2x-1234567890     pending   letsencrypt-web                   2d\npayments-tls-abc12-9876543   valid     letsencrypt-production            1h",
+    "kubectl get challenges -n production": "NAME                                    STATE     DOMAIN             REASON                                       AGE\nweb-tls-r7k2x-1234567890-0              pending   web.example.com    Waiting for HTTP-01 challenge propagation     2d\nweb-tls-r7k2x-1234567890-1              pending   www.example.com    Waiting for HTTP-01 challenge propagation     2d",
+    "kubectl get challenge -n production": "NAME                                    STATE     DOMAIN             REASON                                       AGE\nweb-tls-r7k2x-1234567890-0              pending   web.example.com    Waiting for HTTP-01 challenge propagation     2d\nweb-tls-r7k2x-1234567890-1              pending   www.example.com    Waiting for HTTP-01 challenge propagation     2d",
+    "kubectl get challenges --all-namespaces": "NAMESPACE    NAME                                    STATE     DOMAIN             REASON                                       AGE\nproduction   web-tls-r7k2x-1234567890-0              pending   web.example.com    Waiting for HTTP-01 challenge propagation     2d\nproduction   web-tls-r7k2x-1234567890-1              pending   www.example.com    Waiting for HTTP-01 challenge propagation     2d",
+    "kubectl get challenges -A": "NAMESPACE    NAME                                    STATE     DOMAIN             REASON                                       AGE\nproduction   web-tls-r7k2x-1234567890-0              pending   web.example.com    Waiting for HTTP-01 challenge propagation     2d\nproduction   web-tls-r7k2x-1234567890-1              pending   www.example.com    Waiting for HTTP-01 challenge propagation     2d",
+    "kubectl describe certificate api-tls -n production": "Name:         api-tls\nNamespace:    production\nLabels:       app=api\nAnnotations:  <none>\nAPI Version:  cert-manager.io/v1\nKind:         Certificate\nSpec:\n  Dns Names:\n    api.example.com\n    api-internal.example.com\n  Issuer Ref:\n    Group:  cert-manager.io\n    Kind:   ClusterIssuer\n    Name:   letsencrypt-production\n  Secret Name:  api-tls\n  Private Key:\n    Algorithm: RSA\n    Size:      2048\n  Duration:    2160h   # 90 days\n  Renew Before: 720h  # 30 days before expiry\nStatus:\n  Conditions:\n    Type:                  Ready\n    Status:                True\n    Reason:                Ready\n    Message:               Certificate is up to date and has not expired\n    Last Transition Time:  2026-04-15T08:31:12Z\n  Not After:               2026-07-14T08:31:10Z\n  Not Before:              2026-04-15T08:31:10Z\n  Renewal Time:            2026-06-14T08:31:10Z\n  Revision:                2\nEvents:\n  Type    Reason     Age   From                                       Message\n  ----    ------     ----  ----                                       -------\n  Normal  Issuing    25d   cert-manager-certificates-trigger           Issuing certificate as Secret does not exist\n  Normal  Generated  25d   cert-manager-certificates-key-manager       Stored new private key in temporary Secret\n  Normal  Requested  25d   cert-manager-certificates-request-manager   Created new CertificateRequest resource \"api-tls-v2m8k\"\n  Normal  Issuing    25d   cert-manager-certificates-issuing           The certificate has been successfully issued",
+    "kubectl describe certificate web-tls -n production": "Name:         web-tls\nNamespace:    production\nLabels:       app=web\nAnnotations:  <none>\nAPI Version:  cert-manager.io/v1\nKind:         Certificate\nSpec:\n  Dns Names:\n    web.example.com\n    www.example.com\n  Issuer Ref:\n    Group:  cert-manager.io\n    Kind:   Issuer\n    Name:   letsencrypt-web\n  Secret Name:  web-tls\n  Private Key:\n    Algorithm: RSA\n    Size:      2048\n  Duration:    2160h   # 90 days\n  Renew Before: 720h  # 30 days before expiry\nStatus:\n  Conditions:\n    Type:                  Ready\n    Status:                False\n    Reason:                MissingData\n    Message:               Issuing certificate as Secret does not contain valid certificate data\n    Last Transition Time:  2026-05-30T10:01:00Z\n  Not After:               2026-05-30T10:01:00Z\n  Not Before:              2026-03-01T10:01:00Z\n  Renewal Time:            2026-04-30T10:01:00Z\n  Revision:                1\nEvents:\n  Type     Reason           Age   From                                       Message\n  ----     ------           ----  ----                                       -------\n  Normal   Issuing          32d   cert-manager-certificates-trigger           Issuing certificate as Secret does not exist\n  Normal   Generated        32d   cert-manager-certificates-key-manager       Stored new private key in temporary Secret\n  Normal   Requested        32d   cert-manager-certificates-request-manager   Created new CertificateRequest resource \"web-tls-r7k2x\"\n  Warning  OrderPending     2d    cert-manager-certificates-issuing           Order production/web-tls-r7k2x-1234567890 is still pending\n  Warning  ErrSolvChallenge 2d    cert-manager-challenges                    Failed to perform self-check GET request: connection refused\n  Warning  Incomplete       2d    cert-manager-certificates-issuing           Certificate issuance incomplete: order pending",
+    "kubectl describe certificate payments-tls -n production": "Name:         payments-tls\nNamespace:    production\nLabels:       app=payments\nAnnotations:  <none>\nAPI Version:  cert-manager.io/v1\nKind:         Certificate\nSpec:\n  Dns Names:\n    payments.example.com\n  Issuer Ref:\n    Group:  cert-manager.io\n    Kind:   ClusterIssuer\n    Name:   letsencrypt-production\n  Secret Name:  payments-tls\n  Private Key:\n    Algorithm: ECDSA\n    Size:      256\n  Duration:    2160h\n  Renew Before: 720h\nStatus:\n  Conditions:\n    Type:                  Ready\n    Status:                True\n    Reason:                Ready\n    Message:               Certificate is up to date and has not expired\n    Last Transition Time:  2026-06-02T12:01:15Z\n  Not After:               2026-08-31T12:01:12Z\n  Not Before:              2026-06-02T12:01:12Z\n  Renewal Time:            2026-08-01T12:01:12Z\n  Revision:                1\nEvents:\n  Type    Reason     Age   From                                       Message\n  Normal  Issuing    1h    cert-manager-certificates-trigger           Issuing certificate as Secret does not exist\n  Normal  Generated  1h    cert-manager-certificates-key-manager       Stored new private key in temporary Secret\n  Normal  Requested  1h    cert-manager-certificates-request-manager   Created new CertificateRequest resource \"payments-tls-abc12\"\n  Normal  Issuing    1h    cert-manager-certificates-issuing           The certificate has been successfully issued",
+    "kubectl describe clusterissuer letsencrypt-staging": "Name:         letsencrypt-staging\nLabels:       <none>\nAnnotations:  <none>\nAPI Version:  cert-manager.io/v1\nKind:         ClusterIssuer\nSpec:\n  Acme:\n    Email:   sre-team@example.com\n    Server:  https://acme-staging-v02.api.letsencrypt.org/directory\n    Private Key Secret Ref:\n      Name:  letsencrypt-staging-account-key\n    Solvers:\n    - Http01:\n        Ingress:\n          Class:  nginx\nStatus:\n  Acme:\n    Last Registered Email:  sre-team@example.com\n    Uri:                    https://acme-staging-v02.api.letsencrypt.org/acme/acct/123456789\n  Conditions:\n    Type:    Ready\n    Status:  True\n    Reason:  ACMEAccountRegistered\n    Message: The ACME account was registered with the ACME server\nEvents:      <none>",
+    "kubectl describe clusterissuer letsencrypt-production": "Name:         letsencrypt-production\nLabels:       <none>\nAnnotations:  <none>\nAPI Version:  cert-manager.io/v1\nKind:         ClusterIssuer\nSpec:\n  Acme:\n    Email:   sre-team@example.com\n    Server:  https://acme-v02.api.letsencrypt.org/directory\n    Private Key Secret Ref:\n      Name:  letsencrypt-production-account-key\n    Solvers:\n    - Http01:\n        Ingress:\n          Class:  nginx\n    - Dns01:\n        Route53:\n          Region:        ap-south-1\n          HostedZoneID:  Z0123456789ABCDEF\nStatus:\n  Acme:\n    Last Registered Email:  sre-team@example.com\n    Uri:                    https://acme-v02.api.letsencrypt.org/acme/acct/987654321\n  Conditions:\n    Type:    Ready\n    Status:  True\n    Reason:  ACMEAccountRegistered\n    Message: The ACME account was registered with the ACME server\nEvents:      <none>",
+    "kubectl describe issuer letsencrypt-web -n production": "Name:         letsencrypt-web\nNamespace:    production\nLabels:       <none>\nAnnotations:  <none>\nAPI Version:  cert-manager.io/v1\nKind:         Issuer\nSpec:\n  Acme:\n    Email:   web-team@example.com\n    Server:  https://acme-v02.api.letsencrypt.org/directory\n    Private Key Secret Ref:\n      Name:  letsencrypt-web-account-key\n    Solvers:\n    - Http01:\n        Ingress:\n          Class:  nginx\n          Pod Template:\n            Spec:\n              Node Selector:\n                kubernetes.io/os: linux\nStatus:\n  Acme:\n    Last Registered Email:  web-team@example.com\n    Uri:                    https://acme-v02.api.letsencrypt.org/acme/acct/555555555\n  Conditions:\n    Type:    Ready\n    Status:  True\n    Reason:  ACMEAccountRegistered\n    Message: The ACME account was registered with the ACME server\nEvents:      <none>",
+    "kubectl get events -n production": "LAST SEEN   TYPE      REASON              OBJECT                       MESSAGE\n1h          Normal    Issuing             certificate/payments-tls     Issuing certificate as Secret does not exist\n1h          Normal    Generated           certificate/payments-tls     Stored new private key in temporary Secret\n1h          Normal    Requested           certificate/payments-tls     Created new CertificateRequest resource\n1h          Normal    Issuing             certificate/payments-tls     The certificate has been successfully issued\n2d          Warning   OrderPending        certificate/web-tls          Order is still pending\n2d          Warning   ErrSolvChallenge    challenge/web-tls-r7k2x-0   Failed to perform self-check: connection refused\n2d          Warning   Incomplete          certificate/web-tls          Certificate issuance incomplete",
+    "kubectl get events -n production --field-selector reason=Issuing": "LAST SEEN   TYPE      REASON    OBJECT                       MESSAGE\n1m          Normal    Issuing   certificate/api-tls          Renewing certificate as renewal was triggered\n1h          Normal    Issuing   certificate/payments-tls     Issuing certificate as Secret does not exist\n1h          Normal    Issuing   certificate/payments-tls     The certificate has been successfully issued",
+    "kubectl get events -n production --sort-by=.lastTimestamp": "LAST SEEN   TYPE      REASON              OBJECT                       MESSAGE\n1m          Normal    Issuing             certificate/api-tls          Renewing certificate as renewal was triggered\n1h          Normal    Issuing             certificate/payments-tls     The certificate has been successfully issued\n1h          Normal    Requested           certificate/payments-tls     Created new CertificateRequest resource\n2d          Warning   ErrSolvChallenge    challenge/web-tls-r7k2x-0   Failed to perform self-check: connection refused\n2d          Warning   OrderPending        certificate/web-tls          Order is still pending",
+    "kubectl get secret -n production": "NAME                             TYPE                                  DATA   AGE\napi-tls                          kubernetes.io/tls                     2      48d\nweb-tls                          kubernetes.io/tls                     2      32d\npayments-tls                     kubernetes.io/tls                     2      1h\nletsencrypt-web-account-key      Opaque                                1      32d\ndb-credentials                   Opaque                                2      60d\ndefault-token-xyz99              kubernetes.io/service-account-token   3      90d",
+    "kubectl get secret api-tls -n production -o yaml": "apiVersion: v1\nkind: Secret\nmetadata:\n  name: api-tls\n  namespace: production\n  annotations:\n    cert-manager.io/certificate-name: api-tls\n    cert-manager.io/issuer-group: cert-manager.io\n    cert-manager.io/issuer-kind: ClusterIssuer\n    cert-manager.io/issuer-name: letsencrypt-production\ntype: kubernetes.io/tls\ndata:\n  tls.crt: <base64-encoded-certificate-chain>\n  tls.key: <base64-encoded-private-key>",
+    "kubectl get pods -n cert-manager": "NAME                                       READY   STATUS    RESTARTS   AGE\ncert-manager-7f8c9d4b6-t2x8k              1/1     Running   0          30d\ncert-manager-cainjector-6b4d8f7c5-m9p3n   1/1     Running   0          30d\ncert-manager-webhook-5c9a7e3d1-k4v7w      1/1     Running   0          30d",
+    "kubectl logs -n cert-manager -l app=cert-manager --tail=10": "I0602 12:01:15.123456  1 controller.go:178] cert-manager/certificates-key-manager: syncing item 'production/payments-tls'\nI0602 12:01:15.234567  1 controller.go:178] cert-manager/certificates-request-manager: syncing item 'production/payments-tls'\nI0602 12:01:16.345678  1 acme.go:233] cert-manager/certificaterequests-issuer-acme: fetching Order for CertificateRequest 'production/payments-tls-abc12'\nI0602 12:01:17.456789  1 acme.go:289] cert-manager/certificaterequests-issuer-acme: Order 'production/payments-tls-abc12-9876543' is in 'valid' state\nI0602 12:01:17.567890  1 conditions.go:203] Found status change for Certificate \"payments-tls\" condition \"Ready\": \"False\" -> \"True\"\nE0601 08:15:30.111222  1 sync.go:186] cert-manager/challenges: failed to perform self-check for challenge 'production/web-tls-r7k2x-1234567890-0': Get \"http://web.example.com/.well-known/acme-challenge/abc123\": dial tcp: connection refused\nE0601 08:15:30.222333  1 sync.go:186] cert-manager/challenges: failed to perform self-check for challenge 'production/web-tls-r7k2x-1234567890-1': Get \"http://www.example.com/.well-known/acme-challenge/def456\": dial tcp: connection refused\nI0601 08:15:31.333444  1 controller.go:178] cert-manager/orders: order 'production/web-tls-r7k2x-1234567890' still pending\nW0601 08:15:31.444555  1 conditions.go:203] Certificate \"web-tls\" in namespace \"production\" is not ready: order pending\nI0602 13:00:01.555666  1 trigger.go:178] cert-manager/certificates-trigger: Certificate production/api-tls renewal triggered manually",
+    "kubectl describe order web-tls-r7k2x-1234567890 -n production": "Name:         web-tls-r7k2x-1234567890\nNamespace:    production\nLabels:       <none>\nAPI Version:  acme.cert-manager.io/v1\nKind:         Order\nSpec:\n  Dns Names:\n    web.example.com\n    www.example.com\n  Issuer Ref:\n    Group:  cert-manager.io\n    Kind:   Issuer\n    Name:   letsencrypt-web\n  Request:  <csr-data>\nStatus:\n  State:         pending\n  URL:           https://acme-v02.api.letsencrypt.org/acme/order/555555555/99999999\n  Finalize URL:  https://acme-v02.api.letsencrypt.org/acme/finalize/555555555/99999999\n  Authorizations:\n  - URL:          https://acme-v02.api.letsencrypt.org/acme/authz-v3/111111111\n    Identifier:   web.example.com\n    Wildcard:     false\n  - URL:          https://acme-v02.api.letsencrypt.org/acme/authz-v3/222222222\n    Identifier:   www.example.com\n    Wildcard:     false\nEvents:\n  Type     Reason   Age   From                    Message\n  Normal   Created  2d    cert-manager-orders     Created Challenge resource \"web-tls-r7k2x-1234567890-0\" for domain \"web.example.com\"\n  Normal   Created  2d    cert-manager-orders     Created Challenge resource \"web-tls-r7k2x-1234567890-1\" for domain \"www.example.com\"",
+    "kubectl describe challenge web-tls-r7k2x-1234567890-0 -n production": "Name:         web-tls-r7k2x-1234567890-0\nNamespace:    production\nLabels:       <none>\nAPI Version:  acme.cert-manager.io/v1\nKind:         Challenge\nSpec:\n  Authorization URL:  https://acme-v02.api.letsencrypt.org/acme/authz-v3/111111111\n  Dns Name:           web.example.com\n  Issuer Ref:\n    Group:  cert-manager.io\n    Kind:   Issuer\n    Name:   letsencrypt-web\n  Key:      abc123\n  Solver:\n    Http01:\n      Ingress:\n        Class:  nginx\n  Token:    token-web-example-com\n  Type:     HTTP-01\n  URL:      https://acme-v02.api.letsencrypt.org/acme/chall-v3/111111111/aaa111\nStatus:\n  Presented:   true\n  Processing:  true\n  Reason:      Waiting for HTTP-01 challenge propagation: failed to perform self-check GET request 'http://web.example.com/.well-known/acme-challenge/abc123': Get \"http://web.example.com/.well-known/acme-challenge/abc123\": dial tcp 10.0.2.145:80: connect: connection refused\n  State:       pending\nEvents:\n  Type     Reason        Age   From                      Message\n  Normal   Started       2d    cert-manager-challenges    Challenge scheduled for processing\n  Normal   Presented     2d    cert-manager-challenges    Presented challenge using HTTP-01 challenge mechanism\n  Warning  SelfCheck     2d    cert-manager-challenges    Failed to perform self-check: connection refused \u2014 verify ingress is routing to the solver pod",
+    "kubectl get ingress -n production": "NAME              CLASS   HOSTS                              ADDRESS                                        PORTS     AGE\nprod-ingress      nginx   api.example.com,web.example.com    a4b5c6-ingress.ap-south-1.elb.amazonaws.com    80, 443   60d\npayments-ingress  nginx   payments.example.com               a4b5c6-ingress.ap-south-1.elb.amazonaws.com    80, 443   1h",
+    "kubectl get all -n cert-manager": "NAME                                           READY   STATUS    RESTARTS   AGE\npod/cert-manager-7f8c9d4b6-t2x8k              1/1     Running   0          30d\npod/cert-manager-cainjector-6b4d8f7c5-m9p3n   1/1     Running   0          30d\npod/cert-manager-webhook-5c9a7e3d1-k4v7w      1/1     Running   0          30d\n\nNAME                           TYPE        CLUSTER-IP      PORT(S)\nsvc/cert-manager               ClusterIP   172.20.89.10    9402/TCP\nsvc/cert-manager-webhook       ClusterIP   172.20.89.11    443/TCP\n\nNAME                                      READY   UP-TO-DATE   AVAILABLE   AGE\ndeployment.apps/cert-manager               1/1     1            1           90d\ndeployment.apps/cert-manager-cainjector    1/1     1            1           90d\ndeployment.apps/cert-manager-webhook       1/1     1            1           90d",
+    "kubectl get namespaces": "NAME              STATUS   AGE\ndefault           Active   90d\nkube-system       Active   90d\ncert-manager      Active   90d\nproduction        Active   85d\nmonitoring        Active   80d\nistio-system      Active   75d\ningress-nginx     Active   80d",
+    "kubectl get ns": "NAME              STATUS   AGE\ndefault           Active   90d\nkube-system       Active   90d\ncert-manager      Active   90d\nproduction        Active   85d\nmonitoring        Active   80d\nistio-system      Active   75d\ningress-nginx     Active   80d",
+    "kubectl apply -f certificate.yaml": "certificate.cert-manager.io/api-tls configured",
+    "kubectl apply -f issuer.yaml": "issuer.cert-manager.io/letsencrypt-web configured",
+    "kubectl apply -f clusterissuer.yaml": "clusterissuer.cert-manager.io/letsencrypt-production configured",
+    "kubectl delete certificate web-tls -n production": "certificate.cert-manager.io \"web-tls\" deleted",
+    "kubectl delete certificaterequest web-tls-r7k2x -n production": "certificaterequest.cert-manager.io \"web-tls-r7k2x\" deleted"
+  },
+  "reference": [
+    {
+      "group": "API Health",
+      "commands": [
+        {
+          "cmd": "cmctl check api",
+          "desc": "verify cert-manager readiness"
+        },
+        {
+          "cmd": "cmctl version",
+          "desc": "client + server version"
+        },
+        {
+          "cmd": "kubectl get all -n cert-manager",
+          "desc": "cert-manager pods & services"
+        },
+        {
+          "cmd": "kubectl get pods -n cert-manager",
+          "desc": "cert-manager pod status"
+        }
+      ]
+    },
+    {
+      "group": "Certificates",
+      "commands": [
+        {
+          "cmd": "kubectl get certificates -n production",
+          "desc": "list certificates"
+        },
+        {
+          "cmd": "kubectl get certificates -A",
+          "desc": "all certs cluster-wide"
+        },
+        {
+          "cmd": "kubectl describe certificate api-tls -n production",
+          "desc": "cert details + events"
+        },
+        {
+          "cmd": "cmctl status certificate api-tls -n production",
+          "desc": "full status breakdown"
+        },
+        {
+          "cmd": "cmctl renew api-tls -n production",
+          "desc": "force renewal"
+        }
+      ]
+    },
+    {
+      "group": "Issuers",
+      "commands": [
+        {
+          "cmd": "kubectl get clusterissuers",
+          "desc": "cluster-wide issuers"
+        },
+        {
+          "cmd": "kubectl get issuers -n production",
+          "desc": "namespace issuers"
+        },
+        {
+          "cmd": "kubectl describe clusterissuer letsencrypt-production",
+          "desc": "issuer config + ACME status"
+        },
+        {
+          "cmd": "kubectl describe issuer letsencrypt-web -n production",
+          "desc": "namespace issuer details"
+        }
+      ]
+    },
+    {
+      "group": "Certificate Requests",
+      "commands": [
+        {
+          "cmd": "kubectl get certificaterequests -n production",
+          "desc": "list requests"
+        },
+        {
+          "cmd": "cmctl create certificaterequest payments-tls --from-certificate-file payments-cert.yaml -n production",
+          "desc": "create new request"
+        },
+        {
+          "cmd": "cmctl approve web-tls-r7k2x -n production",
+          "desc": "approve request"
+        },
+        {
+          "cmd": "cmctl deny web-tls-r7k2x -n production",
+          "desc": "deny request"
+        }
+      ]
+    },
+    {
+      "group": "ACME Orders & Challenges",
+      "commands": [
+        {
+          "cmd": "kubectl get orders -n production",
+          "desc": "ACME order status"
+        },
+        {
+          "cmd": "kubectl get challenges -n production",
+          "desc": "ACME challenge status"
+        },
+        {
+          "cmd": "kubectl describe order web-tls-r7k2x-1234567890 -n production",
+          "desc": "order details"
+        },
+        {
+          "cmd": "kubectl describe challenge web-tls-r7k2x-1234567890-0 -n production",
+          "desc": "challenge details"
+        }
+      ]
+    },
+    {
+      "group": "Secrets & Inspection",
+      "commands": [
+        {
+          "cmd": "kubectl get secret -n production",
+          "desc": "list secrets"
+        },
+        {
+          "cmd": "cmctl inspect secret api-tls -n production",
+          "desc": "inspect TLS cert in secret"
+        },
+        {
+          "cmd": "cmctl inspect secret web-tls -n production",
+          "desc": "check for expired cert"
+        },
+        {
+          "cmd": "kubectl get secret api-tls -n production -o yaml",
+          "desc": "raw secret YAML"
+        }
+      ]
+    },
+    {
+      "group": "Events & Logs",
+      "commands": [
+        {
+          "cmd": "kubectl get events -n production",
+          "desc": "namespace events"
+        },
+        {
+          "cmd": "kubectl get events -n production --field-selector reason=Issuing",
+          "desc": "issuance events only"
+        },
+        {
+          "cmd": "kubectl logs -n cert-manager -l app=cert-manager --tail=10",
+          "desc": "controller logs"
+        }
+      ]
+    },
+    {
+      "group": "Scenarios",
+      "commands": [
+        {
+          "cmd": "scenario issue-and-renew",
+          "desc": "issue & renew TLS certs"
+        },
+        {
+          "cmd": "scenario troubleshoot-failures",
+          "desc": "debug cert failures"
+        }
+      ]
+    }
+  ]
+}
