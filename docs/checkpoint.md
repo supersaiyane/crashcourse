@@ -47,18 +47,23 @@
 | 2026-06-03 08:30 | Repo public + badges + cache bust | Done | Repo made public, About desc updated (153+30 CLI), badge cacheSeconds=3600, watchers badge fixed, cli-engine.js?v=2 + app.js?v=7 cache bust | README.md:2-14, docs/index.html:292-293 |
 | 2026-06-03 09:00 | Wave 3: CLI Playgrounds — Tiers 4+5 complete (13 tools) | Done | 13 CLI JSON files (713 cmds, 26 scenarios). cliMap: 43 tools + 4 aliases. T4: Grafana, Loki, etcd, cert-manager, SSH, sed/awk. T5: GitHub-Actions, Jenkins, Alertmanager, Nginx, Makefile, GCP, Azure | docs/data/cli-*.json, docs/js/app.js:865-874 |
 | 2026-06-03 09:30 | Mermaid responsive fix | Done | SVGs: width:100%, min-width:300px, flexbox centering. Prevents tiny/top-left on small screens. CSS cache bust v7. | docs/css/style.css:1081-1095, docs/index.html:28 |
+| 2026-06-03 10:00 | 15 Flagship Projects plan in TODO.txt | Done | Full plan for 15 hands-on projects covering 130/153 courses (85%). Template based on container-lifecycle-course. 4-phase build order. | TODO.txt:639-900 |
+| 2026-06-03 14:00 | Project 1 + Project 2 built | Done | P1: Container Lifecycle (Cutlink, 7 stages, copied from ref). P2: IaC Pipeline (FinStack, 73 files, 6 TF modules, 7 stage READMEs ~175KB, 17 exercises). 157 files committed. | projects/01-container-lifecycle/, projects/02-iac-pipeline/ |
 
 ## Next Session Resume Vector
 
 - 153 courses across 20 categories — Waves 1 & 2 fully complete
 - Wave 3 CLI Playground — ALL 5 TIERS COMPLETE:
   - 43 tools, ~2525 commands, 86 scenarios, 44 JSON files
-  - 4 aliases: jq→jq-yq, yq→jq-yq, sed→sed-awk, awk→sed-awk
-  - app.js cliMap at line 849 routes 47 entries (43 tools + 4 aliases)
-  - Cache bust: cli-engine.js?v=2, app.js?v=7
-  - CLI confirmed working after hard refresh
+  - app.js cliMap: 47 entries (43 tools + 4 aliases)
+  - Cache bust: cli-engine.js?v=2, app.js?v=7, style.css?v=7
+- Wave 3 Hands-on Projects — 2/15 DONE:
+  - P1: Container Lifecycle (Cutlink) — projects/01-container-lifecycle/ — DONE
+  - P2: IaC Pipeline (FinStack) — projects/02-iac-pipeline/ — DONE (73 files)
+  - P3-P15: PLANNED in TODO.txt, build order Phase 1→4
+  - Next: P3 Observability Stack or P8 Incident Response Lab
+- Labs UI for PWA: PLANNED (Option A+B — card grid + stage navigator with progress tracking)
 - Mermaid syntax errors on some courses — needs investigation (mermaid 11.15.0 compat)
-- Wave 3: 48 project walkthroughs not started (TODO.txt)
-- Repo: PUBLIC (2026-06-03), About: "153 crash courses + 30 interactive CLI playgrounds" (update to 43)
-- dsa.txt has full plan for separate DSA repo (25 courses, Python, FAANG-focused)
-- Site live at https://supersaiyane.github.io/crashcourse/
+- Repo: PUBLIC, About: update "30" to "43" CLI playgrounds
+- dsa.txt: separate DSA repo plan (25 courses, Python, FAANG-focused)
+- Site: https://supersaiyane.github.io/crashcourse/
