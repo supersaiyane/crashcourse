@@ -45,19 +45,19 @@
 | 2026-06-03 08:00 | Wave 3: CLI Playgrounds — Tier 2 complete (all 10) | Done | 10 CLI JSON files (754 total commands, 20 scenarios). cliMap expanded. Tools: Prometheus, PostgreSQL, Redis, AWS, Vault, ArgoCD, tmux, jq/yq, DNS-curl-dig, Kafka | docs/data/cli-*.json, docs/js/app.js:849-858 |
 | 2026-06-03 08:15 | Wave 3: CLI Playgrounds — Tier 3 complete (all 12) | Done | 12 CLI JSON files (569 commands, 24 scenarios). cliMap expanded to 30 tools. Tools: Vim, systemd, Trivy, Kustomize, Tekton, GitLab-CI, Podman, containerd-nerdctl, Pulumi, Flux, OPA, k6 | docs/data/cli-*.json, docs/js/app.js:849-864 |
 | 2026-06-03 08:30 | Repo public + badges + cache bust | Done | Repo made public, About desc updated (153+30 CLI), badge cacheSeconds=3600, watchers badge fixed, cli-engine.js?v=2 + app.js?v=7 cache bust | README.md:2-14, docs/index.html:292-293 |
+| 2026-06-03 09:00 | Wave 3: CLI Playgrounds — Tiers 4+5 complete (13 tools) | Done | 13 CLI JSON files (713 cmds, 26 scenarios). cliMap: 43 tools + 4 aliases. T4: Grafana, Loki, etcd, cert-manager, SSH, sed/awk. T5: GitHub-Actions, Jenkins, Alertmanager, Nginx, Makefile, GCP, Azure | docs/data/cli-*.json, docs/js/app.js:865-874 |
 
 ## Next Session Resume Vector
 
 - 153 courses across 20 categories — Waves 1 & 2 fully complete
-- Wave 3 CLI Playground — Tiers 1-3 COMPLETE (30 tools, 1812 commands, 60 scenarios)
-  - app.js cliMap at line 849 routes 30 filenames→JSON
-  - 31 JSON files in docs/data/cli-*.json (~645KB total)
+- Wave 3 CLI Playground — ALL 5 TIERS COMPLETE:
+  - 43 tools, ~2525 commands, 86 scenarios, 44 JSON files
+  - 4 aliases: jq→jq-yq, yq→jq-yq, sed→sed-awk, awk→sed-awk
+  - app.js cliMap at line 849 routes 47 entries (43 tools + 4 aliases)
   - Cache bust: cli-engine.js?v=2, app.js?v=7
-  - INVESTIGATE: CLI playground may not render — check browser console for xterm.js loading issues
-- Wave 3 CLI Playground — Tier 4 PENDING (6 tools, nice-to-have):
-  - Grafana, Loki, etcd, cert-manager, SSH, sed/awk
+  - CLI confirmed working after hard refresh
 - Mermaid syntax errors on some courses — needs investigation (mermaid 11.15.0 compat)
 - Wave 3: 48 project walkthroughs not started (TODO.txt)
-- Repo: PUBLIC (2026-06-03), About: "153 crash courses + 30 interactive CLI playgrounds"
+- Repo: PUBLIC (2026-06-03), About: "153 crash courses + 30 interactive CLI playgrounds" (update to 43)
 - dsa.txt has full plan for separate DSA repo (25 courses, Python, FAANG-focused)
 - Site live at https://supersaiyane.github.io/crashcourse/
