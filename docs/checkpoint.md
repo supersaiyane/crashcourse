@@ -46,6 +46,7 @@
 | 2026-06-03 08:15 | Wave 3: CLI Playgrounds — Tier 3 complete (all 12) | Done | 12 CLI JSON files (569 commands, 24 scenarios). cliMap expanded to 30 tools. Tools: Vim, systemd, Trivy, Kustomize, Tekton, GitLab-CI, Podman, containerd-nerdctl, Pulumi, Flux, OPA, k6 | docs/data/cli-*.json, docs/js/app.js:849-864 |
 | 2026-06-03 08:30 | Repo public + badges + cache bust | Done | Repo made public, About desc updated (153+30 CLI), badge cacheSeconds=3600, watchers badge fixed, cli-engine.js?v=2 + app.js?v=7 cache bust | README.md:2-14, docs/index.html:292-293 |
 | 2026-06-03 09:00 | Wave 3: CLI Playgrounds — Tiers 4+5 complete (13 tools) | Done | 13 CLI JSON files (713 cmds, 26 scenarios). cliMap: 43 tools + 4 aliases. T4: Grafana, Loki, etcd, cert-manager, SSH, sed/awk. T5: GitHub-Actions, Jenkins, Alertmanager, Nginx, Makefile, GCP, Azure | docs/data/cli-*.json, docs/js/app.js:865-874 |
+| 2026-06-03 09:30 | Mermaid responsive fix | Done | SVGs: width:100%, min-width:300px, flexbox centering. Prevents tiny/top-left on small screens. CSS cache bust v7. | docs/css/style.css:1081-1095, docs/index.html:28 |
 
 ## Next Session Resume Vector
 
