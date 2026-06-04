@@ -1,0 +1,79 @@
+version: "3.9"
+
+services:
+  # ── Application services ─────────────────────────────────────────────────
+  gateway:
+    build: ./services/gateway
+    ports: ["8080:8080"]
+    environment:
+      ORDER_SVC_URL: http://order-svc:8081
+      PAYMENT_SVC_URL: http://payment-svc:8082
+      INVENTORY_SVC_URL: http://inventory-svc:8083
+    depends_on: [order-svc, payment-svc, inventory-svc]
+    labels:
+      logging: "promtail"
+
+  order-svc:
+    build: ./services/order-svc
+    ports: ["8081:8081"]
+    labels:
+      logging: "promtail"
+
+  payment-svc:
+    build: ./services/payment-svc
+    ports: ["8082:8082"]
+    labels:
+      logging: "promtail"
+
+  inventory-svc:
+    build: ./services/inventory-svc
+    ports: ["8083:8083"]
+    labels:
+      logging: "promtail"
+
+  # ── Observability stack ──────────────────────────────────────────────────
+  prometheus:
+    image: prom/prometheus:v2.53.0
+    ports: ["9090:9090"]
+    volumes:
+      - ./alerts/prometheus-rules.yml:/etc/prometheus/rules.yml
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    command: ["--config.file=/etc/prometheus/prometheus.yml", "--web.enable-lifecycle"]
+
+  loki:
+    image: grafana/loki:3.1.0
+    ports: ["3100:3100"]
+    command: ["-config.file=/etc/loki/local-config.yaml"]
+
+  promtail:
+    image: grafana/promtail:3.1.0
+    volumes:
+      - /var/log:/var/log
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: ["-config.file=/etc/promtail/config.yml"]
+
+  tempo:
+    image: grafana/tempo:2.5.0
+    ports: ["3200:3200", "4317:4317", "4318:4318"]
+    command: ["-config.file=/etc/tempo/tempo.yaml"]
+
+  grafana:
+    image: grafana/grafana:11.1.0
+    ports: ["3000:3000"]
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: observashop
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+    volumes:
+      - ./dashboards:/var/lib/grafana/dashboards
+
+  alertmanager:
+    image: prom/alertmanager:v0.27.0
+    ports: ["9093:9093"]
+    volumes:
+      - ./alerts/alertmanager.yml:/etc/alertmanager/alertmanager.yml
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.104.0
+    ports: ["4317:4317", "4318:4318", "8888:8888"]
+    volumes:
+      - ./otel-collector.yml:/etc/otelcol-contrib/config.yaml

@@ -1,0 +1,25 @@
+replicaCount: 1
+
+gateway:
+  image: observashop/gateway:latest
+  port: 8080
+
+orderSvc:
+  image: observashop/order-svc:latest
+  port: 8081
+
+paymentSvc:
+  image: observashop/payment-svc:latest
+  port: 8082
+
+inventorySvc:
+  image: observashop/inventory-svc:latest
+  port: 8083
+
+prometheus:
+  enabled: true
+  scrapeInterval: 15s
+
+grafana:
+  enabled: true
+  adminPassword: observashop

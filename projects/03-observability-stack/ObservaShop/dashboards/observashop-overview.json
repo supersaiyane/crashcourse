@@ -1,0 +1,45 @@
+{
+  "dashboard": {
+    "title": "ObservaShop Overview",
+    "uid": "observashop-overview",
+    "panels": [
+      {
+        "title": "Request Rate",
+        "type": "timeseries",
+        "targets": [{"expr": "sum(rate(gateway_requests_total[5m])) by (endpoint)"}],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0}
+      },
+      {
+        "title": "p95 Latency",
+        "type": "timeseries",
+        "targets": [{"expr": "histogram_quantile(0.95, sum(rate(gateway_request_duration_seconds_bucket[5m])) by (le, endpoint))"}],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0}
+      },
+      {
+        "title": "Payment Success Rate",
+        "type": "stat",
+        "targets": [{"expr": "sum(rate(payments_total{status=\"success\"}[5m])) / sum(rate(payments_total[5m]))"}],
+        "gridPos": {"h": 4, "w": 6, "x": 0, "y": 8}
+      },
+      {
+        "title": "Orders Created",
+        "type": "stat",
+        "targets": [{"expr": "sum(increase(orders_created_total[1h]))"}],
+        "gridPos": {"h": 4, "w": 6, "x": 6, "y": 8}
+      },
+      {
+        "title": "Inventory Levels",
+        "type": "bargauge",
+        "targets": [{"expr": "inventory_stock_level"}],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8}
+      },
+      {
+        "title": "Error Logs",
+        "type": "logs",
+        "datasource": "Loki",
+        "targets": [{"expr": "{service=~\".+\"} |= \"error\""}],
+        "gridPos": {"h": 8, "w": 24, "x": 0, "y": 16}
+      }
+    ]
+  }
+}

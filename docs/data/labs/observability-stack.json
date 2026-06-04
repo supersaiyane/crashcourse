@@ -1,0 +1,97 @@
+{
+  "id": "observability-stack",
+  "title": "Full Observability Stack",
+  "app": "ObservaShop",
+  "description": "Build a complete observability stack for an e-commerce microservices platform. Seven stages from Prometheus metrics to long-term storage with Mimir — covering metrics, logs, traces, dashboards, alerts, and OpenTelemetry.",
+  "tier": "Foundation",
+  "duration": "6-8 weeks",
+  "tools": ["Prometheus", "Loki", "Tempo", "Grafana", "Alertmanager", "OpenTelemetry", "Mimir"],
+  "appDir": "projects/03-observability-stack/ObservaShop",
+  "stages": [
+    {
+      "id": "01-prometheus-metrics",
+      "title": "Prometheus Metrics",
+      "readme": "projects/03-observability-stack/stages/01-prometheus-metrics/README.md",
+      "course": "observability/Prometheus.md",
+      "exercises": 3,
+      "duration": "1 week",
+      "files": [
+        { "path": "projects/03-observability-stack/stages/01-prometheus-metrics/exercises/01-explore-metrics.md", "label": "Exercise 1 — Explore Metrics" },
+        { "path": "projects/03-observability-stack/stages/01-prometheus-metrics/exercises/02-promql-queries.md", "label": "Exercise 2 — PromQL Queries" },
+        { "path": "projects/03-observability-stack/stages/01-prometheus-metrics/exercises/03-custom-metric.md", "label": "Exercise 3 — Custom Metric" }
+      ]
+    },
+    {
+      "id": "02-loki-logs",
+      "title": "Loki Logs",
+      "readme": "projects/03-observability-stack/stages/02-loki-logs/README.md",
+      "course": "observability/Loki.md",
+      "exercises": 2,
+      "duration": "1 week",
+      "files": [
+        { "path": "projects/03-observability-stack/stages/02-loki-logs/exercises/01-query-logs.md", "label": "Exercise 1 — Query Logs" },
+        { "path": "projects/03-observability-stack/stages/02-loki-logs/exercises/02-log-alert.md", "label": "Exercise 2 — Log-Based Alert" }
+      ]
+    },
+    {
+      "id": "03-tempo-traces",
+      "title": "Tempo Traces",
+      "readme": "projects/03-observability-stack/stages/03-tempo-traces/README.md",
+      "course": "observability/Tempo.md",
+      "exercises": 2,
+      "duration": "1 week",
+      "files": [
+        { "path": "projects/03-observability-stack/stages/03-tempo-traces/exercises/01-trace-request.md", "label": "Exercise 1 — Trace a Request" },
+        { "path": "projects/03-observability-stack/stages/03-tempo-traces/exercises/02-find-bottleneck.md", "label": "Exercise 2 — Find Bottleneck" }
+      ]
+    },
+    {
+      "id": "04-grafana-dashboards",
+      "title": "Grafana Dashboards",
+      "readme": "projects/03-observability-stack/stages/04-grafana-dashboards/README.md",
+      "course": "observability/Grafana.md",
+      "exercises": 2,
+      "duration": "1 week",
+      "files": [
+        { "path": "projects/03-observability-stack/stages/04-grafana-dashboards/exercises/01-service-dashboard.md", "label": "Exercise 1 — Service Dashboard" },
+        { "path": "projects/03-observability-stack/stages/04-grafana-dashboards/exercises/02-variables-drilldown.md", "label": "Exercise 2 — Variables & Drill-Down" }
+      ]
+    },
+    {
+      "id": "05-alertmanager",
+      "title": "Alertmanager",
+      "readme": "projects/03-observability-stack/stages/05-alertmanager/README.md",
+      "course": "observability/Alertmanager.md",
+      "exercises": 2,
+      "duration": "1 week",
+      "files": [
+        { "path": "projects/03-observability-stack/stages/05-alertmanager/exercises/01-trigger-alerts.md", "label": "Exercise 1 — Trigger & Route Alerts" },
+        { "path": "projects/03-observability-stack/stages/05-alertmanager/exercises/02-escalation.md", "label": "Exercise 2 — Configure Escalation" }
+      ]
+    },
+    {
+      "id": "06-opentelemetry",
+      "title": "OpenTelemetry",
+      "readme": "projects/03-observability-stack/stages/06-opentelemetry/README.md",
+      "course": "observability/OpenTelemetry.md",
+      "exercises": 2,
+      "duration": "1 week",
+      "files": [
+        { "path": "projects/03-observability-stack/stages/06-opentelemetry/exercises/01-auto-instrument.md", "label": "Exercise 1 — Auto-Instrumentation" },
+        { "path": "projects/03-observability-stack/stages/06-opentelemetry/exercises/02-custom-spans.md", "label": "Exercise 2 — Custom Spans" }
+      ]
+    },
+    {
+      "id": "07-mimir-longterm",
+      "title": "Mimir Long-Term",
+      "readme": "projects/03-observability-stack/stages/07-mimir-longterm/README.md",
+      "course": "observability/Mimir.md",
+      "exercises": 2,
+      "duration": "1 week",
+      "files": [
+        { "path": "projects/03-observability-stack/stages/07-mimir-longterm/exercises/01-remote-write.md", "label": "Exercise 1 — Remote Write" },
+        { "path": "projects/03-observability-stack/stages/07-mimir-longterm/exercises/02-multi-tenant.md", "label": "Exercise 2 — Multi-Tenant Queries" }
+      ]
+    }
+  ]
+}

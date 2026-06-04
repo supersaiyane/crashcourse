@@ -1,0 +1,42 @@
+groups:
+  - name: observashop.rules
+    rules:
+      # ── Availability ─────────────────────────────────────────────────────
+      - alert: ServiceDown
+        expr: up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "{{ $labels.job }} is down"
+          description: "{{ $labels.instance }} has been unreachable for 1 minute."
+
+      # ── Latency ──────────────────────────────────────────────────────────
+      - alert: HighLatency
+        expr: histogram_quantile(0.95, rate(gateway_request_duration_seconds_bucket[5m])) > 1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Gateway p95 latency > 1s"
+          description: "p95 latency is {{ $value }}s over the last 5 minutes."
+
+      # ── Error rate ───────────────────────────────────────────────────────
+      - alert: HighPaymentFailureRate
+        expr: rate(payments_total{status="failed"}[5m]) / rate(payments_total[5m]) > 0.1
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Payment failure rate > 10%"
+          description: "{{ $value | humanizePercentage }} of payments are failing."
+
+      # ── Saturation ───────────────────────────────────────────────────────
+      - alert: LowInventory
+        expr: inventory_stock_level < 5
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Low stock for {{ $labels.sku }}"
+          description: "Only {{ $value }} units remaining."
