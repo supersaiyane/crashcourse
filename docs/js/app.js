@@ -1195,6 +1195,47 @@ async function renderLabDetail(labId, stageId) {
     if (window.mermaid && out.querySelector('.mermaid')) {
       try { window.mermaid.run({ nodes: out.querySelectorAll('.mermaid') }); } catch {}
     }
+
+    // Intercept relative .md links inside lab content — load via file viewer instead of navigating away
+    const stageDir = stage.readme.replace(/\/[^/]+$/, '');  // e.g. "projects/05-.../stages/01-the-app"
+    out.querySelectorAll('a[href]').forEach(link => {
+      const href = link.getAttribute('href');
+      if (href && href.endsWith('.md') && !href.startsWith('http') && !href.startsWith('#')) {
+        link.addEventListener('click', async (e) => {
+          e.preventDefault();
+          // Resolve relative path from the stage directory
+          const parts = stageDir.split('/');
+          const hrefParts = href.split('/');
+          const resolved = [...parts];
+          hrefParts.forEach(p => {
+            if (p === '..') resolved.pop();
+            else resolved.push(p);
+          });
+          const filePath = resolved.join('/');
+          loader.classList.remove('hidden');
+          out.classList.add('hidden');
+          try {
+            const res2 = await fetch(`${MD_BASE}${filePath}`);
+            if (!res2.ok) throw new Error(`HTTP ${res2.status}`);
+            const content = await res2.text();
+            loader.classList.add('hidden');
+            out.classList.remove('hidden');
+            out.innerHTML = `<div style="margin-bottom:12px;">
+              <span style="font-size:0.78rem;color:var(--text-2);font-family:var(--font-mono);">${esc(filePath)}</span>
+              <button class="lab-nav-btn" style="float:right;padding:4px 12px;font-size:0.75rem;" onclick="window.labRestoreStageReadme()">Back to README</button>
+            </div>` + marked.parse(content);
+            out.querySelectorAll('pre code').forEach(b => {
+              if (!b.classList.contains('hljs') && window.hljs) window.hljs.highlightElement(b);
+            });
+            window.scrollTo(0, 0);
+          } catch (err2) {
+            loader.classList.add('hidden');
+            out.classList.remove('hidden');
+            out.innerHTML = `<p style="color:var(--text-muted);">Could not load <code>${esc(filePath)}</code>: ${esc(err2.message)}</p>`;
+          }
+        });
+      }
+    });
   } catch (err) {
     loader.classList.add('hidden');
     out.classList.remove('hidden');
