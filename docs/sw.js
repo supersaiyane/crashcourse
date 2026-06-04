@@ -1,4 +1,4 @@
-const CACHE_NAME = 'crashcourse-v4';
+const CACHE_NAME = 'crashcourse-v5';
 
 const APP_SHELL = [
   './',
@@ -46,8 +46,8 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Markdown files on our origin — network-first (offline fallback)
-  if (url.pathname.endsWith('.md')) {
+  // Markdown and lab JSON files — network-first (offline fallback)
+  if (url.pathname.endsWith('.md') || url.pathname.includes('/data/labs/')) {
     event.respondWith(networkFirst(request));
     return;
   }
