@@ -50,20 +50,27 @@
 | 2026-06-03 10:00 | 15 Flagship Projects plan in TODO.txt | Done | Full plan for 15 hands-on projects covering 130/153 courses (85%). Template based on container-lifecycle-course. 4-phase build order. | TODO.txt:639-900 |
 | 2026-06-03 14:00 | Project 1 + Project 2 built | Done | P1: Container Lifecycle (Cutlink, 7 stages, copied from ref). P2: IaC Pipeline (FinStack, 73 files, 6 TF modules, 7 stage READMEs ~175KB, 17 exercises). 157 files committed. | projects/01-container-lifecycle/, projects/02-iac-pipeline/ |
 
+| 2026-06-04 00:00 | Labs UI — full implementation | Done | Nav tabs (Courses/Labs), labs listing with tier filter, lab detail with stage navigator, exercise checklists, localStorage progress, prev/next nav. 2 lab JSON files. SW cache bump v4. Cache bust v=8. | docs/js/app.js:952-1180, docs/index.html:77-130, docs/css/style.css:1327-1575, docs/data/labs/*.json, docs/sw.js:1 |
+
 ## Next Session Resume Vector
 
 - 153 courses across 20 categories — Waves 1 & 2 fully complete
 - Wave 3 CLI Playground — ALL 5 TIERS COMPLETE:
   - 43 tools, ~2525 commands, 86 scenarios, 44 JSON files
   - app.js cliMap: 47 entries (43 tools + 4 aliases)
-  - Cache bust: cli-engine.js?v=2, app.js?v=7, style.css?v=7
 - Wave 3 Hands-on Projects — 2/15 DONE:
   - P1: Container Lifecycle (Cutlink) — projects/01-container-lifecycle/ — DONE
   - P2: IaC Pipeline (FinStack) — projects/02-iac-pipeline/ — DONE (73 files)
   - P3-P15: PLANNED in TODO.txt, build order Phase 1→4
   - Next: P3 Observability Stack or P8 Incident Response Lab
-- Labs UI for PWA: PLANNED (Option A+B — card grid + stage navigator with progress tracking)
+- **Labs UI: DONE** — routes #/labs, #/labs/{id}, #/labs/{id}/{stage}
+  - docs/data/labs/container-lifecycle.json + iac-pipeline.json
+  - Nav tabs, tier filter, stage progress bar, exercise checkboxes, course reference links
+  - localStorage key: cc-labs-progress
+  - LAB_INDEX array in app.js — add new lab IDs here when P3+ built
+- **Labs UI alignment fix needed** — left alignment poor on listing + detail pages (user feedback)
+- Cache bust: cli-engine.js?v=2, app.js?v=8, style.css?v=8, SW v4
 - Mermaid syntax errors on some courses — needs investigation (mermaid 11.15.0 compat)
-- Repo: PUBLIC, About: update "30" to "43" CLI playgrounds
+- Repo: PUBLIC
 - dsa.txt: separate DSA repo plan (25 courses, Python, FAANG-focused)
 - Site: https://supersaiyane.github.io/crashcourse/
