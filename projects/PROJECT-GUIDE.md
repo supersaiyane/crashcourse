@@ -486,7 +486,324 @@ After building the project, register it on the website:
 
 ---
 
-## 10. Reference implementation
+## 10. File quality standards — templates for every file type
+
+Every source file must be production-quality. Not "good enough to demonstrate" — good enough
+that a senior engineer would approve it in a code review. Below are templates and rules for
+each file type.
+
+### 10.1 Dockerfile (multi-stage, annotated)
+
+```dockerfile
+# ── Stage 1: TEST ────────────────────────────────────────────────────────────
+# Install all dependencies (including dev), run tests and linting.
+# If anything fails, the build stops here — no image is produced.
+FROM python:3.11-slim AS test
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+COPY . .
+RUN python -m pytest -v                # fail-fast: broken tests = no image
+RUN ruff check .                       # fail-fast: lint violations = no image
+
+# ── Stage 2: PRODUCTION ─────────────────────────────────────────────────────
+# Start fresh. Install ONLY production dependencies. Copy ONLY app code.
+# Result: small image (~120MB), no test tools, no dev deps.
+FROM python:3.11-slim
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install --no-cache-dir flask   # only prod deps
+COPY app.py .
+EXPOSE 5000
+USER nobody                            # never run as root in production
+CMD ["python", "app.py"]
+```
+
+Rules:
+- Always two stages: test then production
+- Comment every non-obvious line
+- Pin base image versions (`python:3.11-slim`, not `python:latest`)
+- `USER nobody` or `USER 1000` — never run as root
+- `EXPOSE` the correct port
+- `.dockerignore` should exist alongside (exclude tests, docs, .git)
+
+### 10.2 docker-compose.yml (full local stack)
+
+```yaml
+version: "3.9"
+
+services:
+  app:
+    build: ./service-dir
+    ports: ["8080:8080"]
+    environment:
+      NODE_ENV: development
+      DB_HOST: postgres
+      DB_PASSWORD: localdev              # local dev only, never production values
+    depends_on:
+      postgres:
+        condition: service_healthy       # wait for DB to be ready
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+  postgres:
+    image: postgres:16-alpine            # pin version, use alpine for size
+    ports: ["5432:5432"]
+    environment:
+      POSTGRES_USER: appuser
+      POSTGRES_PASSWORD: localdev
+      POSTGRES_DB: appdb
+    volumes:
+      - pgdata:/var/lib/postgresql/data  # persist data across restarts
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U appuser"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+volumes:
+  pgdata:                                # named volume for database persistence
+```
+
+Rules:
+- Every service has a `healthcheck`
+- Use `depends_on: condition: service_healthy` (not just `depends_on`)
+- Pin image versions (`:16-alpine`, not `:latest`)
+- Use named volumes for persistence
+- Comment non-obvious config
+- Include ALL dependencies the app needs (postgres, redis, kafka, etc.)
+
+### 10.3 Makefile (common targets)
+
+```makefile
+.PHONY: dev test lint build run scan up down clean all
+
+# ── Development ──────────────────────────────────────────────────────────────
+dev:                                     # run locally without Docker
+	cd service-dir && pip install -r requirements.txt && python app.py
+
+test:                                    # run test suite
+	cd service-dir && python -m pytest -v
+
+lint:                                    # check code quality
+	cd service-dir && ruff check .
+
+# ── Docker ───────────────────────────────────────────────────────────────────
+build:                                   # build production image
+	docker build -t appname:local ./service-dir
+
+run: build                               # run containerised
+	docker run -d -p 8080:8080 --name appname appname:local
+
+scan: build                              # security scan
+	trivy image --severity HIGH,CRITICAL appname:local
+
+# ── Compose ──────────────────────────────────────────────────────────────────
+up:                                      # start full local stack
+	docker-compose up -d
+
+down:                                    # stop stack
+	docker-compose down
+
+logs:                                    # follow logs
+	docker-compose logs -f app
+
+# ── Full pipeline ────────────────────────────────────────────────────────────
+all: test lint build scan                # run everything (local CI)
+	@echo "Full local pipeline passed"
+
+clean:                                   # remove everything
+	docker-compose down -v 2>/dev/null || true
+	docker rmi appname:local 2>/dev/null || true
+```
+
+Rules:
+- `.PHONY` for all targets
+- Comment every target with `#`
+- Must include: dev, test, lint, build, run, scan, up, down, clean, all
+- `all` runs the full local pipeline (same as CI)
+
+### 10.4 Application source (app.py / server.js)
+
+Every application file must include:
+
+```text
+1. Structured JSON logging (not print/console.log)
+   {"ts": 1718000000, "service": "app-name", "level": "info", "msg": "..."}
+
+2. Prometheus metrics (or equivalent)
+   - REQUEST_COUNT (Counter with method, endpoint, status labels)
+   - REQUEST_LATENCY (Histogram with endpoint label)
+   - Business metrics (orders_created, payments_processed, etc.)
+
+3. Health endpoint
+   GET /health -> {"status": "ok", "version": "1.0.0"}
+
+4. Input validation on at least one write endpoint
+   POST /api/items with empty name -> 400 {"error": "name is required"}
+
+5. Trace context propagation (W3C traceparent header)
+   Forward or generate traceparent on every outgoing HTTP call
+
+6. Graceful error handling
+   Try/catch on external calls, structured error responses, no stack traces to clients
+```
+
+### 10.5 Test suite
+
+```python
+# Minimum 5 tests per service:
+# 1. Health check returns 200
+# 2. Create resource (happy path) returns 201
+# 3. Create resource (validation failure) returns 400
+# 4. List resources returns array
+# 5. Get non-existent resource returns 404
+# 6. Delete resource returns 200
+# 7. Business logic edge case (e.g., out of stock, payment failure)
+
+# Tests MUST:
+# - Use the framework's test client (no real HTTP, no server startup)
+# - Be fast (< 5 seconds for full suite)
+# - Be independent (no ordering dependencies)
+# - Have descriptive names (test_create_item_with_empty_name_returns_400)
+```
+
+### 10.6 Kubernetes manifests
+
+Every manifest must include:
+
+```yaml
+# deployment.yaml
+spec:
+  template:
+    spec:
+      containers:
+        - name: app
+          image: app:latest
+          ports:
+            - containerPort: 8080
+          resources:                     # ALWAYS set resource limits
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+          livenessProbe:                 # ALWAYS set probes
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 3
+          env:                           # config via env vars, not hardcoded
+            - name: NODE_ENV
+              value: production
+```
+
+Rules:
+- ALWAYS set `resources.requests` and `resources.limits`
+- ALWAYS set `livenessProbe` and `readinessProbe`
+- ALWAYS use `labels` consistently (app, version, environment)
+- NEVER hardcode secrets in YAML — use Secrets or SealedSecrets
+- Include: namespace.yaml, deployment.yaml, service.yaml, ingress.yaml, hpa.yaml
+
+### 10.7 Helm chart (if applicable)
+
+Must include:
+- `Chart.yaml` with proper metadata (apiVersion, name, description, version, appVersion)
+- `values.yaml` with sensible defaults
+- `values-development.yaml`, `values-staging.yaml`, `values-production.yaml`
+- `templates/` with: deployment, service, ingress, hpa, configmap, secret, namespace
+- `templates/_helpers.tpl` with name/label helpers
+- `templates/NOTES.txt` with post-install instructions
+- `templates/tests/` with at least one connection test
+
+### 10.8 .env.example
+
+```text
+# Application
+NODE_ENV=development
+PORT=3000
+
+# Database
+DB_HOST=localhost
+DB_USER=appuser
+DB_PASSWORD=change-me-in-production
+DB_NAME=appdb
+
+# External services
+REDIS_URL=redis://localhost:6379
+```
+
+Rules:
+- NEVER use real passwords (use `change-me-in-production` or `<your-api-key>`)
+- Comment each section
+- Include ALL env vars the app reads
+
+### 10.9 .gitignore
+
+```text
+# Dependencies
+node_modules/
+__pycache__/
+*.pyc
+venv/
+.venv/
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Build artifacts
+dist/
+build/
+*.egg-info/
+
+# Infrastructure state (never commit)
+*.tfstate
+*.tfstate.backup
+.terraform/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+```
+
+### 10.10 CI pipeline configs
+
+Every CI config (GH Actions, GitLab CI, Jenkinsfile, Tekton) must include these stages:
+
+```text
+1. test     - run the test suite, fail if any test fails
+2. lint     - run the linter, fail if any violation
+3. build    - build the Docker image
+4. scan     - security scan (Trivy or equivalent)
+5. deploy   - (optional) deploy to staging/production
+```
+
+Rules:
+- Pin action/image versions (never `:latest` or `@main`)
+- Use caching for dependencies
+- Chain stages with dependencies (build only after test passes)
+- Store secrets properly (never hardcoded in config)
+- Include a comment header explaining what the pipeline does
+
+---
+
+## 11. Reference implementation
 
 **Project 1: Container Lifecycle (Cutlink)** is the gold standard.
 
