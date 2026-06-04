@@ -52,6 +52,7 @@
 
 | 2026-06-04 00:00 | Labs UI — full implementation | Done | Nav tabs (Courses/Labs), labs listing with tier filter, lab detail with stage navigator, exercise checklists, localStorage progress, prev/next nav. 2 lab JSON files. SW cache bump v4. Cache bust v=8. | docs/js/app.js:952-1180, docs/index.html:77-130, docs/css/style.css:1327-1575, docs/data/labs/*.json, docs/sw.js:1 |
 | 2026-06-04 19:30 | Labs sidebar — exercises, source code link, cleanup | Done | Sidebar shows exercise .md links + download link per project (appDir via download-directory.github.io). Removed inline config file links. Cutlink app (32 files) + FinStack (26 files) surfaced via appDir. SW v5 + network-first for lab JSON. Fixed download link intercepted by file-link handler (class rename lab-file-link→lab-download-link). | docs/js/app.js:1250-1360, docs/data/labs/*.json, docs/sw.js:1,49-53 |
+| 2026-06-04 20:30 | Project 3 — Full Observability Stack | Done | ObservaShop: 4 Flask microservices (gateway, order-svc, payment-svc, inventory-svc) with Prometheus instrumentation. docker-compose with full o11y stack. 7 stage READMEs (Prometheus→Loki→Tempo→Grafana→Alertmanager→OTel→Mimir). 15 exercises. Alert rules, Grafana dashboard JSON, OTel Collector config, Helm chart. 40 files. Lab JSON + app.js LAB_INDEX updated. | projects/03-observability-stack/, docs/data/labs/observability-stack.json, docs/js/app.js:1003 |
 
 ## Next Session Resume Vector
 
@@ -59,11 +60,12 @@
 - Wave 3 CLI Playground — ALL 5 TIERS COMPLETE:
   - 43 tools, ~2525 commands, 86 scenarios, 44 JSON files
   - app.js cliMap: 47 entries (43 tools + 4 aliases)
-- Wave 3 Hands-on Projects — 2/15 DONE:
+- Wave 3 Hands-on Projects — 3/15 DONE:
   - P1: Container Lifecycle (Cutlink) — projects/01-container-lifecycle/ — DONE
   - P2: IaC Pipeline (FinStack) — projects/02-iac-pipeline/ — DONE (73 files)
-  - P3-P15: PLANNED in TODO.txt, build order Phase 1→4
-  - Next: P3 Observability Stack or P8 Incident Response Lab
+  - P3: Full Observability Stack (ObservaShop) — projects/03-observability-stack/ — DONE (40 files)
+  - P4-P15: PLANNED in TODO.txt, build order Phase 1→4
+  - Next: P4 GitOps Multi-Environment or P5 CI/CD Shootout
 - **Labs UI: DONE** — routes #/labs, #/labs/{id}, #/labs/{id}/{stage}
   - docs/data/labs/container-lifecycle.json + iac-pipeline.json
   - Nav tabs, tier filter, stage progress bar, exercise checkboxes, course reference links
