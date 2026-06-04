@@ -1255,22 +1255,16 @@ function renderLabSidebar(lab, stage, stageIdx) {
     html += '</div>';
   }
 
-  // App source code (top-level appFiles)
-  if (lab.appFiles && lab.appFiles.length > 0) {
+  // App source code — single link to GitHub directory
+  if (lab.appDir) {
+    const ghUrl = `https://github.com/supersaiyane/crashcourse/tree/main/${lab.appDir}`;
     html += `<div class="lab-sidebar-section">
-      <div class="lab-sidebar-title">${esc(lab.app)} Source Code</div>`;
-    lab.appFiles.slice(0, 8).forEach(f => {
-      html += `<a class="lab-sidebar-link lab-file-link" data-file="${esc(f.path)}" title="${esc(f.path)}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg> ${esc(f.label)}</a>`;
-    });
-    if (lab.appFiles.length > 8) {
-      html += `<a class="lab-sidebar-link" data-toggle-app-files style="font-size:0.75rem;color:var(--text-2);cursor:pointer;">+ ${lab.appFiles.length - 8} more files</a>`;
-      html += `<div class="lab-app-files-extra" style="display:none;">`;
-      lab.appFiles.slice(8).forEach(f => {
-        html += `<a class="lab-sidebar-link lab-file-link" data-file="${esc(f.path)}" title="${esc(f.path)}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg> ${esc(f.label)}</a>`;
-      });
-      html += '</div>';
-    }
-    html += '</div>';
+      <div class="lab-sidebar-title">${esc(lab.app)} Source Code</div>
+      <a class="lab-sidebar-link lab-file-link" href="${ghUrl}" target="_blank" rel="noopener noreferrer" style="font-weight:500;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Browse ${esc(lab.app)} on GitHub
+      </a>
+    </div>`;
   }
 
   // Exercise checklist
@@ -1350,21 +1344,6 @@ function renderLabSidebar(lab, stage, stageIdx) {
       }
     });
   });
-
-  // Wire "show more" toggle for app files
-  const toggleLink = sidebar.querySelector('[data-toggle-app-files]');
-  if (toggleLink) {
-    toggleLink.addEventListener('click', () => {
-      const extra = sidebar.querySelector('.lab-app-files-extra');
-      if (extra) {
-        const showing = extra.style.display !== 'none';
-        extra.style.display = showing ? 'none' : 'block';
-        toggleLink.textContent = showing
-          ? `+ ${lab.appFiles.length - 8} more files`
-          : '- Show fewer';
-      }
-    });
-  }
 
   // Store restore function for "Back to README" button
   window.labRestoreStageReadme = () => renderLabDetail(lab.id, stage.id);
