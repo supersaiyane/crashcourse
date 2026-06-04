@@ -45,3 +45,5 @@ app.post('/api/webhooks/payment', (req, res) => {
 });
 
 app.listen(PORT, () => console.log(JSON.stringify({ level: 'info', msg: `BillFlow started on :${PORT}`, env: ENV })));
+
+module.exports = app;

@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pipelineapi
+  labels:
+    app: pipelineapi
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: pipelineapi
+  template:
+    metadata:
+      labels:
+        app: pipelineapi
+    spec:
+      containers:
+        - name: api
+          image: pipelineapi:latest
+          ports:
+            - containerPort: 5000
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 5000
+            initialDelaySeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 5000
+            initialDelaySeconds: 3

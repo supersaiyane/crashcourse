@@ -1,0 +1,33 @@
+version: "3.9"
+
+services:
+  billflow:
+    build: ./billing-service
+    ports: ["3000:3000"]
+    environment:
+      NODE_ENV: development
+      DB_HOST: postgres
+      DB_USER: billflow
+      DB_PASSWORD: localdev
+      DB_NAME: billflow
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:16-alpine
+    ports: ["5432:5432"]
+    environment:
+      POSTGRES_USER: billflow
+      POSTGRES_PASSWORD: localdev
+      POSTGRES_DB: billflow
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U billflow"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+volumes:
+  pgdata:

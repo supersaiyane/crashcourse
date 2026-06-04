@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: billflow-config
+  namespace: billflow
+data:
+  LOG_LEVEL: "debug"
+  RATE_LIMIT: "100"
+  SESSION_TIMEOUT: "3600"
+  CURRENCY: "USD"

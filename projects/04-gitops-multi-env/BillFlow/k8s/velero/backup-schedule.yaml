@@ -1,0 +1,14 @@
+apiVersion: velero.io/v1
+kind: Schedule
+metadata:
+  name: billflow-daily-backup
+  namespace: velero
+spec:
+  schedule: "0 2 * * *"
+  template:
+    includedNamespaces:
+      - billflow-production
+    ttl: 168h0m0s
+    storageLocation: default
+    volumeSnapshotLocations:
+      - default

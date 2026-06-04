@@ -1,0 +1,23 @@
+apiVersion: triggers.tekton.dev/v1beta1
+kind: TriggerTemplate
+metadata:
+  name: pipelineapi-template
+spec:
+  params:
+    - name: git-revision
+    - name: git-repo-url
+  resourcetemplates:
+    - apiVersion: tekton.dev/v1
+      kind: PipelineRun
+      metadata:
+        generateName: pipelineapi-ci-
+      spec:
+        pipelineRef:
+          name: pipelineapi-ci
+        params:
+          - name: image-tag
+            value: $(tt.params.git-revision)
+        workspaces:
+          - name: source
+            persistentVolumeClaim:
+              claimName: pipelineapi-source
