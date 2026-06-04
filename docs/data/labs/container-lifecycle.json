@@ -6,6 +6,40 @@
   "tier": "Foundation",
   "duration": "6-8 weeks",
   "tools": ["Linux", "Docker", "Kubernetes", "Helm", "ArgoCD", "Prometheus", "Grafana"],
+  "appFiles": [
+    { "path": "projects/01-container-lifecycle/Cutlink/backend/app.py", "label": "backend/app.py — Flask API" },
+    { "path": "projects/01-container-lifecycle/Cutlink/backend/Dockerfile", "label": "backend/Dockerfile" },
+    { "path": "projects/01-container-lifecycle/Cutlink/backend/requirements.txt", "label": "backend/requirements.txt" },
+    { "path": "projects/01-container-lifecycle/Cutlink/frontend/index.html", "label": "frontend/index.html" },
+    { "path": "projects/01-container-lifecycle/Cutlink/frontend/app.js", "label": "frontend/app.js" },
+    { "path": "projects/01-container-lifecycle/Cutlink/frontend/style.css", "label": "frontend/style.css" },
+    { "path": "projects/01-container-lifecycle/Cutlink/frontend/Dockerfile", "label": "frontend/Dockerfile" },
+    { "path": "projects/01-container-lifecycle/Cutlink/frontend/nginx.conf", "label": "frontend/nginx.conf" },
+    { "path": "projects/01-container-lifecycle/Cutlink/docker-compose.yml", "label": "docker-compose.yml" },
+    { "path": "projects/01-container-lifecycle/Cutlink/tests/test_app.py", "label": "tests/test_app.py" },
+    { "path": "projects/01-container-lifecycle/Cutlink/helm/cutlink/Chart.yaml", "label": "helm/Chart.yaml" },
+    { "path": "projects/01-container-lifecycle/Cutlink/helm/cutlink/values.yaml", "label": "helm/values.yaml" },
+    { "path": "projects/01-container-lifecycle/Cutlink/helm/cutlink/values-development.yaml", "label": "helm/values-development.yaml" },
+    { "path": "projects/01-container-lifecycle/Cutlink/helm/cutlink/values-staging.yaml", "label": "helm/values-staging.yaml" },
+    { "path": "projects/01-container-lifecycle/Cutlink/helm/cutlink/values-production.yaml", "label": "helm/values-production.yaml" },
+    { "path": "projects/01-container-lifecycle/Cutlink/helm/cutlink/templates/namespace.yaml", "label": "helm/templates/namespace.yaml" },
+    { "path": "projects/01-container-lifecycle/Cutlink/helm/cutlink/templates/deployment-backend.yaml", "label": "helm/templates/deployment-backend.yaml" },
+    { "path": "projects/01-container-lifecycle/Cutlink/helm/cutlink/templates/deployment-frontend.yaml", "label": "helm/templates/deployment-frontend.yaml" },
+    { "path": "projects/01-container-lifecycle/Cutlink/helm/cutlink/templates/service-backend.yaml", "label": "helm/templates/service-backend.yaml" },
+    { "path": "projects/01-container-lifecycle/Cutlink/helm/cutlink/templates/service-frontend.yaml", "label": "helm/templates/service-frontend.yaml" },
+    { "path": "projects/01-container-lifecycle/Cutlink/helm/cutlink/templates/ingress.yaml", "label": "helm/templates/ingress.yaml" },
+    { "path": "projects/01-container-lifecycle/Cutlink/helm/cutlink/templates/hpa-backend.yaml", "label": "helm/templates/hpa-backend.yaml" },
+    { "path": "projects/01-container-lifecycle/Cutlink/helm/cutlink/templates/secret.yaml", "label": "helm/templates/secret.yaml" },
+    { "path": "projects/01-container-lifecycle/Cutlink/helm/cutlink/templates/configmap-backend.yaml", "label": "helm/templates/configmap-backend.yaml" },
+    { "path": "projects/01-container-lifecycle/Cutlink/helm/cutlink/templates/configmap-postgres-init.yaml", "label": "helm/templates/configmap-postgres-init.yaml" },
+    { "path": "projects/01-container-lifecycle/Cutlink/helm/cutlink/templates/_helpers.tpl", "label": "helm/templates/_helpers.tpl" },
+    { "path": "projects/01-container-lifecycle/Cutlink/helm/cutlink/templates/NOTES.txt", "label": "helm/templates/NOTES.txt" },
+    { "path": "projects/01-container-lifecycle/Cutlink/helm/cutlink/templates/hooks/pre-install-job.yaml", "label": "helm/hooks/pre-install-job.yaml" },
+    { "path": "projects/01-container-lifecycle/Cutlink/helm/cutlink/templates/hooks/pre-upgrade-job.yaml", "label": "helm/hooks/pre-upgrade-job.yaml" },
+    { "path": "projects/01-container-lifecycle/Cutlink/helm/cutlink/templates/hooks/post-upgrade-job.yaml", "label": "helm/hooks/post-upgrade-job.yaml" },
+    { "path": "projects/01-container-lifecycle/Cutlink/helm/cutlink/templates/tests/test-backend-connection.yaml", "label": "helm/tests/test-backend-connection.yaml" },
+    { "path": "projects/01-container-lifecycle/Cutlink/helm/cutlink/ci/values.yaml", "label": "helm/ci/values.yaml" }
+  ],
   "stages": [
     {
       "id": "01-linux-foundations",
@@ -31,7 +65,10 @@
         { "path": "projects/01-container-lifecycle/stages/02-docker/exercises/01-run-first-container.md", "label": "Exercise 1 — Run First Container" },
         { "path": "projects/01-container-lifecycle/stages/02-docker/exercises/02-build-run-cutlink.md", "label": "Exercise 2 — Build & Run Cutlink" },
         { "path": "projects/01-container-lifecycle/stages/02-docker/exercises/03-multi-service-compose.md", "label": "Exercise 3 — Multi-Service Compose" },
-        { "path": "projects/01-container-lifecycle/stages/02-docker/exercises/04-layers-optimization.md", "label": "Exercise 4 — Layers & Optimization" }
+        { "path": "projects/01-container-lifecycle/stages/02-docker/exercises/04-layers-optimization.md", "label": "Exercise 4 — Layers & Optimization" },
+        { "path": "projects/01-container-lifecycle/Cutlink/backend/Dockerfile", "label": "Cutlink/backend/Dockerfile" },
+        { "path": "projects/01-container-lifecycle/Cutlink/frontend/Dockerfile", "label": "Cutlink/frontend/Dockerfile" },
+        { "path": "projects/01-container-lifecycle/Cutlink/docker-compose.yml", "label": "Cutlink/docker-compose.yml" }
       ]
     },
     {
@@ -66,7 +103,10 @@
         { "path": "projects/01-container-lifecycle/stages/04-helm/exercises/01-create-inspect-chart.md", "label": "Exercise 1 — Create & Inspect Chart" },
         { "path": "projects/01-container-lifecycle/stages/04-helm/exercises/02-multi-environment-values.md", "label": "Exercise 2 — Multi-Environment Values" },
         { "path": "projects/01-container-lifecycle/stages/04-helm/exercises/03-app-of-charts-dependencies.md", "label": "Exercise 3 — App of Charts" },
-        { "path": "projects/01-container-lifecycle/stages/04-helm/exercises/04-hooks-testing.md", "label": "Exercise 4 — Hooks & Testing" }
+        { "path": "projects/01-container-lifecycle/stages/04-helm/exercises/04-hooks-testing.md", "label": "Exercise 4 — Hooks & Testing" },
+        { "path": "projects/01-container-lifecycle/Cutlink/helm/cutlink/Chart.yaml", "label": "Cutlink/helm/Chart.yaml" },
+        { "path": "projects/01-container-lifecycle/Cutlink/helm/cutlink/values.yaml", "label": "Cutlink/helm/values.yaml" },
+        { "path": "projects/01-container-lifecycle/Cutlink/helm/cutlink/values-production.yaml", "label": "Cutlink/helm/values-production.yaml" }
       ]
     },
     {
