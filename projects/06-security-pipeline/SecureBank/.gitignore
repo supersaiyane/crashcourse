@@ -1,0 +1,19 @@
+# Go
+securebank
+*.exe
+vendor/
+
+# Terraform
+*.tfstate
+*.tfstate.backup
+.terraform/
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# IDE
+.idea/
+.vscode/
+.DS_Store

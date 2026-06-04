@@ -1,0 +1,54 @@
+# Custom Falco rules for SecureBank transaction API
+# Detects suspicious runtime behaviour in production
+
+- rule: Unexpected outbound connection from transaction-api
+  desc: The transaction API should only connect to the database and internal services
+  condition: >
+    evt.type = connect and
+    container.name = "securebank" and
+    not fd.sip in ("10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16")
+  output: >
+    Unexpected outbound connection from SecureBank
+    (command=%proc.cmdline connection=%fd.name container=%container.name)
+  priority: WARNING
+  tags: [securebank, network]
+
+- rule: Shell spawned in transaction-api container
+  desc: No shell should ever run inside the production API container
+  condition: >
+    spawned_process and
+    container.name = "securebank" and
+    proc.name in (bash, sh, dash, zsh)
+  output: >
+    Shell spawned in SecureBank container
+    (user=%user.name command=%proc.cmdline container=%container.name)
+  priority: CRITICAL
+  tags: [securebank, process]
+
+- rule: Sensitive file access in transaction-api
+  desc: The API should not read /etc/shadow, /etc/passwd, or private keys
+  condition: >
+    open_read and
+    container.name = "securebank" and
+    (fd.name startswith /etc/shadow or
+     fd.name startswith /etc/passwd or
+     fd.name contains "private" or
+     fd.name contains ".pem" or
+     fd.name contains ".key")
+  output: >
+    Sensitive file accessed in SecureBank
+    (file=%fd.name command=%proc.cmdline container=%container.name)
+  priority: CRITICAL
+  tags: [securebank, filesystem]
+
+- rule: Database credentials read from environment
+  desc: Audit trail for credential access
+  condition: >
+    open_read and
+    container.name = "securebank" and
+    fd.name = "/proc/self/environ"
+  output: >
+    Environment variables read in SecureBank (may contain DB credentials)
+    (command=%proc.cmdline container=%container.name)
+  priority: NOTICE
+  tags: [securebank, credential]

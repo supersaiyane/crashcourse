@@ -1,0 +1,22 @@
+version: "3.9"
+
+services:
+  transaction-api:
+    build: ./transaction-api
+    ports: ["8080:8080"]
+    environment:
+      PORT: "8080"
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+  # Trivy for local scanning
+  trivy:
+    image: aquasec/trivy:latest
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./:/src
+    entrypoint: ["sleep", "infinity"]
+    profiles: ["tools"]

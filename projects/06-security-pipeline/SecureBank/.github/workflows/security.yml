@@ -1,0 +1,67 @@
+name: SecureBank Security Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
+      - run: cd transaction-api && go test -v ./...
+      - run: cd transaction-api && go vet ./...
+
+  image-scan:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -t securebank:ci ./transaction-api
+      - uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: securebank:ci
+          severity: HIGH,CRITICAL
+          exit-code: 1
+
+  iac-scan:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: config
+          scan-ref: ./terraform
+          severity: HIGH,CRITICAL
+
+  sbom:
+    needs: image-scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -t securebank:ci ./transaction-api
+      - uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: securebank:ci
+          format: cyclonedx
+          output: sbom.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sbom
+          path: sbom.json
+
+  sign:
+    needs: [image-scan, iac-scan]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+      - run: echo "Image signing with cosign would happen here"
+      # In production:
+      # cosign sign --key cosign.key securebank:${{ github.sha }}

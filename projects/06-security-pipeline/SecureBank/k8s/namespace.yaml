@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: securebank
+  labels:
+    app.kubernetes.io/name: securebank
+    pod-security.kubernetes.io/enforce: restricted

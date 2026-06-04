@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: transaction-api
+  namespace: securebank
+  labels:
+    app.kubernetes.io/name: securebank
+    app.kubernetes.io/component: api
+    environment: production
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: securebank
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: securebank
+        app.kubernetes.io/component: api
+        environment: production
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+        fsGroup: 65534
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: api
+          image: securebank:v1.0.0
+          ports:
+            - containerPort: 8080
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            requests:
+              cpu: 100m
+              memory: 64Mi
+            limits:
+              cpu: 500m
+              memory: 128Mi
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 3
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 2
+          env:
+            - name: PORT
+              value: "8080"
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: securebank-db
+                  key: password
