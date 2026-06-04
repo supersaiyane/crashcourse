@@ -1241,10 +1241,10 @@ function renderLabSidebar(lab, stage, stageIdx) {
 
   let html = '';
 
-  // Files touched this stage
+  // Exercise files
   if (stage.files && stage.files.length > 0) {
     html += `<div class="lab-sidebar-section">
-      <div class="lab-sidebar-title">Files this stage</div>`;
+      <div class="lab-sidebar-title">Exercises</div>`;
     stage.files.forEach(f => {
       const isMd = f.path.endsWith('.md');
       const icon = isMd
@@ -1267,11 +1267,11 @@ function renderLabSidebar(lab, stage, stageIdx) {
     </div>`;
   }
 
-  // Exercise checklist
+  // Exercise progress checklist
   if (stage.exercises > 0) {
     const exerciseState = getExerciseState(lab.id, stage.id, stage.exercises);
     html += `<div class="lab-sidebar-section">
-      <div class="lab-sidebar-title">Exercises</div>`;
+      <div class="lab-sidebar-title">Progress</div>`;
     for (let i = 0; i < stage.exercises; i++) {
       html += `<div class="lab-exercise-item">
         <input type="checkbox" data-lab="${esc(lab.id)}" data-stage="${esc(stage.id)}" data-idx="${i}" ${exerciseState[i] ? 'checked' : ''} />

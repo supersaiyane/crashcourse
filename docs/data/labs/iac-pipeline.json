@@ -18,11 +18,7 @@
       "files": [
         { "path": "projects/02-iac-pipeline/stages/01-terraform-basics/exercises/01-first-apply.md", "label": "Exercise 1 — First Apply" },
         { "path": "projects/02-iac-pipeline/stages/01-terraform-basics/exercises/02-modules.md", "label": "Exercise 2 — Modules" },
-        { "path": "projects/02-iac-pipeline/stages/01-terraform-basics/exercises/03-state-management.md", "label": "Exercise 3 — State Management" },
-        { "path": "projects/02-iac-pipeline/finstack/terraform/main.tf", "label": "finstack/terraform/main.tf" },
-        { "path": "projects/02-iac-pipeline/finstack/terraform/variables.tf", "label": "finstack/terraform/variables.tf" },
-        { "path": "projects/02-iac-pipeline/finstack/terraform/outputs.tf", "label": "finstack/terraform/outputs.tf" },
-        { "path": "projects/02-iac-pipeline/finstack/terraform/providers.tf", "label": "finstack/terraform/providers.tf" }
+        { "path": "projects/02-iac-pipeline/stages/01-terraform-basics/exercises/03-state-management.md", "label": "Exercise 3 — State Management" }
       ]
     },
     {
@@ -35,11 +31,7 @@
       "files": [
         { "path": "projects/02-iac-pipeline/stages/02-terragrunt/exercises/01-dry-config.md", "label": "Exercise 1 — DRY Config" },
         { "path": "projects/02-iac-pipeline/stages/02-terragrunt/exercises/02-multi-env.md", "label": "Exercise 2 — Multi-Environment" },
-        { "path": "projects/02-iac-pipeline/stages/02-terragrunt/exercises/03-dependencies.md", "label": "Exercise 3 — Dependencies" },
-        { "path": "projects/02-iac-pipeline/finstack/terragrunt/terragrunt.hcl", "label": "finstack/terragrunt/terragrunt.hcl" },
-        { "path": "projects/02-iac-pipeline/finstack/terragrunt/environments/dev/terragrunt.hcl", "label": "finstack/terragrunt/envs/dev" },
-        { "path": "projects/02-iac-pipeline/finstack/terragrunt/environments/staging/terragrunt.hcl", "label": "finstack/terragrunt/envs/staging" },
-        { "path": "projects/02-iac-pipeline/finstack/terragrunt/environments/prod/terragrunt.hcl", "label": "finstack/terragrunt/envs/prod" }
+        { "path": "projects/02-iac-pipeline/stages/02-terragrunt/exercises/03-dependencies.md", "label": "Exercise 3 — Dependencies" }
       ]
     },
     {
@@ -76,10 +68,7 @@
       "duration": "1 week",
       "files": [
         { "path": "projects/02-iac-pipeline/stages/05-opa-policy/exercises/01-first-policy.md", "label": "Exercise 1 — First Policy" },
-        { "path": "projects/02-iac-pipeline/stages/05-opa-policy/exercises/02-terraform-policies.md", "label": "Exercise 2 — Terraform Policies" },
-        { "path": "projects/02-iac-pipeline/finstack/policies/require_tags.rego", "label": "finstack/policies/require_tags.rego" },
-        { "path": "projects/02-iac-pipeline/finstack/policies/restrict_instance_types.rego", "label": "finstack/policies/restrict_instance_types.rego" },
-        { "path": "projects/02-iac-pipeline/finstack/policies/no_public_s3.rego", "label": "finstack/policies/no_public_s3.rego" }
+        { "path": "projects/02-iac-pipeline/stages/05-opa-policy/exercises/02-terraform-policies.md", "label": "Exercise 2 — Terraform Policies" }
       ]
     },
     {
@@ -91,10 +80,7 @@
       "duration": "1 week",
       "files": [
         { "path": "projects/02-iac-pipeline/stages/06-ansible-config/exercises/01-bootstrap-playbook.md", "label": "Exercise 1 — Bootstrap Playbook" },
-        { "path": "projects/02-iac-pipeline/stages/06-ansible-config/exercises/02-roles.md", "label": "Exercise 2 — Roles" },
-        { "path": "projects/02-iac-pipeline/finstack/ansible/playbooks/bootstrap.yml", "label": "finstack/ansible/playbooks/bootstrap.yml" },
-        { "path": "projects/02-iac-pipeline/finstack/ansible/inventory/hosts.ini", "label": "finstack/ansible/inventory/hosts.ini" },
-        { "path": "projects/02-iac-pipeline/finstack/ansible/roles/monitoring-agent/tasks/main.yml", "label": "finstack/ansible/roles/monitoring-agent/tasks" }
+        { "path": "projects/02-iac-pipeline/stages/06-ansible-config/exercises/02-roles.md", "label": "Exercise 2 — Roles" }
       ]
     },
     {
