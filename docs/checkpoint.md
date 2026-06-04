@@ -54,6 +54,7 @@
 | 2026-06-04 19:30 | Labs sidebar — exercises, source code link, cleanup | Done | Sidebar shows exercise .md links + download link per project (appDir via download-directory.github.io). Removed inline config file links. Cutlink app (32 files) + FinStack (26 files) surfaced via appDir. SW v5 + network-first for lab JSON. Fixed download link intercepted by file-link handler (class rename lab-file-link→lab-download-link). | docs/js/app.js:1250-1360, docs/data/labs/*.json, docs/sw.js:1,49-53 |
 | 2026-06-04 20:30 | Project 3 — Full Observability Stack | Done | ObservaShop: 4 Flask microservices, full o11y stack, 7 stages, 15 exercises, 40 files. | projects/03-observability-stack/, docs/data/labs/observability-stack.json |
 | 2026-06-04 21:30 | Projects 4+5 — GitOps + CI/CD Shootout | Done | P4 BillFlow (Node.js billing, Kustomize 3-env overlays, Flux GitOps, 7 stages, 14 exercises, 34 files). P5 PipelineAPI (Flask API, 4 CI systems, comparison, 6 stages, 11 exercises, 28 files). 5/15 projects done. | projects/04-gitops-multi-env/, projects/05-cicd-shootout/, docs/data/labs/*.json, docs/js/app.js:1003 |
+| 2026-06-04 23:00 | P4+P5 quality uplift + PROJECT-GUIDE.md | Done | Rewrote all P4 stage READMEs (61->280 avg lines) and P5 stage READMEs (58->227 avg lines). Enriched P4 BillFlow (12->23 files: docker-compose, Makefile, ingress, HPA, configmap, cert-manager, velero, tests) and P5 PipelineAPI (10->20 files: docker-compose, Makefile, trivy config, Tekton triggers, K8s manifests). Created PROJECT-GUIDE.md (824 lines) — authoring guide with file quality standards for all file types. | projects/PROJECT-GUIDE.md, projects/04-gitops-multi-env/, projects/05-cicd-shootout/ |
 
 ## Next Session Resume Vector
 
@@ -74,7 +75,8 @@
   - Nav tabs, tier filter, stage progress bar, exercise checkboxes, course reference links
   - localStorage key: cc-labs-progress
   - LAB_INDEX array in app.js — add new lab IDs here when P3+ built
-- Sidebar: exercises (clickable .md links) + "Browse on GitHub" link (appDir) + progress checkboxes + course reference + mark complete
+- Sidebar: exercises (clickable .md links) + download link (appDir) + progress checkboxes + course reference + mark complete
+- **PROJECT-GUIDE.md** (824 lines) — authoring guide for all future projects. Covers directory structure, app quality bar, stage README arc (400-900 lines), exercise format, file quality standards (Dockerfile, docker-compose, Makefile, app source, tests, K8s, Helm, CI configs)
 - Cache bust: cli-engine.js?v=2, app.js?v=8, style.css?v=8, SW v5 (network-first for lab JSON)
 - Mermaid syntax errors on some courses — needs investigation (mermaid 11.15.0 compat)
 - Repo: PUBLIC
