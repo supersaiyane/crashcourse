@@ -54,7 +54,8 @@
 | 2026-06-04 19:30 | Labs sidebar — exercises, source code link, cleanup | Done | Sidebar shows exercise .md links + download link per project (appDir via download-directory.github.io). Removed inline config file links. Cutlink app (32 files) + FinStack (26 files) surfaced via appDir. SW v5 + network-first for lab JSON. Fixed download link intercepted by file-link handler (class rename lab-file-link→lab-download-link). | docs/js/app.js:1250-1360, docs/data/labs/*.json, docs/sw.js:1,49-53 |
 | 2026-06-04 20:30 | Project 3 — Full Observability Stack | Done | ObservaShop: 4 Flask microservices, full o11y stack, 7 stages, 15 exercises, 40 files. | projects/03-observability-stack/, docs/data/labs/observability-stack.json |
 | 2026-06-04 21:30 | Projects 4+5 — GitOps + CI/CD Shootout | Done | P4 BillFlow (Node.js billing, Kustomize 3-env overlays, Flux GitOps, 7 stages, 14 exercises, 34 files). P5 PipelineAPI (Flask API, 4 CI systems, comparison, 6 stages, 11 exercises, 28 files). 5/15 projects done. | projects/04-gitops-multi-env/, projects/05-cicd-shootout/, docs/data/labs/*.json, docs/js/app.js:1003 |
-| 2026-06-04 23:00 | P4+P5 quality uplift + PROJECT-GUIDE.md | Done | Rewrote all P4 stage READMEs (61->280 avg lines) and P5 stage READMEs (58->227 avg lines). Enriched P4 BillFlow (12->23 files: docker-compose, Makefile, ingress, HPA, configmap, cert-manager, velero, tests) and P5 PipelineAPI (10->20 files: docker-compose, Makefile, trivy config, Tekton triggers, K8s manifests). Created PROJECT-GUIDE.md (824 lines) — authoring guide with file quality standards for all file types. | projects/PROJECT-GUIDE.md, projects/04-gitops-multi-env/, projects/05-cicd-shootout/ |
+| 2026-06-04 23:00 | P4+P5 quality uplift + PROJECT-GUIDE.md | Done | Rewrote P4 (61->280 avg) and P5 (58->227 avg) stage READMEs. Enriched apps (P4:12->23, P5:10->20). PROJECT-GUIDE.md (824 lines). | projects/PROJECT-GUIDE.md, projects/04-gitops-multi-env/, projects/05-cicd-shootout/ |
+| 2026-06-05 01:00 | Project 6 — Security Pipeline (SecureBank) | Done | Go banking transaction API with shift-left security: Trivy, Checkov, OPA Gatekeeper, Cosign/Sigstore, Falco, Vault, GH Actions pipeline. 50 files, 25 app files, 7 stages (1419 lines), 17 exercises. Terraform with intentional misconfigs. OPA policies (4), Falco rules (4), K8s NetworkPolicy+SecurityContext. Lab JSON + app.js updated. 6/15 projects done. | projects/06-security-pipeline/, docs/data/labs/security-pipeline.json, docs/js/app.js:1003 |
 
 ## Next Session Resume Vector
 
@@ -62,14 +63,15 @@
 - Wave 3 CLI Playground — ALL 5 TIERS COMPLETE:
   - 43 tools, ~2525 commands, 86 scenarios, 44 JSON files
   - app.js cliMap: 47 entries (43 tools + 4 aliases)
-- Wave 3 Hands-on Projects — 5/15 DONE:
+- Wave 3 Hands-on Projects — 6/15 DONE:
   - P1: Container Lifecycle (Cutlink) — projects/01-container-lifecycle/ — DONE
   - P2: IaC Pipeline (FinStack) — projects/02-iac-pipeline/ — DONE (73 files)
   - P3: Full Observability Stack (ObservaShop) — projects/03-observability-stack/ — DONE (40 files)
   - P4: GitOps Multi-Environment (BillFlow) — projects/04-gitops-multi-env/ — DONE (34 files)
   - P5: CI/CD Shootout (PipelineAPI) — projects/05-cicd-shootout/ — DONE (28 files)
-  - P6-P15: PLANNED in TODO.txt, build order Phase 2→4
-  - Next: P6 or continue from TODO.txt Phase 2
+  - P6: Security Pipeline (SecureBank) — projects/06-security-pipeline/ — DONE (50 files)
+  - P7-P15: PLANNED in TODO.txt, build order Phase 2→4
+  - Next: P7 Cloud-Native Multi-Cloud or continue from TODO.txt
 - **Labs UI: DONE** — routes #/labs, #/labs/{id}, #/labs/{id}/{stage}
   - docs/data/labs/container-lifecycle.json + iac-pipeline.json
   - Nav tabs, tier filter, stage progress bar, exercise checkboxes, course reference links
