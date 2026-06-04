@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FinStack — Payment Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <div class="logo">FinStack<span class="dot">.</span></div>
+    <div class="env-badge" id="env-badge">development</div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <h1>Payment Dashboard</h1>
+      <p>FinStack processes payment transactions, manages account balances, and stores statements in S3. This is the sample app for the <strong>IaC Pipeline</strong> project — the infrastructure behind it is built with Terraform, Vault, Ansible, and OPA.</p>
+    </section>
+
+    <section class="cards">
+      <div class="card" id="health-card">
+        <div class="card-icon">&#9829;</div>
+        <div class="card-title">API Health</div>
+        <div class="card-value" id="health-status">checking...</div>
+      </div>
+      <div class="card" id="balance-card">
+        <div class="card-icon">&#8377;</div>
+        <div class="card-title">Account Balance</div>
+        <div class="card-value" id="balance-value">--</div>
+      </div>
+      <div class="card" id="statements-card">
+        <div class="card-icon">&#128196;</div>
+        <div class="card-title">Statements</div>
+        <div class="card-value" id="statements-count">--</div>
+      </div>
+    </section>
+
+    <section class="payment-form">
+      <h2>Send Payment</h2>
+      <form id="payment-form">
+        <div class="form-row">
+          <input type="text" id="pay-from" placeholder="From account (e.g. ACC-001)" required>
+          <input type="text" id="pay-to" placeholder="To account (e.g. ACC-002)" required>
+        </div>
+        <div class="form-row">
+          <input type="number" id="pay-amount" placeholder="Amount (INR)" min="1" step="0.01" required>
+          <button type="submit" id="pay-btn">Send Payment</button>
+        </div>
+      </form>
+      <div id="payment-result" class="result hidden"></div>
+    </section>
+
+    <section class="infra-info">
+      <h2>Infrastructure Stack</h2>
+      <div class="infra-grid">
+        <div class="infra-item"><strong>Terraform</strong><br>VPC, EKS, RDS, S3, IAM, Security Groups — 6 modules</div>
+        <div class="infra-item"><strong>Terragrunt</strong><br>DRY config for dev, staging, production environments</div>
+        <div class="infra-item"><strong>Packer</strong><br>Hardened golden AMIs for EC2 instances</div>
+        <div class="infra-item"><strong>Vault</strong><br>Dynamic database credentials, AppRole auth, SSH certs</div>
+        <div class="infra-item"><strong>OPA</strong><br>Policy-as-code: require tags, restrict instance types, no public S3</div>
+        <div class="infra-item"><strong>Ansible</strong><br>Post-provision config: monitoring agents, bootstrap playbooks</div>
+        <div class="infra-item"><strong>GitHub Actions</strong><br>Terraform plan on PR, apply on merge, OIDC authentication</div>
+      </div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

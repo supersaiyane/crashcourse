@@ -9,6 +9,15 @@
 
 services:
   # ---------------------------------------------------------------------------
+  # Frontend — Payment Dashboard (nginx serving static HTML + API proxy)
+  # ---------------------------------------------------------------------------
+  frontend:
+    build: ./frontend
+    ports: ["3000:80"]
+    depends_on:
+      - payment-api
+
+  # ---------------------------------------------------------------------------
   # LocalStack — emulates AWS services (S3, IAM, STS, EC2, EKS, RDS, etc.)
   # Free tier covers everything FinStack needs.
   # ---------------------------------------------------------------------------

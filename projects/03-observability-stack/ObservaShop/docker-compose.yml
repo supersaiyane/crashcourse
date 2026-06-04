@@ -1,6 +1,12 @@
 version: "3.9"
 
 services:
+  # ── Frontend ─────────────────────────────────────────────────────────────
+  frontend:
+    build: ./frontend
+    ports: ["8000:80"]
+    depends_on: [gateway]
+
   # ── Application services ─────────────────────────────────────────────────
   gateway:
     build: ./services/gateway

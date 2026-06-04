@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ObservaShop — E-Commerce Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <div class="logo">ObservaShop<span class="dot">.</span></div>
+    <div class="links">
+      <a href="http://localhost:3000" target="_blank" class="link-btn">Grafana</a>
+      <a href="http://localhost:9090" target="_blank" class="link-btn">Prometheus</a>
+      <a href="http://localhost:9093" target="_blank" class="link-btn">Alertmanager</a>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <h1>E-Commerce Order Dashboard</h1>
+      <p>ObservaShop is a microservices e-commerce platform with full observability — metrics (Prometheus), logs (Loki), traces (Tempo), dashboards (Grafana), alerts (Alertmanager), and OpenTelemetry. Place orders below and watch the telemetry flow in real time.</p>
+    </section>
+
+    <section class="cards">
+      <div class="card">
+        <div class="card-icon">&#128994;</div>
+        <div class="card-title">Gateway</div>
+        <div class="card-value" id="gw-health">--</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">&#128230;</div>
+        <div class="card-title">Orders</div>
+        <div class="card-value" id="order-count">--</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">&#128176;</div>
+        <div class="card-title">Payments</div>
+        <div class="card-value" id="payment-status">--</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">&#128666;</div>
+        <div class="card-title">Inventory SKUs</div>
+        <div class="card-value" id="inventory-count">--</div>
+      </div>
+    </section>
+
+    <section class="order-form">
+      <h2>Place an Order</h2>
+      <form id="order-form">
+        <div class="form-row">
+          <select id="order-sku">
+            <option value="LAPTOP-001">ThinkPad X1 Carbon ($1,299.99)</option>
+            <option value="PHONE-001">Pixel 8 Pro ($899.99)</option>
+            <option value="CABLE-001">USB-C Cable ($12.99)</option>
+            <option value="MOUSE-001">MX Master 3S ($99.99)</option>
+            <option value="KB-001">Keychron K2 ($89.99)</option>
+          </select>
+          <input type="number" id="order-qty" value="1" min="1" max="10">
+          <button type="submit">Place Order</button>
+        </div>
+      </form>
+      <div id="order-result" class="result hidden"></div>
+    </section>
+
+    <section class="inventory-table">
+      <h2>Live Inventory</h2>
+      <table id="inv-table">
+        <thead><tr><th>SKU</th><th>Name</th><th>Price</th><th>Stock</th></tr></thead>
+        <tbody id="inv-body"></tbody>
+      </table>
+    </section>
+
+    <section class="orders-table">
+      <h2>Recent Orders</h2>
+      <table id="orders-table">
+        <thead><tr><th>Order ID</th><th>Items</th><th>Total</th><th>Status</th></tr></thead>
+        <tbody id="orders-body"></tbody>
+      </table>
+    </section>
+
+    <section class="observability-info">
+      <h2>Observability Stack</h2>
+      <div class="obs-grid">
+        <div class="obs-item"><strong>Prometheus</strong> :9090<br>Scrapes /metrics from all 4 services every 15s</div>
+        <div class="obs-item"><strong>Loki</strong> :3100<br>Aggregates structured JSON logs via Promtail</div>
+        <div class="obs-item"><strong>Tempo</strong> :3200<br>Distributed traces with W3C traceparent propagation</div>
+        <div class="obs-item"><strong>Grafana</strong> :3000<br>Unified dashboards — metrics, logs, traces in one view</div>
+        <div class="obs-item"><strong>Alertmanager</strong> :9093<br>Routes alerts by severity — critical to PagerDuty, warnings to Slack</div>
+        <div class="obs-item"><strong>OTel Collector</strong> :4317<br>Receives OTLP, exports to Prometheus + Loki + Tempo</div>
+      </div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
