@@ -51,6 +51,7 @@
 | 2026-06-03 14:00 | Project 1 + Project 2 built | Done | P1: Container Lifecycle (Cutlink, 7 stages, copied from ref). P2: IaC Pipeline (FinStack, 73 files, 6 TF modules, 7 stage READMEs ~175KB, 17 exercises). 157 files committed. | projects/01-container-lifecycle/, projects/02-iac-pipeline/ |
 
 | 2026-06-04 00:00 | Labs UI — full implementation | Done | Nav tabs (Courses/Labs), labs listing with tier filter, lab detail with stage navigator, exercise checklists, localStorage progress, prev/next nav. 2 lab JSON files. SW cache bump v4. Cache bust v=8. | docs/js/app.js:952-1180, docs/index.html:77-130, docs/css/style.css:1327-1575, docs/data/labs/*.json, docs/sw.js:1 |
+| 2026-06-04 19:30 | Labs sidebar — exercises, source code link, cleanup | Done | Sidebar shows exercise .md links + single GitHub browse link per project (appDir). Removed inline config file links. Cutlink app (32 files) surfaced via appDir. SW v5 + network-first for lab JSON. | docs/js/app.js:1250-1360, docs/data/labs/*.json, docs/sw.js:1,49-53 |
 
 ## Next Session Resume Vector
 
@@ -68,8 +69,8 @@
   - Nav tabs, tier filter, stage progress bar, exercise checkboxes, course reference links
   - localStorage key: cc-labs-progress
   - LAB_INDEX array in app.js — add new lab IDs here when P3+ built
-- **Labs UI alignment fix needed** — left alignment poor on listing + detail pages (user feedback)
-- Cache bust: cli-engine.js?v=2, app.js?v=8, style.css?v=8, SW v4
+- Sidebar: exercises (clickable .md links) + "Browse on GitHub" link (appDir) + progress checkboxes + course reference + mark complete
+- Cache bust: cli-engine.js?v=2, app.js?v=8, style.css?v=8, SW v5 (network-first for lab JSON)
 - Mermaid syntax errors on some courses — needs investigation (mermaid 11.15.0 compat)
 - Repo: PUBLIC
 - dsa.txt: separate DSA repo plan (25 courses, Python, FAANG-focused)
