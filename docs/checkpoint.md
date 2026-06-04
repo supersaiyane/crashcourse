@@ -51,7 +51,7 @@
 | 2026-06-03 14:00 | Project 1 + Project 2 built | Done | P1: Container Lifecycle (Cutlink, 7 stages, copied from ref). P2: IaC Pipeline (FinStack, 73 files, 6 TF modules, 7 stage READMEs ~175KB, 17 exercises). 157 files committed. | projects/01-container-lifecycle/, projects/02-iac-pipeline/ |
 
 | 2026-06-04 00:00 | Labs UI — full implementation | Done | Nav tabs (Courses/Labs), labs listing with tier filter, lab detail with stage navigator, exercise checklists, localStorage progress, prev/next nav. 2 lab JSON files. SW cache bump v4. Cache bust v=8. | docs/js/app.js:952-1180, docs/index.html:77-130, docs/css/style.css:1327-1575, docs/data/labs/*.json, docs/sw.js:1 |
-| 2026-06-04 19:30 | Labs sidebar — exercises, source code link, cleanup | Done | Sidebar shows exercise .md links + single GitHub browse link per project (appDir). Removed inline config file links. Cutlink app (32 files) surfaced via appDir. SW v5 + network-first for lab JSON. | docs/js/app.js:1250-1360, docs/data/labs/*.json, docs/sw.js:1,49-53 |
+| 2026-06-04 19:30 | Labs sidebar — exercises, source code link, cleanup | Done | Sidebar shows exercise .md links + download link per project (appDir via download-directory.github.io). Removed inline config file links. Cutlink app (32 files) + FinStack (26 files) surfaced via appDir. SW v5 + network-first for lab JSON. Fixed download link intercepted by file-link handler (class rename lab-file-link→lab-download-link). | docs/js/app.js:1250-1360, docs/data/labs/*.json, docs/sw.js:1,49-53 |
 
 ## Next Session Resume Vector
 
