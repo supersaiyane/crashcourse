@@ -1,0 +1,20 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: pipelineapi-test
+spec:
+  steps:
+    - name: install
+      image: python:3.11-slim
+      script: |
+        pip install -r /workspace/source/api/requirements.txt
+    - name: test
+      image: python:3.11-slim
+      script: |
+        cd /workspace/source/api && python -m pytest -v
+    - name: lint
+      image: python:3.11-slim
+      script: |
+        cd /workspace/source/api && ruff check .
+  workspaces:
+    - name: source

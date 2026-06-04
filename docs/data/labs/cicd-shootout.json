@@ -1,0 +1,18 @@
+{
+  "id": "cicd-shootout",
+  "title": "CI/CD Shootout",
+  "app": "PipelineAPI",
+  "description": "Deploy the same Flask REST API through four different CI/CD systems — GitHub Actions, GitLab CI, Jenkins, and Tekton — then compare features, DX, speed, and cost.",
+  "tier": "Foundation",
+  "duration": "4-6 weeks",
+  "tools": ["Docker", "GitHub Actions", "GitLab CI", "Jenkins", "Tekton"],
+  "appDir": "projects/05-cicd-shootout/PipelineAPI",
+  "stages": [
+    {"id": "01-the-app", "title": "The App", "readme": "projects/05-cicd-shootout/stages/01-the-app/README.md", "course": "containers/Docker.md", "exercises": 2, "duration": "3 days", "files": [{"path": "projects/05-cicd-shootout/stages/01-the-app/exercises/01-build-test.md", "label": "Exercise 1 — Build & Test"}, {"path": "projects/05-cicd-shootout/stages/01-the-app/exercises/02-add-endpoint.md", "label": "Exercise 2 — Add Endpoint"}]},
+    {"id": "02-github-actions", "title": "GitHub Actions", "readme": "projects/05-cicd-shootout/stages/02-github-actions/README.md", "course": "cicd/GitHub-Actions.md", "exercises": 2, "duration": "1 week", "files": [{"path": "projects/05-cicd-shootout/stages/02-github-actions/exercises/01-run-workflow.md", "label": "Exercise 1 — Run Workflow"}, {"path": "projects/05-cicd-shootout/stages/02-github-actions/exercises/02-add-deploy.md", "label": "Exercise 2 — Add Deploy"}]},
+    {"id": "03-gitlab-ci", "title": "GitLab CI", "readme": "projects/05-cicd-shootout/stages/03-gitlab-ci/README.md", "course": "cicd/GitLab-CI.md", "exercises": 2, "duration": "1 week", "files": [{"path": "projects/05-cicd-shootout/stages/03-gitlab-ci/exercises/01-run-pipeline.md", "label": "Exercise 1 — Run Pipeline"}, {"path": "projects/05-cicd-shootout/stages/03-gitlab-ci/exercises/02-artifacts-cache.md", "label": "Exercise 2 — Artifacts & Cache"}]},
+    {"id": "04-jenkins", "title": "Jenkins", "readme": "projects/05-cicd-shootout/stages/04-jenkins/README.md", "course": "cicd/Jenkins.md", "exercises": 2, "duration": "1 week", "files": [{"path": "projects/05-cicd-shootout/stages/04-jenkins/exercises/01-run-jenkinsfile.md", "label": "Exercise 1 — Run Jenkinsfile"}, {"path": "projects/05-cicd-shootout/stages/04-jenkins/exercises/02-credentials.md", "label": "Exercise 2 — Credentials"}]},
+    {"id": "05-tekton", "title": "Tekton", "readme": "projects/05-cicd-shootout/stages/05-tekton/README.md", "course": "cicd/Tekton.md", "exercises": 2, "duration": "1 week", "files": [{"path": "projects/05-cicd-shootout/stages/05-tekton/exercises/01-run-tekton.md", "label": "Exercise 1 — Run Tekton"}, {"path": "projects/05-cicd-shootout/stages/05-tekton/exercises/02-add-trigger.md", "label": "Exercise 2 — Add Trigger"}]},
+    {"id": "06-comparison", "title": "Comparison", "readme": "projects/05-cicd-shootout/stages/06-comparison/README.md", "course": "cicd/GitHub-Actions.md", "exercises": 1, "duration": "3 days", "files": [{"path": "projects/05-cicd-shootout/stages/06-comparison/exercises/01-your-comparison.md", "label": "Exercise 1 — Your Comparison"}]}
+  ]
+}

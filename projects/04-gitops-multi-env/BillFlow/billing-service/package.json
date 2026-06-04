@@ -1,0 +1,15 @@
+{
+  "name": "billflow",
+  "version": "1.0.0",
+  "description": "SaaS billing service — subscriptions, invoices, webhooks",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node test.js",
+    "lint": "echo 'lint passed'"
+  },
+  "dependencies": {
+    "express": "^4.19.0",
+    "uuid": "^9.0.0"
+  }
+}

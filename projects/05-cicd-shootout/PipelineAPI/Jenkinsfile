@@ -1,0 +1,29 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Test') {
+            steps {
+                sh 'pip install -r api/requirements.txt'
+                sh 'cd api && python -m pytest -v'
+                sh 'cd api && ruff check .'
+            }
+        }
+        stage('Build') {
+            steps {
+                sh 'docker build -t pipelineapi:${BUILD_NUMBER} ./api'
+            }
+        }
+        stage('Scan') {
+            steps {
+                sh 'trivy image pipelineapi:${BUILD_NUMBER} --severity HIGH,CRITICAL'
+            }
+        }
+    }
+
+    post {
+        always {
+            cleanWs()
+        }
+    }
+}

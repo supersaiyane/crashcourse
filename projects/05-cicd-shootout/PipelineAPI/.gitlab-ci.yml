@@ -1,0 +1,32 @@
+stages:
+  - test
+  - build
+  - scan
+
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.pip-cache"
+
+test:
+  stage: test
+  image: python:3.11-slim
+  cache:
+    paths: [.pip-cache/]
+  script:
+    - pip install -r api/requirements.txt
+    - cd api && python -m pytest -v
+    - cd api && ruff check .
+
+build:
+  stage: build
+  image: docker:24
+  services:
+    - docker:24-dind
+  script:
+    - docker build -t pipelineapi:$CI_COMMIT_SHA ./api
+
+scan:
+  stage: scan
+  image: aquasec/trivy:latest
+  script:
+    - trivy fs --severity HIGH,CRITICAL ./api
+  allow_failure: true

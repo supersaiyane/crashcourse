@@ -1,0 +1,19 @@
+{
+  "id": "gitops-multi-env",
+  "title": "GitOps Multi-Environment",
+  "app": "BillFlow",
+  "description": "Build a GitOps pipeline promoting a SaaS billing service through dev, staging, and production using Kustomize overlays, Flux CD, Sealed Secrets, cert-manager, and Velero backup.",
+  "tier": "Intermediate",
+  "duration": "6-8 weeks",
+  "tools": ["Git", "Kustomize", "Flux", "Sealed Secrets", "cert-manager", "Velero"],
+  "appDir": "projects/04-gitops-multi-env/BillFlow",
+  "stages": [
+    {"id": "01-git-branching", "title": "Git Branching", "readme": "projects/04-gitops-multi-env/stages/01-git-branching/README.md", "course": "vcs/Git.md", "exercises": 2, "duration": "1 week", "files": [{"path": "projects/04-gitops-multi-env/stages/01-git-branching/exercises/01-trunk-based.md", "label": "Exercise 1 — Trunk-Based Workflow"}, {"path": "projects/04-gitops-multi-env/stages/01-git-branching/exercises/02-branch-protection.md", "label": "Exercise 2 — Branch Protection"}]},
+    {"id": "02-kustomize-overlays", "title": "Kustomize Overlays", "readme": "projects/04-gitops-multi-env/stages/02-kustomize-overlays/README.md", "course": "containers/Kustomize.md", "exercises": 2, "duration": "1 week", "files": [{"path": "projects/04-gitops-multi-env/stages/02-kustomize-overlays/exercises/01-build-overlays.md", "label": "Exercise 1 — Build & Compare"}, {"path": "projects/04-gitops-multi-env/stages/02-kustomize-overlays/exercises/02-configmap-overlay.md", "label": "Exercise 2 — ConfigMap Overlay"}]},
+    {"id": "03-flux-bootstrap", "title": "Flux Bootstrap", "readme": "projects/04-gitops-multi-env/stages/03-flux-bootstrap/README.md", "course": "cicd/Flux.md", "exercises": 2, "duration": "1 week", "files": [{"path": "projects/04-gitops-multi-env/stages/03-flux-bootstrap/exercises/01-bootstrap.md", "label": "Exercise 1 — Bootstrap"}, {"path": "projects/04-gitops-multi-env/stages/03-flux-bootstrap/exercises/02-reconciliation.md", "label": "Exercise 2 — Reconciliation"}]},
+    {"id": "04-sealed-secrets", "title": "Sealed Secrets", "readme": "projects/04-gitops-multi-env/stages/04-sealed-secrets/README.md", "course": "security/Sealed-Secrets.md", "exercises": 2, "duration": "1 week", "files": [{"path": "projects/04-gitops-multi-env/stages/04-sealed-secrets/exercises/01-seal-secret.md", "label": "Exercise 1 — Seal a Secret"}, {"path": "projects/04-gitops-multi-env/stages/04-sealed-secrets/exercises/02-rotate-secret.md", "label": "Exercise 2 — Rotate Secret"}]},
+    {"id": "05-cert-manager", "title": "cert-manager", "readme": "projects/04-gitops-multi-env/stages/05-cert-manager/README.md", "course": "security/cert-manager.md", "exercises": 2, "duration": "1 week", "files": [{"path": "projects/04-gitops-multi-env/stages/05-cert-manager/exercises/01-install-certmanager.md", "label": "Exercise 1 — Install cert-manager"}, {"path": "projects/04-gitops-multi-env/stages/05-cert-manager/exercises/02-tls-cert.md", "label": "Exercise 2 — TLS Certificate"}]},
+    {"id": "06-promotion-flow", "title": "Promotion Flow", "readme": "projects/04-gitops-multi-env/stages/06-promotion-flow/README.md", "course": "cicd/Flux.md", "exercises": 2, "duration": "1 week", "files": [{"path": "projects/04-gitops-multi-env/stages/06-promotion-flow/exercises/01-promotion.md", "label": "Exercise 1 — End-to-End Promotion"}, {"path": "projects/04-gitops-multi-env/stages/06-promotion-flow/exercises/02-rollback.md", "label": "Exercise 2 — Rollback"}]},
+    {"id": "07-backup-dr", "title": "Backup & DR", "readme": "projects/04-gitops-multi-env/stages/07-backup-dr/README.md", "course": "containers/Velero.md", "exercises": 2, "duration": "1 week", "files": [{"path": "projects/04-gitops-multi-env/stages/07-backup-dr/exercises/01-backup-restore.md", "label": "Exercise 1 — Backup & Restore"}, {"path": "projects/04-gitops-multi-env/stages/07-backup-dr/exercises/02-scheduled-backups.md", "label": "Exercise 2 — Scheduled Backups"}]}
+  ]
+}

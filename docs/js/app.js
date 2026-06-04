@@ -1002,7 +1002,7 @@ function getLabStagesDone(labId, totalStages) {
 }
 
 // ── Labs: data loading ──────────────────────────────────────────────────────
-const LAB_INDEX = ['container-lifecycle', 'iac-pipeline', 'observability-stack'];
+const LAB_INDEX = ['container-lifecycle', 'iac-pipeline', 'observability-stack', 'gitops-multi-env', 'cicd-shootout'];
 const labCache = {};
 
 async function loadLabData(labId) {

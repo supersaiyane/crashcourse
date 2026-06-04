@@ -1,0 +1,28 @@
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  name: pipelineapi-ci
+spec:
+  params:
+    - name: image-tag
+      type: string
+      default: latest
+  workspaces:
+    - name: source
+  tasks:
+    - name: test
+      taskRef:
+        name: pipelineapi-test
+      workspaces:
+        - name: source
+          workspace: source
+    - name: build
+      runAfter: [test]
+      taskRef:
+        name: pipelineapi-build
+      params:
+        - name: image-tag
+          value: $(params.image-tag)
+      workspaces:
+        - name: source
+          workspace: source

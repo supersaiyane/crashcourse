@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: billflow
+  namespace: billflow
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: billflow
+  template:
+    metadata:
+      labels:
+        app: billflow
+    spec:
+      containers:
+        - name: billflow
+          image: billflow:latest
+          ports:
+            - containerPort: 3000
+          env:
+            - name: NODE_ENV
+              value: development
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3000
+            initialDelaySeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3000
+            initialDelaySeconds: 3
