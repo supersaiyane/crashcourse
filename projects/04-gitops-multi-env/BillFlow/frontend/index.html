@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BillFlow — SaaS Billing Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <div class="logo">BillFlow<span class="dot">.</span></div>
+    <div class="env-badge" id="env-badge">development</div>
+  </header>
+  <main>
+    <section class="hero">
+      <h1>SaaS Billing Dashboard</h1>
+      <p>BillFlow manages subscriptions, invoices, and payment webhooks. This is the sample app for the <strong>GitOps Multi-Environment</strong> project — deployed to dev, staging, and production via Kustomize overlays + Flux CD.</p>
+    </section>
+    <section class="cards">
+      <div class="card"><div class="card-icon">&#9829;</div><div class="card-title">API Health</div><div class="card-value" id="health-val">--</div></div>
+      <div class="card"><div class="card-icon">&#128179;</div><div class="card-title">Subscriptions</div><div class="card-value" id="sub-count">--</div></div>
+      <div class="card"><div class="card-icon">&#128196;</div><div class="card-title">Invoices</div><div class="card-value" id="inv-count">--</div></div>
+    </section>
+    <section class="form-section">
+      <h2>Create Subscription</h2>
+      <form id="sub-form">
+        <div class="form-row">
+          <input type="text" id="sub-customer" placeholder="Customer name" required>
+          <select id="sub-plan"><option value="starter">Starter</option><option value="professional">Professional</option><option value="enterprise">Enterprise</option></select>
+          <button type="submit">Create</button>
+        </div>
+      </form>
+      <div id="sub-result" class="result hidden"></div>
+    </section>
+    <section class="form-section">
+      <h2>Create Invoice</h2>
+      <form id="inv-form">
+        <div class="form-row">
+          <input type="text" id="inv-sub-id" placeholder="Subscription ID" required>
+          <input type="number" id="inv-amount" placeholder="Amount (USD)" min="1" step="0.01" required>
+          <button type="submit">Invoice</button>
+        </div>
+      </form>
+      <div id="inv-result" class="result hidden"></div>
+    </section>
+    <section class="infra-info">
+      <h2>GitOps Stack</h2>
+      <div class="infra-grid">
+        <div class="infra-item"><strong>Kustomize</strong><br>Base + overlays for dev/staging/production</div>
+        <div class="infra-item"><strong>Flux CD</strong><br>GitOps — cluster watches Git and auto-deploys</div>
+        <div class="infra-item"><strong>Sealed Secrets</strong><br>Encrypted credentials stored safely in Git</div>
+        <div class="infra-item"><strong>cert-manager</strong><br>Automated TLS certificates via Let's Encrypt</div>
+        <div class="infra-item"><strong>Velero</strong><br>Cluster backup and disaster recovery</div>
+      </div>
+    </section>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>

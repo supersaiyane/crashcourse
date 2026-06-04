@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PipelineAPI — Items Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <div class="logo">PipelineAPI<span class="dot">.</span></div>
+    <div class="env-badge">CI/CD Shootout</div>
+  </header>
+  <main>
+    <section class="hero">
+      <h1>Items Dashboard</h1>
+      <p>PipelineAPI is a Flask REST API deployed through <strong>4 different CI/CD systems</strong> — GitHub Actions, GitLab CI, Jenkins, and Tekton. Create items below and watch the same app built by 4 different pipelines.</p>
+    </section>
+    <section class="cards">
+      <div class="card"><div class="card-icon">&#9829;</div><div class="card-title">API Health</div><div class="card-value" id="health-val">--</div></div>
+      <div class="card"><div class="card-icon">&#128230;</div><div class="card-title">Items</div><div class="card-value" id="item-count">--</div></div>
+    </section>
+    <section class="form-section">
+      <h2>Create Item</h2>
+      <form id="item-form">
+        <div class="form-row">
+          <input type="text" id="item-name" placeholder="Item name" required maxlength="100">
+          <button type="submit">Create</button>
+        </div>
+      </form>
+      <div id="item-result" class="result hidden"></div>
+    </section>
+    <section class="table-section">
+      <h2>Items</h2>
+      <table><thead><tr><th>ID</th><th>Name</th><th>Created</th><th>Action</th></tr></thead><tbody id="items-body"></tbody></table>
+    </section>
+    <section class="infra-info">
+      <h2>CI/CD Systems Compared</h2>
+      <div class="infra-grid">
+        <div class="infra-item"><strong>GitHub Actions</strong><br>.github/workflows/ci.yml — YAML, free tier, 15K+ marketplace actions</div>
+        <div class="infra-item"><strong>GitLab CI</strong><br>.gitlab-ci.yml — single file, built-in cache/artifacts/registry</div>
+        <div class="infra-item"><strong>Jenkins</strong><br>Jenkinsfile — Groovy DSL, 1800+ plugins, self-hosted</div>
+        <div class="infra-item"><strong>Tekton</strong><br>Tasks + Pipeline CRDs — Kubernetes-native, Kaniko builds</div>
+      </div>
+    </section>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>

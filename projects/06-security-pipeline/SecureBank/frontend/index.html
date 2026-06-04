@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SecureBank — Transaction Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <div class="logo">SecureBank<span class="dot">.</span></div>
+    <div class="env-badge">security pipeline</div>
+  </header>
+  <main>
+    <section class="hero">
+      <h1>Transaction Dashboard</h1>
+      <p>SecureBank processes banking transactions with full shift-left security — image scanning (Trivy), IaC scanning (Checkov), policy enforcement (OPA), supply chain signing (Cosign), runtime detection (Falco), and secrets management (Vault).</p>
+    </section>
+    <section class="cards">
+      <div class="card"><div class="card-icon">&#9829;</div><div class="card-title">API Health</div><div class="card-value" id="health-val">--</div></div>
+      <div class="card"><div class="card-icon">&#128176;</div><div class="card-title">Transactions</div><div class="card-value" id="tx-count">--</div></div>
+      <div class="card"><div class="card-icon">&#128221;</div><div class="card-title">Audit Log</div><div class="card-value" id="audit-count">--</div></div>
+    </section>
+    <section class="form-section">
+      <h2>Send Transaction</h2>
+      <form id="tx-form">
+        <div class="form-row">
+          <input type="text" id="tx-from" placeholder="From account" required>
+          <input type="text" id="tx-to" placeholder="To account" required>
+        </div>
+        <div class="form-row">
+          <input type="number" id="tx-amount" placeholder="Amount (USD)" min="0.01" max="1000000" step="0.01" required>
+          <select id="tx-currency"><option value="USD">USD</option><option value="INR">INR</option><option value="EUR">EUR</option><option value="GBP">GBP</option></select>
+          <button type="submit">Send</button>
+        </div>
+      </form>
+      <div id="tx-result" class="result hidden"></div>
+    </section>
+    <section class="table-section">
+      <h2>Recent Transactions</h2>
+      <table><thead><tr><th>ID</th><th>From</th><th>To</th><th>Amount</th><th>Status</th></tr></thead><tbody id="tx-body"></tbody></table>
+    </section>
+    <section class="infra-info">
+      <h2>Security Stack</h2>
+      <div class="infra-grid">
+        <div class="infra-item"><strong>Trivy</strong><br>Image + IaC scanning, SBOM generation</div>
+        <div class="infra-item"><strong>OPA Gatekeeper</strong><br>K8s admission policies — no privileged, no :latest</div>
+        <div class="infra-item"><strong>Cosign/Sigstore</strong><br>Image signing + transparency log</div>
+        <div class="infra-item"><strong>Falco</strong><br>Runtime threat detection — shell, file access, network</div>
+        <div class="infra-item"><strong>Vault</strong><br>Dynamic DB credentials, SSH certificates, audit log</div>
+        <div class="infra-item"><strong>GitHub Actions</strong><br>Full security CI/CD — scan, sign, enforce, detect</div>
+      </div>
+    </section>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>

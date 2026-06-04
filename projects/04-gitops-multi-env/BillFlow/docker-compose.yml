@@ -1,6 +1,11 @@
 version: "3.9"
 
 services:
+  frontend:
+    build: ./frontend
+    ports: ["8000:80"]
+    depends_on: [billflow]
+
   billflow:
     build: ./billing-service
     ports: ["3000:3000"]

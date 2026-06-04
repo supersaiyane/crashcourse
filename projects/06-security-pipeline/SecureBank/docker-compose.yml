@@ -1,6 +1,11 @@
 version: "3.9"
 
 services:
+  frontend:
+    build: ./frontend
+    ports: ["8000:80"]
+    depends_on: [transaction-api]
+
   transaction-api:
     build: ./transaction-api
     ports: ["8080:8080"]
