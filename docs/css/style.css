@@ -1622,6 +1622,8 @@ mark {
   transition: opacity 0.15s;
 }
 .lab-sidebar-link:hover { opacity: 0.8; }
+.lab-file-link { display: flex; align-items: center; gap: 6px; }
+.lab-file-link svg { flex-shrink: 0; opacity: 0.6; }
 
 .lab-exercise-item {
   display: flex;

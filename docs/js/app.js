@@ -1241,6 +1241,38 @@ function renderLabSidebar(lab, stage, stageIdx) {
 
   let html = '';
 
+  // Files touched this stage
+  if (stage.files && stage.files.length > 0) {
+    html += `<div class="lab-sidebar-section">
+      <div class="lab-sidebar-title">Files this stage</div>`;
+    stage.files.forEach(f => {
+      const isMd = f.path.endsWith('.md');
+      const icon = isMd
+        ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>'
+        : '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>';
+      html += `<a class="lab-sidebar-link lab-file-link" data-file="${esc(f.path)}" title="${esc(f.path)}">${icon} ${esc(f.label)}</a>`;
+    });
+    html += '</div>';
+  }
+
+  // App source code (top-level appFiles)
+  if (lab.appFiles && lab.appFiles.length > 0) {
+    html += `<div class="lab-sidebar-section">
+      <div class="lab-sidebar-title">${esc(lab.app)} Source Code</div>`;
+    lab.appFiles.slice(0, 8).forEach(f => {
+      html += `<a class="lab-sidebar-link lab-file-link" data-file="${esc(f.path)}" title="${esc(f.path)}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg> ${esc(f.label)}</a>`;
+    });
+    if (lab.appFiles.length > 8) {
+      html += `<a class="lab-sidebar-link" data-toggle-app-files style="font-size:0.75rem;color:var(--text-2);cursor:pointer;">+ ${lab.appFiles.length - 8} more files</a>`;
+      html += `<div class="lab-app-files-extra" style="display:none;">`;
+      lab.appFiles.slice(8).forEach(f => {
+        html += `<a class="lab-sidebar-link lab-file-link" data-file="${esc(f.path)}" title="${esc(f.path)}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg> ${esc(f.label)}</a>`;
+      });
+      html += '</div>';
+    }
+    html += '</div>';
+  }
+
   // Exercise checklist
   if (stage.exercises > 0) {
     const exerciseState = getExerciseState(lab.id, stage.id, stage.exercises);
@@ -1272,6 +1304,70 @@ function renderLabSidebar(lab, stage, stageIdx) {
   </div>`;
 
   sidebar.innerHTML = html;
+
+  // Wire file links — open file content in the main reader area
+  sidebar.querySelectorAll('.lab-file-link').forEach(link => {
+    link.addEventListener('click', async (e) => {
+      e.preventDefault();
+      const filePath = link.dataset.file;
+      const out = $id('lab-md-out');
+      const loader = $id('lab-loader');
+      if (!out || !loader) return;
+
+      loader.classList.remove('hidden');
+      out.classList.add('hidden');
+
+      try {
+        const res = await fetch(`${MD_BASE}${filePath}`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const content = await res.text();
+        loader.classList.add('hidden');
+        out.classList.remove('hidden');
+
+        if (filePath.endsWith('.md')) {
+          out.innerHTML = marked.parse(content);
+          out.querySelectorAll('pre code').forEach(block => {
+            if (!block.classList.contains('hljs') && window.hljs) window.hljs.highlightElement(block);
+          });
+        } else {
+          const ext = filePath.split('.').pop();
+          const langMap = { tf:'hcl', hcl:'hcl', py:'python', yml:'yaml', yaml:'yaml', json:'json', rego:'rego', j2:'django', ini:'ini', txt:'text' };
+          const lang = langMap[ext] || ext;
+          const highlighted = (window.hljs?.getLanguage(lang))
+            ? window.hljs.highlight(content, { language: lang }).value
+            : esc(content);
+          out.innerHTML = `<div style="margin-bottom:12px;">
+            <span style="font-size:0.78rem;color:var(--text-2);font-family:var(--font-mono);">${esc(filePath)}</span>
+            <button class="lab-nav-btn" style="float:right;padding:4px 12px;font-size:0.75rem;" onclick="window.labRestoreStageReadme()">Back to README</button>
+          </div>
+          <pre data-lang="${esc(lang)}"><code class="hljs language-${esc(lang)}">${highlighted}</code></pre>`;
+        }
+        window.scrollTo(0, 0);
+      } catch (err) {
+        loader.classList.add('hidden');
+        out.classList.remove('hidden');
+        out.innerHTML = `<p style="color:var(--text-muted);">Could not load <code>${esc(filePath)}</code>: ${esc(err.message)}</p>`;
+      }
+    });
+  });
+
+  // Wire "show more" toggle for app files
+  const toggleLink = sidebar.querySelector('[data-toggle-app-files]');
+  if (toggleLink) {
+    toggleLink.addEventListener('click', () => {
+      const extra = sidebar.querySelector('.lab-app-files-extra');
+      if (extra) {
+        const showing = extra.style.display !== 'none';
+        extra.style.display = showing ? 'none' : 'block';
+        toggleLink.textContent = showing
+          ? `+ ${lab.appFiles.length - 8} more files`
+          : '- Show fewer';
+      }
+    });
+  }
+
+  // Store restore function for "Back to README" button
+  window.labRestoreStageReadme = () => renderLabDetail(lab.id, stage.id);
 
   // Wire exercise checkboxes
   sidebar.querySelectorAll('input[type="checkbox"]').forEach(cb => {

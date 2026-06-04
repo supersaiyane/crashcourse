@@ -13,15 +13,26 @@
       "readme": "projects/01-container-lifecycle/stages/01-linux-foundations/README.md",
       "course": "linux/Linux.md",
       "exercises": 3,
-      "duration": "1 week"
+      "duration": "1 week",
+      "files": [
+        { "path": "projects/01-container-lifecycle/stages/01-linux-foundations/exercises/01-filesystem-exploration.md", "label": "Exercise 1 — Filesystem Exploration" },
+        { "path": "projects/01-container-lifecycle/stages/01-linux-foundations/exercises/02-process-management.md", "label": "Exercise 2 — Process Management" },
+        { "path": "projects/01-container-lifecycle/stages/01-linux-foundations/exercises/03-containers-deep-dive.md", "label": "Exercise 3 — Containers Deep Dive" }
+      ]
     },
     {
       "id": "02-docker",
       "title": "Docker",
       "readme": "projects/01-container-lifecycle/stages/02-docker/README.md",
       "course": "containers/Docker.md",
-      "exercises": 3,
-      "duration": "1 week"
+      "exercises": 4,
+      "duration": "1 week",
+      "files": [
+        { "path": "projects/01-container-lifecycle/stages/02-docker/exercises/01-run-first-container.md", "label": "Exercise 1 — Run First Container" },
+        { "path": "projects/01-container-lifecycle/stages/02-docker/exercises/02-build-run-cutlink.md", "label": "Exercise 2 — Build & Run Cutlink" },
+        { "path": "projects/01-container-lifecycle/stages/02-docker/exercises/03-multi-service-compose.md", "label": "Exercise 3 — Multi-Service Compose" },
+        { "path": "projects/01-container-lifecycle/stages/02-docker/exercises/04-layers-optimization.md", "label": "Exercise 4 — Layers & Optimization" }
+      ]
     },
     {
       "id": "03-kubernetes",
@@ -29,39 +40,83 @@
       "readme": "projects/01-container-lifecycle/stages/03-kubernetes/README.md",
       "course": "containers/Kubernetes.md",
       "exercises": 3,
-      "duration": "1 week"
+      "duration": "1 week",
+      "files": [
+        { "path": "projects/01-container-lifecycle/stages/03-kubernetes/exercises/01-setup-kind.md", "label": "Exercise 1 — Setup kind Cluster" },
+        { "path": "projects/01-container-lifecycle/stages/03-kubernetes/exercises/02-deploy-app.md", "label": "Exercise 2 — Deploy App" },
+        { "path": "projects/01-container-lifecycle/stages/03-kubernetes/exercises/03-scaling-selfhealing.md", "label": "Exercise 3 — Scaling & Self-Healing" },
+        { "path": "projects/01-container-lifecycle/stages/03-kubernetes/manifests/namespace.yaml", "label": "namespace.yaml" },
+        { "path": "projects/01-container-lifecycle/stages/03-kubernetes/manifests/backend.yaml", "label": "backend.yaml" },
+        { "path": "projects/01-container-lifecycle/stages/03-kubernetes/manifests/frontend.yaml", "label": "frontend.yaml" },
+        { "path": "projects/01-container-lifecycle/stages/03-kubernetes/manifests/postgres.yaml", "label": "postgres.yaml" },
+        { "path": "projects/01-container-lifecycle/stages/03-kubernetes/manifests/redis.yaml", "label": "redis.yaml" },
+        { "path": "projects/01-container-lifecycle/stages/03-kubernetes/manifests/hpa.yaml", "label": "hpa.yaml" },
+        { "path": "projects/01-container-lifecycle/stages/03-kubernetes/manifests/ingress.yaml", "label": "ingress.yaml" },
+        { "path": "projects/01-container-lifecycle/stages/03-kubernetes/manifests/kustomization.yaml", "label": "kustomization.yaml" }
+      ]
     },
     {
       "id": "04-helm",
       "title": "Helm",
       "readme": "projects/01-container-lifecycle/stages/04-helm/README.md",
       "course": "containers/Helm.md",
-      "exercises": 2,
-      "duration": "1 week"
+      "exercises": 4,
+      "duration": "1 week",
+      "files": [
+        { "path": "projects/01-container-lifecycle/stages/04-helm/exercises/01-create-inspect-chart.md", "label": "Exercise 1 — Create & Inspect Chart" },
+        { "path": "projects/01-container-lifecycle/stages/04-helm/exercises/02-multi-environment-values.md", "label": "Exercise 2 — Multi-Environment Values" },
+        { "path": "projects/01-container-lifecycle/stages/04-helm/exercises/03-app-of-charts-dependencies.md", "label": "Exercise 3 — App of Charts" },
+        { "path": "projects/01-container-lifecycle/stages/04-helm/exercises/04-hooks-testing.md", "label": "Exercise 4 — Hooks & Testing" }
+      ]
     },
     {
       "id": "05-argocd",
       "title": "ArgoCD",
       "readme": "projects/01-container-lifecycle/stages/05-argocd/README.md",
       "course": "cicd/ArgoCD.md",
-      "exercises": 2,
-      "duration": "1 week"
+      "exercises": 3,
+      "duration": "1 week",
+      "files": [
+        { "path": "projects/01-container-lifecycle/stages/05-argocd/exercises/01-install-argocd.md", "label": "Exercise 1 — Install ArgoCD" },
+        { "path": "projects/01-container-lifecycle/stages/05-argocd/exercises/02-deploy-cutlink.md", "label": "Exercise 2 — Deploy Cutlink" },
+        { "path": "projects/01-container-lifecycle/stages/05-argocd/exercises/03-rollback-and-sync.md", "label": "Exercise 3 — Rollback & Sync" },
+        { "path": "projects/01-container-lifecycle/stages/05-argocd/config/application-cutlink.yaml", "label": "application-cutlink.yaml" },
+        { "path": "projects/01-container-lifecycle/stages/05-argocd/config/app-of-apps/root.yaml", "label": "app-of-apps/root.yaml" },
+        { "path": "projects/01-container-lifecycle/stages/05-argocd/config/app-of-apps/backend-app.yaml", "label": "app-of-apps/backend-app.yaml" },
+        { "path": "projects/01-container-lifecycle/stages/05-argocd/config/app-of-apps/frontend-app.yaml", "label": "app-of-apps/frontend-app.yaml" },
+        { "path": "projects/01-container-lifecycle/stages/05-argocd/config/app-of-apps/infra-app.yaml", "label": "app-of-apps/infra-app.yaml" }
+      ]
     },
     {
       "id": "06-prometheus",
       "title": "Prometheus",
       "readme": "projects/01-container-lifecycle/stages/06-prometheus/README.md",
       "course": "observability/Prometheus.md",
-      "exercises": 2,
-      "duration": "1 week"
+      "exercises": 3,
+      "duration": "1 week",
+      "files": [
+        { "path": "projects/01-container-lifecycle/stages/06-prometheus/exercises/01-install-prometheus.md", "label": "Exercise 1 — Install Prometheus" },
+        { "path": "projects/01-container-lifecycle/stages/06-prometheus/exercises/02-promql-queries.md", "label": "Exercise 2 — PromQL Queries" },
+        { "path": "projects/01-container-lifecycle/stages/06-prometheus/exercises/03-custom-metrics.md", "label": "Exercise 3 — Custom Metrics" },
+        { "path": "projects/01-container-lifecycle/stages/06-prometheus/config/servicemonitor.yaml", "label": "servicemonitor.yaml" },
+        { "path": "projects/01-container-lifecycle/stages/06-prometheus/config/podmonitor.yaml", "label": "podmonitor.yaml" },
+        { "path": "projects/01-container-lifecycle/stages/06-prometheus/config/prometheusrule.yaml", "label": "prometheusrule.yaml" }
+      ]
     },
     {
       "id": "07-grafana",
       "title": "Grafana",
       "readme": "projects/01-container-lifecycle/stages/07-grafana/README.md",
       "course": "observability/Grafana.md",
-      "exercises": 2,
-      "duration": "1 week"
+      "exercises": 3,
+      "duration": "1 week",
+      "files": [
+        { "path": "projects/01-container-lifecycle/stages/07-grafana/exercises/01-explore-prometheus.md", "label": "Exercise 1 — Explore Prometheus" },
+        { "path": "projects/01-container-lifecycle/stages/07-grafana/exercises/02-build-dashboard.md", "label": "Exercise 2 — Build Dashboard" },
+        { "path": "projects/01-container-lifecycle/stages/07-grafana/exercises/03-alerting.md", "label": "Exercise 3 — Alerting" },
+        { "path": "projects/01-container-lifecycle/stages/07-grafana/dashboards/cutlink-service-health.yaml", "label": "cutlink-service-health.yaml" },
+        { "path": "projects/01-container-lifecycle/stages/07-grafana/dashboards/cutlink-service-health.json", "label": "cutlink-service-health.json" }
+      ]
     }
   ]
 }

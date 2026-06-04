@@ -6,6 +6,34 @@
   "tier": "Foundation",
   "duration": "6-8 weeks",
   "tools": ["Terraform", "Terragrunt", "Packer", "Vault", "OPA", "Ansible", "GitHub Actions"],
+  "appFiles": [
+    { "path": "projects/02-iac-pipeline/finstack/app/app.py", "label": "app.py — Flask API" },
+    { "path": "projects/02-iac-pipeline/finstack/app/Dockerfile", "label": "Dockerfile" },
+    { "path": "projects/02-iac-pipeline/finstack/app/requirements.txt", "label": "requirements.txt" },
+    { "path": "projects/02-iac-pipeline/finstack/terraform/main.tf", "label": "terraform/main.tf" },
+    { "path": "projects/02-iac-pipeline/finstack/terraform/variables.tf", "label": "terraform/variables.tf" },
+    { "path": "projects/02-iac-pipeline/finstack/terraform/outputs.tf", "label": "terraform/outputs.tf" },
+    { "path": "projects/02-iac-pipeline/finstack/terraform/providers.tf", "label": "terraform/providers.tf" },
+    { "path": "projects/02-iac-pipeline/finstack/terraform/terraform.tfvars.example", "label": "terraform/terraform.tfvars.example" },
+    { "path": "projects/02-iac-pipeline/finstack/terraform/modules/vpc/main.tf", "label": "modules/vpc/main.tf" },
+    { "path": "projects/02-iac-pipeline/finstack/terraform/modules/eks/main.tf", "label": "modules/eks/main.tf" },
+    { "path": "projects/02-iac-pipeline/finstack/terraform/modules/rds/main.tf", "label": "modules/rds/main.tf" },
+    { "path": "projects/02-iac-pipeline/finstack/terraform/modules/s3/main.tf", "label": "modules/s3/main.tf" },
+    { "path": "projects/02-iac-pipeline/finstack/terraform/modules/iam/main.tf", "label": "modules/iam/main.tf" },
+    { "path": "projects/02-iac-pipeline/finstack/terraform/modules/security-groups/main.tf", "label": "modules/security-groups/main.tf" },
+    { "path": "projects/02-iac-pipeline/finstack/terragrunt/terragrunt.hcl", "label": "terragrunt/terragrunt.hcl" },
+    { "path": "projects/02-iac-pipeline/finstack/terragrunt/environments/dev/terragrunt.hcl", "label": "terragrunt/envs/dev" },
+    { "path": "projects/02-iac-pipeline/finstack/terragrunt/environments/staging/terragrunt.hcl", "label": "terragrunt/envs/staging" },
+    { "path": "projects/02-iac-pipeline/finstack/terragrunt/environments/prod/terragrunt.hcl", "label": "terragrunt/envs/prod" },
+    { "path": "projects/02-iac-pipeline/finstack/policies/require_tags.rego", "label": "policies/require_tags.rego" },
+    { "path": "projects/02-iac-pipeline/finstack/policies/restrict_instance_types.rego", "label": "policies/restrict_instance_types.rego" },
+    { "path": "projects/02-iac-pipeline/finstack/policies/no_public_s3.rego", "label": "policies/no_public_s3.rego" },
+    { "path": "projects/02-iac-pipeline/finstack/ansible/playbooks/bootstrap.yml", "label": "ansible/playbooks/bootstrap.yml" },
+    { "path": "projects/02-iac-pipeline/finstack/ansible/inventory/hosts.ini", "label": "ansible/inventory/hosts.ini" },
+    { "path": "projects/02-iac-pipeline/finstack/ansible/roles/monitoring-agent/tasks/main.yml", "label": "ansible/roles/monitoring-agent/tasks" },
+    { "path": "projects/02-iac-pipeline/finstack/ansible/roles/monitoring-agent/templates/node-exporter.service.j2", "label": "ansible/roles/monitoring-agent/templates" },
+    { "path": "projects/02-iac-pipeline/finstack/ansible/roles/monitoring-agent/handlers/main.yml", "label": "ansible/roles/monitoring-agent/handlers" }
+  ],
   "stages": [
     {
       "id": "01-terraform-basics",
@@ -13,15 +41,33 @@
       "readme": "projects/02-iac-pipeline/stages/01-terraform-basics/README.md",
       "course": "iac/Terraform.md",
       "exercises": 3,
-      "duration": "1-2 weeks"
+      "duration": "1-2 weeks",
+      "files": [
+        { "path": "projects/02-iac-pipeline/stages/01-terraform-basics/exercises/01-first-apply.md", "label": "Exercise 1 — First Apply" },
+        { "path": "projects/02-iac-pipeline/stages/01-terraform-basics/exercises/02-modules.md", "label": "Exercise 2 — Modules" },
+        { "path": "projects/02-iac-pipeline/stages/01-terraform-basics/exercises/03-state-management.md", "label": "Exercise 3 — State Management" },
+        { "path": "projects/02-iac-pipeline/finstack/terraform/main.tf", "label": "finstack/terraform/main.tf" },
+        { "path": "projects/02-iac-pipeline/finstack/terraform/variables.tf", "label": "finstack/terraform/variables.tf" },
+        { "path": "projects/02-iac-pipeline/finstack/terraform/outputs.tf", "label": "finstack/terraform/outputs.tf" },
+        { "path": "projects/02-iac-pipeline/finstack/terraform/providers.tf", "label": "finstack/terraform/providers.tf" }
+      ]
     },
     {
       "id": "02-terragrunt",
       "title": "Terragrunt",
       "readme": "projects/02-iac-pipeline/stages/02-terragrunt/README.md",
       "course": "iac/Terragrunt.md",
-      "exercises": 2,
-      "duration": "1 week"
+      "exercises": 3,
+      "duration": "1 week",
+      "files": [
+        { "path": "projects/02-iac-pipeline/stages/02-terragrunt/exercises/01-dry-config.md", "label": "Exercise 1 — DRY Config" },
+        { "path": "projects/02-iac-pipeline/stages/02-terragrunt/exercises/02-multi-env.md", "label": "Exercise 2 — Multi-Environment" },
+        { "path": "projects/02-iac-pipeline/stages/02-terragrunt/exercises/03-dependencies.md", "label": "Exercise 3 — Dependencies" },
+        { "path": "projects/02-iac-pipeline/finstack/terragrunt/terragrunt.hcl", "label": "finstack/terragrunt/terragrunt.hcl" },
+        { "path": "projects/02-iac-pipeline/finstack/terragrunt/environments/dev/terragrunt.hcl", "label": "finstack/terragrunt/envs/dev" },
+        { "path": "projects/02-iac-pipeline/finstack/terragrunt/environments/staging/terragrunt.hcl", "label": "finstack/terragrunt/envs/staging" },
+        { "path": "projects/02-iac-pipeline/finstack/terragrunt/environments/prod/terragrunt.hcl", "label": "finstack/terragrunt/envs/prod" }
+      ]
     },
     {
       "id": "03-packer",
@@ -29,7 +75,11 @@
       "readme": "projects/02-iac-pipeline/stages/03-packer/README.md",
       "course": "iac/Packer.md",
       "exercises": 2,
-      "duration": "1 week"
+      "duration": "1 week",
+      "files": [
+        { "path": "projects/02-iac-pipeline/stages/03-packer/exercises/01-first-ami.md", "label": "Exercise 1 — First AMI" },
+        { "path": "projects/02-iac-pipeline/stages/03-packer/exercises/02-hardened-image.md", "label": "Exercise 2 — Hardened Image" }
+      ]
     },
     {
       "id": "04-vault-secrets",
@@ -37,7 +87,12 @@
       "readme": "projects/02-iac-pipeline/stages/04-vault-secrets/README.md",
       "course": "iac/Vault.md",
       "exercises": 3,
-      "duration": "1 week"
+      "duration": "1 week",
+      "files": [
+        { "path": "projects/02-iac-pipeline/stages/04-vault-secrets/exercises/01-kv-secrets.md", "label": "Exercise 1 — KV Secrets" },
+        { "path": "projects/02-iac-pipeline/stages/04-vault-secrets/exercises/02-dynamic-db-creds.md", "label": "Exercise 2 — Dynamic DB Credentials" },
+        { "path": "projects/02-iac-pipeline/stages/04-vault-secrets/exercises/03-approle-auth.md", "label": "Exercise 3 — AppRole Auth" }
+      ]
     },
     {
       "id": "05-opa-policy",
@@ -45,15 +100,29 @@
       "readme": "projects/02-iac-pipeline/stages/05-opa-policy/README.md",
       "course": "iac/OPA.md",
       "exercises": 2,
-      "duration": "1 week"
+      "duration": "1 week",
+      "files": [
+        { "path": "projects/02-iac-pipeline/stages/05-opa-policy/exercises/01-first-policy.md", "label": "Exercise 1 — First Policy" },
+        { "path": "projects/02-iac-pipeline/stages/05-opa-policy/exercises/02-terraform-policies.md", "label": "Exercise 2 — Terraform Policies" },
+        { "path": "projects/02-iac-pipeline/finstack/policies/require_tags.rego", "label": "finstack/policies/require_tags.rego" },
+        { "path": "projects/02-iac-pipeline/finstack/policies/restrict_instance_types.rego", "label": "finstack/policies/restrict_instance_types.rego" },
+        { "path": "projects/02-iac-pipeline/finstack/policies/no_public_s3.rego", "label": "finstack/policies/no_public_s3.rego" }
+      ]
     },
     {
       "id": "06-ansible-config",
       "title": "Ansible Config",
       "readme": "projects/02-iac-pipeline/stages/06-ansible-config/README.md",
       "course": "iac/Ansible.md",
-      "exercises": 3,
-      "duration": "1 week"
+      "exercises": 2,
+      "duration": "1 week",
+      "files": [
+        { "path": "projects/02-iac-pipeline/stages/06-ansible-config/exercises/01-bootstrap-playbook.md", "label": "Exercise 1 — Bootstrap Playbook" },
+        { "path": "projects/02-iac-pipeline/stages/06-ansible-config/exercises/02-roles.md", "label": "Exercise 2 — Roles" },
+        { "path": "projects/02-iac-pipeline/finstack/ansible/playbooks/bootstrap.yml", "label": "finstack/ansible/playbooks/bootstrap.yml" },
+        { "path": "projects/02-iac-pipeline/finstack/ansible/inventory/hosts.ini", "label": "finstack/ansible/inventory/hosts.ini" },
+        { "path": "projects/02-iac-pipeline/finstack/ansible/roles/monitoring-agent/tasks/main.yml", "label": "finstack/ansible/roles/monitoring-agent/tasks" }
+      ]
     },
     {
       "id": "07-cicd-pipeline",
@@ -61,7 +130,11 @@
       "readme": "projects/02-iac-pipeline/stages/07-cicd-pipeline/README.md",
       "course": "cicd/GitHub-Actions.md",
       "exercises": 2,
-      "duration": "1-2 weeks"
+      "duration": "1-2 weeks",
+      "files": [
+        { "path": "projects/02-iac-pipeline/stages/07-cicd-pipeline/exercises/01-plan-workflow.md", "label": "Exercise 1 — Plan Workflow" },
+        { "path": "projects/02-iac-pipeline/stages/07-cicd-pipeline/exercises/02-full-pipeline.md", "label": "Exercise 2 — Full Pipeline" }
+      ]
     }
   ]
 }
