@@ -1,0 +1,67 @@
+{
+  "id": "container-lifecycle",
+  "title": "Container Lifecycle",
+  "app": "Cutlink",
+  "description": "Build a URL shortener from bare Linux to full observability. Seven stages covering the complete container lifecycle — from process basics to Grafana dashboards.",
+  "tier": "Foundation",
+  "duration": "6-8 weeks",
+  "tools": ["Linux", "Docker", "Kubernetes", "Helm", "ArgoCD", "Prometheus", "Grafana"],
+  "stages": [
+    {
+      "id": "01-linux-foundations",
+      "title": "Linux Foundations",
+      "readme": "projects/01-container-lifecycle/stages/01-linux-foundations/README.md",
+      "course": "linux/Linux.md",
+      "exercises": 3,
+      "duration": "1 week"
+    },
+    {
+      "id": "02-docker",
+      "title": "Docker",
+      "readme": "projects/01-container-lifecycle/stages/02-docker/README.md",
+      "course": "containers/Docker.md",
+      "exercises": 3,
+      "duration": "1 week"
+    },
+    {
+      "id": "03-kubernetes",
+      "title": "Kubernetes",
+      "readme": "projects/01-container-lifecycle/stages/03-kubernetes/README.md",
+      "course": "containers/Kubernetes.md",
+      "exercises": 3,
+      "duration": "1 week"
+    },
+    {
+      "id": "04-helm",
+      "title": "Helm",
+      "readme": "projects/01-container-lifecycle/stages/04-helm/README.md",
+      "course": "containers/Helm.md",
+      "exercises": 2,
+      "duration": "1 week"
+    },
+    {
+      "id": "05-argocd",
+      "title": "ArgoCD",
+      "readme": "projects/01-container-lifecycle/stages/05-argocd/README.md",
+      "course": "cicd/ArgoCD.md",
+      "exercises": 2,
+      "duration": "1 week"
+    },
+    {
+      "id": "06-prometheus",
+      "title": "Prometheus",
+      "readme": "projects/01-container-lifecycle/stages/06-prometheus/README.md",
+      "course": "observability/Prometheus.md",
+      "exercises": 2,
+      "duration": "1 week"
+    },
+    {
+      "id": "07-grafana",
+      "title": "Grafana",
+      "readme": "projects/01-container-lifecycle/stages/07-grafana/README.md",
+      "course": "observability/Grafana.md",
+      "exercises": 2,
+      "duration": "1 week"
+    }
+  ]
+}

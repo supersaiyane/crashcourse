@@ -142,21 +142,23 @@ function go(path) {
 function parseRoute() {
   const h = window.location.hash.replace(/^#\/?/,'');
   const p = h.split('/').filter(Boolean);
-  return { cat: p[0]||null, file: p[1]||null };
+  return { cat: p[0]||null, file: p[1]||null, extra: p[2]||null };
 }
 
 window.addEventListener('hashchange', route);
 
 async function route() {
-  const { cat, file } = parseRoute();
-  if (!cat) { showView('hero'); return; }
-  if (cat === 'how-to-use') { showView('reader'); await renderHowToUse(); return; }
-  if (cat && !file) { showView('list'); await renderList(cat); return; }
-  if (cat && file) { showView('reader'); await renderReader(cat, file); return; }
+  const { cat, file, extra } = parseRoute();
+  if (!cat) { showView('hero'); syncNavTabs('courses'); return; }
+  if (cat === 'labs' && !file) { showView('labs'); syncNavTabs('labs'); await renderLabsListing(); return; }
+  if (cat === 'labs' && file) { showView('labDetail'); syncNavTabs('labs'); await renderLabDetail(file, extra); return; }
+  if (cat === 'how-to-use') { showView('reader'); syncNavTabs('courses'); await renderHowToUse(); return; }
+  if (cat && !file) { showView('list'); syncNavTabs('courses'); await renderList(cat); return; }
+  if (cat && file) { showView('reader'); syncNavTabs('courses'); await renderReader(cat, file); return; }
 }
 
 // ── Views ─────────────────────────────────────────────────────────────────────
-const VIEWS = { hero: 'hero-view', list: 'list-view', reader: 'reader-view' };
+const VIEWS = { hero: 'hero-view', list: 'list-view', reader: 'reader-view', labs: 'labs-view', labDetail: 'lab-detail-view' };
 
 function showView(name) {
   Object.entries(VIEWS).forEach(([k, id]) => {
@@ -947,6 +949,385 @@ function loadCLIPlayground(catId, filename) {
   }).catch(() => {
     section.classList.add('hidden');
   });
+}
+
+// ── Nav tabs ─────────────────────────────────────────────────────────────────
+function syncNavTabs(active) {
+  const coursesBtn = $id('nav-courses');
+  const labsBtn = $id('nav-labs');
+  if (coursesBtn) coursesBtn.classList.toggle('active', active === 'courses');
+  if (labsBtn) labsBtn.classList.toggle('active', active === 'labs');
+}
+
+$id('nav-courses').addEventListener('click', () => go('/'));
+$id('nav-labs').addEventListener('click', () => go('/labs'));
+$id('back-from-labs')?.addEventListener('click', () => go('/'));
+
+// ── Labs: localStorage progress ─────────────────────────────────────────────
+const LABS_PROGRESS_KEY = 'cc-labs-progress';
+
+function getLabsProgress() {
+  try { return JSON.parse(localStorage.getItem(LABS_PROGRESS_KEY)) || {}; } catch { return {}; }
+}
+function setLabsProgress(data) {
+  localStorage.setItem(LABS_PROGRESS_KEY, JSON.stringify(data));
+}
+function isStageComplete(labId, stageId) {
+  const p = getLabsProgress();
+  return p[labId]?.stages?.includes(stageId) || false;
+}
+function toggleStageComplete(labId, stageId) {
+  const p = getLabsProgress();
+  if (!p[labId]) p[labId] = { stages: [], exercises: {} };
+  const idx = p[labId].stages.indexOf(stageId);
+  if (idx >= 0) p[labId].stages.splice(idx, 1);
+  else p[labId].stages.push(stageId);
+  setLabsProgress(p);
+  return idx < 0;
+}
+function getExerciseState(labId, stageId, count) {
+  const p = getLabsProgress();
+  return p[labId]?.exercises?.[stageId] || new Array(count).fill(false);
+}
+function setExerciseState(labId, stageId, arr) {
+  const p = getLabsProgress();
+  if (!p[labId]) p[labId] = { stages: [], exercises: {} };
+  if (!p[labId].exercises) p[labId].exercises = {};
+  p[labId].exercises[stageId] = arr;
+  setLabsProgress(p);
+}
+function getLabStagesDone(labId, totalStages) {
+  const p = getLabsProgress();
+  return p[labId]?.stages?.length || 0;
+}
+
+// ── Labs: data loading ──────────────────────────────────────────────────────
+const LAB_INDEX = ['container-lifecycle', 'iac-pipeline'];
+const labCache = {};
+
+async function loadLabData(labId) {
+  if (labCache[labId]) return labCache[labId];
+  try {
+    const r = await fetch(`./data/labs/${labId}.json`);
+    if (!r.ok) return null;
+    const data = await r.json();
+    labCache[labId] = data;
+    return data;
+  } catch { return null; }
+}
+
+async function loadAllLabs() {
+  return Promise.all(LAB_INDEX.map(id => loadLabData(id)));
+}
+
+// ── Labs: listing page ──────────────────────────────────────────────────────
+async function renderLabsListing() {
+  const labs = (await loadAllLabs()).filter(Boolean);
+  const grid = $id('labs-grid');
+  if (!grid) return;
+
+  // Continue section
+  renderLabsContinue(labs);
+
+  // Filter buttons
+  const filterBtns = document.querySelectorAll('.lab-filter-btn');
+  let activeTier = 'all';
+
+  function renderCards(tier) {
+    grid.innerHTML = '';
+    const filtered = tier === 'all' ? labs : labs.filter(l => l.tier === tier);
+
+    filtered.forEach(lab => {
+      const done = getLabStagesDone(lab.id, lab.stages.length);
+      const total = lab.stages.length;
+      const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+
+      const card = document.createElement('div');
+      card.className = 'lab-card';
+      card.setAttribute('role', 'button');
+      card.setAttribute('tabindex', '0');
+      card.innerHTML = `
+        <span class="lab-card-tier" data-tier="${esc(lab.tier)}">${esc(lab.tier)}</span>
+        <div class="lab-card-title">${esc(lab.title)}</div>
+        <div class="lab-card-app">${esc(lab.app)}</div>
+        <div class="lab-card-desc">${esc(lab.description)}</div>
+        <div class="lab-card-tools">
+          ${lab.tools.map(t => `<span class="lab-tool-pill">${esc(t)}</span>`).join('')}
+        </div>
+        <div class="lab-card-footer">
+          <span class="lab-card-duration">${esc(lab.duration)}</span>
+          <div class="lab-card-progress">
+            <div class="lab-card-progress-bar"><div class="lab-card-progress-fill" style="width:${pct}%"></div></div>
+            ${done > 0 ? `<div class="lab-card-progress-text">${done}/${total} stages</div>` : ''}
+          </div>
+        </div>
+      `;
+      const open = () => go(`/labs/${lab.id}`);
+      card.addEventListener('click', open);
+      card.addEventListener('keydown', (e) => { if (e.key==='Enter'||e.key===' '){e.preventDefault();open();} });
+      grid.appendChild(card);
+    });
+
+    if (!filtered.length) {
+      grid.innerHTML = '<p style="color:var(--text-2);text-align:center;padding:40px 0;">No labs in this tier yet.</p>';
+    }
+  }
+
+  filterBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      filterBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      activeTier = btn.dataset.tier;
+      renderCards(activeTier);
+    });
+  });
+
+  renderCards(activeTier);
+}
+
+function renderLabsContinue(labs) {
+  const section = $id('labs-continue-section');
+  const grid = $id('labs-continue-grid');
+  if (!section || !grid) return;
+
+  const progress = getLabsProgress();
+  const inProgress = labs.filter(lab => {
+    const done = progress[lab.id]?.stages?.length || 0;
+    return done > 0 && done < lab.stages.length;
+  });
+
+  if (!inProgress.length) { section.classList.add('hidden'); return; }
+  section.classList.remove('hidden');
+  grid.innerHTML = '';
+
+  inProgress.forEach(lab => {
+    const done = progress[lab.id].stages.length;
+    const nextStage = lab.stages.find(s => !progress[lab.id].stages.includes(s.id));
+    const card = document.createElement('div');
+    card.className = 'continue-card';
+    card.setAttribute('role', 'button');
+    card.setAttribute('tabindex', '0');
+    card.innerHTML = `
+      <div class="continue-card-icon" style="background:rgba(99,102,241,0.12);color:var(--accent-1)">
+        ${ICONS.rocket}
+      </div>
+      <div class="continue-card-text">
+        <div class="continue-card-title">${esc(lab.title)}</div>
+        <div class="continue-card-cat">${done}/${lab.stages.length} stages${nextStage ? ' — next: ' + esc(nextStage.title) : ''}</div>
+      </div>
+    `;
+    const stageId = nextStage ? nextStage.id : lab.stages[0].id;
+    const open = () => go(`/labs/${lab.id}/${stageId}`);
+    card.addEventListener('click', open);
+    card.addEventListener('keydown', (e) => { if (e.key==='Enter'||e.key===' '){e.preventDefault();open();} });
+    grid.appendChild(card);
+  });
+}
+
+// ── Labs: detail page ───────────────────────────────────────────────────────
+async function renderLabDetail(labId, stageId) {
+  const lab = await loadLabData(labId);
+  if (!lab) { go('/labs'); return; }
+
+  // Default to first stage
+  if (!stageId) stageId = lab.stages[0].id;
+  const stageIdx = lab.stages.findIndex(s => s.id === stageId);
+  if (stageIdx < 0) { go(`/labs/${labId}`); return; }
+  const stage = lab.stages[stageIdx];
+
+  // Breadcrumb
+  $id('bc-lab-home').onclick = () => go('/');
+  $id('bc-labs').onclick = () => go('/labs');
+  $id('bc-lab-title').textContent = `${lab.title} — ${stage.title}`;
+
+  // Header
+  $id('lab-header').innerHTML = `
+    <div class="lab-header-top">
+      <span class="lab-card-tier" data-tier="${esc(lab.tier)}">${esc(lab.tier)}</span>
+      <span class="lab-header-app">${esc(lab.app)}</span>
+    </div>
+    <div class="lab-header-title">${esc(lab.title)}</div>
+    <div class="lab-header-desc">${esc(lab.description)}</div>
+  `;
+
+  // Stage progress bar
+  renderStagesBar(lab, stageIdx);
+
+  // Load stage README
+  const loader = $id('lab-loader');
+  const out = $id('lab-md-out');
+  loader.classList.remove('hidden');
+  out.classList.add('hidden');
+  out.innerHTML = '';
+
+  try {
+    const res = await fetch(`${MD_BASE}${stage.readme}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const md = await res.text();
+
+    marked.setOptions({
+      highlight(code, lang) {
+        if (lang && window.hljs?.getLanguage(lang)) {
+          try { return window.hljs.highlight(code, { language: lang }).value; } catch {}
+        }
+        return window.hljs?.highlightAuto(code).value ?? code;
+      },
+      breaks: true, gfm: true,
+    });
+
+    loader.classList.add('hidden');
+    out.classList.remove('hidden');
+    out.innerHTML = marked.parse(md);
+
+    // Highlight code blocks
+    out.querySelectorAll('pre code').forEach(block => {
+      const lang = [...block.classList].find(c => c.startsWith('language-'))?.replace('language-','') || 'text';
+      if (lang === 'mermaid' && window.mermaid) {
+        const wrap = document.createElement('div');
+        wrap.className = 'mermaid-wrap';
+        wrap.innerHTML = `<pre class="mermaid">${block.textContent}</pre>`;
+        block.parentElement.replaceWith(wrap);
+        return;
+      }
+      block.parentElement.setAttribute('data-lang', lang);
+      if (!block.classList.contains('hljs') && window.hljs) window.hljs.highlightElement(block);
+    });
+    if (window.mermaid && out.querySelector('.mermaid')) {
+      try { window.mermaid.run({ nodes: out.querySelectorAll('.mermaid') }); } catch {}
+    }
+  } catch (err) {
+    loader.classList.add('hidden');
+    out.classList.remove('hidden');
+    out.innerHTML = `<div style="text-align:center;padding:60px 0;"><h3>Stage not found</h3><p style="color:var(--text-muted);">Could not load <code>${esc(stage.readme)}</code></p><p style="color:var(--text-muted);font-size:12px;margin-top:6px;">${esc(err.message)}</p></div>`;
+  }
+
+  // Sidebar
+  renderLabSidebar(lab, stage, stageIdx);
+
+  // Prev/Next buttons
+  renderLabNav(lab, stageIdx);
+}
+
+function renderStagesBar(lab, activeIdx) {
+  const bar = $id('lab-stages-bar');
+  if (!bar) return;
+  bar.innerHTML = '';
+
+  lab.stages.forEach((stage, i) => {
+    const done = isStageComplete(lab.id, stage.id);
+    const isCurrent = i === activeIdx;
+    const cls = done ? 'done' : isCurrent ? 'current' : 'pending';
+
+    if (i > 0) {
+      const conn = document.createElement('div');
+      conn.className = `lab-stage-connector${isStageComplete(lab.id, lab.stages[i-1].id) ? ' done' : ''}`;
+      bar.appendChild(conn);
+    }
+
+    const dot = document.createElement('div');
+    dot.className = `lab-stage-dot ${cls}`;
+    dot.innerHTML = `
+      <div class="lab-stage-circle">${done ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' : (i + 1)}</div>
+      <div class="lab-stage-label">${esc(stage.title)}</div>
+    `;
+    dot.addEventListener('click', () => go(`/labs/${lab.id}/${stage.id}`));
+    bar.appendChild(dot);
+  });
+}
+
+function renderLabSidebar(lab, stage, stageIdx) {
+  const sidebar = $id('lab-sidebar');
+  if (!sidebar) return;
+
+  let html = '';
+
+  // Exercise checklist
+  if (stage.exercises > 0) {
+    const exerciseState = getExerciseState(lab.id, stage.id, stage.exercises);
+    html += `<div class="lab-sidebar-section">
+      <div class="lab-sidebar-title">Exercises</div>`;
+    for (let i = 0; i < stage.exercises; i++) {
+      html += `<div class="lab-exercise-item">
+        <input type="checkbox" data-lab="${esc(lab.id)}" data-stage="${esc(stage.id)}" data-idx="${i}" ${exerciseState[i] ? 'checked' : ''} />
+        <span>Exercise ${i + 1}</span>
+      </div>`;
+    }
+    html += '</div>';
+  }
+
+  // Course reference link
+  if (stage.course) {
+    html += `<div class="lab-sidebar-section">
+      <div class="lab-sidebar-title">Quick Reference</div>
+      <a class="lab-sidebar-link" data-course="${esc(stage.course)}">Open crash course</a>
+    </div>`;
+  }
+
+  // Mark stage complete
+  const done = isStageComplete(lab.id, stage.id);
+  html += `<div class="lab-sidebar-section">
+    <button class="lab-nav-btn" id="lab-mark-stage" style="width:100%;justify-content:center;${done ? 'background:var(--accent-1);color:#fff;border-color:var(--accent-1);' : ''}">
+      ${done ? 'Stage completed' : 'Mark stage complete'}
+    </button>
+  </div>`;
+
+  sidebar.innerHTML = html;
+
+  // Wire exercise checkboxes
+  sidebar.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+    cb.addEventListener('change', () => {
+      const labId = cb.dataset.lab;
+      const stageId = cb.dataset.stage;
+      const idx = parseInt(cb.dataset.idx);
+      const state = getExerciseState(labId, stageId, stage.exercises);
+      state[idx] = cb.checked;
+      setExerciseState(labId, stageId, state);
+    });
+  });
+
+  // Wire course link
+  sidebar.querySelectorAll('[data-course]').forEach(link => {
+    link.addEventListener('click', () => {
+      const coursePath = link.dataset.course;
+      const parts = coursePath.replace('.md', '').split('/');
+      go(`/${parts[0]}/${parts[1]}.md`);
+    });
+  });
+
+  // Wire mark-complete button
+  const markBtn = $id('lab-mark-stage');
+  if (markBtn) {
+    markBtn.addEventListener('click', () => {
+      const nowDone = toggleStageComplete(lab.id, stage.id);
+      markBtn.textContent = nowDone ? 'Stage completed' : 'Mark stage complete';
+      markBtn.style.background = nowDone ? 'var(--accent-1)' : '';
+      markBtn.style.color = nowDone ? '#fff' : '';
+      markBtn.style.borderColor = nowDone ? 'var(--accent-1)' : '';
+      renderStagesBar(lab, stageIdx);
+    });
+  }
+}
+
+function renderLabNav(lab, stageIdx) {
+  const nav = $id('lab-nav-btns');
+  if (!nav) return;
+
+  const prev = stageIdx > 0 ? lab.stages[stageIdx - 1] : null;
+  const next = stageIdx < lab.stages.length - 1 ? lab.stages[stageIdx + 1] : null;
+
+  nav.innerHTML = `
+    <button class="lab-nav-btn" id="lab-prev" ${!prev ? 'disabled' : ''}>
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      ${prev ? esc(prev.title) : 'Previous'}
+    </button>
+    <button class="lab-nav-btn" id="lab-next" ${!next ? 'disabled' : ''}>
+      ${next ? esc(next.title) : 'Next'}
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </button>
+  `;
+
+  if (prev) $id('lab-prev').addEventListener('click', () => go(`/labs/${lab.id}/${prev.id}`));
+  if (next) $id('lab-next').addEventListener('click', () => go(`/labs/${lab.id}/${next.id}`));
 }
 
 // ── Terminal typing engine ──────────────────────────────────────────────────

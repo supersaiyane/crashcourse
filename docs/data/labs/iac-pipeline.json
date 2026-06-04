@@ -1,0 +1,67 @@
+{
+  "id": "iac-pipeline",
+  "title": "IaC Pipeline",
+  "app": "FinStack",
+  "description": "Build production payment infrastructure with Infrastructure as Code. Seven stages from Terraform basics to a full CI/CD pipeline with policy gates and secrets management.",
+  "tier": "Foundation",
+  "duration": "6-8 weeks",
+  "tools": ["Terraform", "Terragrunt", "Packer", "Vault", "OPA", "Ansible", "GitHub Actions"],
+  "stages": [
+    {
+      "id": "01-terraform-basics",
+      "title": "Terraform Basics",
+      "readme": "projects/02-iac-pipeline/stages/01-terraform-basics/README.md",
+      "course": "iac/Terraform.md",
+      "exercises": 3,
+      "duration": "1-2 weeks"
+    },
+    {
+      "id": "02-terragrunt",
+      "title": "Terragrunt",
+      "readme": "projects/02-iac-pipeline/stages/02-terragrunt/README.md",
+      "course": "iac/Terragrunt.md",
+      "exercises": 2,
+      "duration": "1 week"
+    },
+    {
+      "id": "03-packer",
+      "title": "Packer",
+      "readme": "projects/02-iac-pipeline/stages/03-packer/README.md",
+      "course": "iac/Packer.md",
+      "exercises": 2,
+      "duration": "1 week"
+    },
+    {
+      "id": "04-vault-secrets",
+      "title": "Vault Secrets",
+      "readme": "projects/02-iac-pipeline/stages/04-vault-secrets/README.md",
+      "course": "iac/Vault.md",
+      "exercises": 3,
+      "duration": "1 week"
+    },
+    {
+      "id": "05-opa-policy",
+      "title": "OPA Policy",
+      "readme": "projects/02-iac-pipeline/stages/05-opa-policy/README.md",
+      "course": "iac/OPA.md",
+      "exercises": 2,
+      "duration": "1 week"
+    },
+    {
+      "id": "06-ansible-config",
+      "title": "Ansible Config",
+      "readme": "projects/02-iac-pipeline/stages/06-ansible-config/README.md",
+      "course": "iac/Ansible.md",
+      "exercises": 3,
+      "duration": "1 week"
+    },
+    {
+      "id": "07-cicd-pipeline",
+      "title": "CI/CD Pipeline",
+      "readme": "projects/02-iac-pipeline/stages/07-cicd-pipeline/README.md",
+      "course": "cicd/GitHub-Actions.md",
+      "exercises": 2,
+      "duration": "1-2 weeks"
+    }
+  ]
+}

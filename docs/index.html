@@ -25,7 +25,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
 
   <!-- App CSS -->
-  <link rel="stylesheet" href="css/style.css?v=7" />
+  <link rel="stylesheet" href="css/style.css?v=8" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xterm/xterm@5.5.0/css/xterm.min.css" />
 </head>
 <body>
@@ -43,6 +43,9 @@
   </div>
 
   <div class="h-spacer"></div>
+
+  <button id="nav-courses" class="nav-tab active" aria-label="Courses">Courses</button>
+  <button id="nav-labs" class="nav-tab" aria-label="Labs">Labs</button>
 
   <button id="search-trigger" aria-label="Open search (Cmd+K)">
     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -184,6 +187,62 @@
 
   </div><!-- /hero-view -->
 
+  <!-- ── LABS LISTING VIEW ── -->
+  <div id="labs-view" class="view hidden">
+    <button class="back-btn" id="back-from-labs">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M19 12H5M12 19l-7-7 7-7"/>
+      </svg>
+      Home
+    </button>
+
+    <section id="labs-continue-section" class="hidden">
+      <div class="section-eyebrow">Continue where you left off</div>
+      <div class="labs-continue-grid" id="labs-continue-grid"></div>
+    </section>
+
+    <section id="labs-filter-section">
+      <div class="section-eyebrow">Hands-on Labs</div>
+      <h2 class="section-heading">Build real projects, stage by stage</h2>
+      <div class="labs-filter" id="labs-filter">
+        <button class="lab-filter-btn active" data-tier="all">All</button>
+        <button class="lab-filter-btn" data-tier="Foundation">Foundation</button>
+        <button class="lab-filter-btn" data-tier="Intermediate">Intermediate</button>
+        <button class="lab-filter-btn" data-tier="Senior">Senior</button>
+      </div>
+    </section>
+
+    <div class="labs-grid" id="labs-grid"></div>
+  </div>
+
+  <!-- ── LAB DETAIL VIEW ── -->
+  <div id="lab-detail-view" class="view hidden">
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <button class="bc-btn" id="bc-lab-home">Home</button>
+      <span class="bc-sep" aria-hidden="true">/</span>
+      <button class="bc-btn" id="bc-labs">Labs</button>
+      <span class="bc-sep" aria-hidden="true">/</span>
+      <span class="bc-current" id="bc-lab-title"></span>
+    </nav>
+
+    <div class="lab-header" id="lab-header"></div>
+
+    <div class="lab-stages-bar" id="lab-stages-bar"></div>
+
+    <div class="lab-content-area">
+      <div class="lab-main">
+        <div class="loader" id="lab-loader">
+          <div class="spin"></div>
+          Loading stage...
+        </div>
+        <div id="lab-md-out" class="hidden"></div>
+      </div>
+      <aside class="lab-sidebar" id="lab-sidebar"></aside>
+    </div>
+
+    <div class="lab-nav-btns" id="lab-nav-btns"></div>
+  </div>
+
   <!-- ── COURSE LIST VIEW ── -->
   <div id="list-view" class="view hidden">
     <button class="back-btn" id="back-from-list">
@@ -290,7 +349,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@xterm/xterm@5.5.0/lib/xterm.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@xterm/addon-fit@0.10.0/lib/addon-fit.min.js"></script>
 <script src="js/cli-engine.js?v=2"></script>
-<script src="js/app.js?v=7"></script>
+<script src="js/app.js?v=8"></script>
 
 </body>
 </html>
