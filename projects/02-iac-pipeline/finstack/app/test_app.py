@@ -14,13 +14,13 @@ def test_health(client):
     r = client.get("/health")
     assert r.status_code == 200
     data = json.loads(r.data)
-    assert data["status"] == "healthy"
+    assert data["status"] == "ok"
 
-def test_health_has_version(client):
-    """Health endpoint includes version field."""
+def test_health_has_timestamp(client):
+    """Health endpoint includes timestamp field."""
     r = client.get("/health")
     data = json.loads(r.data)
-    assert "version" in data
+    assert "timestamp" in data
 
 def test_balance_endpoint_exists(client):
     """Balance endpoint responds (may return error without DB, but does not 404)."""
