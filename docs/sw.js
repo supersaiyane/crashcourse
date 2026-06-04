@@ -1,4 +1,4 @@
-const CACHE_NAME = 'crashcourse-v3';
+const CACHE_NAME = 'crashcourse-v4';
 
 const APP_SHELL = [
   './',
