@@ -1,0 +1,86 @@
+services:
+  # ---------- Application services ----------
+  api:
+    build: ./api
+    ports: ["5050:5000"]
+    env_file: .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/api/health')"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+    networks: [cloudplatform-net]
+
+  processor:
+    build: ./processor
+    env_file: .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+    networks: [cloudplatform-net]
+
+  frontend:
+    build: ./frontend
+    ports: ["8000:80"]
+    depends_on: [api]
+    networks: [cloudplatform-net]
+
+  # ---------- Infrastructure ----------
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-cloudplatform}
+      POSTGRES_USER: ${POSTGRES_USER:-cloudplatform}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-cloudplatform}"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks: [cloudplatform-net]
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--maxmemory", "128mb", "--maxmemory-policy", "allkeys-lru"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks: [cloudplatform-net]
+
+  kafka:
+    image: apache/kafka:3.8.0
+    environment:
+      # KRaft mode — no Zookeeper required
+      KAFKA_NODE_ID: "1"
+      KAFKA_PROCESS_ROLES: "broker,controller"
+      KAFKA_LISTENERS: "PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093"
+      KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://kafka:9092"
+      KAFKA_CONTROLLER_LISTENER_NAMES: "CONTROLLER"
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT"
+      KAFKA_CONTROLLER_QUORUM_VOTERS: "1@kafka:9093"
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: "1"
+      KAFKA_LOG_DIRS: "/tmp/kraft-combined-logs"
+      CLUSTER_ID: "cloudplatform-kafka-cluster-01"
+    networks: [cloudplatform-net]
+
+volumes:
+  pg-data:
+
+networks:
+  cloudplatform-net:
+    driver: bridge

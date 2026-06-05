@@ -1,0 +1,119 @@
+{
+  "id": "multi-cloud-app",
+  "title": "Cloud-Native Multi-Cloud App",
+  "app": "CloudPlatform",
+  "description": "Build a real-time analytics platform and deploy it identically on AWS, GCP, and Azure. Compare cost, latency, and developer experience across clouds, then develop a multi-cloud strategy.",
+  "tier": "Intermediate",
+  "duration": "8-10 weeks",
+  "tools": ["AWS", "GCP", "Azure", "PostgreSQL", "Redis", "Kafka", "Kubernetes", "Nginx", "k6"],
+  "appDir": "projects/07-multi-cloud-app/CloudPlatform",
+  "stages": [
+    {
+      "id": "01-aws-foundation",
+      "title": "AWS Foundation",
+      "readme": "projects/07-multi-cloud-app/stages/01-aws-foundation/README.md",
+      "course": "cloud/AWS.md",
+      "exercises": 3,
+      "duration": "1-2 weeks",
+      "files": [
+        { "path": "projects/07-multi-cloud-app/stages/01-aws-foundation/exercises/01-deploy-vpc.md", "label": "Exercise 1 — Deploy VPC" },
+        { "path": "projects/07-multi-cloud-app/stages/01-aws-foundation/exercises/02-launch-eks-cluster.md", "label": "Exercise 2 — Launch EKS Cluster" },
+        { "path": "projects/07-multi-cloud-app/stages/01-aws-foundation/exercises/03-setup-rds-s3.md", "label": "Exercise 3 — Setup RDS + S3" }
+      ]
+    },
+    {
+      "id": "02-gcp-foundation",
+      "title": "GCP Foundation",
+      "readme": "projects/07-multi-cloud-app/stages/02-gcp-foundation/README.md",
+      "course": "cloud/GCP.md",
+      "exercises": 3,
+      "duration": "1-2 weeks",
+      "files": [
+        { "path": "projects/07-multi-cloud-app/stages/02-gcp-foundation/exercises/01-create-vpc-gke.md", "label": "Exercise 1 — Create VPC + GKE" },
+        { "path": "projects/07-multi-cloud-app/stages/02-gcp-foundation/exercises/02-setup-cloud-sql.md", "label": "Exercise 2 — Setup Cloud SQL" },
+        { "path": "projects/07-multi-cloud-app/stages/02-gcp-foundation/exercises/03-configure-gcs.md", "label": "Exercise 3 — Configure GCS" }
+      ]
+    },
+    {
+      "id": "03-azure-foundation",
+      "title": "Azure Foundation",
+      "readme": "projects/07-multi-cloud-app/stages/03-azure-foundation/README.md",
+      "course": "cloud/Azure.md",
+      "exercises": 3,
+      "duration": "1-2 weeks",
+      "files": [
+        { "path": "projects/07-multi-cloud-app/stages/03-azure-foundation/exercises/01-deploy-vnet-aks.md", "label": "Exercise 1 — Deploy VNet + AKS" },
+        { "path": "projects/07-multi-cloud-app/stages/03-azure-foundation/exercises/02-setup-azure-postgresql.md", "label": "Exercise 2 — Setup Azure PostgreSQL" },
+        { "path": "projects/07-multi-cloud-app/stages/03-azure-foundation/exercises/03-configure-blob-storage.md", "label": "Exercise 3 — Configure Blob Storage" }
+      ]
+    },
+    {
+      "id": "04-data-layer",
+      "title": "Data Layer",
+      "readme": "projects/07-multi-cloud-app/stages/04-data-layer/README.md",
+      "course": "data/PostgreSQL.md",
+      "exercises": 4,
+      "duration": "1-2 weeks",
+      "files": [
+        { "path": "projects/07-multi-cloud-app/stages/04-data-layer/exercises/01-postgresql-schema.md", "label": "Exercise 1 — PostgreSQL Schema" },
+        { "path": "projects/07-multi-cloud-app/stages/04-data-layer/exercises/02-redis-caching.md", "label": "Exercise 2 — Redis Caching" },
+        { "path": "projects/07-multi-cloud-app/stages/04-data-layer/exercises/03-kafka-streaming.md", "label": "Exercise 3 — Kafka Streaming" },
+        { "path": "projects/07-multi-cloud-app/stages/04-data-layer/exercises/04-integration-test.md", "label": "Exercise 4 — Integration Test" }
+      ]
+    },
+    {
+      "id": "05-app-deployment",
+      "title": "App Deployment",
+      "readme": "projects/07-multi-cloud-app/stages/05-app-deployment/README.md",
+      "course": "containers/Kubernetes.md",
+      "exercises": 4,
+      "duration": "1-2 weeks",
+      "files": [
+        { "path": "projects/07-multi-cloud-app/stages/05-app-deployment/exercises/01-create-k8s-manifests.md", "label": "Exercise 1 — K8s Manifests" },
+        { "path": "projects/07-multi-cloud-app/stages/05-app-deployment/exercises/02-deploy-on-eks.md", "label": "Exercise 2 — Deploy on EKS" },
+        { "path": "projects/07-multi-cloud-app/stages/05-app-deployment/exercises/03-deploy-on-gke-aks.md", "label": "Exercise 3 — Deploy on GKE + AKS" },
+        { "path": "projects/07-multi-cloud-app/stages/05-app-deployment/exercises/04-nginx-ingress.md", "label": "Exercise 4 — Nginx Ingress" }
+      ]
+    },
+    {
+      "id": "06-load-testing",
+      "title": "Load Testing",
+      "readme": "projects/07-multi-cloud-app/stages/06-load-testing/README.md",
+      "course": "networking/k6.md",
+      "exercises": 4,
+      "duration": "1 week",
+      "files": [
+        { "path": "projects/07-multi-cloud-app/stages/06-load-testing/exercises/01-baseline-load-test.md", "label": "Exercise 1 — Baseline Load Test" },
+        { "path": "projects/07-multi-cloud-app/stages/06-load-testing/exercises/02-stress-test.md", "label": "Exercise 2 — Stress Test" },
+        { "path": "projects/07-multi-cloud-app/stages/06-load-testing/exercises/03-spike-test.md", "label": "Exercise 3 — Spike Test" },
+        { "path": "projects/07-multi-cloud-app/stages/06-load-testing/exercises/04-cross-cloud-comparison.md", "label": "Exercise 4 — Cross-Cloud Comparison" }
+      ]
+    },
+    {
+      "id": "07-comparison",
+      "title": "Cloud Comparison",
+      "readme": "projects/07-multi-cloud-app/stages/07-comparison/README.md",
+      "course": null,
+      "exercises": 3,
+      "duration": "1 week",
+      "files": [
+        { "path": "projects/07-multi-cloud-app/stages/07-comparison/exercises/01-cost-analysis.md", "label": "Exercise 1 — Cost Analysis" },
+        { "path": "projects/07-multi-cloud-app/stages/07-comparison/exercises/02-performance-analysis.md", "label": "Exercise 2 — Performance Analysis" },
+        { "path": "projects/07-multi-cloud-app/stages/07-comparison/exercises/03-dx-comparison.md", "label": "Exercise 3 — DX Comparison" }
+      ]
+    },
+    {
+      "id": "08-multi-cloud-strategy",
+      "title": "Multi-Cloud Strategy",
+      "readme": "projects/07-multi-cloud-app/stages/08-multi-cloud-strategy/README.md",
+      "course": null,
+      "exercises": 3,
+      "duration": "1 week",
+      "files": [
+        { "path": "projects/07-multi-cloud-app/stages/08-multi-cloud-strategy/exercises/01-lock-in-audit.md", "label": "Exercise 1 — Lock-In Audit" },
+        { "path": "projects/07-multi-cloud-app/stages/08-multi-cloud-strategy/exercises/02-abstraction-design.md", "label": "Exercise 2 — Abstraction Design" },
+        { "path": "projects/07-multi-cloud-app/stages/08-multi-cloud-strategy/exercises/03-dr-plan.md", "label": "Exercise 3 — DR Plan" }
+      ]
+    }
+  ]
+}

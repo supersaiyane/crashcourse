@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CloudPlatform — Real-Time Analytics</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <div class="logo">CloudPlatform<span class="dot">.</span></div>
+    <div class="cloud-status">
+      <div class="provider" id="aws-status"><span class="status-dot green"></span>AWS</div>
+      <div class="provider" id="gcp-status"><span class="status-dot green"></span>GCP</div>
+      <div class="provider" id="azure-status"><span class="status-dot green"></span>Azure</div>
+    </div>
+  </header>
+  <main>
+    <section class="hero">
+      <h1>Real-Time Analytics</h1>
+      <p>CloudPlatform processes events across AWS, GCP, and Azure. This dashboard shows live event ingestion, latency metrics, and cost comparison across cloud providers.</p>
+    </section>
+
+    <section class="cards">
+      <div class="card">
+        <div class="card-icon">&#128202;</div>
+        <div class="card-title">Total Events</div>
+        <div class="card-value" id="total-events">--</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">&#9889;</div>
+        <div class="card-title">Events / sec</div>
+        <div class="card-value" id="events-per-sec">--</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">&#128225;</div>
+        <div class="card-title">Active Sources</div>
+        <div class="card-value" id="active-sources">--</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">&#9201;</div>
+        <div class="card-title">Avg Latency</div>
+        <div class="card-value" id="avg-latency">--</div>
+      </div>
+    </section>
+
+    <section class="charts-grid">
+      <div class="chart-panel">
+        <h2>Events by Type</h2>
+        <canvas id="chart-bar" width="400" height="220"></canvas>
+      </div>
+      <div class="chart-panel">
+        <h2>Events Timeline</h2>
+        <canvas id="chart-line" width="400" height="220"></canvas>
+      </div>
+      <div class="chart-panel">
+        <h2>Source Distribution</h2>
+        <canvas id="chart-donut" width="400" height="220"></canvas>
+      </div>
+    </section>
+
+    <section class="live-feed">
+      <h2>Live Event Feed</h2>
+      <div class="feed-scroll" id="feed-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Timestamp</th>
+              <th>Type</th>
+              <th>Source</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="feed-body"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="cloud-compare">
+      <h2>Cloud Comparison</h2>
+      <div class="compare-grid">
+        <div class="compare-card aws">
+          <div class="compare-header"><span class="status-dot green"></span>AWS</div>
+          <div class="compare-row"><span>Monthly Cost</span><strong id="aws-cost">--</strong></div>
+          <div class="compare-row"><span>Avg Latency</span><strong id="aws-latency">--</strong></div>
+          <div class="compare-row"><span>Availability</span><strong id="aws-avail">--</strong></div>
+          <div class="compare-row"><span>Region</span><strong id="aws-region">--</strong></div>
+        </div>
+        <div class="compare-card gcp">
+          <div class="compare-header"><span class="status-dot green"></span>GCP</div>
+          <div class="compare-row"><span>Monthly Cost</span><strong id="gcp-cost">--</strong></div>
+          <div class="compare-row"><span>Avg Latency</span><strong id="gcp-latency">--</strong></div>
+          <div class="compare-row"><span>Availability</span><strong id="gcp-avail">--</strong></div>
+          <div class="compare-row"><span>Region</span><strong id="gcp-region">--</strong></div>
+        </div>
+        <div class="compare-card azure">
+          <div class="compare-header"><span class="status-dot green"></span>Azure</div>
+          <div class="compare-row"><span>Monthly Cost</span><strong id="azure-cost">--</strong></div>
+          <div class="compare-row"><span>Avg Latency</span><strong id="azure-latency">--</strong></div>
+          <div class="compare-row"><span>Availability</span><strong id="azure-avail">--</strong></div>
+          <div class="compare-row"><span>Region</span><strong id="azure-region">--</strong></div>
+        </div>
+      </div>
+    </section>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>
